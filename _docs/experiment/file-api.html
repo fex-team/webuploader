@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="en">
+ 	<head>
+	    <!-- Meta, title, CSS, favicons, etc. -->
+	    <meta charset="utf-8">
+		<meta name="viewport" content="width=device-width, initial-scale=1.0">
+		<meta name="description" content="">
+		<meta name="author" content="">
+
+		<title>
+		  
+		    UPLOADER-EXPERIMENT-FILE-API
+		  
+		</title>
+
+		<!-- Bootstrap core CSS -->
+		<link href="./libs/bs/bootstrap.min.css" rel="stylesheet">
+
+		<style type="text/css">
+		td{
+			padding: 10px;
+		}
+		.splitter{
+			margin: 45px 0;
+			background: -webkit-linear-gradient(left, rgba(0,0,0,0) 0%,rgba(0,0,0,0.25) 50%,rgba(0,0,0,0) 100%); 
+			height: 1px;
+		}
+		</style>
+	</head>
+
+	<body>
+		<div class="row">
+			<div class="col-lg-2"></div>
+			<div class="col-lg-8">
+				<div class="page-header">
+				  <h1>HTML5 FILE API</h1>
+				</div>
+				<h4>FILE API SUPPORT</h4>
+				<div id="detection">
+
+				</div>
+				<div class="splitter"></div>
+				<h4>FILE ATTRIBUTES SUPPORT</h4>
+				<fieldset>
+				    <div class="form-group">
+				      <label for="fileSelector">Select Files</label>
+				      <input type="file" class="form-control" id="fileSelector" multiple>
+				    </div>
+				    <div id="fileAttributes" class="form-group">
+
+				    </div>
+				</fieldset>
+			</div>
+			<div class="col-lg-2"></div>
+		</div>
+	</body>
+	<script>
+	var detectionEl = document.getElementById( 'detection' );
+	var detectResult = [ '<table class="table-bordered">' ];
+	var detectAttrs = [ 'File', 'FileList', 'FileReader' ];
+
+	for (var i = detectAttrs.length - 1; i >= 0; i--) {
+		var detect = !!window[detectAttrs[i]];
+		detectResult.push( 
+			'<tr><td>window.' + detectAttrs[i] + 
+			'</td><td><span class="label label-' + (detect ? 'success' : 'danger') + '">' + 
+			(detect ? 'support' : 'unsupport') + '</span></td></tr>' );
+	};
+
+	detectResult.push( '</table>' );
+
+	detectionEl.innerHTML = detectResult.join('\n');
+
+	var fileSelector = document.getElementById( 'fileSelector' );
+
+	function handler( e ){
+		e = e || window.event;
+
+		if( !e.target.files ) {
+			document.getElementById('fileAttributes').innerHTML = 'NO FILE FOUND.';
+			return;
+		}
+
+		var file = e.target.files[0];
+		var result = [ '<h4>e.target.files[0]\'s attributes</h4><table class="table-bordered">' ];
+
+		for( var attr in file ) {
+			result.push( '<tr><td>' + attr + '</td><td>' + file[attr] + '</td></tr>' );
+		}
+
+		result.push('</table>');
+
+		document.getElementById('fileAttributes').innerHTML = result.join('\n');
+	}
+
+	if (window.addEventListener) {
+		fileSelector.addEventListener( 'change', handler, false );
+	}
+	else{
+		fileSelector.attachEvent( 'onchange', handler );
+	};
+	
+	</script>
+</html>
