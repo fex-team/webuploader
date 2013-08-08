@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="en">
+ 	<head>
+	    <!-- Meta, title, CSS, favicons, etc. -->
+	    <meta charset="utf-8">
+		<meta name="viewport" content="width=device-width, initial-scale=1.0">
+		<meta name="description" content="">
+		<meta name="author" content="">
+
+		<title>
+		  
+		    UPLOADER-EXPERIMENT-PERFORMANCE-PREVIEW-MEMORY
+		  
+		</title>
+
+		<!-- Bootstrap core CSS -->
+		<link href="../libs/bs/bootstrap.min.css" rel="stylesheet">
+		<style type="text/css">
+
+		.splitter{
+			margin: 45px 0;
+			background: -webkit-linear-gradient(left, rgba(0,0,0,0) 0%,rgba(0,0,0,0.25) 50%,rgba(0,0,0,0) 100%); 
+			height: 1px;
+		}
+		</style>
+	</head>
+
+	<body>
+		<div class="row">
+			<div class="col-lg-2"></div>
+			<div class="col-lg-8">
+				<div class="page-header">
+				  <h1>图片预览对比测试</h1>
+				</div>
+				<h4>readAsDataURL</h4>
+				<fieldset>
+				    <div class="form-group">
+				    	<div>
+				    		<p><label for="fileSelector">Select Files</label></p>
+					    	<p><input type="file" name="file" id="fileSelector2" multiple></p>
+				    	</div>
+				    	<div id="result2">
+				    		
+				    	</div>
+				    </div>
+				</fieldset>
+				<div class="splitter"></div>
+				<h4>URL.createObjectURL</h4>
+				<fieldset>
+				    <div class="form-group">
+				    	<div>
+				    		<p><label for="fileSelector">Select Files</label></p>
+					    	<p><input type="file" name="file" id="fileSelector3" multiple></p>
+				    	</div>
+				    	<div id="result3">
+				    		
+				    	</div>
+				    </div>
+				</fieldset>
+				<div class="splitter"></div>
+			</div>
+			<div class="col-lg-2"></div>
+		</div>
+	</body>
+	<script>
+
+	// readAsDataURL
+	var fs2 = document.getElementById( 'fileSelector2' );
+
+	fs2.addEventListener( 'change', function( e ){
+		var files = e.target.files;
+		var container = document.getElementById( 'result2' ); 
+
+		for (var i = 0, len = files.length; i < len; i++) {
+			var file = files[i];
+			var fr = new FileReader();
+
+			fr.onload = function( evt ) {
+				var img = new Image();
+				img.src = evt.target.result;
+				img.className = 'img-thumbnail';
+				img.style.height = '150px';
+
+				img.onload = function(){
+					img.onload = null;
+					img = null;
+				};
+
+				container.appendChild( img );
+			}
+
+			fr.readAsDataURL(file);
+		};
+	}, false );
+
+	// URL.createObjectURL
+	var fs3 = document.getElementById( 'fileSelector3' );
+
+	fs3.addEventListener( 'change', function( e ){
+  		var files = e.target.files;
+		var container = document.getElementById( 'result3' ); 
+
+		for (var i = 0, len = files.length; i < len; i++) {
+			var file = files[i];
+			var img = new Image();
+			img.src = URL.createObjectURL( file );
+			img.className = 'img-thumbnail';
+			img.style.height = '150px';
+
+			img.onload = function(){
+				URL.revokeObjectURL( this.src );
+				img.onload = null;
+				img = null;
+			};
+
+			container.appendChild( img );
+		};
+	}, false );
+	</script>
+</html>

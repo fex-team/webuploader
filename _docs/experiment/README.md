@@ -52,7 +52,7 @@ IE版本占有率
         <td>X</td>
         <td>X</td>
         <td>X</td>
-        <td>X</td>
+        <td>O</td>
         <td>O</td>
         <td>O</td>
     </tr>
@@ -195,9 +195,66 @@ IE版本占有率
 考虑到Javascript在某些情况下的局限性，可能需要与Flash协作，因此需要Javascript具有与Flash通信的能力。
 
 序列化数据通信：支持；但是需要读取文件序列化后的内容，比如BASE64，内存占用可能会比较大；
+
 二进制数据通信：待验证；
+
+### 异步文件上传
+
+<table>
+    <tr>
+        <th>方式</th><th>说明</th><th>IE10</th><th>Chrome</th><th>FF</th>
+    </tr>
+    <tr>
+        <td>XHR send(FormData)</td>
+        <td>构造FormData发送，HTTP请求与FORM提交一致，后端端无需做额外适配通用。</td>
+        <td>O</td>
+        <td>O</td>
+        <td>O</td>
+    </tr>
+    <tr>
+        <td>XHR sendAsBinary</td>
+        <td>结合FileReader的readAsBinaryString使用。</td>
+        <td>X</td>
+        <td>O<sup>1</sup></td>
+        <td>O</td>
+    </tr>
+    <tr>
+        <td>XHR send(Blob)</td>
+        <td>直接发送File对象，浏览器不会进行编码而是直接把Blob内容作为POST DATA，需要后端自行解析。</td>
+        <td>O<sup>*</sup></td>
+        <td>O<sup>*</sup></td>
+        <td>O<sup>*</sup></td>
+    </tr>
+    <tr>
+        <td>XHR send Base64</td>
+        <td>通过FileReader的readAsDataURL方法获取图片Base64编码，以文本方式发送到后端处理，需要后端自行解析。</td>
+        <td>O<sup>*</sup></td>
+        <td>O<sup>*</sup></td>
+        <td>O<sup>*</sup></td>
+    </tr>
+    <tr>
+        <td>WebSocket send binary</td>
+        <td>通过FileReader获得Blob或ArrayBuffer，通过WebSocket发送到后端，需要后端获取数据并解析。</td>
+        <td>O<sup>*</sup></td>
+        <td>O<sup>*</sup></td>
+        <td>O<sup>*</sup></td>
+    </tr>
+</table>
+
+<sup>1</sup>可模拟；
+<sup>*</sup>服务器端需要适配；
 
 ## 性能评测
 
+评测的两个方面：
+
+* HTML5与Flash共同拥有的功能进行对比；
+* HTML5某个功能的不同实现进行比较；
+
+### 预览
+
+图片预览在HTML5和Flash均可实现，同时HTML5本身有两种实现方式，因此同时参与评测。
+
+![preview_result.png](三中预览方式内存消耗对比结果)
 
 

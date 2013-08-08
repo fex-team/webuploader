@@ -40,6 +40,11 @@
 
 				</div>
 				<div class="splitter"></div>
+				<h4>FILE READER API SUPPORT</h4>
+				<div id="detectionFileReader">
+
+				</div>
+				<div class="splitter"></div>
 				<h4>FILE ATTRIBUTES SUPPORT</h4>
 				<fieldset>
 				    <div class="form-group">
@@ -47,6 +52,28 @@
 				      <input type="file" class="form-control" id="fileSelector" multiple>
 				    </div>
 				    <div id="fileAttributes" class="form-group">
+
+				    </div>
+				</fieldset>
+				<div class="splitter"></div>
+				<h4>IMAGE LOCAL PREVIEW SUPPORT</h4>
+				<h5>DATA URL</h5>
+				<fieldset>
+				    <div class="form-group">
+				      <label for="fileSelector2">Select Image File</label>
+				      <input type="file" class="form-control" id="fileSelector2">
+				    </div>
+				    <div id="imageWrapper" class="form-group">
+
+				    </div>
+				</fieldset>
+				<h5>OBJECT URL</h5>
+				<fieldset>
+				    <div class="form-group">
+				      <label for="fileSelector3">Select Image File</label>
+				      <input type="file" class="form-control" id="fileSelector3">
+				    </div>
+				    <div id="imageWrapper2" class="form-group">
 
 				    </div>
 				</fieldset>
@@ -70,6 +97,21 @@
 	detectResult.push( '</table>' );
 
 	detectionEl.innerHTML = detectResult.join('\n');
+
+	if (window.FileReader) {
+		var detectionEl = document.getElementById( 'detectionFileReader' );
+		var detectResult = [ '<table class="table-bordered">' ];
+		var fr = new FileReader();
+
+		for( var attr in fr ) {
+			detectResult.push( '<tr><td>' + attr + '</td><td>' + fr[attr] + '</td></tr>' );
+		}
+
+		detectResult.push( '</table>' );
+
+		detectionEl.innerHTML = detectResult.join('\n');
+	};
+
 
 	var fileSelector = document.getElementById( 'fileSelector' );
 
@@ -98,6 +140,89 @@
 	}
 	else{
 		fileSelector.attachEvent( 'onchange', handler );
+	};
+
+
+	var fileSelector2 = document.getElementById( 'fileSelector2' );
+
+	function handler2( e ){
+		e = e || window.event;
+
+		if( !e.target.files ) {
+			document.getElementById('imageWrapper').innerHTML = 'NO FILE FOUND.';
+			return;
+		}
+
+		var file = e.target.files[0];
+		var fr = new FileReader();
+
+		if (file.type.indexOf('image/') !== 0) {
+			document.getElementById('imageWrapper').innerHTML = 'NOT VALID IMAGE FILE.';
+			return;
+		};
+
+		fr.onload = function( e ) {
+			var image = new Image();
+			image.src = e.target.result;
+			image.width = 770;
+
+			document.getElementById('imageWrapper').appendChild( image );
+		}
+
+		fr.readAsDataURL( file );
+	}
+
+	if (window.addEventListener) {
+		fileSelector2.addEventListener( 'change', handler2, false );
+	}
+	else{
+		fileSelector2.attachEvent( 'onchange', handler2 );
+	};
+
+	var fileSelector3 = document.getElementById( 'fileSelector3' );
+
+	function handler3( e ){
+		e = e || window.event;
+
+		if( !e.target.files ) {
+			document.getElementById('imageWrapper2').innerHTML = 'NO FILE FOUND.';
+			return;
+		}
+
+		var file = e.target.files[0];
+		var fr = new FileReader();
+
+		if (file.type.indexOf('image/') !== 0) {
+			document.getElementById('imageWrapper2').innerHTML = 'NOT VALID IMAGE FILE.';
+			return;
+		};
+
+		var image = new Image();
+		image.onload = function(){
+			window.URL.revokeObjectURL( this.src );
+		}
+
+		image.src = window.URL.createObjectURL( file );
+		document.getElementById('imageWrapper2').appendChild( image );
+
+		/*
+		fr.onload = function( e ) {
+			var image = new Image();
+			image.src = e.target.result;
+			image.width = 770;
+
+			document.getElementById('imageWrapper2').appendChild( image );
+		}
+
+		fr.readAsDataURL( file );
+		*/
+	}
+
+	if (window.addEventListener) {
+		fileSelector3.addEventListener( 'change', handler3, false );
+	}
+	else{
+		fileSelector3.attachEvent( 'onchange', handler3 );
 	};
 	
 	</script>
