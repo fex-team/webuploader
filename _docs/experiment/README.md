@@ -255,6 +255,10 @@ IE版本占有率
 
 图片预览在HTML5和Flash均可实现，同时HTML5本身有两种实现方式，因此同时参与评测。
 
-![https://raw.github.com/miller/uploader/master/_docs/experiment/preview_result.png](三中预览方式内存消耗对比结果)
+下图为使用`Flash`、`HTML5 DataURL`以及`HTML5 ObjectURL`三中方式进行图片预览时所消耗的内存比较：
 
+![三中预览方式内存消耗对比结果](preview_result.png)
 
+结果非常明显，`Flash`的优势非常大，其次是`HTML5 ObjectURL`，最差的是`HTML5 DaaURL`。
+
+此外，在时间消耗方面，几种方案差距都不大，在此不列详细数据了。
