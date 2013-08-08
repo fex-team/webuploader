@@ -255,6 +255,6 @@ IE版本占有率
 
 图片预览在HTML5和Flash均可实现，同时HTML5本身有两种实现方式，因此同时参与评测。
 
-![preview_result.png](三中预览方式内存消耗对比结果)
+![https://raw.github.com/miller/uploader/master/_docs/experiment/preview_result.png](三中预览方式内存消耗对比结果)
 
 
