@@ -72,7 +72,7 @@ IE版本占有率
 
 <table>
     <tr>
-        <th>属性</th><th>说明</th><th>IE9</th><th>IE10</th><th>Chrome</th><th>FF</th>
+        <th>属性</th><th>说明</th><th>IE9</th><th>IE10</th><th>Chrome</th><th>FF</th><th>iOS</th><th>Android</th>
     </tr>
     <tr>
         <td>name</td>
@@ -81,6 +81,8 @@ IE版本占有率
         <td>O</td>
         <td>O</td>
         <td>O</td>
+        <td>6.O</td>
+        <td>3.O</td>
     </tr>
     <tr>
         <td>lastModifiedDate</td>
@@ -89,6 +91,8 @@ IE版本占有率
         <td>O</td>
         <td>O</td>
         <td>O</td>
+        <td>6.O</td>
+        <td>3.O</td>
     </tr>
     <tr>
         <td>size</td>
@@ -97,6 +101,8 @@ IE版本占有率
         <td>O</td>
         <td>O</td>
         <td>O</td>
+        <td>6.O</td>
+        <td>3.O</td>
     </tr>
     <tr>
         <td>type</td>
@@ -105,6 +111,8 @@ IE版本占有率
         <td>O</td>
         <td>O</td>
         <td>O</td>
+        <td>6.O</td>
+        <td>3.O</td>
     </tr>
 </table>
 
@@ -112,7 +120,7 @@ IE版本占有率
 
 <table>
     <tr>
-        <th>方法</th><th>说明</th><th>IE10</th><th>Chrome</th><th>FF</th>
+        <th>方法</th><th>说明</th><th>IE10</th><th>Chrome</th><th>FF</th><th>iOS</th><th>Android</th>
     </tr>
     <tr>
         <td>readAsDataURL</td>
@@ -120,6 +128,8 @@ IE版本占有率
         <td>O</td>
         <td>O</td>
         <td>O</td>
+        <td>6.O</td>
+        <td>3.O</td>
     </tr>
     <tr>
         <td>readAsText</td>
@@ -127,6 +137,8 @@ IE版本占有率
         <td>O</td>
         <td>O</td>
         <td>O</td>
+        <td>6.O</td>
+        <td>3.O</td>
     </tr>
     <tr>
         <td>readAsArrayBuffer</td>
@@ -134,6 +146,8 @@ IE版本占有率
         <td>O</td>
         <td>O</td>
         <td>O</td>
+        <td>6.O</td>
+        <td>3.O</td>
     </tr>
     <tr>
         <td>readAsBinaryString</td>
@@ -141,6 +155,8 @@ IE版本占有率
         <td>X</td>
         <td>O</td>
         <td>O</td>
+        <td>6.O</td>
+        <td>3.O</td>
     </tr>
 </table>
 
@@ -148,19 +164,23 @@ IE版本占有率
 
 <table>
     <tr>
-        <th>方式</th><th>IE10</th><th>Chrome</th><th>FF</th>
+        <th>方式</th><th>IE10</th><th>Chrome</th><th>FF</th><th>iOS</th><th>Android</th>
     </tr>
     <tr>
         <td>readAsDataURL</td>
         <td>O</td>
         <td>O</td>
         <td>O</td>
+        <td>6.O</td>
+        <td>3.O</td>
     </tr>
     <tr>
         <td>createObjectURL</td>
         <td>O</td>
         <td>O</td>
         <td>O</td>
+        <td>6.O</td>
+        <td>4.O</td>
     </tr>
 </table>
 
@@ -168,12 +188,14 @@ IE版本占有率
 
 <table>
     <tr>
-        <th>IE10</th><th>Chrome</th><th>FF</th>
+        <th>IE10</th><th>Chrome</th><th>FF</th><th>iOS</th><th>Android</th>
     </tr>
     <tr>
         <td>O</td>
         <td>O</td>
         <td>O</td>
+        <td>6.O</td>
+        <td>3.O</td>
     </tr>
 </table>
 
@@ -181,12 +203,14 @@ IE版本占有率
 
 <table>
     <tr>
-        <th>IE10</th><th>Chrome</th><th>FF</th>
+        <th>IE10</th><th>Chrome</th><th>FF</th><th>iOS</th><th>Android</th>
     </tr>
     <tr>
         <td>O</td>
         <td>O</td>
         <td>O</td>
+        <td>6.O</td>
+        <td>3.O</td>
     </tr>
 </table>
 
@@ -254,11 +278,27 @@ IE版本占有率
 ### 预览
 
 图片预览在HTML5和Flash均可实现，同时HTML5本身有两种实现方式，因此同时参与评测。
-
 下图为使用`Flash`、`HTML5 DataURL`以及`HTML5 ObjectURL`三中方式进行图片预览时所消耗的内存比较：
+
+<table>
+    <tr>
+        <th>方式  100K    </th><th>300K   </th><th>500K   </th><th>800K   </th><th>1M </th><th>3M </th><th>5M </th><th>10M    </th><th>ALL</th>
+    </tr>
+    <tr>
+        <td>Flash   </td><td>0  </td><td>0  </td><td>0  </td><td>1  </td><td>1  </td><td>4  </td><td>7  </td><td>22 </td><td>50</td>
+    </tr>
+    <tr>
+        <td>H5 DataURL  </td><td>2.6    </td><td>12.6   </td><td>18.2   </td><td>22.7   </td><td>27.6   </td><td>122    </td><td>172    </td><td>252    </td><td>591</td>
+    </tr>
+    <tr>
+        <td>H5 ObjectURL    </td><td>1.1    </td><td>3.5    </td><td>6.1    </td><td>8.4    </td><td>9.5    </td><td>69 </td><td>75 </td><td>88 </td><td>274</td>
+    </tr>
+    <tr>
+        <td>H5 DataURL Resize</td><td>  4.2 </td><td>6.5    </td><td>12 </td><td>16 </td><td>24 </td><td>59 </td><td>105    </td><td>185    </td><td>245</td>
+    </tr>
+</table>
 
 ![三中预览方式内存消耗对比结果](preview_result.png)
 
-结果非常明显，`Flash`的优势非常大，其次是`HTML5 ObjectURL`，最差的是`HTML5 DaaURL`。
-
+结果非常明显，`Flash`的优势非常大，其次是`HTML5 ObjectURL`，再之后是`HTML5 DataURL + Resize`，而最差的是直接使用`HTML5 DataURL`。
 此外，在时间消耗方面，几种方案差距都不大，在此不列详细数据了。
