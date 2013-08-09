@@ -280,7 +280,8 @@ IE版本占有率
 ### 预览
 
 图片预览在HTML5和Flash均可实现，同时HTML5本身有两种实现方式，因此同时参与评测。
-下图为使用`Flash`、`HTML5 DataURL`以及`HTML5 ObjectURL`三中方式进行图片预览时所消耗的内存比较：
+
+下图为使用`Flash`、`HTML5 DataURL`、`HTML5 ObjectURL`、`HTML5 DataURL with resize`、`HTML5 ObjectURL with resize`五种方式进行图片预览时所消耗的内存比较：
 
 <table>
     <tr>
