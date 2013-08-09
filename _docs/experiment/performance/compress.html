@@ -32,40 +32,14 @@
 				<div class="page-header">
 				  <h1>图片压缩对比测试</h1>
 				</div>
-				<h4>readAsDataURL</h4>
+				<h4>URL.createObjectURL with resize</h4>
 				<fieldset>
 				    <div class="form-group">
 				    	<div>
-				    		<p><label for="fileSelector">Select Files</label></p>
-					    	<p><input type="file" name="file" id="fileSelector2" multiple></p>
+				    		<p><label for="fileSelector1">Select Files</label></p>
+					    	<p><input type="file" name="file" id="fileSelector1" multiple></p>
 				    	</div>
-				    	<div id="result2">
-				    		
-				    	</div>
-				    </div>
-				</fieldset>
-				<div class="splitter"></div>
-				<h4>URL.createObjectURL</h4>
-				<fieldset>
-				    <div class="form-group">
-				    	<div>
-				    		<p><label for="fileSelector">Select Files</label></p>
-					    	<p><input type="file" name="file" id="fileSelector3" multiple></p>
-				    	</div>
-				    	<div id="result3">
-				    		
-				    	</div>
-				    </div>
-				</fieldset>
-				<div class="splitter"></div>
-				<h4>readAsDataURL with Resizer</h4>
-				<fieldset>
-				    <div class="form-group">
-				    	<div>
-				    		<p><label for="fileSelector">Select Files</label></p>
-					    	<p><input type="file" name="file" id="fileSelector4" multiple></p>
-				    	</div>
-				    	<div id="result4">
+				    	<div id="result1">
 				    		
 				    	</div>
 				    </div>
@@ -79,62 +53,6 @@
 
 	window.URL = window.URL || window.webkitURL;
 
-	// readAsDataURL
-	var fs2 = document.getElementById( 'fileSelector2' );
-
-	fs2.addEventListener( 'change', function( e ){
-		var files = e.target.files;
-		var container = document.getElementById( 'result2' ); 
-
-		for (var i = 0, len = files.length; i < len; i++) {
-			var file = files[i];
-			var fr = new FileReader();
-
-			fr.onload = function( evt ) {
-				var img = new Image();
-
-				img.onload = function(){
-					img.style.height = '150px';
-
-					container.appendChild( img );
-
-					img.onload = null;
-					img = null;
-				};
-
-				img.className = 'img-thumbnail';
-				img.src = evt.target.result;
-			}
-
-			fr.readAsDataURL(file);
-		};
-	}, false );
-
-	// URL.createObjectURL
-	var fs3 = document.getElementById( 'fileSelector3' );
-
-	fs3.addEventListener( 'change', function( e ){
-  		var files = e.target.files;
-		var container = document.getElementById( 'result3' ); 
-
-		for (var i = 0, len = files.length; i < len; i++) {
-			var file = files[i];
-			var img = new Image();
-			img.src = URL.createObjectURL( file );
-			img.className = 'img-thumbnail';
-			img.style.height = '150px';
-
-			img.onload = function(){
-				URL.revokeObjectURL( this.src );
-				img.onload = null;
-				img = null;
-			};
-
-			container.appendChild( img );
-		};
-	}, false );
-
-	// readAsDataURL with resizer
 	function resizer( img, type, maxWidth, maxHeight, quality ) {
 		var w = img.width,
 			h = img.height,
@@ -175,36 +93,46 @@
     	return result;
 	}
 
-	var fs4 = document.getElementById( 'fileSelector4' );
+	var fs1 = document.getElementById( 'fileSelector1' );
 
-	fs4.addEventListener( 'change', function( e ){
+	fs1.addEventListener( 'change', function( e ){
 		var files = e.target.files;
-		var container = document.getElementById( 'result4' ); 
-		var fr = new FileReader();
+		var container = document.getElementById( 'result1' ); 
 		var i = 0;
+		var duration = 0;
 
 		function loadNext() {
-			var file = files[i++];
-			fr.onload = function( evt ) {
-				var img = new Image();
 
-				
-				img.onload = function(){
-					img.onload = function(){
-						container.appendChild( img );
-					}
-
-					img.src = resizer( img, file.type, 0, 150, 50);
-				};
-
-				img.className = 'img-thumbnail';
-				
-				img.src = evt.target.result;
-				evt = null;
-				loadNext();
+			if( i >= files.length ) {
+				return;
 			}
 
-			fr.readAsDataURL(file);
+			var file = files[i++];
+
+			var img = new Image();
+
+			img.onload = function(){
+				img.onload = function(){
+					container.appendChild( img );
+				}
+
+				URL.revokeObjectURL( img.src );
+				var start = Date.now();
+				img.src = resizer( img, file.type, 1600, 0, 100);
+				duration = (Date.now() - start);
+
+				var timingEl = document.createElement( 'div' );
+				timingEl.innerHTML = '<div>' + file.name + '耗时: ' + duration + '</div>';
+				container.appendChild( timingEl );
+
+			};
+
+			img.className = 'img-thumbnail';
+			
+			img.src = URL.createObjectURL( file );
+			
+			loadNext();
+
 		}
 
 		loadNext();

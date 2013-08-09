@@ -282,7 +282,7 @@ IE版本占有率
 
 <table>
     <tr>
-        <th>方式</th><th>  100K    </th><th>300K   </th><th>500K   </th><th>800K   </th><th>1M </th><th>3M </th><th>5M </th><th>10M    </th><th>ALL</th><th>Extrem(600M|274 Files)</th>
+        <th>方式</th><th>  100K    </th><th>300K   </th><th>500K   </th><th>800K   </th><th>1M </th><th>3M </th><th>5M </th><th>10M    </th><th>ALL</th><th>Extrem(600M / 274 Files)</th>
     </tr>
     <tr>
         <td>Flash   </td><td>1  </td><td>1  </td><td>1  </td><td>1  </td><td>1  </td><td>4  </td><td>7  </td><td>22 </td><td>50</td><td>650</td>
@@ -306,5 +306,39 @@ IE版本占有率
 测试时依次预览100K、300K、500K、800K、1M、3M、5M和10M的图片，以及批量预览上述图片，而针对`Flash`以及`ObjectURL with resize`还进行了批量274个图片文件共计600M大小的预览测试。
 
 从测试结果来看，`HTML5 ObjectURL with resize`方案最理想，尤其在批量上传时内存能够有效的回收；其次是`Flash`，但在批量上传时内存回收不明显，剩余其他几个方案内存消耗都比较大。
+
+### 压缩
+
+压缩测试是针对一张10M（5134*3456px）JPEG图片，按不同压缩质量压缩，比较压缩后的图片大小以及压缩所消耗的时间。
+
+#### HTML5 ObjectURL
+
+<table>
+    <tr>
+        <td>图片质量(%)</td><td>100</td><td>90</td><td>80</td><td>70</td><td>60</td><td>50</td>
+    </tr>
+    <tr>
+        <td>耗时(ms)</td><td>543</td><td>500</td><td>495</td><td>481</td><td>472</td><td>428</td>
+    </tr>
+    <tr>
+        <td>大小(KB)</td><td>2449</td><td>741</td><td>512</td><td>406</td><td>340</td><td>296</td>
+    </tr>
+</table>        
+
+#### Flash    
+
+<table>
+    <tr>    
+        <td>图片质量(%) </td><td>100 </td><td>90  </td><td>80  </td><td>70  </td><td>60  </td><td>50</td>
+    </tr>
+    <tr>
+        <td>耗时(ms)  </td><td>4768    </td><td>3555    </td><td>3295    </td><td>3205   </td><td> 3243    </td><td>3137</td>
+    </tr>
+    <tr>
+        <td>大小(KB)  </td><td>2945    </td><td>895 </td><td>608 </td><td>483 </td><td>407 </td><td>356</td>
+    </tr>
+</table>    
+
+从测试数据来看，相同质量下，Flash压缩后的图片比HTML5的要大20%左右，而Flash压缩所消耗的时间则是HTML5的3.5倍。
 
 
