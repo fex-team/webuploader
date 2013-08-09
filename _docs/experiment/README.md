@@ -297,7 +297,7 @@ IE版本占有率
         <td>H5 DataURL Resize</td><td>  4.2 </td><td>6.5    </td><td>12 </td><td>16 </td><td>24 </td><td>59 </td><td>105    </td><td>185    </td><td>245</td><td>N/A</td>
     </tr>
     <tr>
-    <td>H5 ObjectURL Resize</td><td> 1   </td><td>1   </td><td>1   </td><td>1.7 </td><td>1.7 </td><td>4.5 </td><td>10.5    </td><td>18  </td><td>30  </td><td>150</td><td>150</td>
+    <td>H5 ObjectURL Resize</td><td> 1   </td><td>1   </td><td>1   </td><td>1.7 </td><td>1.7 </td><td>4.5 </td><td>10.5    </td><td>18  </td><td>30  </td><td>150</td>
     </tr>
 </table>
 
