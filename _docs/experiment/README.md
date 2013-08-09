@@ -339,6 +339,14 @@ IE版本占有率
     </tr>
 </table>    
 
+压缩耗时比较
+
+![压缩耗时比较](compress_result1.png)
+
+压缩大小比较
+
+![压缩大小比较](compress_result2.png)
+
 从测试数据来看，相同质量下，Flash压缩后的图片比HTML5的要大20%左右，而Flash压缩所消耗的时间则是HTML5的3.5倍。
 
 
