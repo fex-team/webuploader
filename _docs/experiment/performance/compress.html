@@ -9,7 +9,7 @@
 
 		<title>
 		  
-		    UPLOADER-EXPERIMENT-PERFORMANCE-PREVIEW-MEMORY
+		    UPLOADER-EXPERIMENT-PERFORMANCE-COMPRESS
 		  
 		</title>
 
@@ -30,7 +30,7 @@
 			<div class="col-lg-2"></div>
 			<div class="col-lg-8">
 				<div class="page-header">
-				  <h1>图片预览对比测试</h1>
+				  <h1>图片压缩对比测试</h1>
 				</div>
 				<h4>readAsDataURL</h4>
 				<fieldset>
@@ -58,7 +58,7 @@
 				    </div>
 				</fieldset>
 				<div class="splitter"></div>
-				<h4>readAsDataURL with resize</h4>
+				<h4>readAsDataURL with Resizer</h4>
 				<fieldset>
 				    <div class="form-group">
 				    	<div>
@@ -70,22 +70,6 @@
 				    	</div>
 				    </div>
 				</fieldset>
-				<div class="splitter"></div>
-				<h4>URL.createObjectURL with resize</h4>
-				<fieldset>
-				    <div class="form-group">
-				    	<div>
-				    		<p><label for="fileSelector">Select Files</label></p>
-					    	<p><input type="file" name="file" id="fileSelector5" multiple></p>
-				    	</div>
-				    	<div id="result5">
-				    		
-				    	</div>
-				    </div>
-				</fieldset>
-				<div class="splitter"></div>
-				<h4>readAsDataURL with web worker</h4>
-				<span class="label label-danger">web worker不允许使用canvas和image，无法直接压缩。但是后续可以考虑在webworker中实现二进制压缩。</span>
 				<div class="splitter"></div>
 			</div>
 			<div class="col-lg-2"></div>
@@ -200,13 +184,7 @@
 		var i = 0;
 
 		function loadNext() {
-
-			if( i >= files.length ) {
-				return;
-			}
-
 			var file = files[i++];
-
 			fr.onload = function( evt ) {
 				var img = new Image();
 
@@ -227,47 +205,6 @@
 			}
 
 			fr.readAsDataURL(file);
-
-		}
-
-		loadNext();
-
-	}, false );
-
-	var fs5 = document.getElementById( 'fileSelector5' );
-
-	fs5.addEventListener( 'change', function( e ){
-		var files = e.target.files;
-		var container = document.getElementById( 'result5' ); 
-		var i = 0;
-
-		function loadNext() {
-
-			if( i >= files.length ) {
-				return;
-			}
-
-			var file = files[i++];
-
-			var img = new Image();
-
-			img.onload = function(){
-				img.onload = function(){
-					container.appendChild( img );
-				}
-
-				URL.revokeObjectURL( img.src );
-
-				img.src = resizer( img, file.type, 0, 150, 50);
-
-			};
-
-			img.className = 'img-thumbnail';
-			
-			img.src = URL.createObjectURL( file );
-			
-			loadNext();
-
 		}
 
 		loadNext();

@@ -81,8 +81,8 @@ IE版本占有率
         <td>O</td>
         <td>O</td>
         <td>O</td>
-        <td>6.O</td>
-        <td>3.O</td>
+        <td>6.0</td>
+        <td>3.0</td>
     </tr>
     <tr>
         <td>lastModifiedDate</td>
@@ -91,8 +91,8 @@ IE版本占有率
         <td>O</td>
         <td>O</td>
         <td>O</td>
-        <td>6.O</td>
-        <td>3.O</td>
+        <td>6.0</td>
+        <td>3.0</td>
     </tr>
     <tr>
         <td>size</td>
@@ -101,8 +101,8 @@ IE版本占有率
         <td>O</td>
         <td>O</td>
         <td>O</td>
-        <td>6.O</td>
-        <td>3.O</td>
+        <td>6.0</td>
+        <td>3.0</td>
     </tr>
     <tr>
         <td>type</td>
@@ -111,8 +111,8 @@ IE版本占有率
         <td>O</td>
         <td>O</td>
         <td>O</td>
-        <td>6.O</td>
-        <td>3.O</td>
+        <td>6.0</td>
+        <td>3.0</td>
     </tr>
 </table>
 
@@ -128,8 +128,8 @@ IE版本占有率
         <td>O</td>
         <td>O</td>
         <td>O</td>
-        <td>6.O</td>
-        <td>3.O</td>
+        <td>6.0</td>
+        <td>3.0</td>
     </tr>
     <tr>
         <td>readAsText</td>
@@ -137,8 +137,8 @@ IE版本占有率
         <td>O</td>
         <td>O</td>
         <td>O</td>
-        <td>6.O</td>
-        <td>3.O</td>
+        <td>6.0</td>
+        <td>3.0</td>
     </tr>
     <tr>
         <td>readAsArrayBuffer</td>
@@ -146,8 +146,8 @@ IE版本占有率
         <td>O</td>
         <td>O</td>
         <td>O</td>
-        <td>6.O</td>
-        <td>3.O</td>
+        <td>6.0</td>
+        <td>3.0</td>
     </tr>
     <tr>
         <td>readAsBinaryString</td>
@@ -155,8 +155,8 @@ IE版本占有率
         <td>X</td>
         <td>O</td>
         <td>O</td>
-        <td>6.O</td>
-        <td>3.O</td>
+        <td>6.0</td>
+        <td>3.0</td>
     </tr>
 </table>
 
@@ -171,16 +171,16 @@ IE版本占有率
         <td>O</td>
         <td>O</td>
         <td>O</td>
-        <td>6.O</td>
-        <td>3.O</td>
+        <td>6.0</td>
+        <td>3.0</td>
     </tr>
     <tr>
         <td>createObjectURL</td>
         <td>O</td>
         <td>O</td>
         <td>O</td>
-        <td>6.O</td>
-        <td>4.O</td>
+        <td>6.0</td>
+        <td>4.0</td>
     </tr>
 </table>
 
@@ -194,8 +194,8 @@ IE版本占有率
         <td>O</td>
         <td>O</td>
         <td>O</td>
-        <td>6.O</td>
-        <td>3.O</td>
+        <td>6.0</td>
+        <td>3.0</td>
     </tr>
 </table>
 
@@ -209,8 +209,8 @@ IE版本占有率
         <td>O</td>
         <td>O</td>
         <td>O</td>
-        <td>6.O</td>
-        <td>3.O</td>
+        <td>6.0</td>
+        <td>3.0</td>
     </tr>
 </table>
 
@@ -282,23 +282,29 @@ IE版本占有率
 
 <table>
     <tr>
-        <th>方式</th><th>  100K    </th><th>300K   </th><th>500K   </th><th>800K   </th><th>1M </th><th>3M </th><th>5M </th><th>10M    </th><th>ALL</th>
+        <th>方式</th><th>  100K    </th><th>300K   </th><th>500K   </th><th>800K   </th><th>1M </th><th>3M </th><th>5M </th><th>10M    </th><th>ALL</th><th>Extrem(600M|274 Files)</th>
     </tr>
     <tr>
-        <td>Flash   </td><td>0  </td><td>0  </td><td>0  </td><td>1  </td><td>1  </td><td>4  </td><td>7  </td><td>22 </td><td>50</td>
+        <td>Flash   </td><td>0  </td><td>0  </td><td>0  </td><td>1  </td><td>1  </td><td>4  </td><td>7  </td><td>22 </td><td>50</td><td>650</td>
     </tr>
     <tr>
-        <td>H5 DataURL  </td><td>2.6    </td><td>12.6   </td><td>18.2   </td><td>22.7   </td><td>27.6   </td><td>122    </td><td>172    </td><td>252    </td><td>591</td>
+        <td>H5 DataURL  </td><td>2.6    </td><td>12.6   </td><td>18.2   </td><td>22.7   </td><td>27.6   </td><td>122    </td><td>172    </td><td>252    </td><td>591</td><td>N/A</td>
     </tr>
     <tr>
-        <td>H5 ObjectURL    </td><td>1.1    </td><td>3.5    </td><td>6.1    </td><td>8.4    </td><td>9.5    </td><td>69 </td><td>75 </td><td>88 </td><td>274</td>
+        <td>H5 ObjectURL    </td><td>1.1    </td><td>3.5    </td><td>6.1    </td><td>8.4    </td><td>9.5    </td><td>69 </td><td>75 </td><td>88 </td><td>274</td><td>N/A</td>
     </tr>
     <tr>
-        <td>H5 DataURL Resize</td><td>  4.2 </td><td>6.5    </td><td>12 </td><td>16 </td><td>24 </td><td>59 </td><td>105    </td><td>185    </td><td>245</td>
+        <td>H5 DataURL Resize</td><td>  4.2 </td><td>6.5    </td><td>12 </td><td>16 </td><td>24 </td><td>59 </td><td>105    </td><td>185    </td><td>245</td><td>N/A</td>
+    </tr>
+    <tr>
+    <td>H5 ObjectURL Resize</td><td> 1   </td><td>1   </td><td>1   </td><td>1.7 </td><td>1.7 </td><td>4.5 </td><td>10.5    </td><td>18  </td><td>30  </td><td>150</td><td>150</td>
     </tr>
 </table>
 
-![三中预览方式内存消耗对比结果](preview_result.png)
+![五种预览方式内存消耗对比结果](preview_result.png)
 
-结果非常明显，`Flash`的优势非常大，其次是`HTML5 ObjectURL`，再之后是`HTML5 DataURL + Resize`，而最差的是直接使用`HTML5 DataURL`。
-此外，在时间消耗方面，几种方案差距都不大，在此不列详细数据了。
+测试时依次预览100K、300K、500K、800K、1M、3M、5M和10M的图片，以及批量预览上述图片，而针对`Flash`以及`ObjectURL with resize`还进行了批量274个图片文件共计600M大小的预览测试。
+
+从测试结果来看，`HTML5 ObjectURL with resize`方案最理想，尤其在批量上传时内存能够有效的回收；其次是`Flash`，但在批量上传时内存回收不明显，剩余其他几个方案内存消耗都比较大。
+
+
