@@ -315,13 +315,13 @@ IE版本占有率
 
 <table>
     <tr>
-        <td>图片质量(%)</td><td>100</td><td>90</td><td>80</td><td>70</td><td>60</td><td>50</td>
+        <th>图片质量(%)</th><td>100</td><td>90</td><td>80</td><td>70</td><td>60</td><td>50</td>
     </tr>
     <tr>
-        <td>耗时(ms)</td><td>543</td><td>500</td><td>495</td><td>481</td><td>472</td><td>428</td>
+        <th>耗时(ms)</th><td>543</td><td>500</td><td>495</td><td>481</td><td>472</td><td>428</td>
     </tr>
     <tr>
-        <td>大小(KB)</td><td>2449</td><td>741</td><td>512</td><td>406</td><td>340</td><td>296</td>
+        <th>大小(KB)</th><td>2449</td><td>741</td><td>512</td><td>406</td><td>340</td><td>296</td>
     </tr>
 </table>        
 
@@ -329,13 +329,13 @@ IE版本占有率
 
 <table>
     <tr>    
-        <td>图片质量(%) </td><td>100 </td><td>90  </td><td>80  </td><td>70  </td><td>60  </td><td>50</td>
+        <th>图片质量(%) </th><td>100 </td><td>90  </td><td>80  </td><td>70  </td><td>60  </td><td>50</td>
     </tr>
     <tr>
-        <td>耗时(ms)  </td><td>4768    </td><td>3555    </td><td>3295    </td><td>3205   </td><td> 3243    </td><td>3137</td>
+        <th>耗时(ms)  </th><td>4768    </td><td>3555    </td><td>3295    </td><td>3205   </td><td> 3243    </td><td>3137</td>
     </tr>
     <tr>
-        <td>大小(KB)  </td><td>2945    </td><td>895 </td><td>608 </td><td>483 </td><td>407 </td><td>356</td>
+        <th>大小(KB)  </th><td>2945    </td><td>895 </td><td>608 </td><td>483 </td><td>407 </td><td>356</td>
     </tr>
 </table>    
 
@@ -348,5 +348,20 @@ IE版本占有率
 ![压缩大小比较](compress_result2.png)
 
 从测试数据来看，相同质量下，Flash压缩后的图片比HTML5的要大20%左右，而Flash压缩所消耗的时间则是HTML5的3.5倍。
+
+## 评测总结
+
+ * __兼容性__：与HTML5相比，Flash兼容性在PC端全面占优，但是在移动端则正好相反；HTML5在IE10+、Chrome以及Firefox中均有较好的兼容性和稳定性；
+ * __能力__：Flash在文件上传方面的功能HTML5均能覆盖，包括多选、剪裁、压缩、预览、异步上传等，而且HTML5还能通过拖拽来选择文件，因此在这方面HTML5更具优势；
+ * __性能__：在图片预览和压缩两种操作中，无论是内存消耗还是时间消耗，HTML5的性能都由于Flash；此外，使用HTML5实现时需要载入的文件比Flash更小，在载入速度方面HTML5也占据优势；
+
+## 结论
+
+从评测数据来看，HTML5在可用的环境中各方面均优于Flash，因此对于Chrome、IE10+、Firefox、Safari等支持HTML5的环境中使用HTML5完整实现上传功能，而在不支持HTML5的环境中使用Flash。
+
+此外，尽量不考虑在HTML4环境中使用JS来实现批量的文件上传功能，一方面需要考虑各种兼容性问题，这会给稳定性带来考验；另一方面，HTML4环境中如果需要实现图片预览将会遇到很多问题，很可能需要在JS版本中维护多套实现；总之，在HTML4中实现JS的批量上传是一件投入产出比很低的事情。
+
+
+
 
 
