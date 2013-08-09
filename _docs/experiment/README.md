@@ -285,7 +285,7 @@ IE版本占有率
         <th>方式</th><th>  100K    </th><th>300K   </th><th>500K   </th><th>800K   </th><th>1M </th><th>3M </th><th>5M </th><th>10M    </th><th>ALL</th><th>Extrem(600M|274 Files)</th>
     </tr>
     <tr>
-        <td>Flash   </td><td>0  </td><td>0  </td><td>0  </td><td>1  </td><td>1  </td><td>4  </td><td>7  </td><td>22 </td><td>50</td><td>650</td>
+        <td>Flash   </td><td>1  </td><td>1  </td><td>1  </td><td>1  </td><td>1  </td><td>4  </td><td>7  </td><td>22 </td><td>50</td><td>650</td>
     </tr>
     <tr>
         <td>H5 DataURL  </td><td>2.6    </td><td>12.6   </td><td>18.2   </td><td>22.7   </td><td>27.6   </td><td>122    </td><td>172    </td><td>252    </td><td>591</td><td>N/A</td>
