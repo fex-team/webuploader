@@ -46,6 +46,22 @@ IE版本占有率
     <tr><td>IE10</td><td>&lt;5%</td></tr>
 </table>
 
+## 上传数据统计
+
+来源：百度相册
+
+<table>
+<tr>
+<th>大小区间</th><th>(0,100K)</th><th>[100K,300K)</th><th>[300K,500K)</th><th>[500K,800K)</th><th>[800K,1M)</th><th>[1M,3M)</th><th>[3M,5M)</th><th>[5M,7M)</th><th>[7M,9M)</th><th>[9M,11M)</th><th>[11M,15M)</th><th>[15M,20M)</th><th>[20M,30M)</th><th>[30M,50M)</th>
+</tr>
+<tr>
+<th>百分比</th><td>41.86%</td><td>21.25%</td><td>7.89%</td><td>5.18%</td><td>2.94%</td><td>13.04%</td><td>4.78%</td><td>2.22%</td><td>0.50%</td><td>0.16%</td><td>0.11%</td><td>0.04%</td><td>0.02%</td><td>0.01%
+</td>
+</tr>
+</table>
+
+![size_statistic](size_statistic.png)
+
 ## 功能调研
 
 ### 文件选择
