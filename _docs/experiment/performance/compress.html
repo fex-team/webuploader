@@ -118,7 +118,7 @@
 
 				URL.revokeObjectURL( img.src );
 				var start = Date.now();
-				img.src = resizer( img, file.type, 1600, 0, 100);
+				img.src = resizer( img, file.type, 1600, 0, 90);
 				duration = (Date.now() - start);
 
 				var timingEl = document.createElement( 'div' );
