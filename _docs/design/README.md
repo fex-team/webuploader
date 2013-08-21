@@ -3,7 +3,7 @@ WebUploader Design
 
 ## 命名空间
 
-全局命名空间：__WebUploader__
+全局命名空间：**WebUploader**
 
 ## 代码规范
 
@@ -30,7 +30,7 @@ WebUploader遵循以下几个设计目标：
         <th>名称</th><th>参数</th><th>返回值</th><th>说明</th>
     </tr>
     <tr>
-        <td>create</td><td>options：见[参数设计]()</td><td>WebUploader Object</td><td>实例化WebUploader，__静态方法__</td>
+        <td>create</td><td>options：见<a href="#%E5%8F%82%E6%95%B0%E8%AE%BE%E8%AE%A1">参数设计</a></td><td>WebUploader Object</td><td>实例化WebUploader，<strong>静态方法</strong></td>
     </tr>
 </table>
 
@@ -49,10 +49,10 @@ WebUploader遵循以下几个设计目标：
         <th>名称</th><th>回调参数</th><th>触发时机</th>
     </tr>
     <tr>
-        <td>onReady</td><td>N/A</td><td>当组件可用时会触发，通常是在上传按钮初始化完成时</td>
+        <td>onReady</td><td>无</td><td>当组件可用时会触发，通常是在上传按钮初始化完成时</td>
     </tr>
     <tr>
-        <td>onStartSelect</td><td>N/A</td><td>当用户开始选择文件时，实际触发时机为用户点击了文件选择按钮</td>
+        <td>onStartSelect</td><td>无</td><td>当用户开始选择文件时，实际触发时机为用户点击了文件选择按钮</td>
     </tr>
     <tr>
         <td>onBeforeFileQueue</td><td>file</td><td>当某个文件被加入队列前，如果回调返回false则file不会被加入到队列</td>
@@ -63,8 +63,8 @@ WebUploader遵循以下几个设计目标：
     <tr>
         <td>onEndSelect</td>
         <td>
-            totalNumSelected: 选择的文件总数
-            queuedNum: 成功加入队列的文件数
+            totalNumSelected: 选择的文件总数<br>
+            queuedNum: 成功加入队列的文件数<br>
             totalNumInQueue: 对了中的文件总数
         </td>
         <td>当所有选择的文件都完成过滤或加入队列后</td>
@@ -78,8 +78,8 @@ WebUploader遵循以下几个设计目标：
     <tr>
         <td>onUploadProgress</td>
         <td>
-            file: 当前文件
-            bytesComplete: 已上传字节数
+            file: 当前文件<br>
+            bytesComplete: 已上传字节数<br>
             bytesTotal: 字节总数
         </td>
         <td>文件上传过程中</td>
@@ -87,7 +87,7 @@ WebUploader遵循以下几个设计目标：
     <tr>
         <td>onUploadSuccess</td>
         <td>
-            file: 当前文件
+            file: 当前文件<br>
             serverData: 服务器端返回的数据
         </td>
         <td>文件上传完成</td>
@@ -153,25 +153,25 @@ WebUploader遵循以下几个设计目标：
     <tr>
         <td>upload</td>
         <td>file: 指定上传文件，如果不指定将直接从队列头部开始上传</td>
-        <td>N/A</td>
+        <td>无</td>
         <td>开始上传文件</td>
     </tr>
     <tr>
         <td>cache</td>
         <td>file: 指定取消上传的文件</td>
-        <td>N/A</td>
+        <td>无</td>
         <td>取消某个文件的上传，被取消文件将从队列中删除。</td>
     </tr>
     <tr>
         <td>stop</td>
-        <td>N/A</td>
-        <td>N/A</td>
+        <td>无</td>
+        <td>无</td>
         <td>中止组件的上传过程。</td>
     </tr>
     <tr>
         <td>destroy</td>
-        <td>N/A</td>
-        <td>N/A</td>
+        <td>无</td>
+        <td>无</td>
         <td>组件销毁</td>
     </tr>
     <tr>
@@ -179,7 +179,7 @@ WebUploader遵循以下几个设计目标：
         <td>
             file: WebUploader.File实例
         </td>
-        <td>N/A</td>
+        <td>无</td>
         <td>添加文件到队列尾部。</td>
     </tr>
 </table>
@@ -198,30 +198,28 @@ WebUploader遵循以下几个设计目标：
     </tr>
     <tr>
         <td>getStats</td>
-        <td>N/A</td>
+        <td>无</td>
         <td>
-            Object:
-            <ul>
-            <li>successNum: 成功上传文件数</li>
-            <li>queueFailNum: 未进入队列文件数</li>
-            <li>cancelNum: 取消上传文件数</li>
-            <li>uploadFailNum: 上传失败文件数</li>
-            <li>queueNum: 当前队列中的文件数</li>
-            </ul>
+            Object:<br>
+            successNum: 成功上传文件数<br>
+            queueFailNum: 未进入队列文件数<br>
+            cancelNum: 取消上传文件数<br>
+            uploadFailNum: 上传失败文件数<br>
+            queueNum: 当前队列中的文件数
         </td>
         <td>获取当前上传状态数据。</td>
     </tr>
     <tr>
         <td>isInProgress</td>
-        <td>N/A</td>
+        <td>无</td>
         <td>状态</td>
         <td>获取是否正在上传的状态。</td>
     </tr>
     <tr>
         <td>getImageThumbnail</td>
         <td>
-            id: 文件ID
-            width: 缩略图宽度
+            id: 文件ID<br>
+            width: 缩略图宽度<br>
             height: 缩略图高度
         </td>
         <td>
@@ -241,31 +239,31 @@ WebUploader遵循以下几个设计目标：
         <td>server</td>
         <td>服务器URL</td>
         <td>是</td>
-        <td>N/A</td>
+        <td>无</td>
     </tr>
     <tr>
         <td>pick</td>
         <td>
-            包括两种类型：
-            * 如果是字符串则表示对话框式文件选择的触发按钮ID；
-            * 如果是对象则包括两个字段：
-                * multiple：是否允许选择多个文件，默认为true
-                * id: 按钮ID
+            包括两种类型：<br>
+            如果是字符串则表示对话框式文件选择的触发按钮ID；<br>
+            如果是对象则包括两个字段：<br>
+                multiple：是否允许选择多个文件，默认为true<br>
+                id: 按钮ID
         </td>
         <td>否</td>
-        <td>N/A</td>
+        <td>无</td>
     </tr>
     <tr>
         <td>dnd</td>
         <td>拖拽式文件选择的目标元素ID</td>
         <td>否</td>
-        <td>N/A</td>
+        <td>无</td>
     </tr>
     <tr>
         <td>paste</td>
         <td>粘贴式文件选择的目标元素ID</td>
         <td>否</td>
-        <td>N/A</td>
+        <td>无</td>
     </tr>
     <tr>
         <td>duplicate</td>
@@ -283,19 +281,19 @@ WebUploader遵循以下几个设计目标：
         <td>formData</td>
         <td>发送HTTP请求时携带的自定义数据</td>
         <td>否</td>
-        <td>N/A</td>
+        <td>无</td>
     </tr>
     <tr>
         <td>fileSizeLimit</td>
         <td>文件大小限制，允许的单位包括B/K/M以及G，例如'1M'</td>
         <td>否</td>
-        <td>N/A</td>
+        <td>无</td>
     </tr>
     <tr>
         <td>fileNumLimit</td>
         <td>文件总数限制，包括成功上传的数量以及当前队列中的数量。</td>
         <td>否</td>
-        <td>N/A</td>
+        <td>无</td>
     </tr>
     <tr>
         <td>fileTypeExts</td>
@@ -318,19 +316,19 @@ WebUploader遵循以下几个设计目标：
     <tr>
         <td>resize</td>
         <td>
-        是否启用图片压缩，参数为对象，包括：
-        * width: 目标最大宽度
-        * height: 目标最大高度
-        * quality: 图片压缩质量为0 - 100，默认为90
+        是否启用图片压缩，参数为对象，包括：<br>
+        width: 目标最大宽度<br>
+        height: 目标最大高度<br>
+        quality: 图片压缩质量为0 - 100，默认为90
         </td>
         <td>否</td>
-        <td>N/A</td>
+        <td>无</td>
     </tr>
     <tr>
         <td>swf</td>
         <td>使用Flash Runtime时Flash的URL</td>
         <td>否<sup>1</sup></td>
-        <td>N/A</td>
+        <td>无</td>
     </tr>
     <tr>
         <td>threads</td>
@@ -421,22 +419,22 @@ File用于封装文件信息，它位于顶层命名空间，跨Runtime通用类
     <tr>
         <td>File</td>
         <td>
-            1. 如果使用HTML5 File构造则只需要传入一个参数
-            html5file
+            1. 如果使用HTML5 File构造则只需要传入一个参数<br>
+            html5file<br>
 
-            2. 如果使用非HTML5 File构造，例如BASE64串则应该提供完整信息
-            options
-                name
-                size
-                type
-                lastModifiedDate
+            2. 如果使用非HTML5 File构造，例如BASE64串则应该提供完整信息<br>
+            options<br>
+                name<br>
+                size<br>
+                type<br>
+                lastModifiedDate<br>
                 source
         </td>
         <td>构造器</td>
     </tr>
     <tr>
         <td>destroy</td>
-        <td>N/A</td>
+        <td>无</td>
         <td>销毁对象，结束引用，释放内存。</td>
     </tr>
 </table>
