@@ -458,6 +458,79 @@ File用于封装文件信息，它位于顶层命名空间，跨Runtime通用类
     </tr>
 </table>
 
+### Queue
+
+负责实现队列，跨Runtime通用
+
+#### 方法
+
+<table>
+    <tr>
+        <th>名称</th><th>参数</th><th>说明</th>
+    </tr>
+    <tr>
+        <td>addFile</td>
+        <td>
+            <ul>
+                <li><code>file</code> File实例</li>
+            </ul>
+        </td>
+        <td>添加文件到队列</td>
+    </tr>
+    <tr>
+        <td>removeFile</td>
+        <td>
+            <ul>
+                <li><code>fileId</code> File实例中的Id</li>
+            </ul>
+        </td>
+        <td>删除文件</td>
+    </tr>
+    <tr>
+        <td>uploadFile</td>
+        <td>
+            <ul>
+                <li><code>fileId</code> File实例中的Id</li>
+            </ul>
+        </td>
+        <td>上传指定文件</td>
+    </tr>
+    <tr>
+        <td>cancelFile</td>
+        <td>
+            <ul>
+                <li><code>fileId</code> File实例中的Id</li>
+            </ul>
+        </td>
+        <td>取消上传指定文件</td>
+    </tr>
+    <tr>
+        <td>getFile</td>
+        <td>
+            <ul>
+                <li><code>fileId</code> File实例中的Id</li>
+            </ul>
+        </td>
+        <td>根据ID获取文件File实例</td>
+    </tr>
+    <tr>
+        <td>upload</td>
+        <td>
+            无
+        </td>
+        <td>根据并发数, 按顺序上传队列中的文件</td>
+    </tr>
+    <tr>
+        <td>getFile</td>
+        <td>
+            <ul>
+                <li><code>status</code> 文件状态</li>
+            </ul>
+        </td>
+        <td>获取所有文件列表，可以根据文件状态过滤</td>
+    </tr>
+</table>
+
 ## 按需定制
 
 WebUploader的实现考虑了众多的实际需求，是一个比较通用的实现，但是通用就意味了庞大和冗余，因为很多场景并不需要所有的功能。因此在设计时需要考虑模块的拆分和组合问题。
