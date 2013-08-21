@@ -377,7 +377,7 @@ WebUploader按以下方式划分功能模块：
     |--RuntimeFlash：Flash运行时
        |--TODO
 
-<!--
+
 ### Uploader
 
 外观类，对外的门面类，不负责具体实现，基本上是中转其他类的方法。
@@ -491,7 +491,7 @@ WebUploader按以下方式划分功能模块：
         <td>创造缩略图，返回缩略图BASE64 String</td>
     </tr>
 </table>
--->
+
 
 ### File
 
