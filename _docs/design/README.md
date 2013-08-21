@@ -683,6 +683,23 @@ File用于封装文件信息，它位于顶层命名空间，跨Runtime通用类
         </td>
         <td>调用功能。</td>
     </tr>
+    <tr>
+        <td>::register</td>
+        <td>
+            <ul>
+                <li><code>runtime</code>能力名称</li>
+                <li><code>capObject</code>能力对象</li>
+            </ul>
+        </td>
+        <td>静态方法，注册什么runtime有什么能力</td>
+    </tr>
+    <tr>
+        <td>::init</td>
+        <td>
+            无
+        </td>
+        <td>根据用户需求，选择runtime</td>
+    </tr>
 </table>
 
 ## 按需定制
