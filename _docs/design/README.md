@@ -201,12 +201,13 @@ WebUploader遵循以下几个设计目标：
         <td>N/A</td>
         <td>
             Object:
-            
-            * successNum: 成功上传文件数
-            * queueFailNum: 未进入队列文件数
-            * cancelNum: 取消上传文件数
-            * uploadFailNum: 上传失败文件数
-            * queueNum: 当前队列中的文件数
+            <ul>
+            <li>successNum: 成功上传文件数</li>
+            <li>queueFailNum: 未进入队列文件数</li>
+            <li>cancelNum: 取消上传文件数</li>
+            <li>uploadFailNum: 上传失败文件数</li>
+            <li>queueNum: 当前队列中的文件数</li>
+            </ul>
         </td>
         <td>获取当前上传状态数据。</td>
     </tr>
