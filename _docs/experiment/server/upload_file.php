@@ -1,8 +1,6 @@
 <?php
 @header("Content-Type:application/json");
 
-var_dump($HTTP_RAW_POST_DATA);
-
 $result = array();
 
 if (empty($_FILES) || $_FILES["file"]["error"] > 0) {
