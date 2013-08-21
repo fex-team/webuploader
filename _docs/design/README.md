@@ -1,9 +1,29 @@
 WebUploader Design
 ==================
 
+* [设计目标](#%E8%AE%BE%E8%AE%A1%E7%9B%AE%E6%A0%87)
+* [API设计](#api%E8%AE%BE%E8%AE%A1)
+    * [实例创建API](#%E5%AE%9E%E4%BE%8B%E5%88%9B%E5%BB%BAapi)
+    * [事件回调API](#%E4%BA%8B%E4%BB%B6%E5%9B%9E%E8%B0%83api)
+        * [错误码表](#%E9%94%99%E8%AF%AF%E7%A0%81%E8%A1%A8)
+    * [流程操作API](#%E6%B5%81%E7%A8%8B%E6%93%8D%E4%BD%9Capi)
+    * [数据获取API](#%E6%95%B0%E6%8D%AE%E8%8E%B7%E5%8F%96api)
+* [参数设计](#%E5%8F%82%E6%95%B0%E8%AE%BE%E8%AE%A1)
+* [模块设计](#%E6%A8%A1%E5%9D%97%E8%AE%BE%E8%AE%A1)
+    * [File](#file)
+        * [属性](#%E5%B1%9E%E6%80%A7)
+        * [方法](#%E6%96%B9%E6%B3%95)
+* [按需定制](#%E6%8C%89%E9%9C%80%E5%AE%9A%E5%88%B6)
+* [异步加载](#%E5%BC%82%E6%AD%A5%E5%8A%A0%E8%BD%BD)
+* [高性能](#%E9%AB%98%E6%80%A7%E8%83%BD)
+    * [高效压缩](#%E9%AB%98%E6%95%88%E5%8E%8B%E7%BC%A9)
+    * [并发上传](#%E5%B9%B6%E5%8F%91%E4%B8%8A%E4%BC%A0)
+    * [合并上传](#%E5%90%88%E5%B9%B6%E4%B8%8A%E4%BC%A0)
+* [UI Widgets](#ui-widgets)
+
 ## 命名空间
 
-全局命名空间：**WebUploader**
+全局命名空间：WebUploader
 
 ## 代码规范
 
@@ -387,7 +407,7 @@ File用于封装文件信息，它位于顶层命名空间，跨Runtime通用类
     </tr>
 </table>
 
-文件状态
+#### 状态
 
 <table>
     <tr>
@@ -423,7 +443,6 @@ File用于封装文件信息，它位于顶层命名空间，跨Runtime通用类
             html5file<br>
 
             2. 如果使用非HTML5 File构造，例如BASE64串则应该提供完整信息<br>
-            options<br>
                 name<br>
                 size<br>
                 type<br>
