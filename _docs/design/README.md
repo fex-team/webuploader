@@ -377,6 +377,7 @@ WebUploader按以下方式划分功能模块：
     |--RuntimeFlash：Flash运行时
        |--TODO
 
+<!--
 ### Uploader
 
 外观类，对外的门面类，不负责具体实现，基本上是中转其他类的方法。
@@ -490,7 +491,7 @@ WebUploader按以下方式划分功能模块：
         <td>创造缩略图，返回缩略图BASE64 String</td>
     </tr>
 </table>
-
+-->
 
 ### File
 
@@ -643,6 +644,44 @@ File用于封装文件信息，它位于顶层命名空间，跨Runtime通用类
             </ul>
         </td>
         <td>获取所有文件列表，可以根据文件状态过滤</td>
+    </tr>
+</table>
+
+### Runtime
+
+运行时， 用来对具体能力的实现。如：图片选择，压缩，上传。
+
+####方法
+<table>
+    <tr>
+        <th>名称</th><th>参数</th><th>说明</th>
+    </tr>
+    <tr>
+        <td>can</td>
+        <td>
+            <code>cap</code>能力名称
+        </td>
+        <td>能力检测</td>
+    </tr>
+    <tr>
+        <td>register</td>
+        <td>
+            <ul>
+                <li><code>cap</code>能力名称</li>
+                <li><code>factory</code>能力实现的方法</li>
+            </ul>
+        </td>
+        <td>注册能力</td>
+    </tr>
+    <tr>
+        <td>invoke</td>
+        <td>
+            <ul>
+                <li><code>cap</code>能力名称</li>
+                <li><code>args...</code>参数</li>
+            </ul>
+        </td>
+        <td>调用功能。</td>
     </tr>
 </table>
 
