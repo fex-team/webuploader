@@ -1,0 +1,25 @@
+{
+  "name": "WebUploader",
+  "version": "0.1.0",
+  "description": "",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/gmuteam/webuploader.git"
+  },
+  "keywords": [
+    "uploader",
+    "html5",
+    "flash"
+  ],
+  "author": "gmuteam",
+  "license": "BSD",
+  "gitHead": "7f92712020f66940ead10f73c16a03305b03259f",
+  "readmeFilename": "README.md",
+  "devDependencies": {
+    "grunt": "~0.4.1",
+    "grunt-contrib-concat": "~0.3.0",
+    "grunt-size": "~0.1.0",
+    "grunt-jsbint": "~0.0.4",
+    "grunt-contrib-watch": "~0.4.4"
+  }
+}
