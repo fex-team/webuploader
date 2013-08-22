@@ -1,2 +1,2 @@
-uploader
+WebUploader
 ========
