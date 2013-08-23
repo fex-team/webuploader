@@ -10,9 +10,10 @@ WebUploader Design
     * [数据获取API](#%E6%95%B0%E6%8D%AE%E8%8E%B7%E5%8F%96api)
 * [参数设计](#%E5%8F%82%E6%95%B0%E8%AE%BE%E8%AE%A1)
 * [模块设计](#%E6%A8%A1%E5%9D%97%E8%AE%BE%E8%AE%A1)
+    * [Uploader](#uploader)
     * [File](#file)
-        * [属性](#%E5%B1%9E%E6%80%A7)
-        * [方法](#%E6%96%B9%E6%B3%95)
+    * [Queue](#queue)
+    * [Runtime](#runtime)
 * [按需定制](#%E6%8C%89%E9%9C%80%E5%AE%9A%E5%88%B6)
 * [异步加载](#%E5%BC%82%E6%AD%A5%E5%8A%A0%E8%BD%BD)
 * [高性能](#%E9%AB%98%E6%80%A7%E8%83%BD)
@@ -377,6 +378,122 @@ WebUploader按以下方式划分功能模块：
     |--RuntimeFlash：Flash运行时
        |--TODO
 
+
+### Uploader
+
+外观类，对外的门面类，不负责具体实现，基本上是中转其他类的方法。
+
+#### 方法
+
+<table>
+    <tr>
+        <th>名称</th><th>参数</th><th>说明</th>
+    </tr>
+    <tr>
+        <td>Uploader</td>
+        <td>
+            <li><code>options</code> 配置项。</li>
+        </td>
+        <td>构造器</td>
+    </tr>
+    <tr>
+        <td>addFile</td>
+        <td>
+            <ul>
+                <li><code>file</code> File实例</li>
+            </ul>
+        </td>
+        <td>添加文件到队列</td>
+    </tr>
+    <tr>
+        <td>removeFile</td>
+        <td>
+            <ul>
+                <li><code>fileId</code> File实例中的Id</li>
+            </ul>
+        </td>
+        <td>删除文件</td>
+    </tr>
+    <tr>
+        <td>uploadFile</td>
+        <td>
+            <ul>
+                <li><code>fileId</code> File实例中的Id</li>
+            </ul>
+        </td>
+        <td>上传指定文件</td>
+    </tr>
+    <tr>
+        <td>cancelFile</td>
+        <td>
+            <ul>
+                <li><code>fileId</code> File实例中的Id</li>
+            </ul>
+        </td>
+        <td>取消上传指定文件</td>
+    </tr>
+    <tr>
+        <td>getFile</td>
+        <td>
+            <ul>
+                <li><code>fileId</code> File实例中的Id</li>
+            </ul>
+        </td>
+        <td>根据ID获取文件File实例</td>
+    </tr>
+    <tr>
+        <td>upload</td>
+        <td>
+            无
+        </td>
+        <td>根据并发数, 按顺序上传队列中的文件</td>
+    </tr>
+    <tr>
+        <td>getFiles</td>
+        <td>
+            <ul>
+                <li><code>status</code> 文件状态</li>
+            </ul>
+        </td>
+        <td>获取所有文件列表，可以根据文件状态过滤</td>
+    </tr>
+    <tr>
+        <td>getStatus</td>
+        <td>
+
+        </td>
+        <td>
+            返回状态信息。
+
+            Object:
+            <ul>
+                <li><code>successNum</code>: 成功上传文件数</li>
+                <li><code>queueFailNum</code>: 未进入队列文件数</li>
+                <li><code>cancelNum</code>: 取消上传文件数</li>
+                <li><code>uploadFailNum</code>: 上传失败文件数</li>
+                <li><code>queueNum</code>: 当前队列中的文件数</li>
+            </ul>
+    </td>
+    </tr>
+    <tr>
+        <td>isInProgress</td>
+        <td>
+
+        </td>
+        <td>是否在上传中。</td>
+    </tr>
+    <tr>
+        <td>makeThumb</td>
+        <td>
+            <ul>
+                <li><code>fileId</code> File实例中的Id</li>
+            </ul>
+        </td>
+        <td>创造缩略图，返回缩略图BASE64 String</td>
+    </tr>
+</table>
+
+
 ### File
 
 File用于封装文件信息，它位于顶层命名空间，跨Runtime通用类。
@@ -455,6 +572,134 @@ File用于封装文件信息，它位于顶层命名空间，跨Runtime通用类
         <td>destroy</td>
         <td>无</td>
         <td>销毁对象，结束引用，释放内存。</td>
+    </tr>
+</table>
+
+### Queue
+
+负责实现队列，跨Runtime通用
+
+#### 方法
+
+<table>
+    <tr>
+        <th>名称</th><th>参数</th><th>说明</th>
+    </tr>
+    <tr>
+        <td>addFile</td>
+        <td>
+            <ul>
+                <li><code>file</code> File实例</li>
+            </ul>
+        </td>
+        <td>添加文件到队列</td>
+    </tr>
+    <tr>
+        <td>removeFile</td>
+        <td>
+            <ul>
+                <li><code>fileId</code> File实例中的Id</li>
+            </ul>
+        </td>
+        <td>删除文件</td>
+    </tr>
+    <tr>
+        <td>uploadFile</td>
+        <td>
+            <ul>
+                <li><code>fileId</code> File实例中的Id</li>
+            </ul>
+        </td>
+        <td>上传指定文件</td>
+    </tr>
+    <tr>
+        <td>cancelFile</td>
+        <td>
+            <ul>
+                <li><code>fileId</code> File实例中的Id</li>
+            </ul>
+        </td>
+        <td>取消上传指定文件</td>
+    </tr>
+    <tr>
+        <td>getFile</td>
+        <td>
+            <ul>
+                <li><code>fileId</code> File实例中的Id</li>
+            </ul>
+        </td>
+        <td>根据ID获取文件File实例</td>
+    </tr>
+    <tr>
+        <td>upload</td>
+        <td>
+            无
+        </td>
+        <td>根据并发数, 按顺序上传队列中的文件</td>
+    </tr>
+    <tr>
+        <td>getFiles</td>
+        <td>
+            <ul>
+                <li><code>status</code> 文件状态</li>
+            </ul>
+        </td>
+        <td>获取所有文件列表，可以根据文件状态过滤</td>
+    </tr>
+</table>
+
+### Runtime
+
+运行时， 用来对具体能力的实现。如：图片选择，压缩，上传。
+
+####方法
+<table>
+    <tr>
+        <th>名称</th><th>参数</th><th>说明</th>
+    </tr>
+    <tr>
+        <td>can</td>
+        <td>
+            <code>cap</code>能力名称
+        </td>
+        <td>能力检测</td>
+    </tr>
+    <tr>
+        <td>register</td>
+        <td>
+            <ul>
+                <li><code>cap</code>能力名称</li>
+                <li><code>factory</code>能力实现的方法</li>
+            </ul>
+        </td>
+        <td>注册能力</td>
+    </tr>
+    <tr>
+        <td>invoke</td>
+        <td>
+            <ul>
+                <li><code>cap</code>能力名称</li>
+                <li><code>args...</code>参数</li>
+            </ul>
+        </td>
+        <td>调用功能。</td>
+    </tr>
+    <tr>
+        <td>::register</td>
+        <td>
+            <ul>
+                <li><code>runtime</code>能力名称</li>
+                <li><code>capObject</code>能力对象</li>
+            </ul>
+        </td>
+        <td>静态方法，注册什么runtime有什么能力</td>
+    </tr>
+    <tr>
+        <td>::init</td>
+        <td>
+            无
+        </td>
+        <td>根据用户需求，选择runtime</td>
     </tr>
 </table>
 
