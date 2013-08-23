@@ -2,6 +2,7 @@ WebUploader Design
 ==================
 
 * [设计目标](#%E8%AE%BE%E8%AE%A1%E7%9B%AE%E6%A0%87)
+* [整体结构](#%E6%95%B4%E4%BD%93%E7%BB%93%E6%9E%84)
 * [API设计](#api%E8%AE%BE%E8%AE%A1)
     * [实例创建API](#%E5%AE%9E%E4%BE%8B%E5%88%9B%E5%BB%BAapi)
     * [事件回调API](#%E4%BA%8B%E4%BB%B6%E5%9B%9E%E8%B0%83api)
@@ -14,6 +15,7 @@ WebUploader Design
     * [File](#file)
     * [Queue](#queue)
     * [Runtime](#runtime)
+* [流程](#%E6%B5%81%E7%A8%8B)
 * [按需定制](#%E6%8C%89%E9%9C%80%E5%AE%9A%E5%88%B6)
 * [异步加载](#%E5%BC%82%E6%AD%A5%E5%8A%A0%E8%BD%BD)
 * [高性能](#%E9%AB%98%E6%80%A7%E8%83%BD)
@@ -39,6 +41,18 @@ WebUploader遵循以下几个设计目标：
  * 自适配：不同的端环境具有不同的能力，应避免开发者自己进行适配，包括针对不同端环境实现不同的`Runtime`并在运行时自动适配；
  * 高性能：包括但不限于高效压缩、并发上传、打包上传；
  * 易用性：包括但不限于简单易用的API、简洁的必填配置、完整的UI组件、丰富的文档、实用的工具；
+
+## 整体结构
+
+![constructional_detail](constructional_detail.png)
+
+目前各种端环境差异很大，不同的端具有的文件上传的相关能力也不一致，因此WebUploader抽象出了一个Runtime的概念，它是一个文件上传应该拥有的各种能力的集合。而这些具体怎么实现则根据端的能力来决定。
+
+例如，支持HTML5的端将使用HTML5来实现Runtime，而其他的则使用Flash来实现或者还可以使用HTML4来实现。
+
+开放给开发者的接口则是基于Runtime的各种功能模块来实现的，而至于使用哪个Runtime则是自动完成适配的。
+
+基于开放接口，后续还会基于jQuery和Bootstrap来开发相应的插件。
 
 ## API设计
 
@@ -360,6 +374,34 @@ WebUploader遵循以下几个设计目标：
 </table>
 
 <sup>1</sup>: 使用Flash Runtime时为必填；
+
+### 示例
+
+初始化
+
+    var wu = WebUploader.create({
+        server: '/file.php',
+        picker: 'selectFileButton'
+    });
+
+监听事件
+
+    // 文件成功加入队列
+    wu.onFileQueued( function( file ){
+        // UI上的文件列表可以在此构建
+
+        // 获取缩略图
+        var imgsrc = wu.getImageThumbnail( file, 150, 150 );
+        // 显示缩略图等
+    });
+    // 文件上传进度
+    wu.onUploadProgress( function( file, bytesComplete, bytesTotal ){
+        // UI上提现在计算并显示文件的上传进度
+    });
+    // 文件上传完成
+    wu.onUploadSuccess( function( file, serverData ) {
+        // 例如从serverData可以获取到服务器端状态以及图片ID等
+    } );
 
 ## 模块设计
 
@@ -702,6 +744,12 @@ File用于封装文件信息，它位于顶层命名空间，跨Runtime通用类
         <td>根据用户需求，选择runtime</td>
     </tr>
 </table>
+
+## 流程
+
+见图。
+
+![procedure](procedure.png)
 
 ## 按需定制
 
