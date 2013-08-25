@@ -1,23 +1,31 @@
 module.exports = function(grunt) {
-
     'use strict';
 
     grunt.initConfig({
         pkg: grunt.file.readJSON('package.json'),
 
         concat: {
+            options: {
+                banner: '/* WebUploader <%= pkg.version %> */\n(function( window, undefined ) {\n',
+                footer: '\n})( this );',
+                separator: '\n\n',
+                process: function( src, filepath ) {
+                    return src.replace( /@version@/g, grunt.config.get('pkg.version') )
+                            .replace( /^/gm, '    ');
+                }
+            },
             all: {
-                options: {
-                    banner: '/* WebUploader <%= pkg.version %> */\n'
-                },
-
                 src: [
-                    'src/intro.js',
-                    'src/core/base.js',
-                    'src/core/jq-bridge.js',
-                    'src/core/**/*.js',
-                    'src/exports.js',
-                    'src/outro.js'
+                    'src/amd.js',
+                    'src/jq-bridge.js',
+                    'src/base.js',
+                    'src/core/mediator.js',
+                    'src/core/runtime.js',
+                    'src/core/uploader.js',
+                    'src/core/runtime/html5/runtime.js',
+                    'src/core/runtime/html5/*.js',
+                    '!src/exports.js',
+                    'src/exports.js'
                 ],
 
                 dest: 'dist/webuploader.js'
@@ -45,7 +53,7 @@ module.exports = function(grunt) {
                 jshintrc: '.jshintrc'
             },
 
-            all: ['src/**/*.js']
+            all: ['src/**/*.js', '!src/intro.js', '!src/outro.js']
         },
 
         size: {
