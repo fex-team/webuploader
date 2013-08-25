@@ -1,12 +1,21 @@
 /**
  * @file 暴露变量给外部使用。
  */
-if ( typeof module === 'object' && typeof module.exports === 'object' ) {
-    module.exports = WU;
-} else {
-    window[ exportName ] = WU;
+require( [
+        'WebUploader/Base'
+    ], function( Base ) {
 
-    if ( typeof define === 'function' && define.amd ) {
-        define( 'jquery', [], function () { return WU; } );
+    var exportName, origin;
+
+    if ( typeof module === 'object' && typeof module.exports === 'object' ) {
+        module.exports = Base;
+    } else {
+        exportName = 'WebUploader';
+        origin = window[ exportName ];
+        window[ exportName ] = Base;
+
+        window[ exportName ].noConflict = function() {
+            window[ exportName ] = origin;
+        }
     }
-}
+} );
