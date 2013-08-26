@@ -1,8 +1,7 @@
 /**
- * [description]
- * @return {[type]} [description]
+ * @fileOverview Mediator
  */
-define( 'WebUploader/core/Mediator', [ 'WebUploader/Base' ], function( Base ) {
+define( 'webuploader/core/mediator', [ 'webuploader/base' ], function( Base ) {
     var $ = Base.$,
         slice = [].slice,
         separator = /\s+/,
@@ -189,6 +188,7 @@ define( 'WebUploader/core/Mediator', [ 'WebUploader/Base' ], function( Base ) {
 
                 while ( ++i < len ) {
                     handler = events[ i ];
+
                     if ( handler.cb.apply( handler.ctx2, args ) === false ) {
                         break;
                     }
