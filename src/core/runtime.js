@@ -2,13 +2,15 @@
  * @fileOverview Runtime管理器，负责Runtime的选择。
  * @import base.js
  */
-define( 'WebUploader/core/Runtime', [ 'WebUploader/Base',
-        'WebUploader/core/Mediator' ], function( Base, Mediator ) {
+define( 'webuploader/core/runtime', [ 'webuploader/base',
+        'webuploader/core/mediator' ], function( Base, Mediator ) {
+
     var $ = Base.$,
         factories = {},
         separator = /\s*,\s*/,
         runtime;
 
+    /* jshint camelcase: false */
     function Runtime( opts, type, caps ) {
         var me = this,
             klass = me.constructor;
@@ -58,7 +60,7 @@ define( 'WebUploader/core/Runtime', [ 'WebUploader/Base',
          * @method capable
          * @return {Boolean}
          */
-        capable: function( requiredCaps ) {
+        capable: function(/* requiredCaps */) {
             return true;
         },
 
@@ -97,7 +99,7 @@ define( 'WebUploader/core/Runtime', [ 'WebUploader/Base',
 
                 component.getRuntime = function() {
                     return me;
-                }
+                };
                 pool[ name ] = component;
             }
 
@@ -106,7 +108,7 @@ define( 'WebUploader/core/Runtime', [ 'WebUploader/Base',
 
         destory: function() {
         }
-    }
+    };
 
     // 使Runtime具有事件能力
     Mediator.installTo( Runtime.prototype );
@@ -166,7 +168,7 @@ define( 'WebUploader/core/Runtime', [ 'WebUploader/Base',
         pool.push( fn );
     };
 
-    Runtime.getDetects = function( fn ) {
+    Runtime.getDetects = function() {
         return this.detects || [];
     };
 
