@@ -19,8 +19,6 @@ define( 'WebUploader/core/runtime/html5/FilePicker', [
         this.options = $.extend( {}, defaultOpts, opts );
     }
 
-    Mediator.installTo( FilePicker.prototype );
-
     $.extend( FilePicker.prototype, {
 
         init: function() {
@@ -60,7 +58,7 @@ define( 'WebUploader/core/runtime/html5/FilePicker', [
 
     // 告诉Runtime，支持哪些能力
     // 这个方法会在选择时执行，好处是按需执行。
-    Html5Runtime.capable(function() {
+    Html5Runtime.addDetect(function() {
         // todo 需要运行时检测。
 
         return {
