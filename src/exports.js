@@ -1,10 +1,7 @@
 /**
  * @file 暴露变量给外部使用。
  */
-require( [
-        'WebUploader/Base'
-    ], function( Base ) {
-
+require( [ 'webuploader/base' ], function( Base ) {
     var exportName, origin;
 
     if ( typeof module === 'object' && typeof module.exports === 'object' ) {
@@ -16,6 +13,6 @@ require( [
 
         window[ exportName ].noConflict = function() {
             window[ exportName ] = origin;
-        }
+        };
     }
 } );

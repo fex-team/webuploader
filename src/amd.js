@@ -48,8 +48,9 @@ var amd = (function( exports, undefined ) {
         return {
             require: require,
             define: define
-        }
+        };
     })( window ),
 
+    /* jshint unused: false */
     require = amd.require,
     define = amd.define;
