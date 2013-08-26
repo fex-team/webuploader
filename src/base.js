@@ -54,7 +54,7 @@
             }
 
             // 复制静态方法
-            $.extend( child, Super, staticProtos );
+            $.extend( true, child, Super, staticProtos || {} );
 
             // 让子类的__super__属性指向父类。
             child.__super__ = Super.prototype;
@@ -62,7 +62,7 @@
             // 构建原型，添加原型方法或属性。
             // 暂时用Object.create实现。
             child.prototype = Object.create( Super.prototype );
-            protos && $.extend( child.prototype, protos );
+            protos && $.extend( true, child.prototype, protos );
 
             return child;
         },
