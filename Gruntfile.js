@@ -23,7 +23,9 @@ module.exports = function(grunt) {
                     'src/core/runtime.js',
                     'src/core/uploader.js',
                     'src/core/runtime/html5/runtime.js',
-                    'src/core/runtime/html5/*.js',
+
+                    // 把剩余的打包进来。
+                    'src/**/*.js',
                     '!src/exports.js',
                     'src/exports.js'
                 ],
@@ -37,14 +39,9 @@ module.exports = function(grunt) {
                 debounceDelay: 250
             },
 
-            doc: {
-                files: ['src/**/*.js'],
-                tasks: ['doc'],
-            },
-
-            concat: {
-                files: ['src/**/*.js'],
-                tasks: ['concat'],
+            all: {
+                files: ['src/**/*.js', 'Gruntfile.js'],
+                tasks: ['default'],
             }
         },
 
@@ -53,7 +50,7 @@ module.exports = function(grunt) {
                 jshintrc: '.jshintrc'
             },
 
-            all: ['src/**/*.js', '!src/intro.js', '!src/outro.js']
+            all: ['src/**/*.js']
         },
 
         size: {
@@ -63,8 +60,7 @@ module.exports = function(grunt) {
             },
 
             src: {
-                cwd: 'src/',
-                src: '/**/*.js'
+                src: 'src/**/*.js'
             }
         }
     });
@@ -85,5 +81,5 @@ module.exports = function(grunt) {
     grunt.loadNpmTasks( 'grunt-contrib-watch' );
 
     // Default task(s).
-    grunt.registerTask( 'default', [ 'jsbint', 'concat', 'size'] );
+    grunt.registerTask( 'default', [ 'jsbint', 'concat' ] );
 };
