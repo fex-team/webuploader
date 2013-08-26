@@ -15,7 +15,7 @@ define( 'jq-bridge', [], function() {
         var i;
 
         // like array
-        if ( typeof obj.length === 'number' ) {
+        if ( typeof obj !== 'function' && typeof obj.length === 'number' ) {
             for ( i = 0; i < obj.length; i++ ) {
                 if ( iterator.call( obj[ i ], i, obj[ i ] ) === false ) {
                     return obj;
