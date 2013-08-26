@@ -10,7 +10,15 @@ define( 'WebUploader/core/Runtime', [ 'WebUploader/Base',
         runtime;
 
     function Runtime( opts, type, caps ) {
-        var me = this;
+        var me = this,
+            klass = me.constructor;
+
+        caps = caps || {};
+
+        // 执行detects
+        $.each( klass.getDetects(), function( key, val ) {
+            $.extend( caps, val() );
+        } );
 
         caps = $.extend( {
 
@@ -32,6 +40,8 @@ define( 'WebUploader/core/Runtime', [ 'WebUploader/Base',
         }, caps );
 
         $.extend( this, {
+            klass: klass,
+
             type: type,
 
             caps: caps,
@@ -52,6 +62,47 @@ define( 'WebUploader/core/Runtime', [ 'WebUploader/Base',
             return true;
         },
 
+        /**
+         * 执行指定模块的，指定方法。
+         */
+        exec: function( component, api/*, args...*/ ) {
+            var args = [].slice.call( arguments, 2 );
+
+            component = this.getComponent( component );
+
+            if ( typeof component[ api ] === 'function' ) {
+                return component[ api ].apply( component, args );
+            }
+        },
+
+        /**
+         * 获取component, 每个Runtime中component只会实例化一次。
+         */
+        getComponent: function( name, opts ) {
+            var me = this,
+                klass = me.klass,
+                components = klass.components,
+                pool = me._objPool || (me._objPool = {}),
+                component;
+
+            if ( !pool[ name ] && (component = components[ name ]) ) {
+
+                if ( typeof component === 'function' ) {
+                    Mediator.installTo( component.prototype );
+                    component = new component( opts );
+                } else {
+                    component = $.extend( {}, component );
+                    Mediator.installTo( component );
+                }
+
+                component.getRuntime = function() {
+                    return me;
+                }
+                pool[ name ] = component;
+            }
+
+            return pool[ name ];
+        },
 
         destory: function() {
         }
@@ -106,6 +157,24 @@ define( 'WebUploader/core/Runtime', [ 'WebUploader/Base',
         }
 
         return runtime;
+    };
+
+    // 添加检测函数，在Runtime初始化的时候执行。
+    Runtime.addDetect = function( fn ) {
+        var pool = this.detects || (this.detects = []);
+
+        pool.push( fn );
+    };
+
+    Runtime.getDetects = function( fn ) {
+        return this.detects || [];
+    };
+
+    Runtime.register = function( name, component ) {
+        var pool = this.components || (this.components = {});
+
+        pool[ name ] = component;
+        return this;
     };
 
     return Runtime;
