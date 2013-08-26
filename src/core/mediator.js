@@ -166,11 +166,11 @@ define( 'webuploader/core/mediator', [ 'webuploader/base' ], function( Base ) {
          * @grammar trigger( name[, ...] ) => self
          * @param  {String}   type     事件名
          * @param  {*} [...] 任意参数
-         * @return {self} 返回自身，方便链式
-         * @chainable
+         * @return {Boolean} 如果handler中return false了，则返回false, 否则返回true
          */
         trigger: function( type ) {
             var i = -1,
+                stoped = false,
                 args,
                 events,
                 len,
@@ -190,12 +190,13 @@ define( 'webuploader/core/mediator', [ 'webuploader/base' ], function( Base ) {
                     handler = events[ i ];
 
                     if ( handler.cb.apply( handler.ctx2, args ) === false ) {
+                        stoped = true;
                         break;
                     }
                 }
             }
 
-            return this;
+            return !stoped;
         }
     };
 
