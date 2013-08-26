@@ -43,9 +43,10 @@ define( 'jq-bridge', [], function() {
         } );
     }
 
-    each("Boolean Number String Function Array Date RegExp Object Error".split(" "), function(i, name) {
-        class2type[ "[object " + name + "]" ] = name.toLowerCase()
-    });
+    each( 'Boolean Number String Function Array Date RegExp Object' +
+            ' Error'.split( '' ), function( i, name ) {
+        class2type[ '[object ' + name + ']' ] = name.toLowerCase();
+    } );
 
     /**
      * 只支持ID选择。
@@ -59,6 +60,7 @@ define( 'jq-bridge', [], function() {
         elem && (api[ 0 ] = elem, api.length = 1);
 
         return $.extend( api, {
+
             /**
              * 添加className
              */
@@ -75,7 +77,7 @@ define( 'jq-bridge', [], function() {
             on: function( type, fn ) {
                 if ( elem.addEventListener ) {
                     elem.addEventListener( type, fn, false );
-                } else if ( elem.attachEvent ){
+                } else if ( elem.attachEvent ) {
                     elem.attachEvent( 'on' + type, fn );
                 }
 
@@ -85,12 +87,12 @@ define( 'jq-bridge', [], function() {
             // off
             off: function( type, fn ) {
                 if ( elem.removeEventListener ) {
-                    elem.removeEventListener(type, fn, false);
+                    elem.removeEventListener( type, fn, false );
                 } else if ( elem.attachEvent ) {
                     elem.detachEvent( 'on' + type, fn );
                 }
                 return this;
-            },
+            }
 
         } );
     }
@@ -112,30 +114,33 @@ define( 'jq-bridge', [], function() {
         return target;
     };
 
-    function type ( obj ) {
-        return obj == null ? String( obj ) : class2type[ toString.call( obj ) ] || 'object';
+    function type( obj ) {
+
+        /*jshint eqnull:true*/
+        return obj == null ? String( obj ) :
+                class2type[ toString.call( obj ) ] || 'object';
     }
     $.type = type;
     $.isWindow = function( obj ) {
-        return obj && obj.window == obj;
-    }
+        return obj && obj.window === obj;
+    };
 
     $.isPlainObject = function( obj ) {
-        if ( type( obj ) !== "object" || obj.nodeType || $.isWindow( obj ) ) {
+        if ( type( obj ) !== 'object' || obj.nodeType || $.isWindow( obj ) ) {
             return false;
         }
 
         try {
-            if ( obj.constructor &&
-                    !hasOwn.call( obj.constructor.prototype, "isPrototypeOf" ) ) {
+            if ( obj.constructor && !hasOwn.call( obj.constructor.prototype,
+                    'isPrototypeOf' ) ) {
                 return false;
             }
-        } catch ( e ) {
+        } catch ( ex ) {
             return false;
         }
 
         return true;
-    }
+    };
 
     emptyArray = null;
 
