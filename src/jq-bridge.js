@@ -142,6 +142,10 @@ define( 'jq-bridge', [], function() {
         return true;
     };
 
+    $.trim = function( str ) {
+        return str ? str.trim() : '';
+    };
+
     emptyArray = null;
 
     return $;
