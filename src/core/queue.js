@@ -1,0 +1,167 @@
+/**
+ * @fileOverview 文件队列
+ */
+define( 'webuploader/core/queue', [
+        'webuploader/base',
+        'webuploader/core/mediator',
+        'webuploader/core/error',
+        'webuploader/core/file'
+	], function( Base, Mediator, Error, WUFile ) {
+
+        var $ = Base.$,
+            STATUS = WUFile.Status;
+
+        /**
+         * 文件队列
+         *
+         * @class  Queue
+         * @constructor
+         */
+        function Queue() {
+
+            this.stats = {
+                numOfQueue: 0,
+                numOfQueueFailed: 0,
+                numOfSuccess: 0,
+                numOfCancel: 0,
+                numOfProgress: 0,
+                numOfUploadFailed: 0
+            };
+
+            // 上传队列，仅包括等待上传的文件
+            this._queue = [];
+
+            // 存储所有文件
+            this._all = {};
+        }
+
+        $.extend( Queue.prototype, {
+
+            /**
+             * 将新文件加入对队列尾部
+             *
+             * @method append
+             * @param  {File} file   文件对象
+             * @param  {Mixed} [source] 文件内容源，例如DOM File/Blob/Base64 String
+             *                          文件首次加入队列时必须携带该参数
+             */
+            append: function( file, source ) {
+                this._queue.push( file );
+
+                this._fileAdded( file, source );
+            },
+
+            /**
+             * 将新文件加入对队列头部
+             *
+             * @method prepend
+             * @param  {File} file   文件对象
+             * @param  {Mixed} [source] 文件内容源，例如DOM File/Blob/Base64 String
+             *                          文件首次加入队列时必须携带该参数
+             */ 
+            prepend: function( file, source ) {
+                this._queue.unshift( file );
+
+                this._fileAdded( file, source );
+            },
+
+            /**
+             * 获取文件对象
+             *
+             * @method getFile
+             * @param  {String} fileId   文件ID
+             * @return {File}
+             */
+            getFile: function( fileId ) {
+                return this._all[ fileId ];
+            },
+
+            /**
+             * 从队列中取出文件
+             *
+             * @method fetch
+             * @param  {String|File} [fileId]   文件ID，如果为空则取队列首文件
+             * @return {Object} 包括file和source字段
+             */
+            fetch: function( file ) {
+                var idx = 0,
+                    id;
+
+                if ( file ) {
+                    id = typeof file === 'string' ? file : file.id;
+
+                    $.each( this._queue, function( index, file ) {
+                        if ( file.id === id ) {
+                            idx = index;
+                            return false;
+                        }
+                    } );
+                }
+
+                file = this._queue.splice( idx, 1 )[ 0 ];
+                id = file.id;
+
+                this.stats.numOfQueue--;
+
+                return this._all[ id ];
+            },
+
+            _fileAdded: function( file, source ) {
+                var me = this,
+                    existing = this._all[ file.id ];
+
+                if ( !existing ) {
+                    this._all[ file.id ] = {
+                        file: file,
+                        source: source
+                    };
+
+                    file.on( 'statuschange', function( file, cur, pre ) {
+                        me._onFileStatusChange( file, cur, pre );
+                    } );
+                }
+
+                file.setStatus( STATUS.QUEUED );
+
+                this.trigger( 'queued', file );
+            },
+
+            _onFileStatusChange: function( file, curStatus, preStatus ) {
+                var stats = this.stats;
+
+                switch ( preStatus ) {
+                    case STATUS.PROGRESS:
+                        stats.numOfProgress--;
+                        break;
+                }
+
+                switch ( curStatus ) {
+                    case STATUS.QUEUED:
+                        stats.numOfQueue++;
+                        break;
+
+                    case STATUS.PROGRESS:
+                        stats.numOfProgress++;
+                        break;
+
+                    case STATUS.ERROR:
+                        stats.numOfUploadFailed++;
+                        break;
+
+                    case STATUS.COMPLETE:
+                        stats.numOfSuccess++;
+                        break;
+
+                    case STATUS.CANCELLED:
+                        stats.numOfCancel++;
+                        break;
+                }
+            }
+
+        } );
+
+        Mediator.installTo( Queue.prototype );
+
+        return Queue;
+    }
+);
