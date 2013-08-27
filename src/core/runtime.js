@@ -82,10 +82,8 @@ define( 'webuploader/core/runtime', [ 'webuploader/base',
                 Mediator.installTo( component.prototype );
                 component.prototype.runtime = this;
             } else {
-                component = $.extend( {
-                    runtime: this
-                }, component );
                 Mediator.installTo( component );
+                component.runtime = this;
             }
 
             return component;
