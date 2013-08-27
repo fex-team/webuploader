@@ -59,7 +59,7 @@ define( 'webuploader/core/runtime/html5/transport', [ 'webuploader/base',
 
                 if ( xhr.status >= 200 && xhr.status < 300 ) {
                     ret = me._parseResponse( xhr.responseText );
-                    rHeaders = xhr.getAllResponseHeaders();
+                    rHeaders = me._getXhrHeaders( xhr );
 
                     me.trigger( 'accept', ret, rHeaders, function( reason ) {
                         reject = {
@@ -106,6 +106,22 @@ define( 'webuploader/core/runtime/html5/transport', [ 'webuploader/base',
             $.each( headers, function( key, val ) {
                 xhr.setRequestHeader( key, val );
             } );
+        },
+
+        _getXhrHeaders: function( xhr ) {
+            var str = xhr.getAllResponseHeaders(),
+                ret = {},
+                match;
+
+
+            $.each( str.split( /\n/ ), function( i, str ) {
+                match = /^(.*?): (.*)$/.exec( str );
+                if ( match ) {
+                    ret[ match[ 1 ] ] = match[ 2 ];
+                }
+            } );
+
+            return ret;
         },
 
         _parseResponse: function( json ) {
