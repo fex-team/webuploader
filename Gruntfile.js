@@ -11,7 +11,7 @@ module.exports = function(grunt) {
                 separator: '\n\n',
                 process: function( src, filepath ) {
                     return src.replace( /@version@/g, grunt.config.get('pkg.version') )
-                            .replace( /^/gm, '    ');
+                            .replace( /(^|\r\n|\r|\n)/g, '$1    ');
                 }
             },
             all: {
