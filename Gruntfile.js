@@ -42,6 +42,11 @@ module.exports = function(grunt) {
             all: {
                 files: ['src/**/*.js', 'Gruntfile.js'],
                 tasks: ['default'],
+            },
+
+            debug: {
+                files: ['src/**/*.js', 'Gruntfile.js'],
+                tasks: ['concat:all'],
             }
         },
 
@@ -81,5 +86,6 @@ module.exports = function(grunt) {
     grunt.loadNpmTasks( 'grunt-contrib-watch' );
 
     // Default task(s).
-    grunt.registerTask( 'default', [ 'jsbint', 'concat' ] );
+    grunt.registerTask( 'default', [ 'jsbint:all', 'concat:all' ] );
+    grunt.registerTask( 'debug', [ 'watch:debug' ] );
 };
