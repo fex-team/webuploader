@@ -64,46 +64,29 @@ define( 'webuploader/core/runtime', [ 'webuploader/base',
             return true;
         },
 
-        /**
-         * 执行指定模块的，指定方法。
-         */
-        exec: function( component, api/*, args...*/ ) {
-            var args = [].slice.call( arguments, 2 );
-
-            component = this.getComponent( component );
-
-            if ( typeof component[ api ] === 'function' ) {
-                return component[ api ].apply( component, args );
-            }
+        hasComponent: function( name ) {
+            return !!this.klass.components[ name ];
         },
 
         /**
          * 获取component, 每个Runtime中component只会实例化一次。
          */
-        getComponent: function( name, opts ) {
-            var me = this,
-                klass = me.klass,
-                components = klass.components,
-                pool = me._objPool || (me._objPool = {}),
-                component;
+        getComponent: function( name ) {
+            var component = this.klass.components[ name ];
 
-            if ( !pool[ name ] && (component = components[ name ]) ) {
-
-                if ( typeof component === 'function' ) {
-                    Mediator.installTo( component.prototype );
-                    component = new component( opts );
-                } else {
-                    component = $.extend( {}, component );
-                    Mediator.installTo( component );
-                }
-
-                component.getRuntime = function() {
-                    return me;
-                };
-                pool[ name ] = component;
+            if ( !component ) {
+                throw new Error( 'Component ' + name + ' 不存在' );
             }
 
-            return pool[ name ];
+            if ( typeof component === 'function' ) {
+                Mediator.installTo( component.prototype );
+                component.prototype.runtime = this;
+            } else {
+                Mediator.installTo( component );
+                component.runtime = this;
+            }
+
+            return component;
         },
 
         destory: function() {
