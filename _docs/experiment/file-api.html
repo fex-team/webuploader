@@ -192,6 +192,8 @@
 		var file = e.target.files[0];
 		var fr = new FileReader();
 
+		console.log( file instanceof File );
+
 		if (file.type.indexOf('image/') !== 0) {
 			document.getElementById('imageWrapper2').innerHTML = 'NOT VALID IMAGE FILE.';
 			return;

@@ -7,12 +7,30 @@
 </head>
 <body>
     <div id="uploaderBtn">选择文件</div>
+    <ul id="queueList" style="display:none;">
+        <li><button id="uploadBtn">上传</button></li>
+    </ul>
 
     <script type="text/javascript" src="../dist/webuploader.js"></script>
     <script type="text/javascript">
-        WebUploader.create({
+        var wu = WebUploader.create({
             pick: 'uploaderBtn'
         });
+
+        var ql = document.getElementById( 'queueList' );
+        var btn = document.getElementById( 'uploadBtn' );
+        wu.on( 'queued', function ( file ) {
+            var li = document.createElement( 'li' );
+            li.innerHTML = '文件名：' + file.name + ' 大小：' + Math.round( file.size / 1024 ) + ' KB';
+
+            ql.appendChild(li);
+
+            ql.style.display = 'block';
+        });
+
+        btn.onclick = function(){
+            wu.upload();
+        };
     </script>
 </body>
 </html>
