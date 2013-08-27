@@ -20,6 +20,9 @@ module.exports = function(grunt) {
                     'src/jq-bridge.js',
                     'src/base.js',
                     'src/core/mediator.js',
+                    'src/core/file.js',
+                    'src/core/error.js',
+                    'src/core/queue.js',
                     'src/core/runtime.js',
                     'src/core/uploader.js',
                     'src/core/runtime/html5/runtime.js',
@@ -29,6 +32,7 @@ module.exports = function(grunt) {
                     '!src/exports.js',
                     'src/exports.js'
                 ],
+
 
                 dest: 'dist/webuploader.js'
             }
