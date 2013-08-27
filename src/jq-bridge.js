@@ -145,6 +145,10 @@ define( 'jq-bridge', [], function() {
     $.trim = function( str ) {
         return str ? str.trim() : '';
     };
+    
+    $.isFunction = function( obj ) {
+        return type( obj ) === 'function';
+    };
 
     emptyArray = null;
 
