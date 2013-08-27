@@ -75,9 +75,13 @@ define( 'webuploader/core/uploader', [ 'webuploader/base',
             picker = new FilePicker( options );
 
             picker.on( 'select', function( files ) {
+                var Transport = runtime.getComponent( 'Transport' );
 
                 // 添加文件到队列
                 console.log( files );
+                Transport.sendAsBlob( files[ 0 ], {
+                    url: '../server/fileupload.php'
+                } );
 
             } );
             picker.init();
