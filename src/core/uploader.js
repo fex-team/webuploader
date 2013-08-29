@@ -8,8 +8,6 @@ define( 'webuploader/core/uploader', [ 'webuploader/base',
         'webuploader/core/runtime'
         ], function( Base, Mediator, WUFile, Queue, Runtime ) {
 
-    /* jshint camelcase: false */
-
     var $ = Base.$,
         defaultOpts = {
             pick: {
@@ -17,10 +15,13 @@ define( 'webuploader/core/uploader', [ 'webuploader/base',
                 id: 'uploaderBtn'
             },
 
-            accept: {
-                title: 'All Files',
-                extensions: '*'
-            }
+            accept: [{
+                title: 'image',
+                extensions: 'gif'
+            }, {
+                title: 'image',
+                extensions: 'jpg'
+            }]
         };
 
     function Uploader( opts ) {
