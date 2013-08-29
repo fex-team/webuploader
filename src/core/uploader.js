@@ -21,10 +21,7 @@ define( 'webuploader/core/uploader', [
 
                 accept: [{
                     title: 'image',
-                    extensions: 'gif'
-                }, {
-                    title: 'image',
-                    extensions: 'jpg'
+                    extensions: 'gif,jpg,bmp'
                 }]
             };
 

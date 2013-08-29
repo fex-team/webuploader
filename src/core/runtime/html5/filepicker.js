@@ -15,10 +15,7 @@ define( 'webuploader/core/runtime/html5/filepicker', [
 
                 accept: [{
                     title: 'image',
-                    extensions: 'gif'
-                }, {
-                    title: 'image',
-                    extensions: 'jpg'
+                    extensions: 'gif,jpg,bmp'
                 }]
             };
 
@@ -33,8 +30,10 @@ define( 'webuploader/core/runtime/html5/filepicker', [
                     opts = me.options,
                     elem = $( '#' + opts.id ),
                     i,
+                    ii,
                     len,
                     acceptStr = [],
+                    extStr = [],
                     label,
                     input;
 
@@ -56,11 +55,13 @@ define( 'webuploader/core/runtime/html5/filepicker', [
                     input.setAttribute( 'multiple', 'multiple' );
                 }
 
-                /* jshint noempty:false */
-                input.setAttribute( 'accept', 'image/*' );
                 if ( opts.accept && opts.accept.length > 0 ) {
                     for (i = 0, len = opts.accept.length; i < len; i++) {
-                        acceptStr.push( opts.accept[i].title + '/' + opts.accept[i].extensions );
+                        //acceptStr.push( opts.accept[i].title + '/' + opts.accept[i].extensions );
+                        extStr = opts.accept[i].extensions.split( ',' );
+                        for (var ii = 0; ii < extStr.length; ii++) {
+                            acceptStr.push( opts.accept[i].title + '/' + extStr[ii] );
+                        };
                     };
                     input.setAttribute( 'accept', acceptStr.join( ',' ) );
                 }
