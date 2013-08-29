@@ -1,5 +1,8 @@
 /**
  * @fileOverview Transport
+ * @todo 支持chunked传输，优势：
+ * 可以将大文件分成小块，挨个传输，可以提高大文件成功率，当失败的时候，也只需要重传那小部分，
+ * 而不需要重头再传一次。另外断点续传也需要用chunked方式。
  */
 define( 'webuploader/core/runtime/html5/transport', [ 'webuploader/base',
         'webuploader/core/runtime/html5/runtime'
@@ -9,6 +12,8 @@ define( 'webuploader/core/runtime/html5/transport', [ 'webuploader/base',
         defaultOpts = {
             url: '',
             fileVar: 'file',
+            chunked: false,
+            chunkSize: 1024 * 1024,    // 1M.
             crossDomain: false,
 
             formData: {},
@@ -116,6 +121,7 @@ define( 'webuploader/core/runtime/html5/transport', [ 'webuploader/base',
 
             $.each( str.split( /\n/ ), function( i, str ) {
                 match = /^(.*?): (.*)$/.exec( str );
+
                 if ( match ) {
                     ret[ match[ 1 ] ] = match[ 2 ];
                 }
@@ -134,6 +140,12 @@ define( 'webuploader/core/runtime/html5/transport', [ 'webuploader/base',
             }
 
             return ret;
+        },
+
+        cancel: function() {
+            if ( this.state === 'progress' ) {
+                // @ todo
+            }
         },
 
         /**
@@ -167,6 +179,7 @@ define( 'webuploader/core/runtime/html5/transport', [ 'webuploader/base',
 
             xhr.upload.onprogress = null;
             xhr.onreadystatechange = null;
+            xhr.abort();
             this.xhr = null;
 
             this.formData = null;
