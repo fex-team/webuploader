@@ -74,6 +74,13 @@ define( 'webuploader/base', [
 
             notImplement: function() {
                 throw new Error( 'Not Implemented!' );
+            },
+
+            // Change the context of a function.
+            bindFn: function( fn, context ) {
+                return fn.bind ? fn.bind( context ) : function() {
+                    return fn.apply( context, arguments );
+                };
             }
         };
     } );
