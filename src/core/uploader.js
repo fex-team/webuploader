@@ -19,10 +19,13 @@ define( 'webuploader/core/uploader', [
                     id: 'uploaderBtn'
                 },
 
-                accept: {
-                    title: 'All Files',
-                    extensions: '*'
-                }
+                accept: [{
+                    title: 'image',
+                    extensions: 'gif'
+                }, {
+                    title: 'image',
+                    extensions: 'jpg'
+                }]
             };
 
         function Uploader( opts ) {
