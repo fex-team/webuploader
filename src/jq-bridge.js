@@ -65,12 +65,16 @@ define( 'jq-bridge', [], function() {
              * 添加className
              */
             addClass: function( classname ) {
-                elem.className += classname;
+                elem.className += ( ' ' + classname );
                 return this;
             },
 
             before: function( el ) {
                 elem.parentNode.insertBefore( el, elem );
+            },
+
+            append: function( el ) {
+                elem.appendChild( el );
             },
 
             // on

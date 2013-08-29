@@ -1,3 +1,12 @@
 .webuploader-btn {
+	cursor: pointer;
+	background: #00b7ee;
+	padding: 10px 15px;
+	color: #fff;
+	text-align: center;
+	border-radius: 3px;
+}
 
+.webuploader-btn-hover {
+	background: #00a2d4;
 }
