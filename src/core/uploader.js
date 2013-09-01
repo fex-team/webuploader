@@ -14,13 +14,9 @@ define( 'webuploader/core/uploader', [ 'webuploader/base',
                 multiple: true,
                 id: 'uploaderBtn'
             },
-
             accept: [{
                 title: 'image',
-                extensions: 'gif'
-            }, {
-                title: 'image',
-                extensions: 'jpg'
+                extensions: 'gif,jpg,jpeg,bmp'
             }]
         };
 
@@ -112,7 +108,8 @@ define( 'webuploader/core/uploader', [ 'webuploader/base',
         upload: function() {
             var Q = this._queue,
                 runtime = Runtime.getInstance(),
-                Transport = runtime.getComponent( 'Transport' );
+                Transport = runtime.getComponent( 'Transport' ),
+                Image = runtime.getComponent( 'Image' );
 
             if ( !Q.stats.numOfQueue ) {
                 return;
@@ -121,25 +118,31 @@ define( 'webuploader/core/uploader', [ 'webuploader/base',
             while ( Q.stats.numOfQueue ) {
                 (function() {
                     var fileObj = Q.fetch(),
-                        file = fileObj.file,
-                        tr = Transport.sendAsBlob( fileObj.source, {
-                            url: '../server/fileupload.php'
+                        file = fileObj.file;
+
+                    Image.downsize( fileObj.source, function( blob ) {
+                        var tr = Transport.sendAsBlob( blob, {
+                                url: '../server/fileupload.php',
+                                filename: fileObj.source.name
+                            } );
+
+                        tr.on( 'progress', function() {
+                            file.setStatus( WUFile.Status.PROGRESS );
+                            console.log( Q.stats );
                         } );
 
-                    tr.on( 'progress', function() {
-                        file.setStatus( WUFile.Status.PROGRESS );
-                        console.log( Q.stats );
-                    } );
+                        tr.on( 'error', function() {
+                            file.setStatus( WUFile.Status.ERROR );
+                            console.log( Q.stats );
+                        } );
 
-                    tr.on( 'error', function() {
-                        file.setStatus( WUFile.Status.ERROR );
-                        console.log( Q.stats );
-                    } );
+                        tr.on( 'complete', function() {
+                            file.setStatus( WUFile.Status.COMPLETE );
+                            console.log( Q.stats );
+                        } );
 
-                    tr.on( 'complete', function() {
-                        file.setStatus( WUFile.Status.COMPLETE );
-                        console.log( Q.stats );
-                    } );
+                    }, 1600, 1600 );
+
                 })();
             }
         },
@@ -147,17 +150,15 @@ define( 'webuploader/core/uploader', [ 'webuploader/base',
         getImageThumbnail: function( file, cb, width, height ) {
             var Q = this._queue,
                 runtime = this._runtime,
-                Image = runtime.getComponent( 'Image' ),
-                image = new Image();
+                Image = runtime.getComponent( 'Image' );
 
             file = typeof file === 'string' ? Q.getFile( file ) : file;
-            image.on( 'load', function() {
+
+            Image.makeThumbnail( file.getSource(), function( ret ) {
                 var img = document.createElement( 'img' );
-                image.downsize( width, height );
-                img.src = image.getAsDataURL();
+                img.src = ret;
                 cb( img );
-            } );
-            image.load( file.getSource() );
+            }, width, height, true );
         },
 
 
