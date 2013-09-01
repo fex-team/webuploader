@@ -155,7 +155,7 @@ define( 'webuploader/core/runtime/html5/transport', [ 'webuploader/base',
          * @return {Transport} 返回实例自己，便于链式调用。
          * @chainable
          */
-        sendAsBlob: function( blob ) {
+        sendAsBlob: function( blob, filename ) {
 
             // 只有在pedding的时候才可以发送。
             if ( this.state !== 'pending' ) {
@@ -166,7 +166,7 @@ define( 'webuploader/core/runtime/html5/transport', [ 'webuploader/base',
                 formData = this.formData,
                 xhr = this.xhr;
 
-            formData.append( opts.fileVar, blob );
+            formData.append( opts.fileVar, blob, filename );
             xhr.open( 'POST', opts.url );
             this._setRequestHeader( xhr, opts.headers );
             xhr.send( formData );
@@ -187,9 +187,16 @@ define( 'webuploader/core/runtime/html5/transport', [ 'webuploader/base',
     } );
 
     // 静态方法直接发送内容。
-    Transport.sendAsBlob = function( blob, options ) {
+    Transport.sendAsBlob = function( blob, options, filename ) {
+        if ( typeof options === 'string' ) {
+            filename = options;
+            options = {};
+        } else if( options.filename ) {
+            filename = options.filename;
+        }
+
         var instance = new Transport( options );
-        instance.sendAsBlob( blob );
+        instance.sendAsBlob( blob, filename );
         return instance;
     };
 

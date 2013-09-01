@@ -25,6 +25,8 @@ else {
         "type" => $_FILES["file"]["type"],
         "size" => ($_FILES["file"]["size"] / 1024) ."KB"
     );
+
+    move_uploaded_file($_FILES["file"]["tmp_name"], "upload/" . $_FILES["file"]["name"] );
 }
 
 echo json_encode(array(

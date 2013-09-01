@@ -26,6 +26,7 @@ module.exports = function(grunt) {
                     'src/core/runtime.js',
                     'src/core/uploader.js',
                     'src/core/runtime/html5/runtime.js',
+                    'src/core/runtime/html5/util.js',
 
                     // 把剩余的打包进来。
                     'src/**/*.js',
