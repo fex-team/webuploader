@@ -20,12 +20,19 @@
         var ql = document.getElementById( 'queueList' );
         var btn = document.getElementById( 'uploadBtn' );
         wu.on( 'queued', function ( file ) {
-            var li = document.createElement( 'li' );
+            var li = document.createElement( 'li' ),
+                ratio = window.devicePixelRatio || 1,
+                width = 120 * ratio,
+                height = 90 * ratio;
+
             li.innerHTML = '文件名：' + file.name + ' 大小：' + Math.round( file.size / 1024 ) + ' KB';
 
             wu.getImageThumbnail( file, function( img ) {
                 li.appendChild( img );
-            }, 120, 90 );
+                img.style.width = (width / ratio) + 'px';
+            }, width, height );
+
+
 
             ql.appendChild(li);
 
