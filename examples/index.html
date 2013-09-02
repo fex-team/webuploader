@@ -23,6 +23,10 @@
             var li = document.createElement( 'li' );
             li.innerHTML = '文件名：' + file.name + ' 大小：' + Math.round( file.size / 1024 ) + ' KB';
 
+            wu.getImageThumbnail( file, function( img ) {
+                li.appendChild( img );
+            }, 120, 90 );
+
             ql.appendChild(li);
 
             ql.style.display = 'block';
