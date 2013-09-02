@@ -83,6 +83,8 @@ define( 'webuploader/core/file', [
 
             // 存储文件状态，防止通过属性直接修改
             statusMap[ this.id ] = WUFile.Status.INITED;
+
+            this.source = file;
         }
 
         $.extend( WUFile.prototype, {
@@ -90,7 +92,7 @@ define( 'webuploader/core/file', [
             /**
              * 设置状态，状态变化时会触发`change`事件。
              *
-             * @method setStatus    
+             * @method setStatus
              * @param  {File.Status} status 状态
              * @example
                      文件状态具体包括以下几种类型：
@@ -146,6 +148,14 @@ define( 'webuploader/core/file', [
              */
             getStatus: function() {
                 return statusMap[ this.id ];
+            },
+
+            /**
+             * 获取文件原始信息。
+             * @return {*}
+             */
+            getSource: function() {
+                return this.source;
             }
         } );
 
