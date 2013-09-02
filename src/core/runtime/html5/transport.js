@@ -12,8 +12,8 @@ define( 'webuploader/core/runtime/html5/transport', [ 'webuploader/base',
         defaultOpts = {
             url: '',
             fileVar: 'file',
-            chunked: false,
-            chunkSize: 1024 * 1024,    // 1M.
+            chunked: true,
+            chunkSize: 1024 * 100,    // 1M.
             crossDomain: false,
 
             formData: {},
@@ -28,31 +28,24 @@ define( 'webuploader/core/runtime/html5/transport', [ 'webuploader/base',
         if ( !opts.crossDomain ) {
             opts.headers[ 'X-Requested-With' ] = 'XMLHttpRequest';
         }
-
-        this.init();
     }
 
     $.extend( Transport.prototype, {
         state: 'pending',
 
-        init: function() {
+        _initAjax: function() {
             var me = this,
                 opts = me.options,
-                xhr = new XMLHttpRequest(),
-                formData = new FormData();
-
-            opts.formData && $.each( opts.formData, function( key, val ) {
-                formData.append( key, val );
-            } );
+                xhr = new XMLHttpRequest();
 
             xhr.upload.onprogress = function( e ) {
                 var percentage = 0;
 
                 if ( e.lengthComputable ) {
-                    percentage = Math.round( e.loaded * 100 / e.total );
+                    percentage = Math.round( e.loaded / e.total );
                 }
 
-                me._notify( percentage );
+                return me._onprogress.call( me, percentage );
             };
 
             xhr.onreadystatechange = function() {
@@ -61,6 +54,10 @@ define( 'webuploader/core/runtime/html5/transport', [ 'webuploader/base',
                 if ( xhr.readyState !== 4 ) {
                     return;
                 }
+
+                xhr.upload.onprogress = null;
+                xhr.onreadystatechange = null;
+                me._xhr = null;
 
                 if ( xhr.status >= 200 && xhr.status < 300 ) {
                     ret = me._parseResponse( xhr.responseText );
@@ -75,7 +72,7 @@ define( 'webuploader/core/runtime/html5/transport', [ 'webuploader/base',
                     } );
 
                     if ( !reject ) {
-                        return me._resolve( ret, rHeaders );
+                        return me._oncomplete.call( me, ret, rHeaders );
                     }
                 }
 
@@ -88,8 +85,33 @@ define( 'webuploader/core/runtime/html5/transport', [ 'webuploader/base',
                 return me._reject( reject );
             };
 
-            this.xhr = xhr;
-            this.formData = formData;
+            return me._xhr = xhr;
+        },
+
+        _onprogress: function( percentage ) {
+            var opts = this.options,
+                start, end, total;
+
+            if ( this.chunks ) {
+                start = this.chunk * opts.chunkSize;
+                end = start + opts.chunkSize;
+                total = this._blob.size;
+
+                end = Math.min( end, total );
+
+                percentage = (start + percentage * (end -start)) / total;
+            }
+
+            this._notify( percentage );
+        },
+
+        _oncomplete: function( ret, headers ) {
+            if ( this.chunks && this.chunk < this.chunks - 1 ) {
+                this.chunk++;
+                this.paused || this._upload();
+            } else {
+                this._resolve( ret, headers );
+            }
         },
 
         _notify: function( percentage ) {
@@ -142,7 +164,58 @@ define( 'webuploader/core/runtime/html5/transport', [ 'webuploader/base',
             return ret;
         },
 
-        cancel: function() {
+        _upload: function() {
+            var opts = this.options,
+                xhr = this._initAjax(),
+                formData = new FormData(),
+                blob = this._blob,
+                start, end;
+
+            if ( this.chunks ) {
+                start = this.chunk * opts.chunkSize;
+                end = start + opts.chunkSize;
+                if ( end > blob.size ) {
+                    end = blob.size;
+                }
+
+                blob = this._blob.slice( start, end );
+                opts.formData.chunk = this.chunk;
+                opts.formData.chunks = this.chunks;
+                opts.headers[ 'Content-Range' ] = 'bytes ' + start +
+                        '-' + end + '/' + this._blob.size;
+
+                start === 0 &&
+                        xhr.overrideMimeType( 'application/octet-stream' );
+            }
+
+            opts.formData && $.each( opts.formData, function( key, val ) {
+                formData.append( key, val );
+            } );
+
+            formData.append( opts.fileVar, blob, this.filename );
+
+            xhr.open( 'POST', opts.url );
+            this._setRequestHeader( xhr, opts.headers );
+            xhr.send( formData );
+            return this;
+        },
+
+        pause: function() {
+            this.paused = true;
+            if ( this._xhr ) {
+                this._xhr.abort();
+                // this._onprogress( 0 );
+            }
+        },
+
+        resume: function() {
+            this.paused = false;
+            if ( this.chunks && this.chunk < this.chunks - 1 ) {
+                this._upload();
+            }
+        },
+
+        abort: function() {
             if ( this.state === 'progress' ) {
                 // @ todo
             }
@@ -162,27 +235,23 @@ define( 'webuploader/core/runtime/html5/transport', [ 'webuploader/base',
                 return;
             }
 
-            var opts = this.options,
-                formData = this.formData,
-                xhr = this.xhr;
+            var opts = this.options;
 
-            formData.append( opts.fileVar, blob, filename );
-            xhr.open( 'POST', opts.url );
-            this._setRequestHeader( xhr, opts.headers );
-            xhr.send( formData );
+            if ( opts.chunked && blob.size > opts.chunkSize ) {
+                this.chunk = 0;
+                this.chunks = Math.ceil( blob.size / opts.chunkSize );
+            }
+
+            this._blob = blob;
+            this.filename = filename;
+
+            this._upload();
             this._notify( 0 );
             return this;
         },
 
         destroy: function() {
-            var xhr = this.xhr;
-
-            xhr.upload.onprogress = null;
-            xhr.onreadystatechange = null;
-            xhr.abort();
-            this.xhr = null;
-
-            this.formData = null;
+            this._blob = null;
         }
     } );
 
