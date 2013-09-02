@@ -1,126 +1,129 @@
 /**
  * @fileOverview Uploader上传类
  */
-define( 'webuploader/core/uploader', [ 
-        'webuploader/base',
+define( 'webuploader/core/uploader', [ 'webuploader/base',
         'webuploader/core/mediator',
         'webuploader/core/file',
         'webuploader/core/queue',
         'webuploader/core/runtime'
-    ],
-            function( Base, Mediator, WUFile, Queue, Runtime ) {
-    
-        /* jshint camelcase: false */
+        ], function( Base, Mediator, WUFile, Queue, Runtime ) {
 
-        var $ = Base.$,
-            defaultOpts = {
-                pick: {
-                    multiple: true,
-                    id: 'uploaderBtn'
-                },
+    var $ = Base.$,
+        defaultOpts = {
+            pick: {
+                multiple: true,
+                id: 'uploaderBtn'
+            },
+            accept: [{
+                title: 'image',
+                extensions: 'gif,jpg,jpeg,bmp'
+            }]
+        };
 
-                accept: {
-                    title: 'All Files',
-                    extensions: '*'
-                }
+    function Uploader( opts ) {
+        opts = opts || {};
+
+        if ( typeof opts.pick === 'string' ) {
+            opts.pick = {
+                id: opts.pick
             };
-
-        function Uploader( opts ) {
-            opts = opts || {};
-
-            if ( typeof opts.pick === 'string' ) {
-                opts.pick = {
-                    id: opts.pick
-                };
-            }
-
-            this.options = $.extend( true, {}, defaultOpts, opts );
         }
 
-        Mediator.installTo( Uploader.prototype );
+        this.options = $.extend( true, {}, defaultOpts, opts );
+    }
 
-        $.extend( Uploader.prototype, {
-            init: function() {
-                var me = this,
-                    opts = me.options;
+    Mediator.installTo( Uploader.prototype );
 
-                me._queue = new Queue();
-                me._queue.on( 'queued', function( file ) {
-                    me.trigger( 'queued', file );
+    $.extend( Uploader.prototype, {
+        state: 'pedding',
+
+        init: function() {
+            var me = this,
+                opts = me.options;
+
+            me._queue = new Queue();
+            me._queue.on( 'queued', function( file ) {
+                me.trigger( 'queued', file );
+            } );
+
+            me._initRuntime( opts, function() {
+
+
+                opts.pick && me._initFilePicker( opts );
+            } );
+        },
+
+        _initRuntime: function( opts, cb ) {
+            var caps = {
+
+                    resize_image: true
+                },
+
+                runtime;
+
+            if ( opts.pick ) {
+                caps.select_file = true;
+
+                caps.select_multiple = opts.pick.multiple;
+            }
+
+            runtime = Runtime.getInstance( opts, caps  );
+            runtime.once( 'ready', cb );
+            runtime.init();
+
+            this._runtime = runtime;
+        },
+
+        _initFilePicker: function( opts ) {
+            var runtime = Runtime.getInstance(),
+                me = this,
+                options = $.extend( {}, opts.pick, {
+                    accept: opts.accept
+                } ),
+                FilePicker = runtime.getComponent( 'FilePicker' ),
+                picker;
+
+            picker = new FilePicker( options );
+
+            picker.on( 'select', function( files ) {
+
+                $.each( files, function( idx, domfile ) {
+                    me._queue.append( new WUFile( domfile ), domfile );
                 } );
 
-                me._initRuntime( opts, function() {
+                /*
+                var Transport = runtime.getComponent( 'Transport' );
 
-
-                    opts.pick && me._initFilePicker( opts );
+                // 添加文件到队列
+                console.log( files );
+                Transport.sendAsBlob( files[ 0 ], {
+                    url: '../server/fileupload.php'
                 } );
-            },
+                */
 
-            _initRuntime: function( opts, cb ) {
-                var caps = {
+            } );
+            picker.init();
+        },
 
-                        resize_image: true
-                    },
+        upload: function() {
+            var Q = this._queue,
+                runtime = Runtime.getInstance(),
+                Transport = runtime.getComponent( 'Transport' ),
+                Image = runtime.getComponent( 'Image' );
 
-                    runtime;
+            if ( !Q.stats.numOfQueue ) {
+                return;
+            }
 
-                if ( opts.pick ) {
-                    caps.select_file = true;
+            while ( Q.stats.numOfQueue ) {
+                (function() {
+                    var fileObj = Q.fetch(),
+                        file = fileObj.file;
 
-                    caps.select_multiple = opts.pick.multiple;
-                }
-
-                runtime = Runtime.getInstance( opts, caps  );
-                runtime.once( 'ready', cb );
-                runtime.init();
-            },
-
-            _initFilePicker: function( opts ) {
-                var runtime = Runtime.getInstance(),
-                    me = this,
-                    options = $.extend( {}, opts.pick, {
-                        accept: opts.accept
-                    } ),
-                    FilePicker = runtime.getComponent( 'FilePicker' ),
-                    picker;
-
-                picker = new FilePicker( options );
-
-                picker.on( 'select', function( files ) {
-
-                    $.each( files, function( idx, domfile ) {
-                        me._queue.append( new WUFile( domfile ), domfile );
-                    } );
-
-                    /*
-                    var Transport = runtime.getComponent( 'Transport' );
-
-                    // 添加文件到队列
-                    console.log( files );
-                    Transport.sendAsBlob( files[ 0 ], {
-                        url: '../server/fileupload.php'
-                    } );
-                    */
-
-                } );
-                picker.init();
-            },
-
-            upload: function() {
-                var Q = this._queue,
-                    runtime = Runtime.getInstance(),
-                    Transport = runtime.getComponent( 'Transport' );
-
-                if ( !Q.stats.numOfQueue ) {
-                    return;
-                }
-
-                while ( Q.stats.numOfQueue ) {
-                    (function() {
-                        var fileObj = Q.fetch(),
-                            file = fileObj.file,
-                            tr = Transport.sendAsBlob( fileObj.source, {
-                                url: '../server/fileupload.php'
+                    Image.downsize( fileObj.source, function( blob ) {
+                        var tr = Transport.sendAsBlob( blob, {
+                                url: '../server/fileupload.php',
+                                filename: fileObj.source.name
                             } );
 
                         tr.on( 'progress', function() {
@@ -137,39 +140,55 @@ define( 'webuploader/core/uploader', [
                             file.setStatus( WUFile.Status.COMPLETE );
                             console.log( Q.stats );
                         } );
-                    })();
-                }
-            },
+
+                    }, 1600, 1600 );
+
+                })();
+            }
+        },
+
+        getImageThumbnail: function( file, cb, width, height ) {
+            var Q = this._queue,
+                runtime = this._runtime,
+                Image = runtime.getComponent( 'Image' );
+
+            file = typeof file === 'string' ? Q.getFile( file ) : file;
+
+            Image.makeThumbnail( file.getSource(), function( ret ) {
+                var img = document.createElement( 'img' );
+                img.src = ret;
+                cb( img );
+            }, width, height, true );
+        },
 
 
-            // 需要重写此方法来来支持opts.onEvent和instance.onEvent的处理器
-            trigger: function( type/*, args...*/ ) {
-                var args = [].slice.call( arguments, 1 ),
-                    opts = this.options,
-                    name = 'on' + type.substring( 0, 1 ).toUpperCase() +
-                        type.substring( 1 );
+        // 需要重写此方法来来支持opts.onEvent和instance.onEvent的处理器
+        trigger: function( type/*, args...*/ ) {
+            var args = [].slice.call( arguments, 1 ),
+                opts = this.options,
+                name = 'on' + type.substring( 0, 1 ).toUpperCase() +
+                    type.substring( 1 );
 
-                if ( $.isFunction( opts[ name ] ) &&
-                        opts[ name ].apply( this, args ) === false ) {
-                    return false;
-                }
-
-                if ( $.isFunction( this[ name ] ) &&
-                        this[ name ].apply( this, args ) === false ) {
-                    return false;
-                }
-
-                return Mediator.trigger.apply( this, arguments );
+            if ( $.isFunction( opts[ name ] ) &&
+                    opts[ name ].apply( this, args ) === false ) {
+                return false;
             }
 
-        } );
+            if ( $.isFunction( this[ name ] ) &&
+                    this[ name ].apply( this, args ) === false ) {
+                return false;
+            }
 
-        Base.create = function( opts ) {
-            var uploader = new Uploader( opts );
-            uploader.init();
-            return uploader;
-        };
+            return Mediator.trigger.apply( this, arguments );
+        }
 
-        return Uploader;
-    }
-);
+    } );
+
+    Base.create = function( opts ) {
+        var uploader = new Uploader( opts );
+        uploader.init();
+        return uploader;
+    };
+
+    return Uploader;
+} );
