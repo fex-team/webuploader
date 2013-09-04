@@ -92,7 +92,7 @@ define( 'webuploader/core/runtime/html5/image', [ 'webuploader/base',
             var canvas = this._canvas ||
                     (this._canvas = document.createElement( 'canvas' ));
 
-            this._resize( canvas, width, height, crop );
+            this._resize( canvas, width, height, crop, true );
             this.width = width;
             this.height = height;
 
@@ -117,7 +117,8 @@ define( 'webuploader/core/runtime/html5/image', [ 'webuploader/base',
                 result = canvas.toDataURL( type );
             }
 
-            canvas.getContext( '2d' ).clearRect( 0, 0, width, height );
+            canvas.getContext( '2d' )
+                    .clearRect( 0, 0, canvas.width, canvas.height );
             canvas.width = canvas.height = 0;
             canvas = null;
 
@@ -156,12 +157,13 @@ define( 'webuploader/core/runtime/html5/image', [ 'webuploader/base',
         },
 
         destroy: function() {
+            var canvas = this._canvas;
             this._img.onload = null;
 
-            if ( this._canvas ) {
-                this._canvas.getContext( '2d' ).clearRect( 0, 0, this.width,
-                    this.height );
-                this._canvas.width = this._canvas.height = 0;
+            if ( canvas ) {
+                canvas.getContext( '2d' )
+                        .clearRect( 0, 0, canvas.width, canvas.height );
+                canvas.width = canvas.height = 0;
                 this._canvas = null;
             }
 
@@ -180,7 +182,7 @@ define( 'webuploader/core/runtime/html5/image', [ 'webuploader/base',
             } );
         },
 
-        _resize: function( canvas, width, height, crop ) {
+        _resize: function( canvas, width, height, crop, preserveHeaders ) {
             // 调用时机不对。
             if ( this.state !== 'loaded' ) {
                 return;
@@ -189,18 +191,96 @@ define( 'webuploader/core/runtime/html5/image', [ 'webuploader/base',
             var img = this._img,
                 naturalWidth = img.width,
                 naturalHeight = img.height,
-                scale, w, h;
+                orientation = this.metas && this.metas.exif &&
+                    this.metas.exif.get( 'Orientation' ) || 1,
+                scale, w, h, x, y;
+
+             // values that require 90 degree rotation
+            if ( ~[ 5, 6, 7, 8 ].indexOf( orientation ) ) {
+
+                // 交换width, height的值。
+                width ^= height;
+                height ^= width;
+                width ^= height;
+            }
 
             scale = Math[ crop ? 'max' : 'min' ]( width / naturalWidth,
                     height / naturalHeight );
+
+            // 不允许放大。
+            scale = Math.min( 1, scale );
+
             w = naturalWidth * scale;
             h = naturalHeight * scale;
 
-            canvas.width = width = width > w ? w : width;
-            canvas.height = height = height > h ? h : height;
+            if ( crop ) {
+                canvas.width = width;
+                canvas.height = height;
+            } else {
+                canvas.width = w;
+                canvas.height = h;
+            }
 
-            this._renderImageToCanvas( canvas, img, 0, 0, naturalWidth,
-                    naturalHeight, (width - w) / 2, (height - h) / 2, w, h );
+            x = w > canvas.width ? (w - canvas.width) / 2  : 0;
+            y = h > canvas.height ? (h - canvas.height) / 2 : 0;
+
+            preserveHeaders || this._rotateToOrientaion( canvas, orientation );
+
+            this._renderImageToCanvas( canvas, img, -x, -y, w, h );
+        },
+
+        _rotateToOrientaion: function( canvas, orientation ) {
+            var width = canvas.width,
+                height = canvas.height,
+                ctx = canvas.getContext( '2d' );
+
+            switch ( orientation ) {
+                case 5:
+                case 6:
+                case 7:
+                case 8:
+                    canvas.width = height;
+                    canvas.height = width;
+                    break;
+            }
+
+            switch ( orientation ) {
+                case 2:    // horizontal flip
+                    ctx.translate( width, 0 );
+                    ctx.scale( -1, 1 );
+                    break;
+
+                case 3:    // 180 rotate left
+                    ctx.translate( width, height );
+                    ctx.rotate( Math.PI );
+                    break;
+
+                case 4:    // vertical flip
+                    ctx.translate( 0, height );
+                    ctx.scale( 1, -1 );
+                    break;
+
+                case 5:    // vertical flip + 90 rotate right
+                    ctx.rotate( 0.5 * Math.PI );
+                    ctx.scale( 1, -1 );
+                    break;
+
+                case 6:    // 90 rotate right
+                    ctx.rotate( 0.5 * Math.PI );
+                    ctx.translate( 0, -height );
+                    break;
+
+                case 7:    // horizontal flip + 90 rotate right
+                    ctx.rotate( 0.5 * Math.PI );
+                    ctx.translate( width, -height );
+                    ctx.scale( -1, 1 );
+                    break;
+
+                case 8:    // 90 rotate left
+                    ctx.rotate( -0.5 * Math.PI );
+                    ctx.translate( -width, 0 );
+                    break;
+            }
         },
 
         _fileRead: function( file, cb, method ) {
@@ -226,14 +306,8 @@ define( 'webuploader/core/runtime/html5/image', [ 'webuploader/base',
 
         // @todo 在ios6中，处理像素点过万的图片有问题，待解决
         // 解决方法：https://github.com/stomita/ios-imagefile-megapixel
-        _renderImageToCanvas: function( canvas, img, sourceX, sourceY,
-                sourceWidth, sourceHeight, destX, destY, destWidth,
-                destHeight ) {
-
-            canvas.getContext( '2d' ).drawImage( img, sourceX, sourceY,
-                    sourceWidth, sourceHeight, destX,
-                    destY, destWidth, destHeight );
-
+        _renderImageToCanvas: function( canvas, img, x, y, w, h ) {
+            canvas.getContext( '2d' ).drawImage( img, x, y, w, h );
             return canvas;
         }
     } );
