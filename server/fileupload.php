@@ -22,14 +22,16 @@ header("Cache-Control: no-store, no-cache, must-revalidate");
 header("Cache-Control: post-check=0, pre-check=0", false);
 header("Pragma: no-cache");
 
-/*
+header("HTTP/1.0 500 Internal Server Error");
+
+
 // Support CORS
 header("Access-Control-Allow-Origin: *");
 // other CORS headers if any...
 if ($_SERVER['REQUEST_METHOD'] == 'OPTIONS') {
     exit; // finish preflight CORS requests here
 }
-*/
+
 
 // 5 minutes execution time
 @set_time_limit(5 * 60);

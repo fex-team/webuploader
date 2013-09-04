@@ -23,6 +23,7 @@ module.exports = function(grunt) {
                     'src/core/file.js',
                     'src/core/error.js',
                     'src/core/queue.js',
+                    'src/core/uploadmgr.js',
                     'src/core/runtime.js',
                     'src/core/uploader.js',
                     'src/core/runtime/html5/runtime.js',
