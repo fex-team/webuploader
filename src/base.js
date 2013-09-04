@@ -73,6 +73,10 @@ define( 'webuploader/base', [ 'jq-bridge' ], function( $ ) {
             throw new Error( 'Not Implemented!' );
         },
 
+        noop: function() {
+            // empty function
+        },
+
         // Change the context of a function.
         bindFn: function( fn, context ) {
             return fn.bind ? fn.bind( context ) : function() {

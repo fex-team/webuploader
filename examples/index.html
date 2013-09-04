@@ -4,44 +4,93 @@
     <meta http-equiv="Content-Type" content="text/html;charset=UTF-8">
     <title>WebUploader演示</title>
     <link rel="stylesheet" type="text/css" href="../css/webuploader.css" />
+    <link rel="stylesheet" type="text/css" href="./style.css" />
 </head>
 <body>
-    <div id="uploaderBtn">选择文件</div>
-    <ul id="queueList" style="display:none;">
-        <li><button id="uploadBtn">上传</button></li>
-    </ul>
+    <div class="stage">
+        <div class="queueList">
+            <ul id="queueList"></ul>
+        </div>
 
+        <div class="btns">
+            <div id="pickerBtn">
+            </div><div id="uploadBtn">开始上传</div>
+        </div>
+    </div>
+    <script type="text/javascript" src="./jquery.js"></script>
     <script type="text/javascript" src="../dist/webuploader.js"></script>
+
     <script type="text/javascript">
         var wu = WebUploader.create({
-            pick: 'uploaderBtn'
-        });
+                pick: 'pickerBtn',
+                server: 'http://liaoxuezhi.fe.baidu.com/webupload/fileupload.php'
+            }),
+            btn = $( '#uploadBtn' );
 
-        var ql = document.getElementById( 'queueList' );
-        var btn = document.getElementById( 'uploadBtn' );
-        wu.on( 'queued', function ( file ) {
-            var li = document.createElement( 'li' ),
+        wu.onFileQueued = function ( file ) {
+            var li = $( '<li id="' + file.id + '">' ),
                 ratio = window.devicePixelRatio || 1,
                 width = 120 * ratio,
                 height = 90 * ratio;
 
-            li.innerHTML = '文件名：' + file.name + ' 大小：' + Math.round( file.size / 1024 ) + ' KB';
-
             wu.getImageThumbnail( file, function( img ) {
-                li.appendChild( img );
-                img.style.width = (width / ratio) + 'px';
+                li.prepend( img );
+                $( img ).css( 'width', (width / ratio) + 'px' );
             }, width, height );
 
+            li.append( '<p>' + file.name + '</p>');
 
-
-            ql.appendChild(li);
-
-            ql.style.display = 'block';
-        });
-
-        btn.onclick = function(){
-            wu.upload();
+            li.appendTo( '#queueList' );
         };
+
+        wu.onUploadStart = function( file ) {
+            var li = $( '#' + file.id );
+            li.append( '<p class="progress"><span></span></p>' );
+            li.addClass( 'progress' );
+        }
+
+        wu.onUploadProgress = function( file, percent ) {
+            var li = $( '#' + file.id ),
+                progress = li.find( 'p.progress span' );
+
+            progress.css({
+                width: percent * 100 + '%'
+            })
+        }
+
+        wu.onUploadComplete = function( file ) {
+            var li = $( '#' + file.id ),
+                progress = li.find( 'p.progress' );
+
+            progress.fadeOut();
+
+            li.removeClass('progress').addClass( 'finished' );
+        };
+
+        wu.onUploadError = function( file ) {
+            var li = $( '#' + file.id ),
+                progress = li.find( 'p.progress' );
+
+            progress.fadeOut();
+
+            li.removeClass('progress').addClass( 'failed' );
+        };
+
+        wu.onUploadFinished = function() {
+            btn.text( '开始上传' );
+        }
+
+        btn.on( 'click', function() {
+            var text = $(btn).text();
+
+            if ( text === '开始上传' || text === '继续上传' ) {
+                wu.upload();
+                btn.text( '暂停上传' );
+            } else if ( text === '暂停上传' ) {
+                wu.pause();
+                btn.text( '继续上传' );
+            }
+        } );
     </script>
 </body>
 </html>
