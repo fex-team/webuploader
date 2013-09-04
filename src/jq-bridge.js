@@ -35,7 +35,8 @@ define( 'jq-bridge', [], function() {
 
     function extend( target, source, deep ) {
         each( source, function( key, val ) {
-            if ( deep && typeof target[ key ] === 'object' ) {
+            if ( deep && typeof val === 'object' ) {
+                typeof target[ key ] === 'object' || (target[ key ] = {});
                 extend( target[ key ], val, deep );
             } else {
                 target[ key ] = val;
@@ -43,8 +44,8 @@ define( 'jq-bridge', [], function() {
         } );
     }
 
-    each( 'Boolean Number String Function Array Date RegExp Object' +
-            ' Error'.split( '' ), function( i, name ) {
+    each( ('Boolean Number String Function Array Date RegExp Object' +
+            ' Error').split( ' ' ), function( i, name ) {
         class2type[ '[object ' + name + ']' ] = name.toLowerCase();
     } );
 
@@ -149,7 +150,7 @@ define( 'jq-bridge', [], function() {
     $.trim = function( str ) {
         return str ? str.trim() : '';
     };
-    
+
     $.isFunction = function( obj ) {
         return type( obj ) === 'function';
     };
