@@ -4,29 +4,8 @@
 define( 'webuploader/core/mediator', [ 'webuploader/base' ], function( Base ) {
     var $ = Base.$,
         slice = [].slice,
-        separator = /\s+/,
         protos;
 
-
-    // 统一化一下三种调用方式。
-    // 1. obj.on( 'type', fn );
-    // 2. obj.on( 'type1 type2 type3', fn );
-    // 3. obj.on({
-    //     type1: fn,
-    //     type2: fn,
-    //     type3: fn
-    // });
-    function eachEvent( events, callback, iterator ) {
-        if ( $.isPlainObject( events ) ) {
-            $.each( events, function( key, val ) {
-                iterator( key, val );
-            } );
-        } else {
-            $.each( (events || '').split( separator ), function() {
-                iterator( this, callback );
-            } );
-        }
-    }
 
     // 生成匹配namespace的正则
     function matcherFor( ns ) {
@@ -62,6 +41,23 @@ define( 'webuploader/core/mediator', [ 'webuploader/base' ], function( Base ) {
         });
     }
 
+    function triggerHanders( events, args ) {
+        var stoped = false,
+            i = -1,
+            len = events.length,
+            handler;
+
+        while ( ++i < len ) {
+            handler = events[ i ];
+
+            if ( handler.cb.apply( handler.ctx2, args ) === false ) {
+                stoped = true;
+                break;
+            }
+        }
+        return !stoped;
+    }
+
     protos = {
 
         /**
@@ -77,7 +73,7 @@ define( 'webuploader/core/mediator', [ 'webuploader/base' ], function( Base ) {
          */
         on: function( name, callback, context ) {
             var me = this,
-                set;
+                handler, set;
 
             if ( !callback ) {
                 return this;
@@ -85,15 +81,14 @@ define( 'webuploader/core/mediator', [ 'webuploader/base' ], function( Base ) {
 
             set = this._events || (this._events = []);
 
-            eachEvent( name, callback, function( name, callback ) {
-                var handler = parse( name );
+            handler = parse( name );
 
-                handler.cb = callback;
-                handler.ctx = context;
-                handler.ctx2 = context || me;
-                handler.id = set.length;
-                set.push( handler );
-            } );
+            handler.cb = callback;
+            handler.ctx = context;
+            handler.ctx2 = context || me;
+            handler.id = set.length;
+
+            set.push( handler );
 
             return this;
         },
@@ -109,23 +104,22 @@ define( 'webuploader/core/mediator', [ 'webuploader/base' ], function( Base ) {
          * @chainable
          */
         once: function( name, callback, context ) {
-            var me = this;
+            var me = this,
+                once;
 
             if ( !callback ) {
-                return this;
+                return me;
             }
 
-            eachEvent( name, callback, function( name, callback ) {
-                var once = function() {
-                        me.off( name, once );
-                        return callback.apply( context || me, arguments );
-                    };
+            once = function() {
+                me.off( name, once );
+                return callback.apply( context || me, arguments );
+            };
 
-                once._cb = callback;
-                me.on( name, once, context );
-            } );
+            once._cb = callback;
+            me.on( name, once, context );
 
-            return this;
+            return me;
         },
 
         /**
@@ -150,12 +144,10 @@ define( 'webuploader/core/mediator', [ 'webuploader/base' ], function( Base ) {
                 return this;
             }
 
-            eachEvent( name, callback, function( name, callback ) {
-                findHandlers( events, name, callback, context )
-                        .forEach(function( handler ) {
-                            delete events[ handler.id ];
-                        });
-            } );
+            findHandlers( events, name, callback, context )
+                    .forEach(function( handler ) {
+                        delete events[ handler.id ];
+                    });
 
             return this;
         },
@@ -169,12 +161,7 @@ define( 'webuploader/core/mediator', [ 'webuploader/base' ], function( Base ) {
          * @return {Boolean} 如果handler中return false了，则返回false, 否则返回true
          */
         trigger: function( type ) {
-            var i = -1,
-                stoped = false,
-                args,
-                events,
-                len,
-                handler;
+            var args, events, allEvents;
 
             if ( !this._events || !type ) {
                 return this;
@@ -182,21 +169,10 @@ define( 'webuploader/core/mediator', [ 'webuploader/base' ], function( Base ) {
 
             args = slice.call( arguments, 1 );
             events = findHandlers( this._events, type );
+            allEvents = findHandlers( this._events, 'all' );
 
-            if ( events ) {
-                len = events.length;
-
-                while ( ++i < len ) {
-                    handler = events[ i ];
-
-                    if ( handler.cb.apply( handler.ctx2, args ) === false ) {
-                        stoped = true;
-                        break;
-                    }
-                }
-            }
-
-            return !stoped;
+            return triggerHanders( events, args ) &&
+                    triggerHanders( allEvents, arguments );
         }
     };
 
