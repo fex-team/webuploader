@@ -156,6 +156,10 @@ define( 'webuploader/core/file', [
              */
             getSource: function() {
                 return this.source;
+            },
+
+            destory: function() {
+                delete statusMap[ this.id ];
             }
         } );
 

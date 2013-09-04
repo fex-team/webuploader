@@ -5,19 +5,19 @@ define( 'webuploader/core/uploader', [ 'webuploader/base',
         'webuploader/core/mediator',
         'webuploader/core/file',
         'webuploader/core/queue',
+        'webuploader/core/uploadmgr',
         'webuploader/core/runtime'
-        ], function( Base, Mediator, WUFile, Queue, Runtime ) {
+        ], function( Base, Mediator, WUFile, Queue, UploadMgr, Runtime ) {
 
     var $ = Base.$,
         defaultOpts = {
+            thread: 3,
+            compress: true,
+            server: '../server/fileupload.php',
             pick: {
                 multiple: true,
                 id: 'uploaderBtn'
-            },
-            accept: [{
-                title: 'image',
-                extensions: 'gif,jpg,jpeg,bmp'
-            }]
+            }
         };
 
     function Uploader( opts ) {
@@ -43,19 +43,27 @@ define( 'webuploader/core/uploader', [ 'webuploader/base',
 
             me._queue = new Queue();
             me._queue.on( 'queued', function( file ) {
-                me.trigger( 'queued', file );
+                me.trigger( 'fileQueued', file );
             } );
 
             me._initRuntime( opts, function() {
-
-
                 opts.pick && me._initFilePicker( opts );
+
+                me._mgr = UploadMgr( opts, me._queue, me._runtime );
+
+                // 转发所有的事件出去。
+                me._mgr.on( 'all', function() {
+                    return me.trigger.apply( me, arguments );
+                });
+
+                me.state = 'inited';
+                me.trigger( 'ready' );
             } );
         },
 
+        // todo 根据opts，告诉runtime需要具备哪些能力
         _initRuntime: function( opts, cb ) {
             var caps = {
-
                     resize_image: true
                 },
 
@@ -67,11 +75,9 @@ define( 'webuploader/core/uploader', [ 'webuploader/base',
                 caps.select_multiple = opts.pick.multiple;
             }
 
-            runtime = Runtime.getInstance( opts, caps  );
+            this._runtime = runtime = Runtime.getInstance( opts, caps  );
             runtime.once( 'ready', cb );
             runtime.init();
-
-            this._runtime = runtime;
         },
 
         _initFilePicker: function( opts ) {
@@ -91,60 +97,16 @@ define( 'webuploader/core/uploader', [ 'webuploader/base',
                     me._queue.append( new WUFile( domfile ), domfile );
                 } );
 
-                /*
-                var Transport = runtime.getComponent( 'Transport' );
-
-                // 添加文件到队列
-                console.log( files );
-                Transport.sendAsBlob( files[ 0 ], {
-                    url: '../server/fileupload.php'
-                } );
-                */
-
             } );
             picker.init();
         },
 
         upload: function() {
-            var Q = this._queue,
-                runtime = Runtime.getInstance(),
-                Transport = runtime.getComponent( 'Transport' ),
-                Image = runtime.getComponent( 'Image' );
+            this._mgr.start();
+        },
 
-            if ( !Q.stats.numOfQueue ) {
-                return;
-            }
-
-            while ( Q.stats.numOfQueue ) {
-                (function() {
-                    var fileObj = Q.fetch(),
-                        file = fileObj.file;
-
-                    Image.downsize( fileObj.source, function( blob ) {
-                        var tr = Transport.sendAsBlob( blob, {
-                                url: '../server/fileupload.php',
-                                filename: fileObj.source.name
-                            } );
-
-                        tr.on( 'progress', function() {
-                            file.setStatus( WUFile.Status.PROGRESS );
-                            console.log( Q.stats );
-                        } );
-
-                        tr.on( 'error', function() {
-                            file.setStatus( WUFile.Status.ERROR );
-                            console.log( Q.stats );
-                        } );
-
-                        tr.on( 'complete', function() {
-                            file.setStatus( WUFile.Status.COMPLETE );
-                            console.log( Q.stats );
-                        } );
-
-                    }, 1600, 1600 );
-
-                })();
-            }
+        pause: function() {
+            this._mgr.pause();
         },
 
         getImageThumbnail: function( file, cb, width, height ) {

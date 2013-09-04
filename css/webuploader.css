@@ -5,6 +5,7 @@
 	color: #fff;
 	text-align: center;
 	border-radius: 3px;
+    display: inline-block;
 }
 
 .webuploader-btn-hover {
