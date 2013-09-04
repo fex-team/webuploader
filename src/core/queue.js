@@ -58,7 +58,7 @@ define( 'webuploader/core/queue', [
              * @param  {File} file   文件对象
              * @param  {Mixed} [source] 文件内容源，例如DOM File/Blob/Base64 String
              *                          文件首次加入队列时必须携带该参数
-             */ 
+             */
             prepend: function( file, source ) {
                 this._queue.unshift( file );
 
@@ -83,27 +83,72 @@ define( 'webuploader/core/queue', [
              * @param  {String|File} [fileId]   文件ID，如果为空则取队列首文件
              * @return {Object} 包括file和source字段
              */
-            fetch: function( file ) {
-                var idx = 0,
-                    id;
+            // 不能出列啊，如果文件失败了，那存在哪呢？只有文件删除了，才能出队列。
+            // fetch: function( file ) {
+            //     var idx = 0,
+            //         id;
 
-                if ( file ) {
-                    id = typeof file === 'string' ? file : file.id;
+            //     if ( file ) {
+            //         id = typeof file === 'string' ? file : file.id;
 
-                    $.each( this._queue, function( index, file ) {
-                        if ( file.id === id ) {
-                            idx = index;
-                            return false;
-                        }
-                    } );
+            //         $.each( this._queue, function( index, file ) {
+            //             if ( file.id === id ) {
+            //                 idx = index;
+            //                 return false;
+            //             }
+            //         } );
+            //     }
+
+            //     file = this._queue.splice( idx, 1 )[ 0 ];
+            //     id = file.id;
+
+            //     this.stats.numOfQueue--;
+
+            //     return this._all[ id ];
+            // },
+            //
+
+            fetch: function( status ) {
+                var len = this._queue.length,
+                    i, file;
+
+                status = STATUS.QUEUED;
+
+                for( i = 0; i < len; i++ ) {
+                    file = this._queue[ i ];
+
+                    if ( status === file.getStatus() ) {
+                        return file;
+                    }
                 }
 
-                file = this._queue.splice( idx, 1 )[ 0 ];
-                id = file.id;
+                return null;
+            },
 
-                this.stats.numOfQueue--;
+            /**
+             * 获取队列中的文件。可以指定文件状态，和最多获取的个数
+             * @param  {[type]} status [description]
+             * @param  {[type]} count  [description]
+             * @return {[type]}        [description]
+             */
+            getFiles: function( status, count ) {
+                var ret = [],
+                    len = this._queue.length,
+                    file, i;
 
-                return this._all[ id ];
+                for( i = 0; i < len; i++ ) {
+                    file = this._queue[ i ];
+
+                    if ( file.getStatus() === status || !status ) {
+                        ret.push( file );
+                    }
+
+                    if ( count && ret.length >= count ) {
+                        return ret;
+                    }
+                }
+
+                return ret;
             },
 
             _fileAdded: function( file, source ) {
@@ -132,6 +177,10 @@ define( 'webuploader/core/queue', [
                 switch ( preStatus ) {
                     case STATUS.PROGRESS:
                         stats.numOfProgress--;
+                        break;
+
+                    case STATUS.QUEUED:
+                        stats.numOfQueue --;
                         break;
                 }
 
