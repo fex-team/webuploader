@@ -15,7 +15,7 @@ define( 'webuploader/core/runtime/html5/transport', [ 'webuploader/base',
             fileVar: 'file',
             chunked: true,
             chunkSize: 1024 * 512,    // 0.5M.
-            timeout: 30 * 1000, // 2分钟
+            timeout: 2 * 60 * 1000, // 2分钟
             formData: {},
             headers: {}
         };
@@ -112,6 +112,9 @@ define( 'webuploader/core/runtime/html5/transport', [ 'webuploader/base',
         },
 
         _reject: function( reason ) {
+            // @todo
+            // 如果是timeout abort, 在chunk传输模式中应该自动重传。
+            // chunkRetryCount = 3;
             this.state = 'fail';
             this.trigger( 'error', reason );
         },
@@ -183,6 +186,13 @@ define( 'webuploader/core/runtime/html5/transport', [ 'webuploader/base',
 
             xhr.open( 'POST', opts.url );
             this._setRequestHeader( xhr, opts.headers );
+
+            if ( opts.timeout ) {
+                this.timoutTimer = setTimeout(function() {
+                    xhr.abort();
+                }, opts.timeout );
+            }
+
             xhr.send( formData );
             return this;
         },
@@ -193,11 +203,11 @@ define( 'webuploader/core/runtime/html5/transport', [ 'webuploader/base',
                 this._xhr.upload.onprogress = noop;
                 this._xhr.onreadystatechange = noop;
                 this._xhr.abort();
+                this._onprogress( 0 );
             }
         },
 
         resume: function() {
-            debugger;
             this.paused = false;
             this._upload();
         },
