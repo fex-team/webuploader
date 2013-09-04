@@ -14,7 +14,8 @@ define( 'webuploader/core/uploadmgr', [ 'webuploader/base',
             Image = runtime.getComponent( 'Image' ),
             Transport = runtime.getComponent( 'Transport' ),
             runing = false,
-            requests = [],
+            requests = {},
+            requestsLength = 0,
             api;
 
         function _tick() {
@@ -68,6 +69,7 @@ define( 'webuploader/core/uploadmgr', [ 'webuploader/base',
                     if ( ~[ 'error', 'complete' ].indexOf( type ) ) {
                         setTimeout(function() {
                             delete requests[ file.id ];
+                            requestsLength--;
                             _tick();
                         }, 1 );
                     }
@@ -75,7 +77,8 @@ define( 'webuploader/core/uploadmgr', [ 'webuploader/base',
                     return ret;
                 } );
 
-                requests.push( tr );
+                requests[ file.id ] =  tr;
+                requestsLength++;
 
             }, 1600, 1600 );
 
@@ -85,7 +88,7 @@ define( 'webuploader/core/uploadmgr', [ 'webuploader/base',
         api = {
 
             start: function() {
-                if ( runing || !queue.stats.numOfQueue && !requests.length ) {
+                if ( runing || !queue.stats.numOfQueue && !requestsLength ) {
                     return;
                 }
 
