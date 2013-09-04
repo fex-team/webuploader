@@ -15,7 +15,7 @@ define( 'webuploader/core/runtime/html5/transport', [ 'webuploader/base',
             fileVar: 'file',
             chunked: true,
             chunkSize: 1024 * 512,    // 0.5M.
-            timeout: 5 * 1000, // 2分钟
+            timeout: 2 * 60 * 1000, // 2分钟
             formData: {},
             headers: {}
         };
