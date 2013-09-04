@@ -73,6 +73,9 @@ table {
     margin: 1em;
     position: relative;
     font-size: 12px;
+    width: 120px;
+    background: #ccc;
+    border: #333;
 }
 
 .queueList ul li.finished:after {
