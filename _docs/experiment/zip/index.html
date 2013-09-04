@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html lang="en">
+ 	<head>
+	    <!-- Meta, title, CSS, favicons, etc. -->
+	    <meta charset="utf-8">
+		<meta name="viewport" content="width=device-width, initial-scale=1.0">
+		<meta name="description" content="">
+		<meta name="author" content="">
+
+		<title>
+		  
+		    zip files before uploading
+		  
+		</title>
+
+		<!-- Bootstrap core CSS -->
+		<link href="../libs/bs/bootstrap.min.css" rel="stylesheet">
+
+		<style type="text/css">
+		td{
+			padding: 10px;
+		}
+		.splitter{
+			margin: 45px 0;
+			background: -webkit-linear-gradient(left, rgba(0,0,0,0) 0%,rgba(0,0,0,0.25) 50%,rgba(0,0,0,0) 100%); 
+			height: 1px;
+		}
+		</style>
+
+		<script type="text/javascript" src="../libs/zip/zip.js"></script>
+	</head>
+
+	<body>
+		<div class="row">
+			<div class="col-lg-2"></div>
+			<div class="col-lg-8">
+				<div class="page-header">
+				  <h1>ZIP TESTS</h1>
+				</div>
+				<div>
+					<label for="selector"><button type="button" class="btn btn-primary btn-lg">选择文件</button></label>
+					<input id="selector" type="file" style="visibility:hidden;" multiple/>
+				</div>
+				<div class="page-header">
+				  <h1>NOZIP TESTS(3 THREADS)</h1>
+				</div>
+				<div>
+					<label for="selector2"><button type="button" class="btn btn-primary btn-lg">选择文件</button></label>
+					<input id="selector2" type="file" style="visibility:hidden;" multiple/>
+				</div>
+			</div>
+			<div class="col-lg-2"></div>
+		</div>
+	</body>
+	<script>
+
+	(function( obj ){
+		zip.workerScriptsPath = "../libs/zip/";
+
+		var model = (function() {
+			var zipFileEntry, zipWriter, writer, creationMethod, URL = obj.webkitURL || obj.mozURL || obj.URL;
+
+			return {
+				setCreationMethod : function(method) {
+					creationMethod = method;
+				},
+				addFiles : function addFiles(files, oninit, onadd, onprogress, onend) {
+					var addIndex = 0;
+
+					function nextFile() {
+						var file = files[addIndex];
+						onadd(file);
+						zipWriter.add(file.name, new zip.BlobReader(file), function() {
+							addIndex++;
+							if (addIndex < files.length)
+								nextFile();
+							else
+								onend();
+						}, onprogress);
+					}
+
+					function createZipWriter() {
+						zip.createWriter(writer, function(writer) {
+							zipWriter = writer;
+							oninit();
+							nextFile();
+						}, onerror);
+					}
+
+					if (zipWriter)
+						nextFile();
+					else if (creationMethod == "Blob") {
+						writer = new zip.BlobWriter();
+						createZipWriter();
+					}
+				},
+				getBlobURL : function(callback) {
+					zipWriter.close(function(blob) {
+						var blobURL = creationMethod == "Blob" ? URL.createObjectURL(blob) : zipFileEntry.toURL();
+						callback(blobURL);
+						zipWriter = null;
+					});
+				},
+				getBlob : function(callback) {
+					zipWriter.close(callback);
+				},
+				sendAsBlob: function(callback) {
+					this.getBlob( function(blob) {
+
+						console.log( 'start to upload.' );
+
+						var start = Date.now();
+
+						var form = new FormData();
+						form.append('zipped', 1 );
+						form.append('file', blob);
+
+						var xhr = new XMLHttpRequest();
+						xhr.open( 'POST', '../server/upload_file.php' );
+						xhr.onreadystatechange = function() {
+							if( xhr.readyState == 4 && xhr.status == 200 ) {
+								callback( xhr.responseText );
+
+								console.log( 'upload complete.' );
+								console.log( 'duration: ' + ( Date.now() - start ) + 'ms' );
+							}
+						};
+						xhr.send(form);
+					} );
+				}
+			};
+		})();
+
+		var selector = document.getElementById( 'selector' );
+
+		model.setCreationMethod( 'Blob' );
+
+		selector.onchange = function( e ) {
+
+			var start;
+			model.addFiles( e.target.files, 
+				function(){
+					console.log( 'start to zip.' );
+					start = Date.now();
+				},
+				function( file ){
+					console.log( file.name + ' added.' );
+				},
+				function(){
+
+				}, 
+				function(){
+					console.log( 'files zip done!' );
+					console.log( 'duration: ' + (Date.now() - start) + 'ms' );
+					model.sendAsBlob( function( serverData ) {
+						console.log( serverData );
+					} );
+			} );
+		};
+
+		var selector2 = document.getElementById( 'selector2' );
+		var max = 3;
+		var threads = 0;
+		var idx = 0;
+		var files;
+		var start;
+
+		function done(){
+			console.log( 'upload complete.' );
+			console.log( 'duration: ' + (Date.now() - start) + 'ms' );
+		}
+
+		function upload( file, callback ) {
+			var form = new FormData();
+			form.append('file', file);
+
+			var xhr = new XMLHttpRequest();
+			xhr.open( 'POST', '../server/upload_file.php' );
+			xhr.onreadystatechange = function() {
+				if( xhr.readyState == 4 && xhr.status == 200 ) {
+					callback( xhr.responseText );
+				}
+			};
+			xhr.send(form);
+		}
+
+		function uploadFiles( ) {
+			if ( threads >= max ) {
+				return;
+			};
+
+			if ( idx >= files.length ) {
+				done();
+				return;
+			}
+
+			threads++;
+
+			upload( files[idx++], function() {
+				threads--;
+				uploadFiles( );
+			} );
+		}
+
+		selector2.onchange = function( e ) {
+			var i = max;
+			idx = 0;
+			files = e.target.files;
+
+			start = Date.now();
+
+			console.log( 'start to upload.' );
+
+			while( i-- ) {
+				uploadFiles();
+			}
+		};
+
+	})(this);
+	</script>
+</html>
