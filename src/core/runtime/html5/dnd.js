@@ -33,11 +33,11 @@ define( 'webuploader/core/runtime/html5/dnd', [
                 }
 
                 elem.on( 'dragenter', function( e ) {
-                    elem.classList.add( 'webuploader-dnd-over' );
+                    elem.addClass( 'webuploader-dnd-over' );
                 } );
 
                 elem.on( 'dragover', function( e ) {
-                    e.stopPropagation();  
+                    e.stopPropagation();
                     e.preventDefault();
                 } );
 
@@ -50,8 +50,8 @@ define( 'webuploader/core/runtime/html5/dnd', [
                         ii,
                         i;
 
-                    e.stopPropagation();  
-                    e.preventDefault(); 
+                    e.stopPropagation();
+                    e.preventDefault();
                     files = e.dataTransfer.files;
 
                     if ( opts.accept && opts.accept.length > 0 ) {
@@ -73,10 +73,10 @@ define( 'webuploader/core/runtime/html5/dnd', [
                     } else {
                         triggerFiles = files;
                     }
-                    
+
                     me.trigger( 'drop', triggerFiles );
                     e.dataTransfer.clearData();
-                    elem.classList.remove( 'webuploader-dnd-over' );
+                    elem.removeClass( 'webuploader-dnd-over' );
                 } );
             }
 

@@ -123,7 +123,8 @@ define( 'webuploader/core/uploadmgr', [ 'webuploader/base',
                 file = file.id ? file : queue.getFile( file );
 
                 if ( requests[ file.id ] ) {
-
+                    file.setStatus( Status.CANCELLED );
+                    requests[ file.id ].cancel();
                 }
             }
         };
