@@ -102,13 +102,13 @@ define( 'webuploader/core/runtime/html5/filepicker', [
             return {
 
                 // 是否能选择图片
-                select_file: true,
+                selectFile: true,
 
                 // 是否能多选
-                select_multiple: true,
+                selectMultiple: true,
 
                 // 是否支持文件过滤
-                filter_by_extension: true
+                filteByExtension: true
             };
         });
 
