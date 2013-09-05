@@ -16,6 +16,7 @@ define( 'webuploader/core/uploadmgr', [ 'webuploader/base',
             runing = false,
             requests = {},
             requestsLength = 0,
+            Status = File.Status,
             api;
 
         function _tick() {
@@ -25,7 +26,7 @@ define( 'webuploader/core/uploadmgr', [ 'webuploader/base',
                 _sendFile( queue.fetch() );
             }
 
-            runing = stats.numOfQueue;
+            stats.numOfQueue || (runing = true);
             runing || api.trigger( 'uploadFinished' );
         }
 
@@ -35,7 +36,7 @@ define( 'webuploader/core/uploadmgr', [ 'webuploader/base',
             if ( !api.trigger( 'uploadStart', file ) ) {
 
                 // 先标记它是错误的。
-                file.setStatus( File.Status.ERROR );
+                file.setStatus( Status.ERROR );
                 return;
             }
 
@@ -54,8 +55,8 @@ define( 'webuploader/core/uploadmgr', [ 'webuploader/base',
                 tr.on( 'all', function( type ) {
                     var args = [].slice.call( arguments, 1 ),
                         status = {
-                            error: File.Status.ERROR,
-                            complete: File.Status.COMPLETE
+                            error: Status.ERROR,
+                            success: Status.COMPLETE
                         },
                         ret;
 
@@ -66,12 +67,10 @@ define( 'webuploader/core/uploadmgr', [ 'webuploader/base',
                     status[ type ] && file.setStatus( status[ type ] );
                     ret = api.trigger.apply( api, args );
 
-                    if ( ~[ 'error', 'complete' ].indexOf( type ) ) {
-                        setTimeout(function() {
-                            delete requests[ file.id ];
-                            requestsLength--;
-                            _tick();
-                        }, 1 );
+                    if ( type === 'complete' ) {
+                        delete requests[ file.id ];
+                        requestsLength--;
+                        tr.off( 'all', arguments.callee );
                     }
 
                     return ret;
@@ -82,7 +81,17 @@ define( 'webuploader/core/uploadmgr', [ 'webuploader/base',
 
             }, 1600, 1600 );
 
-            file.setStatus( File.Status.PROGRESS );
+            file.setStatus( Status.PROGRESS );
+
+            file.on( 'statuschange', function( cur ) {
+                switch( cur ) {
+                    case Status.ERROR:
+                    case Status.COMPLETE:
+                        setTimeout( _tick, 1 );
+                        file.off( 'statuschange', arguments.callee );
+                        break;
+                }
+            } );
         }
 
         api = {
@@ -91,19 +100,31 @@ define( 'webuploader/core/uploadmgr', [ 'webuploader/base',
                 if ( runing || !queue.stats.numOfQueue && !requestsLength ) {
                     return;
                 }
-
                 runing = true;
                 $.each( requests, function( id, transport ) {
+                    var file = queue.getFile( id );
+                    file.setStatus( Status.PROGRESS, '' );
                     transport.resume();
                 });
                 _tick();
             },
 
-            pause: function() {
+            pause: function( interrupt ) {
                 runing = false;
                 $.each( requests, function( id, transport ) {
+                    var file = queue.getFile( id );
+                    file.setStatus( Status.INTERRUPT,
+                            interrupt ? '网络中断': '用户暂停' );
                     transport.pause();
-                });
+                } );
+            },
+
+            cancelFile: function( file ) {
+                file = file.id ? file : queue.getFile( file );
+
+                if ( requests[ file.id ] ) {
+
+                }
             }
         };
 
