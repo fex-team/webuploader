@@ -7,7 +7,7 @@
     <link rel="stylesheet" type="text/css" href="./style.css" />
 </head>
 <body>
-    <div class="stage">
+    <div id="dndArea" class="stage">
         <div class="queueList">
             <ul id="queueList"></ul>
         </div>
@@ -23,6 +23,7 @@
     <script type="text/javascript">
         var wu = WebUploader.create({
                 pick: 'pickerBtn',
+                dnd: 'dndArea'
                 server: 'http://liaoxuezhi.fe.baidu.com/webupload/fileupload.php'
             }),
             btn = $( '#uploadBtn' );
