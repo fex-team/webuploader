@@ -10,3 +10,13 @@
 .webuploader-btn-hover {
 	background: #00a2d4;
 }
+
+.webuploader-dnd {
+	width: 400px;
+	height: 400px;
+	border: 3px solid #ddd;
+}
+.webuploader-dnd-over {
+	border-style: dashed; 
+}
+
