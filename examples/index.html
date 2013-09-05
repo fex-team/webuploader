@@ -41,6 +41,22 @@
             li.append( '<p>' + file.name + '</p>');
 
             li.appendTo( '#queueList' );
+
+            file.on( 'statuschange', function( cur, pre ) {
+
+                li.removeClass('progress failed interrupt');
+
+                switch ( cur ) {
+                    case 3:    // error
+                        li.find( 'p.progress' ).fadeOut();
+                        li.addClass( 'failed' );
+                        break;
+
+                    case 6:
+                        li.addClass( 'interrupt' );
+                        break;
+                }
+            });
         };
 
         wu.onUploadStart = function( file ) {
@@ -65,15 +81,6 @@
             progress.fadeOut();
 
             li.removeClass('progress').addClass( 'finished' );
-        };
-
-        wu.onUploadError = function( file ) {
-            var li = $( '#' + file.id ),
-                progress = li.find( 'p.progress' );
-
-            progress.fadeOut();
-
-            li.removeClass('progress').addClass( 'failed' );
         };
 
         wu.onUploadFinished = function() {
