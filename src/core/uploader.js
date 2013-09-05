@@ -17,7 +17,10 @@ define( 'webuploader/core/uploader', [ 'webuploader/base',
             accept: [{
                 title: 'image',
                 extensions: 'gif,jpg,jpeg,bmp'
-            }]
+            }],
+            dnd: {
+                id: 'dndArea'
+            }
         };
 
     function Uploader( opts ) {
@@ -50,6 +53,7 @@ define( 'webuploader/core/uploader', [ 'webuploader/base',
 
 
                 opts.pick && me._initFilePicker( opts );
+                opts.dnd && me._initDnd( opts );
             } );
         },
 
@@ -103,6 +107,27 @@ define( 'webuploader/core/uploader', [ 'webuploader/base',
 
             } );
             picker.init();
+        },
+
+        _initDnd: function( opts ) {
+            var runtime = Runtime.getInstance(),
+                me = this,
+                options = $.extend( {}, opts.dnd, {
+                    accept: opts.accept
+                } ),
+                Dnd = runtime.getComponent( 'Dnd' ),
+                dnd;
+
+            dnd = new Dnd( options );
+
+            dnd.on( 'select', function( files ) {
+
+                $.each( files, function( idx, domfile ) {
+                    me._queue.append( new WUFile( domfile ), domfile );
+                } );
+
+            } );
+            dnd.init();
         },
 
         upload: function() {
