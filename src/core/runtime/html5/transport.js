@@ -21,7 +21,6 @@ define( 'webuploader/core/runtime/html5/transport', [ 'webuploader/base',
         };
 
     function Transport( opts ) {
-        this.xhr = null;
         opts = this.options = $.extend( true, {}, defaultOpts, opts || {} );
     }
 
@@ -54,13 +53,13 @@ define( 'webuploader/core/runtime/html5/transport', [ 'webuploader/base',
                 xhr.onreadystatechange = noop;
                 me._xhr = null;
 
-                if ( xhr.status >= 200 && xhr.status < 300 ) {
+                if ( xhr.status === 200 ) {
                     ret = me._parseResponse( xhr.responseText );
                     ret._raw = xhr.responseText;
                     rHeaders = me._getXhrHeaders( xhr );
 
                     if ( !me.trigger( 'accept', ret, rHeaders ) ) {
-                        reject = 'rejected';
+                        reject = 'server';
                     }
 
                     if ( !reject ) {
@@ -68,7 +67,7 @@ define( 'webuploader/core/runtime/html5/transport', [ 'webuploader/base',
                     }
                 }
 
-                reject = xhr.status ? xhr.statusText : 'abort';
+                reject = xhr.status ? 'http' : 'timeout';
                 return me._reject( reject );
             };
 
@@ -102,12 +101,11 @@ define( 'webuploader/core/runtime/html5/transport', [ 'webuploader/base',
         },
 
         _notify: function( percentage ) {
-            this.state = 'progress';
             this.trigger( 'progress', percentage || 0 );
         },
 
         _resolve: function( ret, headers ) {
-            this.state = 'done';
+            this.state = 'complete';
             this.trigger( 'success', ret, headers );
             this.trigger( 'complete' );
         },
@@ -196,6 +194,7 @@ define( 'webuploader/core/runtime/html5/transport', [ 'webuploader/base',
             }
 
             xhr.send( formData );
+            this.state = 'progress';
             return this;
         },
 
@@ -214,9 +213,14 @@ define( 'webuploader/core/runtime/html5/transport', [ 'webuploader/base',
             this._upload();
         },
 
-        abort: function() {
-            if ( this.state === 'progress' ) {
-                // @ todo
+        cancel: function() {
+            if ( this._xhr ) {
+                this._xhr.upload.onprogress = noop;
+                this._xhr.onreadystatechange = noop;
+                this._xhr.abort();
+                this.state = 'canceled';
+                this.trigger( 'cancel' );
+                this.trigger( 'complete' );
             }
         },
 
@@ -228,12 +232,6 @@ define( 'webuploader/core/runtime/html5/transport', [ 'webuploader/base',
          * @chainable
          */
         sendAsBlob: function( blob ) {
-
-            // 只有在pedding的时候才可以发送。
-            if ( this.state !== 'pending' ) {
-                return;
-            }
-
             var opts = this.options;
 
             if ( opts.chunked && blob.size > opts.chunkSize ) {
