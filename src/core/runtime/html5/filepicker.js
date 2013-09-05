@@ -35,21 +35,22 @@ define( 'webuploader/core/runtime/html5/filepicker', [
                     acceptStr = [],
                     extStr = [],
                     label,
-                    input;
+                    input,
+                    inputId;
 
                 if ( !elem.length ) {
                     throw new Error( '找不到元素#' + opts.id );
                 }
 
+                inputId = opts.name ? opts.name : ( 'btn' + Date.now() );
                 input = document.createElement( 'input' );
                 label = document.createElement( 'label' );
                 input.setAttribute( 'type', 'file' );
-                input.setAttribute( 'name', opts.name );
-                input.setAttribute( 'id', opts.name );
+                input.setAttribute( 'id', inputId );
                 input.style.width = '0px';
-                label.setAttribute( 'for', opts.name );
-                label.className = 'webuploader-btn';
-                label.innerHTML = '上传照片';
+                label.setAttribute( 'for', inputId );
+                label.classList.add( 'webuploader-btn' );
+                label.innerHTML = opts.btnName || '上传照片';
 
                 if ( opts.multiple ) {
                     input.setAttribute( 'multiple', 'multiple' );
@@ -57,7 +58,6 @@ define( 'webuploader/core/runtime/html5/filepicker', [
 
                 if ( opts.accept && opts.accept.length > 0 ) {
                     for (i = 0, len = opts.accept.length; i < len; i++) {
-                        //acceptStr.push( opts.accept[i].title + '/' + opts.accept[i].extensions );
                         extStr = opts.accept[i].extensions.split( ',' );
                         for (var ii = 0; ii < extStr.length; ii++) {
                             acceptStr.push( opts.accept[i].title + '/' + extStr[ii] );
@@ -66,8 +66,8 @@ define( 'webuploader/core/runtime/html5/filepicker', [
                     input.setAttribute( 'accept', acceptStr.join( ',' ) );
                 }
 
-                if ( opts.labelClass) {
-                    label.className += ( ' ' + opts.labelClass );
+                if ( opts.btnClass) {
+                    label.classList.add( opts.btnClass );
                 }
 
                 $( input ).on( 'change', function( e ) {
@@ -75,11 +75,11 @@ define( 'webuploader/core/runtime/html5/filepicker', [
                 } );
 
                 $( label ).on( 'mouseover', function( e ) {
-                    label.className += ' webuploader-btn-hover';
+                    label.classList.add( 'webuploader-btn-hover' );
                 } );
 
                 $( label ).on( 'mouseout', function( e ) {
-                    label.className = label.className.replace( ' webuploader-btn-hover', '' );
+                    label.classList.remove( 'webuploader-btn-hover' );
                 } );
 
                 elem.append( input );
