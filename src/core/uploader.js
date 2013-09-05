@@ -17,7 +17,12 @@ define( 'webuploader/core/uploader', [ 'webuploader/base',
             pick: {
                 multiple: true,
                 id: 'uploaderBtn'
-            }
+            },
+            accept: [{
+                title: 'image',
+                extensions: 'gif,jpg,jpeg,bmp'
+            }],
+            dnd: ''
         };
 
     function Uploader( opts ) {
@@ -57,6 +62,7 @@ define( 'webuploader/core/uploader', [ 'webuploader/base',
                 opts = this.options;
 
             opts.pick && me._initFilePicker( opts );
+            opts.dnd && me._initDnd( opts );
 
             me._initNetWorkDetect();
 
@@ -110,6 +116,28 @@ define( 'webuploader/core/uploader', [ 'webuploader/base',
 
             } );
             picker.init();
+        },
+
+        _initDnd: function( opts ) {
+            var runtime = Runtime.getInstance(),
+                me = this,
+                options = $.extend( {}, {
+                    id: opts.dnd,
+                    accept: opts.accept
+                } ),
+                Dnd = runtime.getComponent( 'Dnd' ),
+                dnd;
+
+            dnd = new Dnd( options );
+
+            dnd.on( 'select', function( files ) {
+
+                $.each( files, function( idx, domfile ) {
+                    me._queue.append( new WUFile( domfile ) );
+                } );
+
+            } );
+            dnd.init();
         },
 
         _initNetWorkDetect: function() {
