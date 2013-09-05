@@ -73,6 +73,14 @@ define( 'webuploader/core/file', [
              */
             this.ext = rExt.exec( file.name ) ? RegExp.$1 : '';
 
+
+            /**
+             * 状态文字说明。
+             * @property statusText
+             * @type {string}
+             */
+            this.statusText = '';
+
             /**
              * 文件上传成功后对应的服务器端URL
              * @property url
@@ -111,9 +119,11 @@ define( 'webuploader/core/file', [
                         CANCELLED:     5
                     }
              */
-            setStatus: function( status ) {
+            setStatus: function( status, text ) {
 
                 var prevStatus = statusMap[ this.id ];
+
+                typeof text !== 'undefined' && (this.statusText = text);
 
                 if ( status !== prevStatus ) {
                     statusMap[ this.id ] = status;
@@ -121,7 +131,7 @@ define( 'webuploader/core/file', [
                      * 文件状态变化
                      * @event statuschange
                      */
-                    this.trigger( 'statuschange', this, status, prevStatus );
+                    this.trigger( 'statuschange', status, prevStatus );
                 }
 
             },
@@ -171,7 +181,8 @@ define( 'webuploader/core/file', [
             PROGRESS:   2,
             ERROR:      3,
             COMPLETE:   4,
-            CANCELLED:  5
+            CANCELLED:  5,
+            INTERRUPT:  6
         };
 
         return WUFile;
