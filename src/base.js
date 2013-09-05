@@ -3,6 +3,8 @@
  * jQuery中有的方法，在jq-bridge中实现，jQuery外的方法在此方法中实现。
  */
 define( 'webuploader/base', [ 'jq-bridge' ], function( $ ) {
+    var noop = function() {};
+
     return {
         $: $,
 
@@ -73,9 +75,16 @@ define( 'webuploader/base', [ 'jq-bridge' ], function( $ ) {
             throw new Error( 'Not Implemented!' );
         },
 
-        noop: function() {
-            // empty function
-        },
+        noop: noop,
+
+        log: (function(){
+            if ( window.console.log ) {
+                return function() {
+                    console.log.apply( console, arguments );
+                };
+            }
+            return noop;
+        })(),
 
         // Change the context of a function.
         bindFn: function( fn, context ) {
