@@ -64,7 +64,7 @@ define( 'webuploader/core/runtime/html5/transport', [ 'webuploader/base',
                     }
 
                     if ( !reject ) {
-                        return me._oncomplete.call( me, ret, rHeaders );
+                        return me._onsuccess.call( me, ret, rHeaders );
                     }
                 }
 
@@ -92,7 +92,7 @@ define( 'webuploader/core/runtime/html5/transport', [ 'webuploader/base',
             this._notify( percentage );
         },
 
-        _oncomplete: function( ret, headers ) {
+        _onsuccess: function( ret, headers ) {
             if ( this.chunks && this.chunk < this.chunks - 1 ) {
                 this.chunk++;
                 this.paused || this._upload();
@@ -108,7 +108,8 @@ define( 'webuploader/core/runtime/html5/transport', [ 'webuploader/base',
 
         _resolve: function( ret, headers ) {
             this.state = 'done';
-            this.trigger( 'complete', ret, headers );
+            this.trigger( 'success', ret, headers );
+            this.trigger( 'complete' );
         },
 
         _reject: function( reason ) {
@@ -117,6 +118,7 @@ define( 'webuploader/core/runtime/html5/transport', [ 'webuploader/base',
             // chunkRetryCount = 3;
             this.state = 'fail';
             this.trigger( 'error', reason );
+            this.trigger( 'complete' );
         },
 
         _setRequestHeader: function( xhr, headers ) {

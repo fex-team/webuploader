@@ -32,7 +32,7 @@ define( 'webuploader/core/queue', [
             this._queue = [];
 
             // 存储所有文件
-            this._all = {};
+            this._map = {};
         }
 
         $.extend( Queue.prototype, {
@@ -45,10 +45,9 @@ define( 'webuploader/core/queue', [
              * @param  {Mixed} [source] 文件内容源，例如DOM File/Blob/Base64 String
              *                          文件首次加入队列时必须携带该参数
              */
-            append: function( file, source ) {
+            append: function( file ) {
                 this._queue.push( file );
-
-                this._fileAdded( file, source );
+                this._fileAdded( file );
             },
 
             /**
@@ -59,10 +58,9 @@ define( 'webuploader/core/queue', [
              * @param  {Mixed} [source] 文件内容源，例如DOM File/Blob/Base64 String
              *                          文件首次加入队列时必须携带该参数
              */
-            prepend: function( file, source ) {
+            prepend: function( file ) {
                 this._queue.unshift( file );
-
-                this._fileAdded( file, source );
+                this._fileAdded( file );
             },
 
             /**
@@ -73,7 +71,7 @@ define( 'webuploader/core/queue', [
              * @return {File}
              */
             getFile: function( fileId ) {
-                return this._all[ fileId ];
+                return this._map[ fileId ];
             },
 
             /**
@@ -125,6 +123,10 @@ define( 'webuploader/core/queue', [
                 return null;
             },
 
+            removeFile: function( file ) {
+                // @todo
+            },
+
             /**
              * 获取队列中的文件。可以指定文件状态，和最多获取的个数
              * @param  {[type]} status [description]
@@ -151,18 +153,15 @@ define( 'webuploader/core/queue', [
                 return ret;
             },
 
-            _fileAdded: function( file, source ) {
+            _fileAdded: function( file ) {
                 var me = this,
-                    existing = this._all[ file.id ];
+                    existing = this._map[ file.id ];
 
                 if ( !existing ) {
-                    this._all[ file.id ] = {
-                        file: file,
-                        source: source
-                    };
+                    this._map[ file.id ] = file;
 
-                    file.on( 'statuschange', function( file, cur, pre ) {
-                        me._onFileStatusChange( file, cur, pre );
+                    file.on( 'statuschange', function( cur, pre ) {
+                        me._onFileStatusChange( cur, pre );
                     } );
                 }
 
@@ -171,7 +170,7 @@ define( 'webuploader/core/queue', [
                 this.trigger( 'queued', file );
             },
 
-            _onFileStatusChange: function( file, curStatus, preStatus ) {
+            _onFileStatusChange: function( curStatus, preStatus ) {
                 var stats = this.stats;
 
                 switch ( preStatus ) {
