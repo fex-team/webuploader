@@ -10,11 +10,14 @@
     <ul id="queueList" style="display:none;">
         <li><button id="uploadBtn">上传</button></li>
     </ul>
+    <span>拖拽区域：</span>
+    <div id="dndArea" class="webuploader-dnd"></div>
 
     <script type="text/javascript" src="../dist/webuploader.js"></script>
     <script type="text/javascript">
         var wu = WebUploader.create({
-            pick: 'uploaderBtn'
+            pick: 'uploaderBtn',
+            dnd: 'dndArea'
         });
 
         var ql = document.getElementById( 'queueList' );
