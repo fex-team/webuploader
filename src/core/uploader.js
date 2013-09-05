@@ -30,6 +30,8 @@ define( 'webuploader/core/uploader', [ 'webuploader/base',
         }
 
         this.options = $.extend( true, {}, defaultOpts, opts );
+
+        this._init();
     }
 
     Mediator.installTo( Uploader.prototype );
@@ -37,45 +39,54 @@ define( 'webuploader/core/uploader', [ 'webuploader/base',
     $.extend( Uploader.prototype, {
         state: 'pedding',
 
-        init: function() {
-            var me = this,
-                opts = me.options;
+        _init: function() {
+            var me = this;
 
             me._queue = new Queue();
             me._queue.on( 'queued', function( file ) {
                 me.trigger( 'fileQueued', file );
             } );
 
-            me._initRuntime( opts, function() {
-                opts.pick && me._initFilePicker( opts );
-
-                me._mgr = UploadMgr( opts, me._queue, me._runtime );
-
-                // 转发所有的事件出去。
-                me._mgr.on( 'all', function() {
-                    return me.trigger.apply( me, arguments );
-                });
-
-                me.state = 'inited';
-                me.trigger( 'ready' );
+            me._initRuntime( me.options, function() {
+                me._ready();
             } );
+        },
+
+        _ready: function() {
+            var me = this,
+                opts = this.options;
+
+            opts.pick && me._initFilePicker( opts );
+
+            me._initNetWorkDetect();
+
+            me._mgr = UploadMgr( opts, me._queue, me._runtime );
+
+            // 转发所有的事件出去。
+            me._mgr.on( 'all', function() {
+                return me.trigger.apply( me, arguments );
+            });
+
+            me.state = 'inited';
+            me.trigger( 'ready' );
         },
 
         // todo 根据opts，告诉runtime需要具备哪些能力
         _initRuntime: function( opts, cb ) {
             var caps = {
-                    resize_image: true
+                    resizeImage: true
                 },
 
                 runtime;
 
             if ( opts.pick ) {
-                caps.select_file = true;
+                caps.selectFile = true;
 
-                caps.select_multiple = opts.pick.multiple;
+                caps.selectMultiple = opts.pick.multiple;
             }
 
-            this._runtime = runtime = Runtime.getInstance( opts, caps  );
+            $.extend( opts, { requiredCaps: caps } );
+            this._runtime = runtime = Runtime.getInstance( opts );
             runtime.once( 'ready', cb );
             runtime.init();
         },
@@ -94,19 +105,40 @@ define( 'webuploader/core/uploader', [ 'webuploader/base',
             picker.on( 'select', function( files ) {
 
                 $.each( files, function( idx, domfile ) {
-                    me._queue.append( new WUFile( domfile ), domfile );
+                    me._queue.append( new WUFile( domfile ) );
                 } );
 
             } );
             picker.init();
         },
 
+        _initNetWorkDetect: function() {
+            var me = this,
+                runtime = me._runtime,
+                Network = runtime.getComponent( 'Network' ),
+                detector = Network.getInstance(),
+                offlineTime;
+
+            detector.on( 'offline', function() {
+                offlineTime = Date.now();
+                me.trigger( 'offline' ) && me.pause( true );
+            } );
+
+            detector.on( 'online', function() {
+                var now = Date.now();
+
+                me.trigger( 'online' ) &&
+                        (now - offlineTime < 2 * 60 * 1000) && me.upload();
+            } );
+
+        },
+
         upload: function() {
             this._mgr.start();
         },
 
-        pause: function() {
-            this._mgr.pause();
+        pause: function( interrupt ) {
+            this._mgr.pause( interrupt );
         },
 
         getImageThumbnail: function( file, cb, width, height ) {
@@ -147,9 +179,7 @@ define( 'webuploader/core/uploader', [ 'webuploader/base',
     } );
 
     Base.create = function( opts ) {
-        var uploader = new Uploader( opts );
-        uploader.init();
-        return uploader;
+        return new Uploader( opts );
     };
 
     return Uploader;
