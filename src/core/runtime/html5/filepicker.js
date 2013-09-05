@@ -43,17 +43,22 @@ define( 'webuploader/core/runtime/html5/filepicker', [
                 }
 
                 inputId = opts.name ? opts.name : ( 'btn' + Date.now() );
-                input = document.createElement( 'input' );
-                label = document.createElement( 'label' );
-                input.setAttribute( 'type', 'file' );
-                input.setAttribute( 'id', inputId );
-                input.style.width = '0px';
-                label.setAttribute( 'for', inputId );
-                label.classList.add( 'webuploader-btn' );
-                label.innerHTML = opts.btnName || '上传照片';
+                input = $( document.createElement( 'input' ) );
+                label = $( document.createElement( 'label' ) );
+
+                input.attr({
+                    type: 'file',
+                    id: inputId,
+                    'for': inputId
+                });
+                input.addClass( 'webuploader-btn-input' );
+
+
+                label.addClass( 'webuploader-btn' );
+                label.html( opts.btnName || '选择文件' );
 
                 if ( opts.multiple ) {
-                    input.setAttribute( 'multiple', 'multiple' );
+                    input.attr( 'multiple', 'multiple' );
                 }
 
                 if ( opts.accept && opts.accept.length > 0 ) {
@@ -63,23 +68,23 @@ define( 'webuploader/core/runtime/html5/filepicker', [
                             acceptStr.push( opts.accept[i].title + '/' + extStr[ii] );
                         };
                     };
-                    input.setAttribute( 'accept', acceptStr.join( ',' ) );
+                    input.attr( 'accept', acceptStr.join( ',' ) );
                 }
 
                 if ( opts.btnClass) {
-                    label.classList.add( opts.btnClass );
+                    label.addClass( opts.btnClass );
                 }
 
-                $( input ).on( 'change', function( e ) {
+                input.on( 'change', function( e ) {
                     me.trigger( 'select', e.target.files );
                 } );
 
-                $( label ).on( 'mouseover', function( e ) {
-                    label.classList.add( 'webuploader-btn-hover' );
+                label.on( 'mouseover', function( e ) {
+                    label.addClass( 'webuploader-btn-hover' );
                 } );
 
-                $( label ).on( 'mouseout', function( e ) {
-                    label.classList.remove( 'webuploader-btn-hover' );
+                label.on( 'mouseout', function( e ) {
+                    label.removeClass( 'webuploader-btn-hover' );
                 } );
 
                 elem.append( input );

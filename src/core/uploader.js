@@ -130,7 +130,7 @@ define( 'webuploader/core/uploader', [ 'webuploader/base',
 
             dnd = new Dnd( options );
 
-            dnd.on( 'select', function( files ) {
+            dnd.on( 'drop', function( files ) {
 
                 $.each( files, function( idx, domfile ) {
                     me._queue.append( new WUFile( domfile ) );
