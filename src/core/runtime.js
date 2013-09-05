@@ -10,14 +10,13 @@ define( 'webuploader/core/runtime', [ 'webuploader/base',
         separator = /\s*,\s*/,
         runtime;
 
-    /* jshint camelcase: false */
     function Runtime( opts, type, caps ) {
         var me = this,
             klass = me.constructor;
 
         caps = caps || {};
 
-        // 执行detects
+        // 执行detect hooks
         $.each( klass.getDetects(), function( key, val ) {
             $.extend( caps, val() );
         } );
@@ -25,19 +24,19 @@ define( 'webuploader/core/runtime', [ 'webuploader/base',
         caps = $.extend( {
 
             // 是否能调正图片大小
-            resize_image: false,
+            resizeImage: false,
 
             // 是否能选择图片
-            select_file: false,
+            selectFile: false,
 
             // 是否能多选
-            select_multiple: false,
+            selectMultiple: false,
 
             // 是否支持文件过滤
-            filter_by_extension: false,
+            filterByExtension: false,
 
             // 是否支持拖放
-            drag_and_drop: false
+            dragAndDrop: false
 
         }, caps );
 
@@ -60,7 +59,24 @@ define( 'webuploader/core/runtime', [ 'webuploader/base',
          * @method capable
          * @return {Boolean}
          */
-        capable: function(/* requiredCaps */) {
+        capable: function( requiredCaps ) {
+            var caps, i, len;
+
+            if ( typeof requiredCaps === 'string' ) {
+                caps = requiredCaps.split( separator );
+            } else if ( $.isPlainObject( requiredCaps ) ) {
+                caps = [];
+                $.each( requiredCaps, function( k, v ) {
+                    v && caps.push( k );
+                } );
+            }
+
+            for( i = 0, len = caps.length; i < len; i++ ) {
+                if ( !this.caps[ caps[ i ] ] ) {
+                    return false;
+                }
+            }
+
             return true;
         },
 
@@ -116,17 +132,23 @@ define( 'webuploader/core/runtime', [ 'webuploader/base',
      * @param {String | Object} [caps] 需要的能力
      * @param {String} [orders='html5,flash'] 运行时检测顺序。
      */
-    Runtime.getInstance = function( opts, caps, orders ) {
-        var factory;
+    Runtime.getInstance = function( opts, orders ) {
+        var factory, caps;
 
         // 如果已经实例化过，则直接返回。
         if ( runtime ) {
             return runtime;
         }
 
+        caps = opts.requiredCaps;
         orders = (orders || Runtime.orders).split( separator );
         $.each( orders, function( i, type ) {
             factory = factories[ type ];
+
+            if ( !factory ) {
+                return;
+            }
+
             runtime = new factory( opts );
 
             if ( !runtime.capable( caps ) ) {
@@ -138,7 +160,7 @@ define( 'webuploader/core/runtime', [ 'webuploader/base',
         } );
 
         if ( !runtime ) {
-            throw new Error( '不能找到合适的runtime.' );
+            throw new Error( '找不到合适的runtime, 当前浏览器不支持某些html5特性' );
         }
 
         return runtime;

@@ -334,5 +334,11 @@ define( 'webuploader/core/runtime/html5/image', [ 'webuploader/base',
     };
 
     Html5Runtime.register( 'Image', Html5Image );
+
+    Html5Runtime.addDetect(function(){
+        return {
+            resizeImage: true
+        }
+    });
     return Html5Image;
 } );
