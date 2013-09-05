@@ -49,6 +49,17 @@ define( 'jq-bridge', [], function() {
         class2type[ '[object ' + name + ']' ] = name.toLowerCase();
     } );
 
+    function setAttribute( node, name, value ) {
+        value == null ? node.removeAttribute( name ) :
+                node.setAttribute( name, value );
+    }
+
+    function camelize( str ) {
+        return str.replace( /-+(.)?/g, function( match, chr ) {
+            return chr ? chr.toUpperCase() : ''
+        } );
+    }
+
     /**
      * 只支持ID选择。
      */
@@ -61,13 +72,38 @@ define( 'jq-bridge', [], function() {
         elem && (api[ 0 ] = elem, api.length = 1);
 
         return $.extend( api, {
+            _wrap: true,
+
+            get: function() {
+                return elem;
+            },
 
             /**
              * 添加className
              */
             addClass: function( classname ) {
-                elem.className += ( ' ' + classname );
+                elem.classList.add( classname );
                 return this;
+            },
+
+            removeClass: function( classname ) {
+                elem.classList.remove( classname );
+                return this;
+            },
+
+            html: function( html ) {
+                elem.innerHTML = html;
+                return this;
+            },
+
+            attr: function( key, val ) {
+                if ( $.isObject( key ) ) {
+                    $.each( key , function( k, v ) {
+                        setAttribute( elem, k, v );
+                    } );
+                } else {
+                    setAttribute( elem, key, val );
+                }
             },
 
             before: function( el ) {
@@ -75,6 +111,7 @@ define( 'jq-bridge', [], function() {
             },
 
             append: function( el ) {
+                el = el._wrap ? el.get() : el;
                 elem.appendChild( el );
             },
 
@@ -146,6 +183,10 @@ define( 'jq-bridge', [], function() {
 
         return true;
     };
+
+    $.isObject = function( anything ) {
+        return type( anything ) === 'object';
+    }
 
     $.trim = function( str ) {
         return str ? str.trim() : '';
