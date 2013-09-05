@@ -104,6 +104,19 @@ table {
     color: #eee;
 }
 
+.queueList ul li.interrupt:after {
+    content: '中断';
+    width: 100%;
+    position: absolute;
+    left: 0;
+    bottom: 0;
+    height: 20px;
+    line-height: 20px;
+    background: red;
+    text-align: center;
+    color: #eee;
+}
+
 .queueList ul li p.progress {
     position: absolute;
     top: 0;
