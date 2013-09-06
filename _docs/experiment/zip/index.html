@@ -41,11 +41,17 @@
 					<label for="selector"><button type="button" class="btn btn-primary btn-lg">选择文件</button></label>
 					<input id="selector" type="file" style="visibility:hidden;" multiple/>
 				</div>
+				<div id="progress1" class="progress">
+				  <div class="progress-bar progress-bar-success" role="progressbar">
+				    <span class="sr-only"></span>
+				  </div>
+				</div>
 				<div class="page-header">
-				  <h1>NOZIP TESTS(3 THREADS)</h1>
+				  <h1>NOZIP TESTS(<span id="threads">1</span> THREADS)</h1>
 				</div>
 				<div>
-					<label for="selector2"><button type="button" class="btn btn-primary btn-lg">选择文件</button></label>
+					<label for="selector2"><button type="button" class="btn btn-primary btn-lg">选择文件</button></label>&nbsp;&nbsp;
+					并发请求数：<input id="threadsInput" value="1"/>
 					<input id="selector2" type="file" style="visibility:hidden;" multiple/>
 				</div>
 			</div>
@@ -106,6 +112,9 @@
 				},
 				sendAsBlob: function(callback) {
 					this.getBlob( function(blob) {
+						var progress = document.getElementById( 'progress1' );
+						var progressBar = document.querySelector( '.progress-bar', progress );
+						var progressTxt = document.querySelector( '.sr-only', progress );
 
 						console.log( 'start to upload.' );
 
@@ -125,6 +134,18 @@
 								console.log( 'duration: ' + ( Date.now() - start ) + 'ms' );
 							}
 						};
+						xhr.upload.addEventListener("progress", function(e) {
+							if (e.lengthComputable) {
+								var percentage = Math.round((e.loaded * 100) / e.total);
+								progressTxt.innerHTML = e.loaded + ' / ' + e.total;
+								progressBar.style.width = percentage + '%';
+
+								if( percentage == 100 ) {
+									console.log( 'browser cost: ' + ( Date.now() - start ) + 'ms @' + (new Date()) );
+								}
+							}
+						}, false);
+						
 						xhr.send(form);
 					} );
 				}
@@ -159,7 +180,7 @@
 		};
 
 		var selector2 = document.getElementById( 'selector2' );
-		var max = 3;
+		var max = 1;
 		var threads = 0;
 		var idx = 0;
 		var files;
@@ -215,6 +236,10 @@
 				uploadFiles();
 			}
 		};
+
+		document.getElementById( 'threadsInput' ).oninput = function() {
+			max = document.getElementById( 'threads' ).innerHTML = this.value;
+		}
 
 	})(this);
 	</script>
