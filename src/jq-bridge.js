@@ -36,7 +36,9 @@ define( 'jq-bridge', [], function() {
     function extend( target, source, deep ) {
         each( source, function( key, val ) {
             if ( deep && typeof val === 'object' ) {
-                typeof target[ key ] === 'object' || (target[ key ] = {});
+                if ( typeof target[ key ] !== 'object' ) {
+                    target[ key ] = type( val ) === 'array' ? [] : {};
+                }
                 extend( target[ key ], val, deep );
             } else {
                 target[ key ] = val;

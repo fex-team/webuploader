@@ -48,14 +48,14 @@ define( 'webuploader/core/runtime/html5/filepicker', [
 
                 input.attr({
                     type: 'file',
-                    id: inputId,
-                    'for': inputId
+                    id: inputId
                 });
                 input.addClass( 'webuploader-btn-input' );
 
 
                 label.addClass( 'webuploader-btn' );
                 label.html( opts.btnName || '选择文件' );
+                label.attr( 'for', inputId );
 
                 if ( opts.multiple ) {
                     input.attr( 'multiple', 'multiple' );
