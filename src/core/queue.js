@@ -71,6 +71,9 @@ define( 'webuploader/core/queue', [
              * @return {File}
              */
             getFile: function( fileId ) {
+                if ( typeof fileId !== 'string' ) {
+                    return fileId;
+                }
                 return this._map[ fileId ];
             },
 
