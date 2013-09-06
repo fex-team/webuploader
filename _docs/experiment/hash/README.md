@@ -15,11 +15,11 @@
  * 图片大小:100K & 300K & 500K & 800K & 1M & 3M & 5M & 10M
  * 图片数量：50
 
- ##结果
+##结果
 
 <table>
     <tr>
-        <th>文件大小 / 文件数量</th>
+        <th> 文件数量 / 文件大小</th>
         <th>100K</th>
         <th>300K</th>
         <th>500K</th>
@@ -43,7 +43,8 @@
 </table>
 
 测试环境
- * OS: MacBook Pro MD212CH
+ * Machine: MacBook Pro MD212CH
+ * OS: OSX 10.8.4
  * Browser: Chrome 29.0.1547.65
 
 ##结论
