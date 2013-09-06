@@ -24,12 +24,13 @@
         var wu = WebUploader.create({
                 pick: 'pickerBtn',
                 dnd: 'dndArea',
-                server: 'http://liaoxuezhi.fe.baidu.com/webupload/fileupload.php'
+                // server: 'http://liaoxuezhi.fe.baidu.com/webupload/fileupload.php'
             }),
             btn = $( '#uploadBtn' );
 
         wu.onFileQueued = function ( file ) {
             var li = $( '<li id="' + file.id + '">' ),
+                btn = $( '<a class="delete">删除</a>'),
                 ratio = window.devicePixelRatio || 1,
                 width = 120 * ratio,
                 height = 90 * ratio;
@@ -40,6 +41,11 @@
             }, width, height );
 
             li.append( '<p>' + file.name + '</p>');
+            li.append( btn );
+
+            btn.on( 'click', function() {
+                wu.removeFile( file );
+            });
 
             li.appendTo( '#queueList' );
 
