@@ -22,7 +22,8 @@ define( 'webuploader/core/uploader', [ 'webuploader/base',
                 title: 'image',
                 extensions: 'gif,jpg,jpeg,bmp'
             }],
-            dnd: ''
+            dnd: '',
+            paste: ''
         };
 
     function Uploader( opts ) {
@@ -63,6 +64,7 @@ define( 'webuploader/core/uploader', [ 'webuploader/base',
 
             opts.pick && me._initFilePicker( opts );
             opts.dnd && me._initDnd( opts );
+            opts.paste && me._initFilePaste( opts );
 
             me._initNetWorkDetect();
 
@@ -138,6 +140,28 @@ define( 'webuploader/core/uploader', [ 'webuploader/base',
 
             } );
             dnd.init();
+        },
+
+        _initFilePaste: function( opts ) {
+            var runtime = Runtime.getInstance(),
+                me = this,
+                options = $.extend( {}, {
+                    id: opts.paste,
+                    accept: opts.accept
+                } ),
+                FilePaste = runtime.getComponent( 'FilePaste' ),
+                paste;
+
+            paste = new FilePaste( options );
+
+            paste.on( 'paste', function( files ) {
+
+                $.each( files, function( idx, domfile ) {
+                    me._queue.append( new WUFile( domfile ) );
+                } );
+
+            } );
+            paste.init();
         },
 
         _initNetWorkDetect: function() {
