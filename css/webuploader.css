@@ -13,7 +13,8 @@
 }
 
 .webuploader-btn-input {
-	width: 0px;
+	position: absolute;
+	clip: rect(1px, 1px, 1px, 1px);
 }
 
 .webuploader-dnd {
