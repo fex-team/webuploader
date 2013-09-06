@@ -3,20 +3,22 @@
  * @fileOverview UploadMgr
  */
 define( 'webuploader/core/uploadmgr', [ 'webuploader/base',
-        'webuploader/core/file', 'webuploader/core/mediator'
-        ], function( Base, File, Mediator ) {
+        'webuploader/core/file', 'webuploader/core/mediator',
+        'webuploader/core/queue'
+        ], function( Base, WUFile, Mediator, Queue ) {
 
     var $ = Base.$;
 
-    function UploadMgr( opts, queue, runtime ) {
+    function UploadMgr( opts, runtime ) {
         var thread = opts.thread || 3,
+            queue = new Queue(),
             stats = queue.stats,
             Image = runtime.getComponent( 'Image' ),
             Transport = runtime.getComponent( 'Transport' ),
             runing = false,
             requests = {},
             requestsLength = 0,
-            Status = File.Status,
+            Status = WUFile.Status,
             api;
 
         function _tick() {
@@ -26,7 +28,7 @@ define( 'webuploader/core/uploadmgr', [ 'webuploader/base',
                 _sendFile( queue.fetch() );
             }
 
-            stats.numOfQueue || (runing = true);
+            stats.numOfQueue || (runing = false);
             runing || api.trigger( 'uploadFinished' );
         }
 
@@ -97,7 +99,7 @@ define( 'webuploader/core/uploadmgr', [ 'webuploader/base',
         api = {
 
             start: function() {
-                if ( runing || !queue.stats.numOfQueue && !requestsLength ) {
+                if ( runing || !stats.numOfQueue && !requestsLength ) {
                     return;
                 }
                 runing = true;
@@ -109,12 +111,11 @@ define( 'webuploader/core/uploadmgr', [ 'webuploader/base',
                 _tick();
             },
 
-            pause: function( interrupt ) {
+            stop: function( interrupt ) {
                 runing = false;
                 $.each( requests, function( id, transport ) {
                     var file = queue.getFile( id );
-                    file.setStatus( Status.INTERRUPT,
-                            interrupt ? '网络中断': '用户暂停' );
+                    file.setStatus( Status.INTERRUPT );
                     transport.pause();
                 } );
             },
@@ -126,10 +127,39 @@ define( 'webuploader/core/uploadmgr', [ 'webuploader/base',
                     file.setStatus( Status.CANCELLED );
                     requests[ file.id ].cancel();
                 }
-            }
+            },
+
+            getStats: function() {
+                // 拷贝一份，以免被修改。
+                return $.extend( {}, stats );
+            },
+
+            getFile: function() {
+                return queue.getFile.apply( queue, arguments );
+            },
+
+            addFile: function( file ) {
+                if ( !(file instanceof WUFile) ) {
+                    file = new WUFile( file );
+                }
+
+                queue.append( file );
+            },
+
+            addFiles: function( arr ) {
+                var me = this;
+
+                $.each( arr, function() {
+                    me.addFile( this );
+                });
+            },
         };
 
         Mediator.installTo( api );
+
+        queue.on( 'queued', function( file ) {
+            api.trigger( 'fileQueued', file );
+        } );
 
         return api;
     }
