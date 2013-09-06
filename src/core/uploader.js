@@ -188,6 +188,10 @@ define( 'webuploader/core/uploader', [ 'webuploader/base',
             return this._mgr.addFiles.apply( this._mgr, arguments );
         },
 
+        removeFile: function() {
+            return this._mgr.removeFile.apply( this._mgr, arguments );
+        },
+
         getStats: function() {
             return this._mgr.getStats.apply( this._mgr, arguments );
         },
