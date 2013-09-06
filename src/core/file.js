@@ -24,16 +24,16 @@ define( 'webuploader/core/file', [
          */
         function WUFile( file ) {
 
-            if ( !file || !('name' in file) ) {
-                throw new Error( 'File构造函数参数错误!' );
-            }
+            // if ( !file || !('name' in file) ) {
+            //     throw new Error( 'File构造函数参数错误!' );
+            // }
 
             /**
              * 文件名，包括扩展名
              * @property name
              * @type {string}
              */
-            this.name = file.name;
+            this.name = file.name || 'Untitled';
 
             /**
              * 文件体积（字节）
@@ -49,7 +49,7 @@ define( 'webuploader/core/file', [
              * @type {string}
              * @default ''
              */
-            this.type = file.type || '';
+            this.type = file.type || 'image/png';
 
             /**
              * 文件最后修改日期
