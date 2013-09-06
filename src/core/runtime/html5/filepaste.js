@@ -1,7 +1,7 @@
 /**
- * @fileOverview Dnd
+ * @fileOverview FilePaste
  */
-define( 'webuploader/core/runtime/html5/dnd', [
+define( 'webuploader/core/runtime/html5/filepaste', [
         'webuploader/base',
         'webuploader/core/mediator',
         'webuploader/core/runtime/html5/runtime'
@@ -13,15 +13,15 @@ define( 'webuploader/core/runtime/html5/dnd', [
 
                 accept: [{
                     title: 'image',
-                    extensions: 'gif,jpg,bmp,jpeg'
+                    extensions: 'gif,jpg,bmp'
                 }]
             };
 
-        function Dnd( opts ) {
+        function FilePaste( opts ) {
             this.options = $.extend( {}, defaultOpts, opts );
         }
 
-        $.extend( Dnd.prototype, {
+        $.extend( FilePaste.prototype, {
 
             init: function() {
                 var me = this,
@@ -32,17 +32,11 @@ define( 'webuploader/core/runtime/html5/dnd', [
                     throw new Error( '找不到元素#' + opts.id );
                 }
 
-                elem.on( 'dragenter', function( e ) {
-                    elem.addClass( 'webuploader-dnd-over' );
-                } );
+                elem.attr({
+                    contenteditable: 'true'
+                });
 
-                elem.on( 'dragover', function( e ) {
-                    e.stopPropagation();
-                    e.preventDefault();
-                    elem.addClass( 'webuploader-dnd-over' );
-                } );
-
-                elem.on( 'drop', function( e ) {
+                $( document ).on( 'paste', function( e ) {
                     var files,
                         triggerFiles = [],
                         acceptStr = [],
@@ -53,7 +47,7 @@ define( 'webuploader/core/runtime/html5/dnd', [
 
                     e.stopPropagation();
                     e.preventDefault();
-                    files = e.dataTransfer.files;
+                    files = e.clipboardData.items;
 
                     if ( opts.accept && opts.accept.length > 0 ) {
                         for (i = 0, len = opts.accept.length; i < len; i++) {
@@ -65,30 +59,27 @@ define( 'webuploader/core/runtime/html5/dnd', [
                         acceptStr = acceptStr.join(',');
                     }
 
-                    if ( acceptStr != '' ) {
-                        for (i = 0, len = files.length; i < len; i++) {
+                    for (i = 0, len = files.length; i < len; i++) {
+                        if ( acceptStr != '' ) {
                             if ( files[i].type != '' && acceptStr.indexOf( files[i].type ) > -1 ) {
-                                triggerFiles.push( files[i] );
+                                triggerFiles.push( files[i].getAsFile() );
                             }
-                        };
-                    } else {
-                        triggerFiles = files;
-                    }
+                        } else {
+                            triggerFiles.push( files[i].getAsFile() );
+                        }
+                        
+                    };
 
-                    me.trigger( 'drop', triggerFiles );
-                    e.dataTransfer.clearData();
-                    elem.removeClass( 'webuploader-dnd-over' );
+                    me.trigger( 'paste', triggerFiles );
                 } );
 
-                elem.on( 'dragleave', function( e ) {
-                    elem.removeClass( 'webuploader-dnd-over' );
-                } );
             }
+
 
         } );
 
 
-        Html5Runtime.register( 'Dnd', Dnd );
+        Html5Runtime.register( 'FilePaste', FilePaste );
 
         /* jshint camelcase:false */
 
@@ -100,15 +91,15 @@ define( 'webuploader/core/runtime/html5/dnd', [
             return {
 
                 // 是否能选择图片
-                select_file: true,
+                selectFile: true,
 
                 // 是否能多选
-                select_multiple: true,
+                selectMultiple: true,
 
                 // 是否支持文件过滤
-                filter_by_extension: true
+                filteByExtension: true
             };
         });
 
-        return Dnd;
+        return FilePaste;
     } );
