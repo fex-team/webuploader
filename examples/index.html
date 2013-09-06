@@ -88,6 +88,16 @@
             btn.text( '开始上传' );
         }
 
+        wu.onOnline = function() {
+            wu.upload();
+            alert( '网络恢复，继续上传' )
+        };
+
+        wu.onOffline = function() {
+            wu.stop();
+            alert( '网络中断，暂停上传' )
+        }
+
         btn.on( 'click', function() {
             var text = $(btn).text();
 
@@ -95,7 +105,7 @@
                 wu.upload();
                 btn.text( '暂停上传' );
             } else if ( text === '暂停上传' ) {
-                wu.pause();
+                wu.stop();
                 btn.text( '继续上传' );
             }
         } );
