@@ -31,14 +31,14 @@
     </tr>
     <tr>
         <th>50 个</th>
-        <td></td>
-        <td></td>
-        <td></td>
-        <td></td>
-        <td></td>
-        <td></td>
-        <td></td>
-        <td></td>
+        <td>994ms</td>
+        <td>972ms</td>
+        <td>1003ms</td>
+        <td>1101ms</td>
+        <td>1086ms</td>
+        <td>1085ms</td>
+        <td>1069ms</td>
+        <td>983ms</td>
     </tr>
 </table>
 
