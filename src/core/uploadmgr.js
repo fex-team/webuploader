@@ -153,6 +153,10 @@ define( 'webuploader/core/uploadmgr', [ 'webuploader/base',
                     me.addFile( this );
                 });
             },
+
+            removeFile: function( file ) {
+
+            }
         };
 
         Mediator.installTo( api );
