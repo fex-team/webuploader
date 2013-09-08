@@ -1,0 +1,63 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
+<html lang="en" dir="ltr">
+    <head>
+        <meta charset="UTF-8" />
+        <title>Md5 file</title>
+    </head>
+    <body>
+
+        <input type="file" id="fileselect" name="fileselect[]" multiple="multiple" />
+
+<script type="text/javascript">
+    var picker = document.getElementById('fileselect');
+
+    var worker = new Worker( 'md5File.js' );
+
+    picker.onchange = function(e) {
+        batchHash(e.target.files);
+    }
+
+    function batchHash(files) {
+        var start = Date.now();
+
+        eachSeries( files, function( file, next ) {
+            worker.onmessage = function( e ) {
+                console.log( file.name, e.data );
+
+                next();
+            };
+
+            worker.postMessage( file );
+        }, function(){
+            console.log("", files.length, 'files finished in', Date.now() - start, 'ms');
+        });
+    }
+
+    function eachSeries( arr, iterator, callback ) {
+        callback = callback || function () {};
+        if (!arr.length) {
+            return callback();
+        }
+        var completed = 0;
+        var iterate = function () {
+            iterator(arr[completed], function (err) {
+                if (err) {
+                    callback(err);
+                    callback = function () {};
+                }
+                else {
+                    completed += 1;
+                    if (completed >= arr.length) {
+                        callback(null);
+                    }
+                    else {
+                        iterate();
+                    }
+                }
+            });
+        };
+        iterate();
+    };
+</script>
+</body>
+</html>
