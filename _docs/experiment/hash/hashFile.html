@@ -1,0 +1,126 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
+<html lang="en" dir="ltr">
+    <head>
+        <meta charset="UTF-8" />
+        <title>hashMe - The javascript solution to fast get Md5 of files</title>
+    </head>
+    <body>
+
+        <input type="file" id="fileselect" name="fileselect[]" multiple="multiple" />
+
+<script type="text/javascript" src="md5.js"></script>
+<script type="text/javascript">
+    var picker = document.getElementById('fileselect');
+
+    picker.onchange = function(e) {
+        batchHash(e.target.files);
+    }
+
+    function batchHash(files) {
+        var start = Date.now();
+
+        eachSeries(files, function(file, next) {
+
+            new hashMe(file, function(ret) {
+                console.log(file.name, ret);
+
+                next();
+            });
+
+        }, function() {
+            console.log("", files.length, 'files finished in', Date.now() - start, 'ms');
+        });
+    }
+
+    function eachSeries(arr, iterator, callback) {
+        var len = arr.length;
+
+        callback = callback || function() {};
+        if (!arr.length) {
+            return callback();
+        }
+        var completed = 0;
+        var iterate = function() {
+            iterator(arr[completed], function(err) {
+                if (err) {
+                    callback(err);
+                    callback = function() {};
+                } else {
+                    completed += 1;
+                    if (completed >= len) {
+                        callback(null);
+                    } else {
+                        iterate();
+                    }
+                }
+            });
+        };
+        iterate();
+    };
+</script>
+<script type="text/javascript" name="hashme">
+/*******************
+********************
+
+HTML5 / Javascript:
+get hash of files using drag and drop
+
+Developed by Marco Antonio Alvarez => https://github.com/marcu87/hashme
+
+*******************/
+
+var hashMe = function(file, callbackFunction) {
+
+  var thisObj = this,
+    _binStart = "",
+    _binEnd = "",
+    callback = "",
+    fileManager1 = new FileReader,
+    fileManager2 = new FileReader;
+
+  thisObj.setBinAndHash = function(startOrEnd, binData) {
+
+    switch (startOrEnd) {
+      case 0:
+        thisObj._binStart = binData;
+        break;
+      case 1:
+        thisObj._binEnd = binData
+    }
+
+    thisObj._binStart && thisObj._binEnd && thisObj.md5sum(thisObj._binStart, thisObj._binEnd)
+  };
+
+  thisObj.md5sum = function(start, end) {
+    thisObj._hash = md5(start + end);
+    callback(thisObj._hash);
+  };
+
+  thisObj.getHash = function() {
+    return thisObj._hash;
+  };
+
+  thisObj.calculateHashOfFile = function(file) {
+
+    fileManager1.onload = function(f) {
+      thisObj.setBinAndHash(0, f.target.result);
+    };
+
+    fileManager2.onload = function(f) {
+      thisObj.setBinAndHash(1, f.target.result);
+    };
+
+    var start = file.slice(0, 65536);
+    var end = file.slice(file.size - 65536, file.size);
+
+    fileManager1.readAsBinaryString(start);
+    fileManager2.readAsBinaryString(end);
+  };
+
+  thisObj.calculateHashOfFile(file);
+  callback = callbackFunction;
+
+};
+</script>
+</body>
+</html>
