@@ -31,7 +31,7 @@
 
         wu.onFileQueued = function ( file ) {
             var li = $( '<li id="' + file.id + '">' ),
-                btn = $( '<a class="delete">删除</a>'),
+                btn = $( '<a href="javascript:void(0)" class="delete">删除</a>'),
                 ratio = window.devicePixelRatio || 1,
                 width = 120 * ratio,
                 height = 90 * ratio;
@@ -63,6 +63,14 @@
                     case 6:
                         li.addClass( 'interrupt' );
                         break;
+
+                    case 4:
+                        li.addClass( 'finished' );
+                        break;
+
+                    case 5:
+                        li.fadeOut();
+                        break;
                 }
             });
         };
@@ -87,8 +95,6 @@
                 progress = li.find( 'p.progress' );
 
             progress.fadeOut();
-
-            li.removeClass('progress').addClass( 'finished' );
         };
 
         wu.onUploadFinished = function() {
@@ -116,6 +122,12 @@
                 btn.text( '继续上传' );
             }
         } );
+
+        $( '#queueList' ).on( 'click', 'a.delete', function() {
+            var li = $(this).closest( 'li' );
+
+            wu.removeFile( li.attr( 'id' ) );
+        });
     </script>
 </body>
 </html>
