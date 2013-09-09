@@ -132,14 +132,16 @@ table {
     width: 0%;
 }
 
+
+.queueList ul li a.delete {
+    cursor: pointer;
+}
+
 .stage .btns {
     text-align: right;
 }
 #pickerBtn {
     display: inline-block;
-}
-#pickerBtn input {
-    position: absolute;
 }
 
 #uploadBtn {

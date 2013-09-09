@@ -35,51 +35,56 @@ define( 'webuploader/core/runtime/html5/filepicker', [
                     acceptStr = [],
                     extStr = [],
                     label,
-                    input;
+                    input,
+                    inputId;
 
                 if ( !elem.length ) {
                     throw new Error( '找不到元素#' + opts.id );
                 }
 
-                input = document.createElement( 'input' );
-                label = document.createElement( 'label' );
-                input.setAttribute( 'type', 'file' );
-                input.setAttribute( 'name', opts.name );
-                input.setAttribute( 'id', opts.name );
-                input.style.width = '0px';
-                label.setAttribute( 'for', opts.name );
-                label.className = 'webuploader-btn';
-                label.innerHTML = '上传照片';
+                inputId = opts.name ? opts.name : ( 'btn' + Date.now() );
+                input = $( document.createElement( 'input' ) );
+                label = $( document.createElement( 'label' ) );
+
+                input.attr({
+                    type: 'file',
+                    id: inputId
+                });
+                input.addClass( 'webuploader-btn-input' );
+
+
+                label.addClass( 'webuploader-btn' );
+                label.html( opts.btnName || '选择文件' );
+                label.attr( 'for', inputId );
 
                 if ( opts.multiple ) {
-                    input.setAttribute( 'multiple', 'multiple' );
+                    input.attr( 'multiple', 'multiple' );
                 }
 
                 if ( opts.accept && opts.accept.length > 0 ) {
                     for (i = 0, len = opts.accept.length; i < len; i++) {
-                        //acceptStr.push( opts.accept[i].title + '/' + opts.accept[i].extensions );
                         extStr = opts.accept[i].extensions.split( ',' );
                         for (var ii = 0; ii < extStr.length; ii++) {
                             acceptStr.push( opts.accept[i].title + '/' + extStr[ii] );
                         };
                     };
-                    input.setAttribute( 'accept', acceptStr.join( ',' ) );
+                    input.attr( 'accept', acceptStr.join( ',' ) );
                 }
 
-                if ( opts.labelClass) {
-                    label.className += ( ' ' + opts.labelClass );
+                if ( opts.btnClass) {
+                    label.addClass( opts.btnClass );
                 }
 
-                $( input ).on( 'change', function( e ) {
+                input.on( 'change', function( e ) {
                     me.trigger( 'select', e.target.files );
                 } );
 
-                $( label ).on( 'mouseover', function( e ) {
-                    label.className += ' webuploader-btn-hover';
+                label.on( 'mouseover', function( e ) {
+                    label.addClass( 'webuploader-btn-hover' );
                 } );
 
-                $( label ).on( 'mouseout', function( e ) {
-                    label.className = label.className.replace( ' webuploader-btn-hover', '' );
+                label.on( 'mouseout', function( e ) {
+                    label.removeClass( 'webuploader-btn-hover' );
                 } );
 
                 elem.append( input );

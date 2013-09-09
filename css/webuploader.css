@@ -11,3 +11,19 @@
 .webuploader-btn-hover {
 	background: #00a2d4;
 }
+
+.webuploader-btn-input {
+	position: absolute;
+	clip: rect(1px, 1px, 1px, 1px);
+}
+
+.webuploader-dnd {
+	width: 400px;
+	height: 400px;
+	border: 3px solid #ddd;
+}
+
+.webuploader-dnd-over {
+	border-style: dashed;
+}
+
