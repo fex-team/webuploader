@@ -93,7 +93,7 @@ define( 'webuploader/core/runtime/html5/transport', [ 'webuploader/base',
         _onsuccess: function( ret, headers ) {
             if ( this.chunks && this.chunk < this.chunks - 1 ) {
                 this.chunk++;
-                this.paused || this._upload();
+                this._upload();
             } else {
                 this._resolve( ret, headers );
             }
@@ -154,6 +154,10 @@ define( 'webuploader/core/runtime/html5/transport', [ 'webuploader/base',
         },
 
         _upload: function() {
+            if ( this.paused ) {
+                return this;
+            }
+
             var opts = this.options,
                 xhr = this._initAjax(),
                 formData = new FormData(),
