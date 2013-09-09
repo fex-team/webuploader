@@ -3,20 +3,22 @@
  * @fileOverview UploadMgr
  */
 define( 'webuploader/core/uploadmgr', [ 'webuploader/base',
-        'webuploader/core/file', 'webuploader/core/mediator'
-        ], function( Base, File, Mediator ) {
+        'webuploader/core/file', 'webuploader/core/mediator',
+        'webuploader/core/queue'
+        ], function( Base, WUFile, Mediator, Queue ) {
 
     var $ = Base.$;
 
-    function UploadMgr( opts, queue, runtime ) {
+    function UploadMgr( opts, runtime ) {
         var thread = opts.thread || 3,
+            queue = new Queue(),
             stats = queue.stats,
             Image = runtime.getComponent( 'Image' ),
             Transport = runtime.getComponent( 'Transport' ),
             runing = false,
             requests = {},
             requestsLength = 0,
-            Status = File.Status,
+            Status = WUFile.Status,
             api;
 
         function _tick() {
@@ -26,78 +28,87 @@ define( 'webuploader/core/uploadmgr', [ 'webuploader/base',
                 _sendFile( queue.fetch() );
             }
 
-            stats.numOfQueue || (runing = true);
+            stats.numOfQueue || (runing = false);
             runing || api.trigger( 'uploadFinished' );
         }
 
         function _sendFile( file ) {
+            var tr;
+
             // 有必要？
             // 如果外部阻止了此文件上传，则跳过此文件
             if ( !api.trigger( 'uploadStart', file ) ) {
 
                 // 先标记它是错误的。
-                file.setStatus( Status.ERROR );
+                file.setStatus( Status.CANCELLED );
                 return;
             }
 
-            Image.downsize( file.source, function( blob ) {
-                var tr = Transport.sendAsBlob( blob, {
-                        url: opts.server,
-                        formData: {
-                            id: file.id,
-                            name: file.name,
-                            type: file.type,
-                            lastModifiedDate: file.lastModifiedDate,
-                            size: file.size
-                        }
-                    } );
+            tr = new Transport({
+                url: opts.server,
+                formData: {
+                    id: file.id,
+                    name: file.name,
+                    type: file.type,
+                    lastModifiedDate: file.lastModifiedDate,
+                    size: file.size
+                }
+            } );
 
-                tr.on( 'all', function( type ) {
-                    var args = [].slice.call( arguments, 1 ),
-                        status = {
-                            error: Status.ERROR,
-                            success: Status.COMPLETE
-                        },
-                        ret;
+            tr.on( 'all', function( type ) {
+                var args = [].slice.call( arguments, 1 ),
+                    status = {
+                        error: Status.ERROR,
+                        success: Status.COMPLETE
+                    },
+                    ret;
 
-                    args.unshift( file );
-                    args.unshift( 'upload' + type.substring( 0, 1 )
-                        .toUpperCase() + type.substring( 1 ) );
+                args.unshift( file );
+                args.unshift( 'upload' + type.substring( 0, 1 )
+                    .toUpperCase() + type.substring( 1 ) );
 
-                    status[ type ] && file.setStatus( status[ type ] );
-                    ret = api.trigger.apply( api, args );
+                status[ type ] && file.setStatus( status[ type ] );
+                ret = api.trigger.apply( api, args );
 
-                    if ( type === 'complete' ) {
-                        delete requests[ file.id ];
-                        requestsLength--;
-                        tr.off( 'all', arguments.callee );
-                    }
+                // error or success.
+                if ( type === 'complete' ) {
+                    delete requests[ file.id ];
+                    requestsLength--;
+                    tr.off( 'all', arguments.callee );
+                }
 
-                    return ret;
-                } );
+                return ret;
+            } );
 
-                requests[ file.id ] =  tr;
-                requestsLength++;
+            requests[ file.id ] =  tr;
+            requestsLength++;
 
-            }, 1600, 1600 );
+            if ( opts.compress ) {
+                Image.downsize( file.source, function( blob ) {
+                    tr.sendAsBlob( blob );
+                }, 1600, 1600 );
+            } else {
+                tr.sendAsBlob( file.source );
+            }
 
             file.setStatus( Status.PROGRESS );
 
-            file.on( 'statuschange', function( cur ) {
-                switch( cur ) {
-                    case Status.ERROR:
-                    case Status.COMPLETE:
-                        setTimeout( _tick, 1 );
+            file.on( 'statuschange', function( cur, prev ) {
+                if ( prev === Status.PROGRESS ) {
+                    setTimeout( _tick, 1 );
+
+                    if ( cur !== Status.INTERRUPT ) {
                         file.off( 'statuschange', arguments.callee );
-                        break;
+                    }
                 }
             } );
         }
 
+        // 只暴露此对象下的方法。
         api = {
 
             start: function() {
-                if ( runing || !queue.stats.numOfQueue && !requestsLength ) {
+                if ( runing || !stats.numOfQueue && !requestsLength ) {
                     return;
                 }
                 runing = true;
@@ -109,26 +120,57 @@ define( 'webuploader/core/uploadmgr', [ 'webuploader/base',
                 _tick();
             },
 
-            pause: function( interrupt ) {
+            stop: function( interrupt ) {
                 runing = false;
+
                 $.each( requests, function( id, transport ) {
                     var file = queue.getFile( id );
-                    file.setStatus( Status.INTERRUPT,
-                            interrupt ? '网络中断': '用户暂停' );
+                    file.setStatus( Status.INTERRUPT );
                     transport.pause();
                 } );
             },
 
-            cancelFile: function( file ) {
+            getStats: function() {
+                // 拷贝一份，以免被修改。
+                return $.extend( {}, stats );
+            },
+
+            getFile: function() {
+                return queue.getFile.apply( queue, arguments );
+            },
+
+            addFile: function( file ) {
+                if ( !(file instanceof WUFile) ) {
+                    file = new WUFile( file );
+                }
+
+                queue.append( file );
+            },
+
+            addFiles: function( arr ) {
+                var me = this;
+
+                $.each( arr, function() {
+                    me.addFile( this );
+                });
+            },
+
+            removeFile: function( file ) {
                 file = file.id ? file : queue.getFile( file );
 
                 if ( requests[ file.id ] ) {
-
+                    requests[ file.id ].cancel();
                 }
+
+                file.setStatus( Status.CANCELLED );
             }
         };
 
         Mediator.installTo( api );
+
+        queue.on( 'queued', function( file ) {
+            api.trigger( 'fileQueued', file );
+        } );
 
         return api;
     }
