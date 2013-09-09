@@ -132,6 +132,11 @@ table {
     width: 0%;
 }
 
+
+.queueList ul li a.delete {
+    cursor: pointer;
+}
+
 .stage .btns {
     text-align: right;
 }
