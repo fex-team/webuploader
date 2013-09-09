@@ -3,11 +3,9 @@
  */
 define( 'webuploader/core/uploader', [ 'webuploader/base',
         'webuploader/core/mediator',
-        'webuploader/core/file',
-        'webuploader/core/queue',
         'webuploader/core/uploadmgr',
         'webuploader/core/runtime'
-        ], function( Base, Mediator, WUFile, Queue, UploadMgr, Runtime ) {
+        ], function( Base, Mediator, UploadMgr, Runtime ) {
 
     var $ = Base.$,
         defaultOpts = {
@@ -17,7 +15,13 @@ define( 'webuploader/core/uploader', [ 'webuploader/base',
             pick: {
                 multiple: true,
                 id: 'uploaderBtn'
-            }
+            },
+            accept: [{
+                title: 'image',
+                extensions: 'gif,jpg,jpeg,bmp'
+            }],
+            dnd: '',
+            paste: ''
         };
 
     function Uploader( opts ) {
@@ -30,8 +34,7 @@ define( 'webuploader/core/uploader', [ 'webuploader/base',
         }
 
         this.options = $.extend( true, {}, defaultOpts, opts );
-
-        this._init();
+        this._connectRuntime( this.options, Base.bindFn( this._init, this ) );
     }
 
     Mediator.installTo( Uploader.prototype );
@@ -40,27 +43,16 @@ define( 'webuploader/core/uploader', [ 'webuploader/base',
         state: 'pedding',
 
         _init: function() {
-            var me = this;
-
-            me._queue = new Queue();
-            me._queue.on( 'queued', function( file ) {
-                me.trigger( 'fileQueued', file );
-            } );
-
-            me._initRuntime( me.options, function() {
-                me._ready();
-            } );
-        },
-
-        _ready: function() {
             var me = this,
                 opts = this.options;
 
             opts.pick && me._initFilePicker( opts );
+            opts.dnd && me._initDnd( opts );
+            opts.paste && me._initFilePaste( opts );
 
             me._initNetWorkDetect();
 
-            me._mgr = UploadMgr( opts, me._queue, me._runtime );
+            me._mgr = UploadMgr( opts, me._runtime );
 
             // 转发所有的事件出去。
             me._mgr.on( 'all', function() {
@@ -71,8 +63,72 @@ define( 'webuploader/core/uploader', [ 'webuploader/base',
             me.trigger( 'ready' );
         },
 
+        _initFilePicker: function( opts ) {
+            var me = this,
+                options = $.extend( {}, opts.pick, {
+                    accept: opts.accept
+                } ),
+                FilePicker = me._runtime.getComponent( 'FilePicker' ),
+                picker;
+
+            picker = new FilePicker( options );
+
+            picker.on( 'select', function( files ) {
+                me.addFiles( files );
+            } );
+            picker.init();
+        },
+
+        _initDnd: function( opts ) {
+            var me = this,
+                options = $.extend( {}, {
+                    id: opts.dnd,
+                    accept: opts.accept
+                } ),
+                Dnd = me._runtime.getComponent( 'Dnd' ),
+                dnd;
+
+            dnd = new Dnd( options );
+
+            dnd.on( 'drop', function( files ) {
+                me.addFiles( files );
+            } );
+            dnd.init();
+        },
+
+        _initFilePaste: function( opts ) {
+            var runtime = Runtime.getInstance(),
+                me = this,
+                options = $.extend( {}, {
+                    id: opts.paste,
+                    accept: opts.accept
+                } ),
+                FilePaste = runtime.getComponent( 'FilePaste' ),
+                paste;
+
+            paste = new FilePaste( options );
+
+            paste.on( 'paste', function( files ) {
+
+                $.each( files, function( idx, domfile ) {
+                    me._queue.append( new WUFile( domfile ) );
+                } );
+
+            } );
+            paste.init();
+        },
+
+        _initNetWorkDetect: function() {
+            var me = this,
+                Network = me._runtime.getComponent( 'Network' );
+
+            Network.getInstance().on( 'all', function() {
+                return me.trigger.apply( me, arguments );
+            } );
+        },
+
         // todo 根据opts，告诉runtime需要具备哪些能力
-        _initRuntime: function( opts, cb ) {
+        _connectRuntime: function( opts, cb ) {
             var caps = {
                     resizeImage: true
                 },
@@ -91,68 +147,53 @@ define( 'webuploader/core/uploader', [ 'webuploader/base',
             runtime.init();
         },
 
-        _initFilePicker: function( opts ) {
-            var runtime = Runtime.getInstance(),
-                me = this,
-                options = $.extend( {}, opts.pick, {
-                    accept: opts.accept
-                } ),
-                FilePicker = runtime.getComponent( 'FilePicker' ),
-                picker;
-
-            picker = new FilePicker( options );
-
-            picker.on( 'select', function( files ) {
-
-                $.each( files, function( idx, domfile ) {
-                    me._queue.append( new WUFile( domfile ) );
-                } );
-
-            } );
-            picker.init();
-        },
-
-        _initNetWorkDetect: function() {
-            var me = this,
-                runtime = me._runtime,
-                Network = runtime.getComponent( 'Network' ),
-                detector = Network.getInstance(),
-                offlineTime;
-
-            detector.on( 'offline', function() {
-                offlineTime = Date.now();
-                me.trigger( 'offline' ) && me.pause( true );
-            } );
-
-            detector.on( 'online', function() {
-                var now = Date.now();
-
-                me.trigger( 'online' ) &&
-                        (now - offlineTime < 2 * 60 * 1000) && me.upload();
-            } );
-
-        },
-
-        upload: function() {
-            this._mgr.start();
-        },
-
-        pause: function( interrupt ) {
-            this._mgr.pause( interrupt );
-        },
-
         getImageThumbnail: function( file, cb, width, height ) {
-            var Q = this._queue,
-                runtime = this._runtime,
+            var runtime = this._runtime,
                 Image = runtime.getComponent( 'Image' );
 
-            file = typeof file === 'string' ? Q.getFile( file ) : file;
+            file = this.getFile( file );
 
             Image.makeThumbnail( file.getSource(), function( ret ) {
                 var img = document.createElement( 'img' );
                 img.src = ret;
                 cb( img );
             }, width, height, true );
+        },
+
+        // ----------------------------------------------
+        // 中转到uploadMgr中去。
+        // ----------------------------------------------
+
+        /**
+         * 开始上传
+         * @method upload
+         */
+        upload: function() {
+            return this._mgr.start.apply( this._mgr, arguments );
+        },
+
+        stop: function() {
+            return this._mgr.stop.apply( this._mgr, arguments );
+        },
+
+        getFile: function() {
+            return this._mgr.getFile.apply( this._mgr, arguments );
+        },
+
+        addFile: function() {
+            return this._mgr.addFile.apply( this._mgr, arguments );
+        },
+
+        addFiles: function() {
+            return this._mgr.addFiles.apply( this._mgr, arguments );
+        },
+
+        removeFile: function() {
+            return this._mgr.removeFile.apply( this._mgr, arguments );
+        },
+
+        getStats: function() {
+            return this._mgr.getStats.apply( this._mgr, arguments );
         },
 
 

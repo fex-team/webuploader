@@ -15,13 +15,12 @@ define( 'webuploader/core/runtime/html5/transport', [ 'webuploader/base',
             fileVar: 'file',
             chunked: true,
             chunkSize: 1024 * 512,    // 0.5M.
-            timeout: 2 * 60 * 1000, // 2分钟
+            timeout: 2 * 60 * 1000,    // 2分钟
             formData: {},
             headers: {}
         };
 
     function Transport( opts ) {
-        this.xhr = null;
         opts = this.options = $.extend( true, {}, defaultOpts, opts || {} );
     }
 
@@ -52,23 +51,24 @@ define( 'webuploader/core/runtime/html5/transport', [ 'webuploader/base',
 
                 xhr.upload.onprogress = noop;
                 xhr.onreadystatechange = noop;
+                clearTimeout( me.timoutTimer );
                 me._xhr = null;
 
-                if ( xhr.status >= 200 && xhr.status < 300 ) {
+                // 只考虑200的情况
+                if ( xhr.status === 200 ) {
                     ret = me._parseResponse( xhr.responseText );
                     ret._raw = xhr.responseText;
                     rHeaders = me._getXhrHeaders( xhr );
 
+                    // 说明server端返回的数据有问题。
                     if ( !me.trigger( 'accept', ret, rHeaders ) ) {
-                        reject = 'rejected';
-                    }
-
-                    if ( !reject ) {
+                        reject = 'server';
+                    } else {
                         return me._onsuccess.call( me, ret, rHeaders );
                     }
                 }
 
-                reject = xhr.status ? xhr.statusText : 'abort';
+                reject = reject || (xhr.status ? 'http' : 'timeout');
                 return me._reject( reject );
             };
 
@@ -80,11 +80,9 @@ define( 'webuploader/core/runtime/html5/transport', [ 'webuploader/base',
                 start, end, total;
 
             if ( this.chunks ) {
-                start = this.chunk * opts.chunkSize;
-                end = start + opts.chunkSize;
                 total = this._blob.size;
-
-                end = Math.min( end, total );
+                start = this.chunk * opts.chunkSize;
+                end = Math.min( start + opts.chunkSize, total );
 
                 percentage = (start + percentage * (end -start)) / total;
             }
@@ -95,14 +93,13 @@ define( 'webuploader/core/runtime/html5/transport', [ 'webuploader/base',
         _onsuccess: function( ret, headers ) {
             if ( this.chunks && this.chunk < this.chunks - 1 ) {
                 this.chunk++;
-                this.paused || this._upload();
+                this._upload();
             } else {
                 this._resolve( ret, headers );
             }
         },
 
         _notify: function( percentage ) {
-            this.state = 'progress';
             this.trigger( 'progress', percentage || 0 );
         },
 
@@ -157,6 +154,10 @@ define( 'webuploader/core/runtime/html5/transport', [ 'webuploader/base',
         },
 
         _upload: function() {
+            if ( this.paused ) {
+                return this;
+            }
+
             var opts = this.options,
                 xhr = this._initAjax(),
                 formData = new FormData(),
@@ -166,10 +167,7 @@ define( 'webuploader/core/runtime/html5/transport', [ 'webuploader/base',
 
             if ( this.chunks ) {
                 start = this.chunk * opts.chunkSize;
-                end = start + opts.chunkSize;
-                if ( end > blob.size ) {
-                    end = blob.size;
-                }
+                end = Math.min( blob.size, start + opts.chunkSize );
 
                 blob = slice.call( blob, start, end );
                 opts.formData.chunk = this.chunk;
@@ -196,6 +194,7 @@ define( 'webuploader/core/runtime/html5/transport', [ 'webuploader/base',
             }
 
             xhr.send( formData );
+            this.state = 'progress';
             return this;
         },
 
@@ -204,6 +203,7 @@ define( 'webuploader/core/runtime/html5/transport', [ 'webuploader/base',
             if ( this._xhr ) {
                 this._xhr.upload.onprogress = noop;
                 this._xhr.onreadystatechange = noop;
+                clearTimeout( this.timoutTimer );
                 this._xhr.abort();
                 this._onprogress( 0 );
             }
@@ -214,9 +214,13 @@ define( 'webuploader/core/runtime/html5/transport', [ 'webuploader/base',
             this._upload();
         },
 
-        abort: function() {
-            if ( this.state === 'progress' ) {
-                // @ todo
+        cancel: function() {
+            if ( this._xhr ) {
+                this._xhr.upload.onprogress = noop;
+                this._xhr.onreadystatechange = noop;
+                clearTimeout( this.timoutTimer );
+                this._xhr.abort();
+                this._reject( 'abort' );
             }
         },
 
@@ -228,12 +232,6 @@ define( 'webuploader/core/runtime/html5/transport', [ 'webuploader/base',
          * @chainable
          */
         sendAsBlob: function( blob ) {
-
-            // 只有在pedding的时候才可以发送。
-            if ( this.state !== 'pending' ) {
-                return;
-            }
-
             var opts = this.options;
 
             if ( opts.chunked && blob.size > opts.chunkSize ) {
@@ -251,6 +249,7 @@ define( 'webuploader/core/runtime/html5/transport', [ 'webuploader/base',
         destroy: function() {
             this._blob = null;
         }
+
     } );
 
     // 静态方法直接发送内容。
