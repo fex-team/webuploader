@@ -1,9 +1,10 @@
 // 此文件在worker环境下运行。
 importScripts('md5.js');
 
+var fr = new FileReader();
+
 function md5File(file, cb) {
-    var fr = new FileReader(),
-        content;
+    var content;
 
     fr.onload = function() {
         content = md5( this.result );
@@ -12,8 +13,6 @@ function md5File(file, cb) {
     fr.onloadend = function() {
         fr.onloadend = null;
         fr.onload = null;
-        fr.abort();
-        fr = null;
 
         cb( content );
     }
