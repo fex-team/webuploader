@@ -59,24 +59,24 @@
     };
 </script>
 <script type="text/javascript" name="hashme">
-function md5File(file, cb) {
-    var fr = new FileReader(),
-        content;
+var md5File = (function(){
+    var fr = new FileReader();
 
-    fr.onload = function() {
-        content = md5( this.result );
+    return function( file, cb ){
+        fr.onload = function() {
+            content = md5( this.result );
+        }
+
+        fr.onloadend = function() {
+            fr.onloadend = null;
+            fr.onload = null;
+
+            cb( content );
+        }
+
+        fr.readAsBinaryString( file );
     }
-
-    fr.onloadend = function() {
-        fr.onloadend = null;
-        fr.onload = null;
-        fr = null;
-
-        cb( content );
-    }
-
-    fr.readAsBinaryString( file );
-}
+})();
 </script>
 </body>
 </html>
