@@ -6,35 +6,12 @@ define( 'webuploader/core/mediator', [ 'webuploader/base' ], function( Base ) {
         slice = [].slice,
         protos;
 
-
-    // 生成匹配namespace的正则
-    function matcherFor( ns ) {
-        return new RegExp( '(?:^| )' + ns.replace( ' ', ' .* ?' ) + '(?: |$)' );
-    }
-
-    // 分离event name和event namespace
-    function parse( name ) {
-        var parts = ('' + name).split( '.' );
-
-        return {
-            e: parts[ 0 ],
-            ns: parts.slice( 1 ).sort().join( ' ' )
-        };
-    }
-
     // 根据条件过滤出事件handlers.
     function findHandlers( arr, name, callback, context ) {
-        var matcher,
-            obj;
-
-        obj = parse( name );
-        obj.ns && (matcher = matcherFor( obj.ns ));
-
         // @todo IE8不支持filter，需要换种写法。
         return arr.filter(function( handler ) {
             return handler &&
-                    (!obj.e || handler.e === obj.e) &&
-                    (!obj.ns || matcher.test( handler.ns )) &&
+                    (!name || handler.e === name) &&
                     (!callback || handler.cb === callback ||
                     handler.cb._cb === callback) &&
                     (!context || handler.ctx === context);
@@ -81,7 +58,7 @@ define( 'webuploader/core/mediator', [ 'webuploader/base' ], function( Base ) {
 
             set = this._events || (this._events = []);
 
-            handler = parse( name );
+            handler = { e: name };
 
             handler.cb = callback;
             handler.ctx = context;
