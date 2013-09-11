@@ -2,5 +2,6 @@
 /node_modules
 /dist
 /doc
+/server/upload
 .tags
 .tags_sorted_by_file

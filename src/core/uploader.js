@@ -18,22 +18,14 @@ define( 'webuploader/core/uploader', [ 'webuploader/base',
             },
             accept: [{
                 title: 'image',
-                extensions: 'gif,jpg,jpeg,bmp'
+                extensions: 'gif,jpg,jpeg,bmp,png'
             }],
             dnd: '',
             paste: ''
         };
 
     function Uploader( opts ) {
-        opts = opts || {};
-
-        if ( typeof opts.pick === 'string' ) {
-            opts.pick = {
-                id: opts.pick
-            };
-        }
-
-        this.options = $.extend( true, {}, defaultOpts, opts );
+        this.options = $.extend( true, {}, defaultOpts, opts || {} );
         this._connectRuntime( this.options, Base.bindFn( this._init, this ) );
     }
 
@@ -46,7 +38,7 @@ define( 'webuploader/core/uploader', [ 'webuploader/base',
             var me = this,
                 opts = this.options;
 
-            opts.pick && me._initFilePicker( opts );
+            opts.pick && me.addButton( opts.pick );
             opts.dnd && me._initDnd( opts );
             opts.paste && me._initFilePaste( opts );
 
@@ -61,22 +53,6 @@ define( 'webuploader/core/uploader', [ 'webuploader/base',
 
             me.state = 'inited';
             me.trigger( 'ready' );
-        },
-
-        _initFilePicker: function( opts ) {
-            var me = this,
-                options = $.extend( {}, opts.pick, {
-                    accept: opts.accept
-                } ),
-                FilePicker = me._runtime.getComponent( 'FilePicker' ),
-                picker;
-
-            picker = new FilePicker( options );
-
-            picker.on( 'select', function( files ) {
-                me.addFiles( files );
-            } );
-            picker.init();
         },
 
         _initDnd: function( opts ) {
@@ -109,11 +85,7 @@ define( 'webuploader/core/uploader', [ 'webuploader/base',
             paste = new FilePaste( options );
 
             paste.on( 'paste', function( files ) {
-
-                $.each( files, function( idx, domfile ) {
-                    me._queue.append( new WUFile( domfile ) );
-                } );
-
+                me.addFiles( files );
             } );
             paste.init();
         },
@@ -145,6 +117,29 @@ define( 'webuploader/core/uploader', [ 'webuploader/base',
             this._runtime = runtime = Runtime.getInstance( opts );
             runtime.once( 'ready', cb );
             runtime.init();
+        },
+
+        addButton: function( pick ) {
+            if ( typeof pick === 'string' ) {
+                pick = {
+                    id: pick
+                };
+            }
+
+            var me = this,
+                opts = me.options,
+                options = $.extend( {}, pick, {
+                    accept: opts.accept
+                } ),
+                FilePicker = me._runtime.getComponent( 'FilePicker' ),
+                picker;
+
+            picker = new FilePicker( options );
+
+            picker.on( 'select', function( files ) {
+                me.addFiles( files );
+            } );
+            picker.init();
         },
 
         getImageThumbnail: function( file, cb, width, height ) {
