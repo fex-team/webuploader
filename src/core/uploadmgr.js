@@ -129,7 +129,7 @@ define( 'webuploader/core/uploadmgr', [ 'webuploader/base',
             stop: function( interrupt ) {
                 runing = false;
 
-                $.each( requests, function( id, transport ) {
+                interrupt && $.each( requests, function( id, transport ) {
                     var file = queue.getFile( id );
                     file.setStatus( Status.INTERRUPT );
                     transport.pause();
