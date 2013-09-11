@@ -13,7 +13,7 @@ define( 'webuploader/core/runtime/html5/filepaste', [
 
                 accept: [{
                     title: 'image',
-                    extensions: 'gif,jpg,bmp'
+                    extensions: 'gif,jpg,bmp,png'
                 }]
             };
 
@@ -35,6 +35,10 @@ define( 'webuploader/core/runtime/html5/filepaste', [
                 elem.attr({
                     contenteditable: 'true'
                 });
+
+                elem.on( 'focus', function( e ) {
+                    this.blur();
+                } );
 
                 $( document ).on( 'paste', function( e ) {
                     var files,
