@@ -28,7 +28,7 @@ define( 'webuploader/core/runtime/html5/filepicker', [
             init: function() {
                 var me = this,
                     opts = me.options,
-                    elem = $( '#' + opts.id ),
+                    elem = $( opts.id ),
                     i,
                     ii,
                     len,
