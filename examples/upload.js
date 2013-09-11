@@ -227,9 +227,9 @@
 
         uploader.onUploadFinished = function() {
             state = 'inited';
-            $upload[ 0 ].className.replace( '\bstate-.*?\b', '' );
+            $upload[ 0 ].className = $upload[ 0 ].className.replace( /\bstate-\w+?\b/g, '' );
             $upload.addClass( 'state-' + state );
-            $upload.text( '开始上传' );
+            $upload.text( '开始上传' ).hide();
 
             $('#filePicker2').hide();
         };
@@ -244,7 +244,7 @@
                 $upload.text( '继续上传' );
                 uploader.stop();
             }
-            $upload[ 0 ].className.replace( '\bstate-.*?\b', '' );
+            $upload[ 0 ].className = $upload[ 0 ].className.replace( /\bstate-\w+?\b/g, '' );
             $upload.addClass( 'state-' + state );
         });
 
