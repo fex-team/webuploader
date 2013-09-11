@@ -46,16 +46,17 @@
         // 实例化
         uploader = WebUploader.create({
             pick: {
-                id: 'filePicker',
+                id: '#filePicker',
                 btnName: '点击选择图片'
             },
-            dnd: 'dndArea',
-            paste: 'uploader'
+            dnd: '#dndArea',
+            paste: '#uploader',
+            server: 'http://liaoxuezhi.fe.baidu.com/webupload/fileupload.php'
         });
 
         // 添加“添加文件”的按钮，
         uploader.addButton({
-            id: 'filePicker2',
+            id: '#filePicker2',
             btnName: '继续添加'
         });
 
