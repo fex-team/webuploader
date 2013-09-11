@@ -13,7 +13,7 @@ define( 'webuploader/core/runtime/html5/filepaste', [
 
                 accept: [{
                     title: 'image',
-                    extensions: 'gif,jpg,bmp'
+                    extensions: 'gif,jpg,bmp,png'
                 }]
             };
 
@@ -26,17 +26,13 @@ define( 'webuploader/core/runtime/html5/filepaste', [
             init: function() {
                 var me = this,
                     opts = me.options,
-                    elem = $( '#' + opts.id );
+                    elem = $( opts.id );
 
                 if ( !elem.length ) {
                     throw new Error( '找不到元素#' + opts.id );
                 }
 
-                elem.attr({
-                    contenteditable: 'true'
-                });
-
-                $( document ).on( 'paste', function( e ) {
+                elem.on( 'paste', function( e ) {
                     var files,
                         triggerFiles = [],
                         acceptStr = [],
@@ -67,7 +63,7 @@ define( 'webuploader/core/runtime/html5/filepaste', [
                         } else {
                             triggerFiles.push( files[i].getAsFile() );
                         }
-                        
+
                     };
 
                     me.trigger( 'paste', triggerFiles );
@@ -80,26 +76,5 @@ define( 'webuploader/core/runtime/html5/filepaste', [
 
 
         Html5Runtime.register( 'FilePaste', FilePaste );
-
-        /* jshint camelcase:false */
-
-        // 告诉Runtime，支持哪些能力
-        // 这个方法会在选择时执行，好处是按需执行。
-        Html5Runtime.addDetect(function() {
-            // todo 需要运行时检测。
-
-            return {
-
-                // 是否能选择图片
-                selectFile: true,
-
-                // 是否能多选
-                selectMultiple: true,
-
-                // 是否支持文件过滤
-                filteByExtension: true
-            };
-        });
-
         return FilePaste;
     } );

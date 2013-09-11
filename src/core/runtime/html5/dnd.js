@@ -26,7 +26,7 @@ define( 'webuploader/core/runtime/html5/dnd', [
             init: function() {
                 var me = this,
                     opts = me.options,
-                    elem = $( '#' + opts.id ),
+                    elem = $( opts.id ),
                     triggerFiles = [];
 
                 var isAcceptType = function( type ) {
@@ -56,12 +56,12 @@ define( 'webuploader/core/runtime/html5/dnd', [
                 };
 
                 var traverseDirectoryTree = function( entry ) {
-                    var dirReader, 
+                    var dirReader,
                         i;
-                        
+
                     if ( entry.isDirectory ) {
                         dirReader = entry.createReader();
-                        dirReader.readEntries( function( entries ) {   
+                        dirReader.readEntries( function( entries ) {
 
                             for ( i = 0; i < entries.length; i++ ) {
 
@@ -76,7 +76,7 @@ define( 'webuploader/core/runtime/html5/dnd', [
                                 } else {
                                     triggerFiles.push( traverseDirectoryTree( entries[i] ) );
                                 }
-                                
+
                             }
 
                         }, function( fileError ) {});
