@@ -26,7 +26,62 @@ define( 'webuploader/core/runtime/html5/dnd', [
             init: function() {
                 var me = this,
                     opts = me.options,
-                    elem = $( '#' + opts.id );
+                    elem = $( opts.id ),
+                    triggerFiles = [];
+
+                var isAcceptType = function( type ) {
+                    var acceptStr = [],
+                        _tmp = [],
+                        len,
+                        ii,
+                        i;
+
+                    if ( opts.accept && opts.accept.length > 0 ) {
+                        for (i = 0, len = opts.accept.length; i < len; i++) {
+                            _tmp = opts.accept[i].extensions.split( ',' );
+                            for (ii = 0; ii < _tmp.length; ii++) {
+                                acceptStr.push(  opts.accept[i].title + '/' + _tmp[ii] );
+                            };
+                        };
+                        acceptStr = acceptStr.join(',');
+
+                        if ( type != '' && acceptStr.indexOf( type ) > -1) {
+                            return true;
+                        } else {
+                            return false;
+                        }
+                    } else {
+                        return true;
+                    }
+                };
+
+                var traverseDirectoryTree = function( entry ) {
+                    var dirReader,
+                        i;
+
+                    if ( entry.isDirectory ) {
+                        dirReader = entry.createReader();
+                        dirReader.readEntries( function( entries ) {
+
+                            for ( i = 0; i < entries.length; i++ ) {
+
+                                if ( entries[i].isFile ) {
+                                    entries[i].file( function( file ) {
+                                        if ( isAcceptType( file.type ) ) {
+                                            triggerFiles.push( file );
+                                        }
+                                    }, function( fileError ) {
+                                        console.log('fileError');
+                                    } );
+                                } else {
+                                    triggerFiles.push( traverseDirectoryTree( entries[i] ) );
+                                }
+
+                            }
+
+                        }, function( fileError ) {});
+                    }
+                };
 
                 if ( !elem.length ) {
                     throw new Error( '找不到元素#' + opts.id );
@@ -43,40 +98,27 @@ define( 'webuploader/core/runtime/html5/dnd', [
                 } );
 
                 elem.on( 'drop', function( e ) {
-                    var files,
-                        triggerFiles = [],
-                        acceptStr = [],
-                        _tmp = [],
+                    var dataTrans = e.dataTransfer,
+                        files = e.dataTransfer.files,
+                        _tmp,
                         len,
-                        ii,
                         i;
 
                     e.stopPropagation();
                     e.preventDefault();
-                    files = e.dataTransfer.files;
 
-                    if ( opts.accept && opts.accept.length > 0 ) {
-                        for (i = 0, len = opts.accept.length; i < len; i++) {
-                            _tmp = opts.accept[i].extensions.split( ',' );
-                            for (ii = 0; ii < _tmp.length; ii++) {
-                                acceptStr.push(  opts.accept[i].title + '/' + _tmp[ii] );
-                            };
-                        };
-                        acceptStr = acceptStr.join(',');
-                    }
-
-                    if ( acceptStr != '' ) {
-                        for (i = 0, len = files.length; i < len; i++) {
-                            if ( files[i].type != '' && acceptStr.indexOf( files[i].type ) > -1 ) {
-                                triggerFiles.push( files[i] );
-                            }
-                        };
-                    } else {
-                        triggerFiles = files;
-                    }
+                    for (i = 0, len = files.length; i < len; i++) {
+                        if ( files[i].type && isAcceptType( files[i].type ) ) {
+                            triggerFiles.push( files[i] );
+                        } else if ( dataTrans.items && dataTrans.items[i].webkitGetAsEntry ) {
+                            //文件夹处理
+                            traverseDirectoryTree( dataTrans.items[i].webkitGetAsEntry() );
+                        }
+                    };
 
                     me.trigger( 'drop', triggerFiles );
                     e.dataTransfer.clearData();
+                    triggerFiles = [];
                     elem.removeClass( 'webuploader-dnd-over' );
                 } );
 
