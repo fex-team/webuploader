@@ -18,7 +18,7 @@ define( 'webuploader/core/uploader', [ 'webuploader/base',
             },
             accept: [{
                 title: 'image',
-                extensions: 'gif,jpg,jpeg,bmp'
+                extensions: 'gif,jpg,jpeg,bmp,png'
             }],
             dnd: '',
             paste: ''
@@ -85,11 +85,7 @@ define( 'webuploader/core/uploader', [ 'webuploader/base',
             paste = new FilePaste( options );
 
             paste.on( 'paste', function( files ) {
-
-                $.each( files, function( idx, domfile ) {
-                    me._queue.append( new WUFile( domfile ) );
-                } );
-
+                me.addFiles( files );
             } );
             paste.init();
         },
