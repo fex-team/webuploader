@@ -85,6 +85,12 @@ define( 'webuploader/core/uploadmgr', [ 'webuploader/base',
 
             if ( opts.compress ) {
                 Image.downsize( file.source, function( blob ) {
+                    var size = file.size;
+
+                    file.source = blob;
+                    file.size = blob.size;
+                    file.trigger( 'downsize', blob.size, size );
+
                     tr.sendAsBlob( blob );
                 }, 1600, 1600 );
             } else {
@@ -145,6 +151,7 @@ define( 'webuploader/core/uploadmgr', [ 'webuploader/base',
                 }
 
                 queue.append( file );
+                api.trigger( 'fileQueued', file );
             },
 
             addFiles: function( arr ) {
@@ -163,15 +170,11 @@ define( 'webuploader/core/uploadmgr', [ 'webuploader/base',
                 }
 
                 file.setStatus( Status.CANCELLED );
+                api.trigger( 'fileDequeued', file );
             }
         };
 
         Mediator.installTo( api );
-
-        queue.on( 'queued', function( file ) {
-            api.trigger( 'fileQueued', file );
-        } );
-
         return api;
     }
 
