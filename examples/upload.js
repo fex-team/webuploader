@@ -49,7 +49,8 @@
                 id: 'filePicker',
                 btnName: '点击选择图片'
             },
-            dnd: 'dndArea'
+            dnd: 'dndArea',
+            paste: 'uploader'
         });
 
         // 添加“添加文件”的按钮，
