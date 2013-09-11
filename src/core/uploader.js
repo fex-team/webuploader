@@ -18,7 +18,7 @@ define( 'webuploader/core/uploader', [ 'webuploader/base',
             },
             accept: [{
                 title: 'image',
-                extensions: 'gif,jpg,jpeg,bmp'
+                extensions: 'gif,jpg,jpeg,bmp,png'
             }],
             dnd: '',
             paste: ''
