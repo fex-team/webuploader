@@ -29,7 +29,7 @@ define( 'webuploader/core/uploadmgr', [ 'webuploader/base',
             }
 
             stats.numOfQueue || (runing = false);
-            runing || api.trigger( 'uploadFinished' );
+            stats.numOfQueue || api.trigger( 'uploadFinished' );
         }
 
         function _sendFile( file ) {
