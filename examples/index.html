@@ -7,127 +7,32 @@
     <link rel="stylesheet" type="text/css" href="./style.css" />
 </head>
 <body>
-    <div id="dndArea" class="stage">
-        <div class="queueList">
-            <ul id="queueList"></ul>
-        </div>
+    <div id="wrapper">
+        <div id="container">
+            <!--头部，相册选择和格式选择-->
 
-        <div class="btns">
-            <div id="pickerBtn">
-            </div><div id="uploadBtn">开始上传</div>
+            <div id="uploader">
+                <div class="queueList">
+                    <div id="dndArea" class="placeholder">
+                        <div id="filePicker"></div>
+                        <p>或将照片拖到这里，单次最多可选300张</p>
+                        <p class="flashTip">使用桌面版选图不限制，极速上传 <a href="#">立即体验</a></p>
+                    </div>
+                </div>
+                <div class="statusBar" style="display:none;">
+                    <div class="progress">
+                        <span class="text">0%</span>
+                        <span class="percentage"></span>
+                    </div><div class="info"></div>
+                    <div class="btns">
+                        <div id="filePicker2"></div><div class="uploadBtn">开始上传</div>
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
     <script type="text/javascript" src="./jquery.js"></script>
     <script type="text/javascript" src="../dist/webuploader.js"></script>
-
-    <script type="text/javascript">
-        var wu = WebUploader.create({
-                pick: 'pickerBtn',
-                dnd: 'dndArea',
-                paste: 'dndArea',
-                server: 'http://liaoxuezhi.fe.baidu.com/webupload/fileupload.php'
-            }),
-            btn = $( '#uploadBtn' );
-
-        wu.onFileQueued = function ( file ) {
-            var li = $( '<li id="' + file.id + '">' ),
-                btn = $( '<a href="javascript:void(0)" class="delete">删除</a>'),
-                ratio = window.devicePixelRatio || 1,
-                width = 120 * ratio,
-                height = 90 * ratio;
-
-            wu.getImageThumbnail( file, function( img ) {
-                li.prepend( img );
-                $( img ).css( 'width', (width / ratio) + 'px' );
-            }, width, height );
-
-            li.append( '<p>' + file.name + '</p>');
-            li.append( btn );
-
-            btn.on( 'click', function() {
-                wu.removeFile( file );
-            });
-
-            li.appendTo( '#queueList' );
-
-            file.on( 'statuschange', function( cur, pre ) {
-
-                li.removeClass('progress failed interrupt');
-
-                switch ( cur ) {
-                    case 3:    // error
-                        li.find( 'p.progress' ).fadeOut();
-                        li.addClass( 'failed' );
-                        break;
-
-                    case 6:
-                        li.addClass( 'interrupt' );
-                        break;
-
-                    case 4:
-                        li.addClass( 'finished' );
-                        break;
-
-                    case 5:
-                        li.fadeOut();
-                        break;
-                }
-            });
-        };
-
-        wu.onUploadStart = function( file ) {
-            var li = $( '#' + file.id );
-            li.append( '<p class="progress"><span></span></p>' );
-            li.addClass( 'progress' );
-        }
-
-        wu.onUploadProgress = function( file, percent ) {
-            var li = $( '#' + file.id ),
-                progress = li.find( 'p.progress span' );
-
-            progress.css({
-                width: percent * 100 + '%'
-            })
-        }
-
-        wu.onUploadComplete = function( file ) {
-            var li = $( '#' + file.id ),
-                progress = li.find( 'p.progress' );
-
-            progress.fadeOut();
-        };
-
-        wu.onUploadFinished = function() {
-            btn.text( '开始上传' );
-        }
-
-        wu.onOnline = function() {
-            wu.upload();
-            alert( '网络恢复，继续上传' )
-        };
-
-        wu.onOffline = function() {
-            wu.stop();
-            alert( '网络中断，暂停上传' )
-        }
-
-        btn.on( 'click', function() {
-            var text = $(btn).text();
-
-            if ( text === '开始上传' || text === '继续上传' ) {
-                wu.upload();
-                btn.text( '暂停上传' );
-            } else if ( text === '暂停上传' ) {
-                wu.stop();
-                btn.text( '继续上传' );
-            }
-        } );
-
-        $( '#queueList' ).on( 'click', 'a.delete', function() {
-            var li = $(this).closest( 'li' );
-
-            wu.removeFile( li.attr( 'id' ) );
-        });
-    </script>
+    <script type="text/javascript" src="./upload.js"></script>
 </body>
 </html>
