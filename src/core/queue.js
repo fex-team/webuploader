@@ -78,37 +78,8 @@ define( 'webuploader/core/queue', [
             },
 
             /**
-             * 从队列中取出文件
-             *
-             * @method fetch
-             * @param  {String|File} [fileId]   文件ID，如果为空则取队列首文件
-             * @return {Object} 包括file和source字段
+             * 从队列中取出一个指定状态的文件。
              */
-            // 不能出列啊，如果文件失败了，那存在哪呢？只有文件删除了，才能出队列。
-            // fetch: function( file ) {
-            //     var idx = 0,
-            //         id;
-
-            //     if ( file ) {
-            //         id = typeof file === 'string' ? file : file.id;
-
-            //         $.each( this._queue, function( index, file ) {
-            //             if ( file.id === id ) {
-            //                 idx = index;
-            //                 return false;
-            //             }
-            //         } );
-            //     }
-
-            //     file = this._queue.splice( idx, 1 )[ 0 ];
-            //     id = file.id;
-
-            //     this.stats.numOfQueue--;
-
-            //     return this._all[ id ];
-            // },
-            //
-
             fetch: function( status ) {
                 var len = this._queue.length,
                     i, file;
@@ -126,36 +97,6 @@ define( 'webuploader/core/queue', [
                 return null;
             },
 
-            removeFile: function( file ) {
-                // @todo
-            },
-
-            /**
-             * 获取队列中的文件。可以指定文件状态，和最多获取的个数
-             * @param  {[type]} status [description]
-             * @param  {[type]} count  [description]
-             * @return {[type]}        [description]
-             */
-            getFiles: function( status, count ) {
-                var ret = [],
-                    len = this._queue.length,
-                    file, i;
-
-                for( i = 0; i < len; i++ ) {
-                    file = this._queue[ i ];
-
-                    if ( file.getStatus() === status || !status ) {
-                        ret.push( file );
-                    }
-
-                    if ( count && ret.length >= count ) {
-                        return ret;
-                    }
-                }
-
-                return ret;
-            },
-
             _fileAdded: function( file ) {
                 var me = this,
                     existing = this._map[ file.id ];
@@ -169,8 +110,6 @@ define( 'webuploader/core/queue', [
                 }
 
                 file.setStatus( STATUS.QUEUED );
-
-                this.trigger( 'queued', file );
             },
 
             _onFileStatusChange: function( curStatus, preStatus ) {
