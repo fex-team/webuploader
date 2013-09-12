@@ -51,7 +51,9 @@
             },
             dnd: '#dndArea',
             paste: '#uploader',
-            server: 'http://liaoxuezhi.fe.baidu.com/webupload/fileupload.php'
+            server: 'http://liaoxuezhi.fe.baidu.com/webupload/fileupload.php',
+            fileNumLimit: 300,
+            fileSizeLimit: 200 * 1024 * 1024    // 200 M
         });
 
         // 添加“添加文件”的按钮，
@@ -74,7 +76,7 @@
 
 
 
-            uploader.getImageThumbnail( file, function( img ) {
+            uploader.makeThumb( file, function( img ) {
                 $wrap.empty().append( img );
             }, thumbnailWidth, thumbnailHeight );
 
@@ -137,7 +139,7 @@
                     '-webkit-transform': deg,
                     '-mos-transform': deg,
                     '-o-transform': deg,
-                    'transform': deg,
+                    'transform': deg
                 }));
             });
 
@@ -236,6 +238,10 @@
             $('#filePicker2').hide();
         };
 
+        uploader.onError = function( code ) {
+            alert( 'Eroor ' + code );
+        };
+
         $upload.on('click', function() {
             if ( state === 'inited' || state === 'paused'  ) {
                 uploader.upload();
@@ -253,4 +259,6 @@
         $upload.addClass( 'state-' + state );
         updateTotalProgress();
     });
+
+
 })( jQuery );
