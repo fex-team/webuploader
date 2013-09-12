@@ -9,7 +9,7 @@ define( 'webuploader/core/uploader', [ 'webuploader/base',
 
     var $ = Base.$,
         defaultOpts = {
-            thread: 3,
+            threads: 3,
             compress: true,
             server: '../server/fileupload.php',
             pick: {
@@ -21,14 +21,23 @@ define( 'webuploader/core/uploader', [ 'webuploader/base',
                 extensions: 'gif,jpg,jpeg,bmp,png'
             }],
             dnd: '',
-            paste: ''
+            paste: '',
+            fileSizeLimit: 0,
+            fileNumLimit: 0,
+            resize: {
+                width: 1600,
+                height: 1600,
+                quality: 90
+            }
         };
 
     function Uploader( opts ) {
         this.options = $.extend( true, {}, defaultOpts, opts || {} );
         this._connectRuntime( this.options, Base.bindFn( this._init, this ) );
+        Mediator.trigger( 'uploaderInit', this );
     }
 
+    Uploader.defaultOptions = defaultOpts;
     Mediator.installTo( Uploader.prototype );
 
     $.extend( Uploader.prototype, {
@@ -142,7 +151,7 @@ define( 'webuploader/core/uploader', [ 'webuploader/base',
             picker.init();
         },
 
-        getImageThumbnail: function( file, cb, width, height ) {
+        makeThumb: function( file, cb, width, height ) {
             var runtime = this._runtime,
                 Image = runtime.getComponent( 'Image' );
 
