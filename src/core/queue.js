@@ -48,6 +48,7 @@ define( 'webuploader/core/queue', [
             append: function( file ) {
                 this._queue.push( file );
                 this._fileAdded( file );
+                return this;
             },
 
             /**
@@ -61,6 +62,7 @@ define( 'webuploader/core/queue', [
             prepend: function( file ) {
                 this._queue.unshift( file );
                 this._fileAdded( file );
+                return this;
             },
 
             /**
