@@ -19,6 +19,10 @@ define( 'webuploader/core/runtime/html5/imagemta', [ 'webuploader/base',
         maxMetaDataSize: 262144,
 
         parse: function( buffer, noParse ) {
+            if ( buffer.byteLength < 6 ) {
+                return;
+            }
+
             var dataview = new DataView( buffer ),
                 offset = 2,
                 maxOffset = dataview.byteLength - 4,

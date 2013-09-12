@@ -152,7 +152,7 @@ define( 'jq-bridge', [], function() {
         }
 
         args.forEach(function( arg ) {
-            extend( target, arg, deep );
+            arg && extend( target, arg, deep );
         });
 
         return target;
