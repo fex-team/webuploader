@@ -93,6 +93,10 @@ define( 'webuploader/core/file', [
             statusMap[ this.id ] = WUFile.Status.INITED;
 
             this.source = file;
+
+            this.on( 'error', function( msg ) {
+                this.setStatus( WUFile.Status.ERROR, msg );
+            } );
         }
 
         $.extend( WUFile.prototype, {
@@ -176,13 +180,14 @@ define( 'webuploader/core/file', [
         Mediator.installTo( WUFile.prototype );
 
         WUFile.Status = {
-            INITED:     0,
-            QUEUED:     1,
-            PROGRESS:   2,
-            ERROR:      3,
-            COMPLETE:   4,
-            CANCELLED:  5,
-            INTERRUPT:  6
+            INITED:     'inited',
+            QUEUED:     'queued',
+            PROGRESS:   'progress',
+            ERROR:      'error',
+            COMPLETE:   'complete',
+            CANCELLED:  'cancelled',
+            INTERRUPT:  'interrupt',
+            INVALID:     'invalid'
         };
 
         return WUFile;

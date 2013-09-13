@@ -31,7 +31,8 @@ define( 'webuploader/core/uploadmgr', [ 'webuploader/base',
             }
 
             stats.numOfQueue || (runing = false);
-            stats.numOfQueue || api.trigger( 'uploadFinished' );
+
+            stats.numOfQueue || requestsLength || api.trigger( 'uploadFinished' );
         }
 
         function _sendFile( file ) {
@@ -53,10 +54,6 @@ define( 'webuploader/core/uploadmgr', [ 'webuploader/base',
 
             tr.on( 'all', function( type ) {
                 var args = [].slice.call( arguments, 1 ),
-                    status = {
-                        error: Status.ERROR,
-                        success: Status.COMPLETE
-                    },
                     ret, formData;
 
                 args.unshift( file );
@@ -78,8 +75,11 @@ define( 'webuploader/core/uploadmgr', [ 'webuploader/base',
                 status[ type ] && file.setStatus( status[ type ] );
                 ret = api.trigger.apply( api, args );
 
-                // error or success.
-                if ( type === 'complete' ) {
+                if ( type === 'error' ) {
+                    file.setStatus( Status.ERROR, args[ 2 ] );
+                } else if ( type === 'success' ) {
+                    file.setStatus( Status.COMPLETE );
+                } else if ( type === 'complete' ) {    // error or success.
                     delete requests[ file.id ];
                     requestsLength--;
                     tr.off( 'all', arguments.callee );
@@ -122,10 +122,18 @@ define( 'webuploader/core/uploadmgr', [ 'webuploader/base',
         api = {
 
             start: function() {
+
+                // 移出invalid的文件
+                $.each( queue.getFiles( Status.INVALID ), function() {
+                    api.removeFile( this );
+                } );
+
                 if ( runing || !stats.numOfQueue && !requestsLength ) {
                     return;
                 }
                 runing = true;
+
+                // 如果有暂停的，则续传
                 $.each( requests, function( id, transport ) {
                     var file = queue.getFile( id );
                     file.setStatus( Status.PROGRESS, '' );
@@ -145,8 +153,13 @@ define( 'webuploader/core/uploadmgr', [ 'webuploader/base',
             },
 
             getStats: function() {
-                // 拷贝一份，以免被修改。
-                return $.extend( {}, stats );
+                return {
+                    successNum: stats.numOfSuccess,
+                    queueFailNum: 0,
+                    cancelNum: stats.numOfCancel,
+                    uploadFailNum: stats.numOfUploadFailed,
+                    queueNum: stats.numOfQueue
+                };
             },
 
             getFile: function() {
@@ -172,7 +185,7 @@ define( 'webuploader/core/uploadmgr', [ 'webuploader/base',
                 var me = this;
 
                 $.each( arr, function() {
-                    return me.addFile( this );
+                    me.addFile( this );
                 });
             },
 
