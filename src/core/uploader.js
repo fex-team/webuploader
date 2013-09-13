@@ -24,6 +24,7 @@ define( 'webuploader/core/uploader', [ 'webuploader/base',
             paste: '',
             fileSizeLimit: 0,
             fileNumLimit: 0,
+            duplicate: false,
             resize: {
                 width: 1600,
                 height: 1600,
@@ -164,6 +165,19 @@ define( 'webuploader/core/uploader', [ 'webuploader/base',
             }, width, height, true );
         },
 
+        formatSize: function( size, pointLength ) {
+            var units = [ 'B', 'K', 'M', 'TB' ],
+                unit = units.shift();
+
+            while ( size > 1024 && units.length ) {
+                unit = units.shift();
+                size = size / 1024;
+            }
+
+            return (unit === 'B' ? size : size.toFixed( pointLength || 2 )) +
+                    unit;
+        },
+
         // ----------------------------------------------
         // 中转到uploadMgr中去。
         // ----------------------------------------------
@@ -208,6 +222,10 @@ define( 'webuploader/core/uploader', [ 'webuploader/base',
                 name = 'on' + type.substring( 0, 1 ).toUpperCase() +
                     type.substring( 1 );
 
+            if ( Mediator.trigger.apply( this, arguments ) === false ) {
+                return false;
+            }
+
             if ( $.isFunction( opts[ name ] ) &&
                     opts[ name ].apply( this, args ) === false ) {
                 return false;
@@ -218,7 +236,7 @@ define( 'webuploader/core/uploader', [ 'webuploader/base',
                 return false;
             }
 
-            return Mediator.trigger.apply( this, arguments );
+            return true;
         }
 
     } );
