@@ -9,7 +9,7 @@ define( 'webuploader/core/uploader', [ 'webuploader/base',
 
     var $ = Base.$,
         defaultOpts = {
-            thread: 3,
+            threads: 3,
             compress: true,
             server: '../server/fileupload.php',
             pick: {
@@ -21,14 +21,24 @@ define( 'webuploader/core/uploader', [ 'webuploader/base',
                 extensions: 'gif,jpg,jpeg,bmp,png'
             }],
             dnd: '',
-            paste: ''
+            paste: '',
+            fileSizeLimit: 0,
+            fileNumLimit: 0,
+            duplicate: false,
+            resize: {
+                width: 1600,
+                height: 1600,
+                quality: 90
+            }
         };
 
     function Uploader( opts ) {
         this.options = $.extend( true, {}, defaultOpts, opts || {} );
         this._connectRuntime( this.options, Base.bindFn( this._init, this ) );
+        Mediator.trigger( 'uploaderInit', this );
     }
 
+    Uploader.defaultOptions = defaultOpts;
     Mediator.installTo( Uploader.prototype );
 
     $.extend( Uploader.prototype, {
@@ -142,7 +152,7 @@ define( 'webuploader/core/uploader', [ 'webuploader/base',
             picker.init();
         },
 
-        getImageThumbnail: function( file, cb, width, height ) {
+        makeThumb: function( file, cb, width, height ) {
             var runtime = this._runtime,
                 Image = runtime.getComponent( 'Image' );
 
@@ -153,6 +163,19 @@ define( 'webuploader/core/uploader', [ 'webuploader/base',
                 img.src = ret;
                 cb( img );
             }, width, height, true );
+        },
+
+        formatSize: function( size, pointLength ) {
+            var units = [ 'B', 'K', 'M', 'TB' ],
+                unit = units.shift();
+
+            while ( size > 1024 && units.length ) {
+                unit = units.shift();
+                size = size / 1024;
+            }
+
+            return (unit === 'B' ? size : size.toFixed( pointLength || 2 )) +
+                    unit;
         },
 
         // ----------------------------------------------
@@ -199,6 +222,10 @@ define( 'webuploader/core/uploader', [ 'webuploader/base',
                 name = 'on' + type.substring( 0, 1 ).toUpperCase() +
                     type.substring( 1 );
 
+            if ( Mediator.trigger.apply( this, arguments ) === false ) {
+                return false;
+            }
+
             if ( $.isFunction( opts[ name ] ) &&
                     opts[ name ].apply( this, args ) === false ) {
                 return false;
@@ -209,7 +236,7 @@ define( 'webuploader/core/uploader', [ 'webuploader/base',
                 return false;
             }
 
-            return Mediator.trigger.apply( this, arguments );
+            return true;
         }
 
     } );

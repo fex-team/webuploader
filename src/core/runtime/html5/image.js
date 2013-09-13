@@ -12,9 +12,11 @@ define( 'webuploader/core/runtime/html5/image', [ 'webuploader/base',
     var $ = Base.$,
         rdataurl = /^data:/i;
 
-    function Html5Image( crossOrigin ) {
+    function Html5Image( opts ) {
         var me = this,
             img = new Image();
+
+        me.options = $.extend( true, {} , Html5Image.defaultOptions, opts );
 
         img.onload = function() {
             var ImageMeta = me.ImageMeta,
@@ -40,18 +42,24 @@ define( 'webuploader/core/runtime/html5/image', [ 'webuploader/base',
         me._img = img;
     }
 
+    Html5Image.defaultOptions = {
+        quality: 90,
+        crossOrigin: 'Anonymous',
+        downsize: {
+            crop: false,
+            width: 1600,
+            height: 1600
+        }
+    };
+
     $.extend( Html5Image.prototype, {
 
         // flag: 标记是否被修改过。
         modified: false,
 
-        crossOrigin: 'Anonymous',
-
         state: 'pedding',
 
         type: 'image/png',
-
-        quality: 90,
 
         width: 0,
         height: 0,
@@ -82,6 +90,13 @@ define( 'webuploader/core/runtime/html5/image', [ 'webuploader/base',
                     me._renderImageToCanvas( canvas, img, 0, 0 );
                     blob = util.dataURL2Blob( canvas.toDataURL( 'image/png' ) );
                     me._loadAsBlob( blob );
+
+                    img = null;
+                    img.onload = null;
+                    canvas.getContext( '2d' )
+                        .clearRect( 0, 0, canvas.width, canvas.height );
+                    canvas.width = canvas.height = 0;
+                    canvas = null;
                 };
                 img.src = source;
             }
@@ -89,8 +104,13 @@ define( 'webuploader/core/runtime/html5/image', [ 'webuploader/base',
         },
 
         downsize: function( width, height, crop ) {
-            var canvas = this._canvas ||
+            var opts = this.options,
+                canvas = this._canvas ||
                     (this._canvas = document.createElement( 'canvas' ));
+
+            width = width || opts.downsize.width;
+            height = height || opts.downsize.height;
+            crop = typeof crop === 'undefined' ? opts.downsize.crop : crop;
 
             this._resize( canvas, width, height, crop, true );
             this.width = width;
@@ -104,11 +124,12 @@ define( 'webuploader/core/runtime/html5/image', [ 'webuploader/base',
          * 创建缩略图，但是不会修改原始图片大小。
          */
         makeThumbnail: function( width, height, crop, type, quality ) {
-            var canvas = document.createElement( 'canvas' ),
+            var opts = this.options,
+                canvas = document.createElement( 'canvas' ),
                 result;
 
             type = type || this.type;
-            quality = quality || this.quality;
+            quality = quality || opts.quality;
             this._resize( canvas, width, height, crop );
 
             if ( type === 'image/jpeg' ) {
@@ -158,6 +179,7 @@ define( 'webuploader/core/runtime/html5/image', [ 'webuploader/base',
 
         destroy: function() {
             var canvas = this._canvas;
+            this.off();
             this._img.onload = null;
 
             if ( canvas ) {
@@ -167,7 +189,7 @@ define( 'webuploader/core/runtime/html5/image', [ 'webuploader/base',
                 this._canvas = null;
             }
 
-            this._blob = null;
+            this.ImageMeta = this.metas = this._img = this._blob = null;
         },
 
         _loadAsBlob: function( blob ) {
@@ -284,12 +306,10 @@ define( 'webuploader/core/runtime/html5/image', [ 'webuploader/base',
         },
 
         _fileRead: function( file, cb, method ) {
-            var me = this,
-                reader;
+            var me = this;
 
-            if ( window.FileReader ) {
+            util.getFileReader(function( reader ) {
                 method = method || 'readAsDataURL';
-                reader = new FileReader();
                 reader.onload = function() {
                     cb( this.result );
                 };
@@ -299,7 +319,7 @@ define( 'webuploader/core/runtime/html5/image', [ 'webuploader/base',
                 };
 
                 reader[ method ]( file );
-            }
+            });
 
             return me;
         },
