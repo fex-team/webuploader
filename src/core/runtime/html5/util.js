@@ -6,7 +6,7 @@
  */
 define( 'webuploader/core/runtime/html5/util', [ 'webuploader/base',
         'webuploader/core/runtime/html5/runtime'
-        ], function( Base, Html5Runtime ) {
+        ], function( Base ) {
 
     var $ = Base.$,
         urlAPI = window.createObjectURL && window ||
@@ -16,6 +16,46 @@ define( 'webuploader/core/runtime/html5/util', [ 'webuploader/base',
     return {
         createObjectURL: urlAPI.createObjectURL,
         revokeObjectURL: urlAPI.revokeObjectURL,
+
+        // 限制fileReader, 因为不能回收，所以只能共用。
+        getFileReader: (function(){
+            var throttle = 3,
+                pool = [],
+                wating = [];
+
+            function _tick() {
+                var avaibles = [],
+                    i, fr, cb;
+
+                for ( i = 0; i < throttle; i++ ) {
+                    fr = pool[ i ];
+                    fr && fr.readyState === 2 && avaibles.push( fr );
+                }
+
+                while ( avaibles.length && wating.length ) {
+                    fr = avaibles.shift();
+                    cb = wating.shift();
+                    fr.onload = fr.onerror = null;
+                    cb( fr );
+                    fr.onloadend = _tick;
+                }
+            }
+
+            return function( cb ) {
+                var fr;
+
+                if ( pool.length < throttle ) {
+                    fr = new FileReader();
+                    pool.push( fr );
+                    cb( fr );
+                    fr.onloadend = _tick;
+                    return;
+                }
+
+                wating.push( cb );
+                _tick();
+            }
+        })(),
 
         dataURL2Blob: function( dataURI ) {
             var byteStr, intArray, i, mimetype, bb, parts;
