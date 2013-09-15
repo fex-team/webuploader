@@ -198,6 +198,20 @@ define( 'webuploader/core/uploadmgr', [ 'webuploader/base',
 
                 file.setStatus( Status.CANCELLED );
                 api.trigger( 'fileDequeued', file );
+            },
+
+            retry: function() {
+                var files = queue.getFiles( Status.ERROR ),
+                    i = 0,
+                    len = files.length,
+                    file;
+
+                for( ; i < len; i++ ) {
+                    file = files[ i ];
+                    file.setStatus( Status.QUEUED );
+                }
+
+                api.start();
             }
         };
 
