@@ -107,13 +107,13 @@
             }
 
             file.on('statuschange', function( cur, prev ) {
-                var $info, text;
-
                 if ( prev === 'progress' ) {
                     $prgress.width( 0 );
                 } else if ( prev === 'queued' ) {
                     $li.off( 'mouseenter mouseleave' );
                     $btns.remove();
+                } else if ( prev === 'error' ) {
+                    $info.remove();
                 }
 
                 // 成功
@@ -216,13 +216,13 @@
             $info.html( text );
         }
 
-        function setState( val ) {
+        function setState( val, isRetry ) {
             var file;
 
             switch ( val ) {
                 case 'uploading':
                     $progress.show();
-                    uploader.upload();
+                    uploader[ isRetry ? 'retry' : 'upload' ]();
                     $upload.text( '暂停上传' );
                     break;
 
@@ -300,6 +300,14 @@
 
             nextstate && setState( nextstate );
         });
+
+        $info.on( 'click', '.retry', function() {
+            setState( 'uploading', true );
+        } );
+
+        $info.on( 'click', '.ignore', function() {
+            alert( 'todo' );
+        } );
 
         $upload.addClass( 'state-' + state );
         updateTotalProgress();
