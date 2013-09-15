@@ -11,7 +11,7 @@ define( 'webuploader/core/runtime/html5/filepicker', [
             defaultOpts = {
                 id: '',
                 name: 'file',
-                multiple: false,
+                multiple: true,
 
                 accept: [{
                     title: 'image',
@@ -50,11 +50,11 @@ define( 'webuploader/core/runtime/html5/filepicker', [
                     type: 'file',
                     id: inputId
                 });
-                input.addClass( 'webuploader-btn-input' );
+                // input.addClass( 'webuploader-btn-input' );
 
 
                 label.addClass( 'webuploader-btn' );
-                label.html( opts.btnName || '选择文件' );
+                label.html( opts.btnName || elem.text() || '选择文件' );
                 label.attr( 'for', inputId );
 
                 if ( opts.multiple ) {
@@ -79,15 +79,15 @@ define( 'webuploader/core/runtime/html5/filepicker', [
                     me.trigger( 'select', e.target.files );
                 } );
 
-                label.on( 'mouseover', function( e ) {
-                    label.addClass( 'webuploader-btn-hover' );
-                } );
+                // label.on( 'mouseover', function( e ) {
+                //     label.addClass( 'webuploader-btn-hover' );
+                // } );
 
-                label.on( 'mouseout', function( e ) {
-                    label.removeClass( 'webuploader-btn-hover' );
-                } );
+                // label.on( 'mouseout', function( e ) {
+                //     label.removeClass( 'webuploader-btn-hover' );
+                // } );
 
-                elem.append( input );
+                elem.empty().addClass( 'webuploader-pick' ).append( input );
                 elem.append( label );
             }
 
