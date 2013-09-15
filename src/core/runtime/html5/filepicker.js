@@ -11,7 +11,7 @@ define( 'webuploader/core/runtime/html5/filepicker', [
             defaultOpts = {
                 id: '',
                 name: 'file',
-                multiple: false,
+                multiple: true,
 
                 accept: [{
                     title: 'image',

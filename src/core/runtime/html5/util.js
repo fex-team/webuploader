@@ -19,7 +19,7 @@ define( 'webuploader/core/runtime/html5/util', [ 'webuploader/base',
 
         // 限制fileReader, 因为不能回收，所以只能共用。
         getFileReader: (function(){
-            var throttle = 1,
+            var throttle = 3,
                 pool = [],
                 wating = [];
 

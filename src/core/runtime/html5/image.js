@@ -57,8 +57,6 @@ define( 'webuploader/core/runtime/html5/image', [ 'webuploader/base',
         // flag: 标记是否被修改过。
         modified: false,
 
-        state: 'pedding',
-
         type: 'image/png',
 
         width: 0,
@@ -70,6 +68,8 @@ define( 'webuploader/core/runtime/html5/image', [ 'webuploader/base',
         load: function( source ) {
             var me = this,
                 img, blob;
+
+            me.state = 'pedding';
 
             // 如果已经是blob了，则直接loadAsBlob
             if ( source instanceof Blob ) {
@@ -307,7 +307,6 @@ define( 'webuploader/core/runtime/html5/image', [ 'webuploader/base',
             var me = this;
 
             util.getFileReader(function( reader ) {
-                method = method || 'readAsDataURL';
                 reader.onload = function() {
                     cb( this.result );
                     reader = reader.onload = reader.onerror = null;
@@ -318,7 +317,7 @@ define( 'webuploader/core/runtime/html5/image', [ 'webuploader/base',
                     reader = reader.onload = reader.onerror = null;
                 };
 
-                reader[ method ]( file );
+                reader[ method || 'readAsDataURL' ]( file );
             });
 
             return me;
@@ -335,8 +334,10 @@ define( 'webuploader/core/runtime/html5/image', [ 'webuploader/base',
         var image = new Html5Image();
 
         image.once( 'load', function() {
-            cb( image.makeThumbnail( width, height, crop ) );
+            var ret = image.makeThumbnail( width, height, crop );
             image.destroy();
+            image = null;
+            cb( ret );
         } );
         image.load( source );
     };
@@ -345,9 +346,12 @@ define( 'webuploader/core/runtime/html5/image', [ 'webuploader/base',
         var image = new Html5Image();
 
         image.once( 'load', function() {
+            var ret;
             image.downsize( width, height, crop );
-            cb( image.toBlob() );
+            ret = image.toBlob();
             image.destroy();
+            image = null;
+            cb( ret );
         } );
         image.load( source );
     };
