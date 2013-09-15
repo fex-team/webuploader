@@ -91,12 +91,10 @@ define( 'webuploader/core/runtime/html5/image', [ 'webuploader/base',
                     blob = util.dataURL2Blob( canvas.toDataURL( 'image/png' ) );
                     me._loadAsBlob( blob );
 
-                    img = null;
-                    img.onload = null;
                     canvas.getContext( '2d' )
                         .clearRect( 0, 0, canvas.width, canvas.height );
                     canvas.width = canvas.height = 0;
-                    canvas = null;
+                    img = img.onload = canvas = null;
                 };
                 img.src = source;
             }
@@ -189,7 +187,7 @@ define( 'webuploader/core/runtime/html5/image', [ 'webuploader/base',
                 this._canvas = null;
             }
 
-            this.ImageMeta = this.metas = this._img = this._blob = null;
+            this._img = this._blob = null;
         },
 
         _loadAsBlob: function( blob ) {
@@ -312,10 +310,12 @@ define( 'webuploader/core/runtime/html5/image', [ 'webuploader/base',
                 method = method || 'readAsDataURL';
                 reader.onload = function() {
                     cb( this.result );
+                    reader = reader.onload = reader.onerror = null;
                 };
 
                 reader.onerror = function( e ) {
                     me.trigger( 'error', e.message );
+                    reader = reader.onload = reader.onerror = null;
                 };
 
                 reader[ method ]( file );
@@ -328,7 +328,6 @@ define( 'webuploader/core/runtime/html5/image', [ 'webuploader/base',
         // 解决方法：https://github.com/stomita/ios-imagefile-megapixel
         _renderImageToCanvas: function( canvas, img, x, y, w, h ) {
             canvas.getContext( '2d' ).drawImage( img, x, y, w, h );
-            return canvas;
         }
     } );
 
