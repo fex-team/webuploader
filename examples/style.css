@@ -84,7 +84,7 @@ table {
     position: relative;
 }
 
-#uploader .placeholder .webuploader-btn {
+#uploader .placeholder .webuploader-pick {
     font-size: 18px;
     background: #00b7ee;
     border-radius: 3px;
@@ -96,7 +96,7 @@ table {
     cursor: pointer;
     box-shadow: 0 1px 1px rgba(0, 0, 0, 0.1);
 }
-#uploader .placeholder .webuploader-btn:hover {
+#uploader .placeholder .webuploader-pick:hover {
     background: #00a2d4;
 }
 
@@ -323,7 +323,7 @@ table {
     display: inline-block;
 }
 
-#uploader .statusBar .btns .webuploader-btn,
+#uploader .statusBar .btns .webuploader-pick,
 #uploader .statusBar .btns .uploadBtn,
 #uploader .statusBar .btns .uploadBtn.state-uploading,
 #uploader .statusBar .btns .uploadBtn.state-paused {
@@ -336,8 +336,9 @@ table {
     margin-left: 10px;
     cursor: pointer;
     font-size: 14px;
+    float: left;
 }
-#uploader .statusBar .btns .webuploader-btn:hover,
+#uploader .statusBar .btns .webuploader-pick:hover,
 #uploader .statusBar .btns .uploadBtn:hover,
 #uploader .statusBar .btns .uploadBtn.state-uploading:hover,
 #uploader .statusBar .btns .uploadBtn.state-paused:hover {
@@ -352,6 +353,3 @@ table {
 #uploader .statusBar .btns .uploadBtn:hover {
     background: #00a2d4;
 }
-
-
-
