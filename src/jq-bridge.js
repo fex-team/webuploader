@@ -108,6 +108,11 @@ define( 'jq-bridge', [], function() {
                 }
             },
 
+            empty: function() {
+                elem.innerHTML = '';
+                return this;
+            },
+
             before: function( el ) {
                 elem.parentNode.insertBefore( el, elem );
             },
@@ -115,6 +120,10 @@ define( 'jq-bridge', [], function() {
             append: function( el ) {
                 el = el._wrap ? el.get() : el;
                 elem.appendChild( el );
+            },
+
+            text: function() {
+                return elem.textContent;
             },
 
             // on
