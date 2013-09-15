@@ -1,20 +1,28 @@
-.webuploader-btn {
+.webuploader-pick {
+	position: relative;
+	display: inline-block;
 	cursor: pointer;
 	background: #00b7ee;
 	padding: 10px 15px;
 	color: #fff;
 	text-align: center;
 	border-radius: 3px;
-    display: inline-block;
+	overflow: hidden;
 }
-
-.webuploader-btn-hover {
+.webuploader-pick:hover {
 	background: #00a2d4;
 }
 
-.webuploader-btn-input {
+.webuploader-pick input {
 	position: absolute;
-	clip: rect(1px, 1px, 1px, 1px);
+	/*clip: rect(1px, 1px, 1px, 1px);*/
+	top:0;
+	left: 0;
+	width: 100%;
+	height: 100%;
+	opacity: 0;
+	cursor: pointer;
+	overflow: hidden;
 }
 
 .webuploader-dnd {
