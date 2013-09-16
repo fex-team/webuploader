@@ -47,10 +47,7 @@ define( 'webuploader/core/uploadmgr', [ 'webuploader/base',
                 return;
             }
 
-            tr = new Transport({
-                url: opts.server,
-                formData: opts.formData || {}
-            } );
+            tr = new Transport( opts );
 
             tr.on( 'all', function( type ) {
                 var args = [].slice.call( arguments, 1 ),

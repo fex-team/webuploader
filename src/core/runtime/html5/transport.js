@@ -11,7 +11,7 @@ define( 'webuploader/core/runtime/html5/transport', [ 'webuploader/base',
     var $ = Base.$,
         noop = Base.noop,
         defaultOpts = {
-            url: '',
+            server: '',
             fileVar: 'file',
             chunked: true,
             chunkSize: 1024 * 512,    // 0.5M.
@@ -61,8 +61,10 @@ define( 'webuploader/core/runtime/html5/transport', [ 'webuploader/base',
                     rHeaders = me._getXhrHeaders( xhr );
 
                     // 说明server端返回的数据有问题。
-                    if ( !me.trigger( 'accept', ret, rHeaders ) ) {
-                        reject = 'server';
+                    if ( !me.trigger( 'accept', ret, rHeaders, function( val ) {
+                        reject = val;
+                    } ) ) {
+                        reject = reject || 'server';
                     } else {
                         return me._onsuccess.call( me, ret, rHeaders );
                     }
@@ -187,7 +189,7 @@ define( 'webuploader/core/runtime/html5/transport', [ 'webuploader/base',
             formData.append( opts.fileVar, blob, opts.formData &&
                     opts.formData.name || '' );
 
-            xhr.open( 'POST', opts.url );
+            xhr.open( 'POST', opts.server );
             this._setRequestHeader( xhr, opts.headers );
 
             if ( opts.timeout ) {
