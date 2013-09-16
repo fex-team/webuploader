@@ -10,7 +10,7 @@ define( 'webuploader/core/uploadmgr', [ 'webuploader/base',
     var $ = Base.$;
 
     function UploadMgr( opts, runtime ) {
-        var thread = opts.thread || 3,
+        var threads = opts.threads || 3,
             queue = new Queue(),
             stats = queue.stats,
             Image = runtime.getComponent( 'Image' ),
@@ -21,15 +21,18 @@ define( 'webuploader/core/uploadmgr', [ 'webuploader/base',
             Status = WUFile.Status,
             api;
 
+        opts.resize && $.extend( Image.defaultOptions.downsize, opts.resize );
+
         function _tick() {
-            while( runing && stats.numOfProgress < thread &&
+            while( runing && stats.numOfProgress < threads &&
                     stats.numOfQueue ) {
 
                 _sendFile( queue.fetch() );
             }
 
             stats.numOfQueue || (runing = false);
-            stats.numOfQueue || api.trigger( 'uploadFinished' );
+
+            stats.numOfQueue || requestsLength || api.trigger( 'uploadFinished' );
         }
 
         function _sendFile( file ) {
@@ -46,32 +49,37 @@ define( 'webuploader/core/uploadmgr', [ 'webuploader/base',
 
             tr = new Transport({
                 url: opts.server,
-                formData: {
-                    id: file.id,
-                    name: file.name,
-                    type: file.type,
-                    lastModifiedDate: file.lastModifiedDate,
-                    size: file.size
-                }
+                formData: opts.formData || {}
             } );
 
             tr.on( 'all', function( type ) {
                 var args = [].slice.call( arguments, 1 ),
-                    status = {
-                        error: Status.ERROR,
-                        success: Status.COMPLETE
-                    },
-                    ret;
+                    ret, formData;
 
                 args.unshift( file );
                 args.unshift( 'upload' + type.substring( 0, 1 )
                     .toUpperCase() + type.substring( 1 ) );
 
+                if ( type === 'beforeSend' ) {
+                    formData = args[ 2 ];
+
+                    $.extend( formData, {
+                        id: file.id,
+                        name: file.name,
+                        type: file.type,
+                        lastModifiedDate: file.lastModifiedDate,
+                        size: file.size
+                    } );
+                }
+
                 status[ type ] && file.setStatus( status[ type ] );
                 ret = api.trigger.apply( api, args );
 
-                // error or success.
-                if ( type === 'complete' ) {
+                if ( type === 'error' ) {
+                    file.setStatus( Status.ERROR, args[ 2 ] );
+                } else if ( type === 'success' ) {
+                    file.setStatus( Status.COMPLETE );
+                } else if ( type === 'complete' ) {    // error or success.
                     delete requests[ file.id ];
                     requestsLength--;
                     tr.off( 'all', arguments.callee );
@@ -83,7 +91,7 @@ define( 'webuploader/core/uploadmgr', [ 'webuploader/base',
             requests[ file.id ] =  tr;
             requestsLength++;
 
-            if ( opts.compress ) {
+            if ( opts.resize ) {
                 Image.downsize( file.source, function( blob ) {
                     var size = file.size;
 
@@ -92,7 +100,7 @@ define( 'webuploader/core/uploadmgr', [ 'webuploader/base',
                     file.trigger( 'downsize', blob.size, size );
 
                     tr.sendAsBlob( blob );
-                }, 1600, 1600 );
+                } );
             } else {
                 tr.sendAsBlob( file.source );
             }
@@ -114,10 +122,18 @@ define( 'webuploader/core/uploadmgr', [ 'webuploader/base',
         api = {
 
             start: function() {
+
+                // 移出invalid的文件
+                $.each( queue.getFiles( Status.INVALID ), function() {
+                    api.removeFile( this );
+                } );
+
                 if ( runing || !stats.numOfQueue && !requestsLength ) {
                     return;
                 }
                 runing = true;
+
+                // 如果有暂停的，则续传
                 $.each( requests, function( id, transport ) {
                     var file = queue.getFile( id );
                     file.setStatus( Status.PROGRESS, '' );
@@ -137,8 +153,13 @@ define( 'webuploader/core/uploadmgr', [ 'webuploader/base',
             },
 
             getStats: function() {
-                // 拷贝一份，以免被修改。
-                return $.extend( {}, stats );
+                return {
+                    successNum: stats.numOfSuccess,
+                    queueFailNum: 0,
+                    cancelNum: stats.numOfCancel,
+                    uploadFailNum: stats.numOfUploadFailed,
+                    queueNum: stats.numOfQueue
+                };
             },
 
             getFile: function() {
@@ -150,8 +171,14 @@ define( 'webuploader/core/uploadmgr', [ 'webuploader/base',
                     file = new WUFile( file );
                 }
 
+                if ( !api.trigger( 'beforeFileQueued', file ) ) {
+                    return false;
+                }
+
                 queue.append( file );
                 api.trigger( 'fileQueued', file );
+
+                return this;
             },
 
             addFiles: function( arr ) {
@@ -171,6 +198,20 @@ define( 'webuploader/core/uploadmgr', [ 'webuploader/base',
 
                 file.setStatus( Status.CANCELLED );
                 api.trigger( 'fileDequeued', file );
+            },
+
+            retry: function() {
+                var files = queue.getFiles( Status.ERROR ),
+                    i = 0,
+                    len = files.length,
+                    file;
+
+                for( ; i < len; i++ ) {
+                    file = files[ i ];
+                    file.setStatus( Status.QUEUED );
+                }
+
+                api.start();
             }
         };
 
