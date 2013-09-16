@@ -177,7 +177,10 @@ define( 'webuploader/core/runtime/html5/transport', [ 'webuploader/base',
                         xhr.overrideMimeType( 'application/octet-stream' );
             }
 
-            opts.formData && $.each( opts.formData, function( key, val ) {
+            // 外部可以在这个时机中添加其他信息
+            this.trigger( 'beforeSend', opts.formData, opts.headers, xhr );
+
+            $.each( opts.formData, function( key, val ) {
                 formData.append( key, val );
             } );
 
