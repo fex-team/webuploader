@@ -37,7 +37,46 @@ module.exports = function(grunt) {
 
 
                 dest: 'dist/webuploader.js'
+            },
+
+            xiangce: {
+                options: {
+                    banner: '/* WebUploader <%= pkg.version %> */\n(function( window, undefined ) {\n',
+                    footer: '\n})( this );\nexports = this.WebUploader;',
+                    separator: '\n\n',
+                    process: function( src, filepath ) {
+                        return src
+                            .replace( /jq-bridge/g, 'jQuery' )
+                            .replace( /@version@/g, grunt.config.get('pkg.version') )
+                            .replace( /(^|\r\n|\r|\n)/g, '$1    ');
+                    }
+                },
+
+                src: [
+                    'src/amd.js',
+                    'src/base.js',
+                    'src/core/mediator.js',
+                    'src/core/file.js',
+                    'src/core/error.js',
+                    'src/core/queue.js',
+                    'src/core/uploadmgr.js',
+                    'src/core/runtime.js',
+                    'src/core/uploader.js',
+                    'src/core/runtime/html5/runtime.js',
+                    'src/core/runtime/html5/util.js',
+
+                    // 把剩余的打包进来。
+                    'src/**/*.js',
+                    '!src/exports.js',
+                    '!src/jq-bridge.js',
+                    'src/exports.js'
+                ],
+
+
+                dest: '/Users/liaoxuezhi/www/xiangcefis/xiangce/static/picture/ui/webuploader/webuploader.js'
             }
+
+
         },
 
         watch: {
@@ -53,6 +92,11 @@ module.exports = function(grunt) {
             debug: {
                 files: ['src/**/*.js', 'Gruntfile.js'],
                 tasks: ['concat:all'],
+            },
+
+            dev: {
+                files: ['src/**/*.js', 'Gruntfile.js'],
+                tasks: ['concat:xiangce'],
             }
         },
 
@@ -94,4 +138,5 @@ module.exports = function(grunt) {
     // Default task(s).
     grunt.registerTask( 'default', [ 'jsbint:all', 'concat:all' ] );
     grunt.registerTask( 'debug', [ 'watch:debug' ] );
+    grunt.registerTask( 'dev', [ 'watch:dev' ] );
 };
