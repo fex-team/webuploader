@@ -25,7 +25,8 @@ define( 'webuploader/core/queue', [
                 numOfSuccess: 0,
                 numOfCancel: 0,
                 numOfProgress: 0,
-                numOfUploadFailed: 0
+                numOfUploadFailed: 0,
+                numOfInvalid: 0
             };
 
             // 上传队列，仅包括等待上传的文件
@@ -48,6 +49,7 @@ define( 'webuploader/core/queue', [
             append: function( file ) {
                 this._queue.push( file );
                 this._fileAdded( file );
+                return this;
             },
 
             /**
@@ -61,6 +63,7 @@ define( 'webuploader/core/queue', [
             prepend: function( file ) {
                 this._queue.unshift( file );
                 this._fileAdded( file );
+                return this;
             },
 
             /**
@@ -97,6 +100,27 @@ define( 'webuploader/core/queue', [
                 return null;
             },
 
+            // 获取指定类型的文件列表
+            getFiles: function(/*status1, status2...*/) {
+                var sts = [].slice.call( arguments, 0 ),
+                    ret = [],
+                    i = 0,
+                    len = this._queue.length,
+                    file;
+
+                for( ; i < len; i++ ) {
+                    file = this._queue[ i ];
+
+                    if ( sts.length && !~sts.indexOf( file.getStatus() ) ) {
+                        continue;
+                    }
+
+                    ret.push( file );
+                }
+
+                return ret;
+            },
+
             _fileAdded: function( file ) {
                 var me = this,
                     existing = this._map[ file.id ];
@@ -123,6 +147,10 @@ define( 'webuploader/core/queue', [
                     case STATUS.QUEUED:
                         stats.numOfQueue --;
                         break;
+
+                    case STATUS.ERROR:
+                        stats.numOfUploadFailed--;
+                        break;
                 }
 
                 switch ( curStatus ) {
@@ -144,6 +172,10 @@ define( 'webuploader/core/queue', [
 
                     case STATUS.CANCELLED:
                         stats.numOfCancel++;
+                        break;
+
+                    case STATUS.INVALID:
+                        status.numOfInvalid++;
                         break;
                 }
             }
