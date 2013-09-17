@@ -116,7 +116,7 @@ define( 'webuploader/core/validator', [ 'webuploader/base',
             opts = uploader.options,
             mapping = {};
 
-        if ( !opts.duplicate ) {
+        if ( opts.duplicate ) {
             return;
         }
 
