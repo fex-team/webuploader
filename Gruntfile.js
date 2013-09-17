@@ -73,7 +73,7 @@ module.exports = function(grunt) {
                 ],
 
 
-                dest: '/Users/liaoxuezhi/www/xiangcefis/xiangce/static/picture/ui/webuploader/webuploader.js'
+                dest: './webuploader.js'
             }
 
 
