@@ -121,7 +121,7 @@ define( 'webuploader/core/uploadmgr', [ 'webuploader/base',
             start: function() {
 
                 // 移出invalid的文件
-                $.each( queue.getFiles( Status.INVALID ), function() {
+                $.each( api.getFiles( Status.INVALID ), function() {
                     api.removeFile( this );
                 } );
 
@@ -209,6 +209,10 @@ define( 'webuploader/core/uploadmgr', [ 'webuploader/base',
                 }
 
                 api.start();
+            },
+
+            getFiles: function() {
+                return queue.getFiles.apply( queue, arguments );
             }
         };
 
