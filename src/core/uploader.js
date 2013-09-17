@@ -129,6 +129,18 @@ define( 'webuploader/core/uploader', [ 'webuploader/base',
             runtime.init();
         },
 
+        option: function( key, val ) {
+            var opts = this.options,
+                obj;
+            if ( arguments.length > 1 ) {    // setter
+                obj = {};
+                obj[ key ] = val;
+                $.extend( opts[ key ], obj );
+            } else {    // getter
+                return key ? opts[ key ] : opts;
+            }
+        },
+
         addButton: function( pick ) {
             if ( typeof pick === 'string' ) {
                 pick = {
