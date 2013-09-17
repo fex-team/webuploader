@@ -128,6 +128,9 @@ define( 'webuploader/core/uploadmgr', [ 'webuploader/base',
                 if ( runing || !stats.numOfQueue && !requestsLength ) {
                     return;
                 }
+
+                api.trigger( 'startUpload' );
+
                 runing = true;
 
                 // 如果有暂停的，则续传
@@ -140,7 +143,12 @@ define( 'webuploader/core/uploadmgr', [ 'webuploader/base',
             },
 
             stop: function( interrupt ) {
+                if ( runing === false ) {
+                    return;
+                }
+
                 runing = false;
+                api.trigger( 'stopUpload' );
 
                 interrupt && $.each( requests, function( id, transport ) {
                     var file = queue.getFile( id );
@@ -195,6 +203,7 @@ define( 'webuploader/core/uploadmgr', [ 'webuploader/base',
 
                 file.setStatus( Status.CANCELLED );
                 api.trigger( 'fileDequeued', file );
+                // setTimeout( _tick, 1 );
             },
 
             retry: function() {
