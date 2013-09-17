@@ -47,10 +47,7 @@ define( 'webuploader/core/uploadmgr', [ 'webuploader/base',
                 return;
             }
 
-            tr = new Transport({
-                url: opts.server,
-                formData: opts.formData || {}
-            } );
+            tr = new Transport( opts );
 
             tr.on( 'all', function( type ) {
                 var args = [].slice.call( arguments, 1 ),
@@ -124,7 +121,7 @@ define( 'webuploader/core/uploadmgr', [ 'webuploader/base',
             start: function() {
 
                 // 移出invalid的文件
-                $.each( queue.getFiles( Status.INVALID ), function() {
+                $.each( api.getFiles( Status.INVALID ), function() {
                     api.removeFile( this );
                 } );
 
@@ -212,6 +209,10 @@ define( 'webuploader/core/uploadmgr', [ 'webuploader/base',
                 }
 
                 api.start();
+            },
+
+            getFiles: function() {
+                return queue.getFiles.apply( queue, arguments );
             }
         };
 
