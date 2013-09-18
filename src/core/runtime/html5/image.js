@@ -45,7 +45,7 @@ define( 'webuploader/core/runtime/html5/image', [ 'webuploader/base',
     Html5Image.defaultOptions = {
         quality: 90,
         crossOrigin: 'Anonymous',
-        downsize: {
+        resize: {
             crop: false,
             width: 1600,
             height: 1600
@@ -101,14 +101,14 @@ define( 'webuploader/core/runtime/html5/image', [ 'webuploader/base',
             return me;
         },
 
-        downsize: function( width, height, crop ) {
+        resize: function( width, height, crop ) {
             var opts = this.options,
                 canvas = this._canvas ||
                     (this._canvas = document.createElement( 'canvas' ));
 
-            width = width || opts.downsize.width;
-            height = height || opts.downsize.height;
-            crop = typeof crop === 'undefined' ? opts.downsize.crop : crop;
+            width = width || opts.resize.width;
+            height = height || opts.resize.height;
+            crop = typeof crop === 'undefined' ? opts.resize.crop : crop;
 
             this._resize( canvas, width, height, crop, true );
             this.width = width;
@@ -342,12 +342,12 @@ define( 'webuploader/core/runtime/html5/image', [ 'webuploader/base',
         image.load( source );
     };
 
-    Html5Image.downsize = function( source, cb, width, height, crop ) {
+    Html5Image.resize = function( source, cb, width, height, crop ) {
         var image = new Html5Image();
 
         image.once( 'load', function() {
             var ret;
-            image.downsize( width, height, crop );
+            image.resize( width, height, crop );
             ret = image.toBlob();
             image.destroy();
             image = null;
