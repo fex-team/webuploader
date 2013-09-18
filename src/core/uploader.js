@@ -130,12 +130,14 @@ define( 'webuploader/core/uploader', [ 'webuploader/base',
         },
 
         option: function( key, val ) {
-            var opts = this.options,
-                obj;
+            var opts = this.options;
             if ( arguments.length > 1 ) {    // setter
-                obj = {};
-                obj[ key ] = val;
-                $.extend( opts[ key ], obj );
+                if ( $.isPlainObject( val ) &&
+                        $.isPlainObject( opts[ key ] ) ) {
+                    $.extend( opts[ key ], val );
+                } else {
+                    opts[ key ] = val;
+                }
             } else {    // getter
                 return key ? opts[ key ] : opts;
             }
