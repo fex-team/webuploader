@@ -38,6 +38,11 @@ define( 'webuploader/core/runtime/html5/image', [ 'webuploader/base',
             }
         };
 
+        img.onerror = function() {
+            me.state = 'error';
+            me.trigger( 'error' );
+        }
+
         me.ImageMeta = me.runtime.getComponent( 'ImageMeta' );
         me._img = img;
     }
@@ -187,18 +192,21 @@ define( 'webuploader/core/runtime/html5/image', [ 'webuploader/base',
                 this._canvas = null;
             }
 
+            // 释放内存。非常重要，否则释放不了image的内存。
+            this._img.src = 'data:image/gif;base64,R0lGODlhAQABAAD/ACwAAAAAAQABAAACADs%3D';
             this._img = this._blob = null;
         },
 
         _loadAsBlob: function( blob ) {
             var me = this,
-                img = this._img;
+                img = me._img;
 
             me._blob = blob;
             me.type = blob.type;
             img.src = util.createObjectURL( blob );
             me.once( 'load', function() {
                 util.revokeObjectURL( img.src );
+                img = null;
             } );
         },
 
@@ -241,12 +249,12 @@ define( 'webuploader/core/runtime/html5/image', [ 'webuploader/base',
                 canvas.height = h;
             }
 
-            x = w > canvas.width ? (w - canvas.width) / 2  : 0;
-            y = h > canvas.height ? (h - canvas.height) / 2 : 0;
+            x = (canvas.width - w) / 2;
+            y = (canvas.height - h) / 2;
 
             preserveHeaders || this._rotateToOrientaion( canvas, orientation );
 
-            this._renderImageToCanvas( canvas, img, -x, -y, w, h );
+            this._renderImageToCanvas( canvas, img, x, y, w, h );
         },
 
         _rotateToOrientaion: function( canvas, orientation ) {
@@ -337,8 +345,15 @@ define( 'webuploader/core/runtime/html5/image', [ 'webuploader/base',
             var ret = image.makeThumbnail( width, height, crop );
             image.destroy();
             image = null;
-            cb( ret );
+            cb( null, ret );
         } );
+
+        image.once( 'error', function() {
+            image.destroy();
+            image = null;
+            cb( true );
+        } );
+
         image.load( source );
     };
 
@@ -351,8 +366,15 @@ define( 'webuploader/core/runtime/html5/image', [ 'webuploader/base',
             ret = image.toBlob();
             image.destroy();
             image = null;
-            cb( ret );
+            cb( null, ret );
         } );
+
+        image.once( 'error', function() {
+            image.destroy();
+            image = null;
+            cb( true );
+        } );
+
         image.load( source );
     };
 
