@@ -129,6 +129,20 @@ define( 'webuploader/core/uploader', [ 'webuploader/base',
             runtime.init();
         },
 
+        option: function( key, val ) {
+            var opts = this.options;
+            if ( arguments.length > 1 ) {    // setter
+                if ( $.isPlainObject( val ) &&
+                        $.isPlainObject( opts[ key ] ) ) {
+                    $.extend( opts[ key ], val );
+                } else {
+                    opts[ key ] = val;
+                }
+            } else {    // getter
+                return key ? opts[ key ] : opts;
+            }
+        },
+
         addButton: function( pick ) {
             if ( typeof pick === 'string' ) {
                 pick = {
@@ -157,16 +171,11 @@ define( 'webuploader/core/uploader', [ 'webuploader/base',
                 Image = runtime.getComponent( 'Image' );
 
             file = this.getFile( file );
-
-            Image.makeThumbnail( file.getSource(), function( ret ) {
-                var img = document.createElement( 'img' );
-                img.src = ret;
-                cb( img );
-            }, width, height, true );
+            Image.makeThumbnail( file.getSource(), cb, width, height, true );
         },
 
         formatSize: function( size, pointLength ) {
-            var units = [ 'B', 'K', 'M', 'TB' ],
+            var units = [ 'B', 'K', 'M', 'G', 'TB' ],
                 unit = units.shift();
 
             while ( size > 1024 && units.length ) {
@@ -244,6 +253,10 @@ define( 'webuploader/core/uploader', [ 'webuploader/base',
             }
 
             return true;
+        },
+
+        reset: function() {
+            // todo
         }
 
     } );
