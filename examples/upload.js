@@ -51,7 +51,7 @@
             },
             dnd: '#dndArea',
             paste: '#uploader',
-            server: 'http://liaoxuezhi.fe.baidu.com/webupload/fileupload.php?debug=2',
+            server: 'http://liaoxuezhi.fe.baidu.com/webupload/fileupload.php',
             fileNumLimit: 300,
             fileSizeLimit: 400 * 1024 * 1024,    // 400 M
             fileSingleSizeLimit: 50 * 1024 * 1024    // 50 M
