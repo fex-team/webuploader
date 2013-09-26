@@ -12,6 +12,7 @@ define( 'webuploader/core/runtime/html5/transport', [ 'webuploader/base',
         noop = Base.noop,
         defaultOpts = {
             server: '',
+            withCredentials: false,
             fileVar: 'file',
             chunked: true,
             chunkSize: 1024 * 512,    // 0.5M.
@@ -27,10 +28,16 @@ define( 'webuploader/core/runtime/html5/transport', [ 'webuploader/base',
     $.extend( Transport.prototype, {
         state: 'pending',
 
+        // @todo ie支持
         _initAjax: function() {
             var me = this,
                 opts = me.options,
                 xhr = new XMLHttpRequest();
+
+            if ( !('withCredentials' in xhr) &&
+                    typeof XDomainRequest !== 'undefined' ) {
+                xhr = new XDomainRequest();
+            }
 
             xhr.upload.onprogress = function( e ) {
                 var percentage = 0;
@@ -189,7 +196,13 @@ define( 'webuploader/core/runtime/html5/transport', [ 'webuploader/base',
             formData.append( opts.fileVar, blob, opts.formData &&
                     opts.formData.name || '' );
 
-            xhr.open( 'POST', opts.server );
+            if ( 'withCredentials' in xhr ) {
+                xhr.withCredentials = opts.withCredentials;
+                xhr.open( 'POST', opts.server, true );
+            } else {
+                xhr.open( 'POST', opts.server );
+            }
+
             this._setRequestHeader( xhr, opts.headers );
 
             if ( opts.timeout ) {
@@ -204,7 +217,12 @@ define( 'webuploader/core/runtime/html5/transport', [ 'webuploader/base',
         },
 
         pause: function() {
+            if ( this.paused ) {
+                return;
+            }
+
             this.paused = true;
+
             if ( this._xhr ) {
                 this._xhr.upload.onprogress = noop;
                 this._xhr.onreadystatechange = noop;
@@ -215,6 +233,10 @@ define( 'webuploader/core/runtime/html5/transport', [ 'webuploader/base',
         },
 
         resume: function() {
+            if ( !this.paused ) {
+                return;
+            }
+
             this.paused = false;
             this._upload();
         },
@@ -225,7 +247,7 @@ define( 'webuploader/core/runtime/html5/transport', [ 'webuploader/base',
                 this._xhr.onreadystatechange = noop;
                 clearTimeout( this.timoutTimer );
                 this._xhr.abort();
-                this._reject( 'abort' );
+                this._xhr = null;
             }
         },
 
