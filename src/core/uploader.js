@@ -171,16 +171,11 @@ define( 'webuploader/core/uploader', [ 'webuploader/base',
                 Image = runtime.getComponent( 'Image' );
 
             file = this.getFile( file );
-
-            Image.makeThumbnail( file.getSource(), function( ret ) {
-                var img = document.createElement( 'img' );
-                img.src = ret;
-                cb( img );
-            }, width, height, true );
+            Image.makeThumbnail( file.getSource(), cb, width, height, true );
         },
 
         formatSize: function( size, pointLength ) {
-            var units = [ 'B', 'K', 'M', 'TB' ],
+            var units = [ 'B', 'K', 'M', 'G', 'TB' ],
                 unit = units.shift();
 
             while ( size > 1024 && units.length ) {
@@ -258,6 +253,10 @@ define( 'webuploader/core/uploader', [ 'webuploader/base',
             }
 
             return true;
+        },
+
+        reset: function() {
+            // todo
         }
 
     } );
