@@ -151,6 +151,10 @@ define( 'webuploader/core/queue', [
                     case STATUS.ERROR:
                         stats.numOfUploadFailed--;
                         break;
+
+                    case STATUS.INVALID:
+                        stats.numOfInvalid--;
+                        break;
                 }
 
                 switch ( curStatus ) {
@@ -175,7 +179,7 @@ define( 'webuploader/core/queue', [
                         break;
 
                     case STATUS.INVALID:
-                        status.numOfInvalid++;
+                        stats.numOfInvalid++;
                         break;
                 }
             }
