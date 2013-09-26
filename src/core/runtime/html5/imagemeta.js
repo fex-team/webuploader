@@ -85,7 +85,11 @@ define( 'webuploader/core/runtime/html5/imagemta', [ 'webuploader/base',
                 bodyoffset = 2 + data.imageHead.byteLength;
             }
 
-            buf2 = buffer.slice( bodyoffset );
+            if ( buffer.slice ) {
+                buf2 = buffer.slice( bodyoffset );
+            } else {
+                buf2 = new Uint8Array( buffer ).subarray( bodyoffset );
+            }
 
             buf1 = new Uint8Array( head.byteLength + 2 + buf2.byteLength );
 
