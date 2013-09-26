@@ -76,10 +76,14 @@ define( 'webuploader/core/uploadmgr', [ 'webuploader/base',
                     file.setStatus( Status.ERROR, args[ 2 ] );
                 } else if ( type === 'success' ) {
                     file.setStatus( Status.COMPLETE );
-                } else if ( type === 'complete' ) {
+                } else if ( type === 'complete' &&
+                        file.getStatus() !== Status.INTERRUPT ) {
+
+                    // 如果是interrupt中断了，还需重传的。
                     delete requests[ file.id ];
                     requestsLength--;
                     tr.off( 'all', trHandler );
+                    tr.destroy();
                 }
 
                 return ret;
@@ -91,9 +95,10 @@ define( 'webuploader/core/uploadmgr', [ 'webuploader/base',
 
             if ( opts.resize &&(file.type === 'image/jpg' ||
                     file.type === 'image/jpeg' ) ) {
-                Image.resize( file.source, function( blob ) {
+                Image.resize( file.source, function( error, blob ) {
                     var size = file.size;
 
+                    // @todo handle possible resize error.
                     file.source = blob;
                     file.size = blob.size;
                     file.trigger( 'resize', blob.size, size );
@@ -108,9 +113,11 @@ define( 'webuploader/core/uploadmgr', [ 'webuploader/base',
 
             fileHandler = function( cur, prev ) {
                 if ( cur === Status.INVALID ) {
+                    tr.cancel();
                     delete requests[ file.id ];
                     requestsLength--;
                     tr.off( 'all', trHandler );
+                    tr.destroy();
                 }
 
                 if ( prev === Status.PROGRESS ) {
@@ -121,6 +128,7 @@ define( 'webuploader/core/uploadmgr', [ 'webuploader/base',
                     }
                 }
             };
+
             file.on( 'statuschange', fileHandler );
         }
 
@@ -143,8 +151,10 @@ define( 'webuploader/core/uploadmgr', [ 'webuploader/base',
                 // 如果有暂停的，则续传
                 $.each( requests, function( id, transport ) {
                     var file = queue.getFile( id );
-                    file.setStatus( Status.PROGRESS, '' );
-                    transport.resume();
+                    if ( file.getStatus() !== Status.PROGRESS ) {
+                        file.setStatus( Status.PROGRESS, '' );
+                        transport.resume();
+                    }
                 });
 
                 api.trigger( 'startUpload' );
@@ -172,7 +182,7 @@ define( 'webuploader/core/uploadmgr', [ 'webuploader/base',
                     successNum: stats.numOfSuccess,
                     queueFailNum: 0,
                     cancelNum: stats.numOfCancel,
-                    uploadFailNum: stats.numOfUploadFailed,
+                    uploadFailNum: stats.numOfUploadFailed + stats.numOfInvalid,
                     queueNum: stats.numOfQueue
                 };
             },
