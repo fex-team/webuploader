@@ -30,9 +30,10 @@ define( 'webuploader/core/uploadmgr', [ 'webuploader/base',
                 _sendFile( queue.fetch() );
             }
 
-            stats.numOfQueue || (runing = false);
-
-            stats.numOfQueue || requestsLength || api.trigger( 'uploadFinished' );
+            if ( !stats.numOfQueue && !requestsLength ) {
+                runing = false;
+                api.trigger( 'uploadFinished' );
+            }
         }
 
         function _sendFile( file ) {
@@ -177,12 +178,17 @@ define( 'webuploader/core/uploadmgr', [ 'webuploader/base',
                 api.trigger( 'stopUpload' );
             },
 
+            isInProgress: function() {
+                return !!runing;
+            },
+
             getStats: function() {
                 return {
                     successNum: stats.numOfSuccess,
                     queueFailNum: 0,
                     cancelNum: stats.numOfCancel,
-                    uploadFailNum: stats.numOfUploadFailed + stats.numOfInvalid,
+                    invalidNum: stats.numOfInvalid,
+                    uploadFailNum: stats.numOfUploadFailed,
                     queueNum: stats.numOfQueue
                 };
             },
