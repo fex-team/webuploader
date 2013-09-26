@@ -12,10 +12,13 @@ define( 'webuploader/core/runtime/html5/transport', [ 'webuploader/base',
         noop = Base.noop,
         defaultOpts = {
             server: '',
+
+            // 跨域时，是否允许携带cookie
             withCredentials: false,
             fileVar: 'file',
             chunked: true,
             chunkSize: 1024 * 512,    // 0.5M.
+            chunkRetryCount: 3,    // 当chunk传输时出错，可以重试3次。
             timeout: 2 * 60 * 1000,    // 2分钟
             formData: {},
             headers: {}
@@ -196,8 +199,8 @@ define( 'webuploader/core/runtime/html5/transport', [ 'webuploader/base',
             formData.append( opts.fileVar, blob, opts.formData &&
                     opts.formData.name || '' );
 
-            if ( 'withCredentials' in xhr ) {
-                xhr.withCredentials = opts.withCredentials;
+            if ( opts.withCredentials && 'withCredentials' in xhr ) {
+                xhr.withCredentials = true;
                 xhr.open( 'POST', opts.server, true );
             } else {
                 xhr.open( 'POST', opts.server );
