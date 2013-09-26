@@ -200,8 +200,8 @@ define( 'webuploader/core/runtime/html5/transport', [ 'webuploader/base',
                     opts.formData.name || '' );
 
             if ( opts.withCredentials && 'withCredentials' in xhr ) {
-                xhr.withCredentials = true;
                 xhr.open( 'POST', opts.server, true );
+                xhr.withCredentials = true;
             } else {
                 xhr.open( 'POST', opts.server );
             }
