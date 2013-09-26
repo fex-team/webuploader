@@ -180,8 +180,14 @@ define( 'webuploader/core/runtime/html5/image', [ 'webuploader/base',
             return blob;
         },
 
+        getOrientation: function() {
+            return this.metas && this.metas.exif &&
+                    this.metas.exif.get( 'Orientation' ) || 1;
+        },
+
         destroy: function() {
             var canvas = this._canvas;
+            this.trigger( 'destroy' );
             this.off();
             this._img.onload = null;
 
@@ -219,8 +225,7 @@ define( 'webuploader/core/runtime/html5/image', [ 'webuploader/base',
             var img = this._img,
                 naturalWidth = img.width,
                 naturalHeight = img.height,
-                orientation = this.metas && this.metas.exif &&
-                    this.metas.exif.get( 'Orientation' ) || 1,
+                orientation = this.getOrientation(),
                 scale, w, h, x, y;
 
              // values that require 90 degree rotation
@@ -338,44 +343,77 @@ define( 'webuploader/core/runtime/html5/image', [ 'webuploader/base',
         }
     } );
 
+    // 带有节流性质的创建器
+    (function( threads ){
+        var runing = 0,
+            wating = [],
+            getInstance = function() {
+                var image = new Html5Image();
+
+                image.on( 'destroy', function() {
+                    runing--;
+
+                    // 等待200ms
+                    setTimeout(tick, 200);
+                });
+
+                return image;
+            },
+            tick = function() {
+                var cb;
+                while ( runing < threads && wating.length ) {
+                    runing++;
+
+                    cb = wating.shift();
+                    cb( getInstance() );
+                }
+            }
+
+        Html5Image.create = function( cb ) {
+            wating.push( cb );
+            tick();
+        };
+    })( 3 );
+
     Html5Image.makeThumbnail = function( source, cb, width, height, crop ) {
-        var image = new Html5Image();
+        Html5Image.create(function( image ) {
+            image.once( 'load', function() {
+                var ret = image.makeThumbnail( width, height, crop ),
+                    orientation = image.getOrientation();
+                image.destroy();
+                image = null;
+                cb( null, ret, orientation );
+            } );
 
-        image.once( 'load', function() {
-            var ret = image.makeThumbnail( width, height, crop );
-            image.destroy();
-            image = null;
-            cb( null, ret );
-        } );
+            image.once( 'error', function() {
+                image.destroy();
+                image = null;
+                cb( true );
+            } );
 
-        image.once( 'error', function() {
-            image.destroy();
-            image = null;
-            cb( true );
-        } );
-
-        image.load( source );
+            image.load( source );
+        });
     };
 
     Html5Image.resize = function( source, cb, width, height, crop ) {
-        var image = new Html5Image();
+        Html5Image.create(function( image ) {
+            image.once( 'load', function() {
+                var ret;
+                image.resize( width, height, crop );
+                ret = image.toBlob();
+                image.destroy();
+                image = null;
+                cb( null, ret );
+            } );
 
-        image.once( 'load', function() {
-            var ret;
-            image.resize( width, height, crop );
-            ret = image.toBlob();
-            image.destroy();
-            image = null;
-            cb( null, ret );
-        } );
+            image.once( 'error', function() {
+                image.destroy();
+                image = null;
+                cb( true );
+            } );
 
-        image.once( 'error', function() {
-            image.destroy();
-            image = null;
-            cb( true );
-        } );
-
-        image.load( source );
+            image.load( source );
+        });
     };
 
     Html5Runtime.register( 'Image', Html5Image );
