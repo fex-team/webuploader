@@ -38,6 +38,11 @@ define( 'webuploader/core/runtime/html5/image', [ 'webuploader/base',
             }
         };
 
+        img.onerror = function() {
+            me.state = 'error';
+            me.trigger( 'error' );
+        }
+
         me.ImageMeta = me.runtime.getComponent( 'ImageMeta' );
         me._img = img;
     }
@@ -45,7 +50,7 @@ define( 'webuploader/core/runtime/html5/image', [ 'webuploader/base',
     Html5Image.defaultOptions = {
         quality: 90,
         crossOrigin: 'Anonymous',
-        downsize: {
+        resize: {
             crop: false,
             width: 1600,
             height: 1600
@@ -101,14 +106,14 @@ define( 'webuploader/core/runtime/html5/image', [ 'webuploader/base',
             return me;
         },
 
-        downsize: function( width, height, crop ) {
+        resize: function( width, height, crop ) {
             var opts = this.options,
                 canvas = this._canvas ||
                     (this._canvas = document.createElement( 'canvas' ));
 
-            width = width || opts.downsize.width;
-            height = height || opts.downsize.height;
-            crop = typeof crop === 'undefined' ? opts.downsize.crop : crop;
+            width = width || opts.resize.width;
+            height = height || opts.resize.height;
+            crop = typeof crop === 'undefined' ? opts.resize.crop : crop;
 
             this._resize( canvas, width, height, crop, true );
             this.width = width;
@@ -187,18 +192,21 @@ define( 'webuploader/core/runtime/html5/image', [ 'webuploader/base',
                 this._canvas = null;
             }
 
+            // 释放内存。非常重要，否则释放不了image的内存。
+            this._img.src = 'data:image/gif;base64,R0lGODlhAQABAAD/ACwAAAAAAQABAAACADs%3D';
             this._img = this._blob = null;
         },
 
         _loadAsBlob: function( blob ) {
             var me = this,
-                img = this._img;
+                img = me._img;
 
             me._blob = blob;
             me.type = blob.type;
             img.src = util.createObjectURL( blob );
             me.once( 'load', function() {
                 util.revokeObjectURL( img.src );
+                img = null;
             } );
         },
 
@@ -241,12 +249,12 @@ define( 'webuploader/core/runtime/html5/image', [ 'webuploader/base',
                 canvas.height = h;
             }
 
-            x = w > canvas.width ? (w - canvas.width) / 2  : 0;
-            y = h > canvas.height ? (h - canvas.height) / 2 : 0;
+            x = (canvas.width - w) / 2;
+            y = (canvas.height - h) / 2;
 
             preserveHeaders || this._rotateToOrientaion( canvas, orientation );
 
-            this._renderImageToCanvas( canvas, img, -x, -y, w, h );
+            this._renderImageToCanvas( canvas, img, x, y, w, h );
         },
 
         _rotateToOrientaion: function( canvas, orientation ) {
@@ -337,22 +345,36 @@ define( 'webuploader/core/runtime/html5/image', [ 'webuploader/base',
             var ret = image.makeThumbnail( width, height, crop );
             image.destroy();
             image = null;
-            cb( ret );
+            cb( null, ret );
         } );
+
+        image.once( 'error', function() {
+            image.destroy();
+            image = null;
+            cb( true );
+        } );
+
         image.load( source );
     };
 
-    Html5Image.downsize = function( source, cb, width, height, crop ) {
+    Html5Image.resize = function( source, cb, width, height, crop ) {
         var image = new Html5Image();
 
         image.once( 'load', function() {
             var ret;
-            image.downsize( width, height, crop );
+            image.resize( width, height, crop );
             ret = image.toBlob();
             image.destroy();
             image = null;
-            cb( ret );
+            cb( null, ret );
         } );
+
+        image.once( 'error', function() {
+            image.destroy();
+            image = null;
+            cb( true );
+        } );
+
         image.load( source );
     };
 
