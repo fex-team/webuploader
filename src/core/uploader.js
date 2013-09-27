@@ -171,6 +171,13 @@ define( 'webuploader/core/uploader', [ 'webuploader/base',
                 Image = runtime.getComponent( 'Image' );
 
             file = this.getFile( file );
+
+            // 只预览图片格式。
+            if ( !file.type.match( /^image/ ) ) {
+                cb( true );
+                return;
+            }
+
             Image.makeThumbnail( file.getSource(), cb, width, height, true );
         },
 
