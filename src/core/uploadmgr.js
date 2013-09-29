@@ -95,13 +95,20 @@ define( 'webuploader/core/uploadmgr', [ 'webuploader/base',
             requestsLength++;
 
             if ( opts.resize &&(file.type === 'image/jpg' ||
-                    file.type === 'image/jpeg' ) ) {
+                    file.type === 'image/jpeg' ) && !file.resized ) {
+
+                // @todo 如果是重新上传，则不需要再resize.
                 Image.resize( file.source, function( error, blob ) {
                     var size = file.size;
 
                     // @todo handle possible resize error.
+                    if ( error ) {
+                        return;
+                    }
+
                     file.source = blob;
                     file.size = blob.size;
+                    file.resized = true;
                     file.trigger( 'resize', blob.size, size );
 
                     tr.sendAsBlob( blob );
