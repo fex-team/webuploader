@@ -20,7 +20,8 @@ define( 'webuploader/core/runtime/html5/image', [ 'webuploader/base',
 
         img.onload = function() {
             var ImageMeta = me.ImageMeta,
-                len = ImageMeta.maxMetaDataSize;
+                len = ImageMeta.maxMetaDataSize,
+                blob, slice;
 
             me.width = img.width;
             me.height = img.height;
@@ -29,7 +30,9 @@ define( 'webuploader/core/runtime/html5/image', [ 'webuploader/base',
 
             // 读取meta信息。
             if ( me.type === 'image/jpeg' && ImageMeta ) {
-                me._fileRead( me._blob.slice( 0, len ) , function( ret ) {
+                blob = me._blob;
+                slice = blob.slice || blob.webkitSlice || blob.mozSlice,
+                me._fileRead( slice.call( blob, 0, len ) , function( ret ) {
                     me.metas = ImageMeta.parse( ret );
                     me.trigger( 'load' );
                 }, 'readAsArrayBuffer' );
