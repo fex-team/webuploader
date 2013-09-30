@@ -1,0 +1,259 @@
+<!DOCTYPE html>
+<html lang="en">
+ 	<head>
+	    <!-- Meta, title, CSS, favicons, etc. -->
+	    <meta charset="utf-8">
+		<meta name="viewport" content="width=device-width, initial-scale=1.0">
+		<meta name="description" content="">
+		<meta name="author" content="">
+
+		<title>
+		  
+		    Sprite images before uploading
+		  
+		</title>
+
+		<!-- Bootstrap core CSS -->
+		<link href="../libs/bs/bootstrap.min.css" rel="stylesheet">
+
+		<style type="text/css">
+		td{
+			padding: 10px;
+		}
+		.splitter{
+			margin: 45px 0;
+			background: -webkit-linear-gradient(left, rgba(0,0,0,0) 0%,rgba(0,0,0,0.25) 50%,rgba(0,0,0,0) 100%); 
+			height: 1px;
+		}
+		</style>
+
+		<script type="text/javascript" src="canvas-to-blob.js"></script>
+		<script type="text/javascript" src="spriter.js"></script>
+
+	</head>
+
+	<body>
+		<div class="row">
+			<div class="col-lg-2"></div>
+			<div class="col-lg-8">
+				<div class="page-header">
+				  <h1>SPRITES TESTS(<span id="threads">1</span>) THREADS</h1>
+				</div>
+				<div>
+					<label for="selector"><button type="button" class="btn btn-primary btn-lg">选择文件</button></label>&nbsp;&nbsp;
+					并发请求数：<input id="threadsInput" value="1"/>
+					<input id="selector" type="file" style="visibility:hidden;" multiple/>
+				</div>
+				<div id="statusList">
+				</div>
+			</div>
+			<div class="col-lg-2"></div>
+		</div>
+	</body>
+	<script>
+
+	(function( obj ){
+
+		var id = 0;
+
+		function SpriterUploader( progressContainerId ) {
+			this.spriter = new obj.Spriter();
+
+			if ( progressContainerId ) {
+				this.container = document.getElementById( progressContainerId );
+
+				this.container && this.createProgressBar();
+			}
+		}
+
+		SpriterUploader.prototype.addFiles = function( files, oninit, onend ) {
+			this.spriter.add( files, oninit, onend );
+		};
+
+		SpriterUploader.prototype.sendAsBlob = function( callback ) {
+			var me = this;
+
+			this.spriter.canvas.toBlob( function(blob) {
+
+				console.log( 'start to upload.' );
+
+				var start = Date.now();
+
+				var form = new FormData();
+				form.append('sprited', 1 );
+				form.append('file', blob, 'sprites' + (id++) + '.jpg');
+
+				var xhr = new XMLHttpRequest();
+				xhr.open( 'POST', '../server/upload_file.php' );
+				xhr.onreadystatechange = function() {
+					if( xhr.readyState == 4 && xhr.status == 200 ) {
+
+						console.log( 'upload complete.' );
+						console.log( 'duration: ' + ( Date.now() - start ) + 'ms' );
+
+						callback( xhr.responseText );
+					}
+				};
+				xhr.upload.addEventListener('progress', function(e) {
+					if ( e.lengthComputable ) {
+						me.updateProgressBar( e.loaded, e.total );
+					}
+				}, false);
+				
+				xhr.send( form );
+			}, 'image/jpeg' );
+		};
+
+		SpriterUploader.prototype.createProgressBar = function() {
+			var progress = this.progress = document.createElement( 'div' );
+			progress.className = 'progress';
+
+			var progressBar = this.progressBar = document.createElement( 'div' );
+			progressBar.className = 'progress-bar progress-bar-success';
+			progressBar.setAttribute( 'role', 'progressbar' );
+			progressBar.style.width = '0%';
+
+			progress.appendChild( progressBar );
+
+			var progressTxt = this.progressTxt = document.createElement( 'span' );
+			progressTxt.className = 'sr-only';
+			progressTxt.innerHTML = '0 / 0';
+
+			progressBar.appendChild( progressTxt );
+
+			this.container.appendChild( progress );
+		};
+
+		SpriterUploader.prototype.updateProgressBar = function( loaded, total ) {
+			var percentage = Math.round((loaded * 100) / total);
+			this.progressTxt.innerHTML = loaded + ' / ' + total;
+			this.progressBar.style.width = percentage + '%';
+		};
+
+		/*
+		var model = (function() {
+			var URL = obj.webkitURL || obj.mozURL || obj.URL;
+			var sp = new obj.Spriter();
+
+			return {
+				addFiles : function addFiles(files, oninit, onend) {
+					sp.add( files, oninit, onend );
+				},
+				sendAsBlob: function(callback) {
+					sp.canvas.toBlob( function(blob) {
+						var progress = document.getElementById( 'progress1' );
+						var progressBar = document.querySelector( '.progress-bar', progress );
+						var progressTxt = document.querySelector( '.sr-only', progress );
+
+						console.log( 'start to upload.' );
+
+						var start = Date.now();
+
+						var form = new FormData();
+						form.append('sprited', 1 );
+						form.append('file', blob, 'sprites.jpg');
+
+						var xhr = new XMLHttpRequest();
+						xhr.open( 'POST', '../server/upload_file.php' );
+						xhr.onreadystatechange = function() {
+							if( xhr.readyState == 4 && xhr.status == 200 ) {
+								callback( xhr.responseText );
+
+								console.log( 'upload complete.' );
+								console.log( 'duration: ' + ( Date.now() - start ) + 'ms' );
+							}
+						};
+						xhr.upload.addEventListener("progress", function(e) {
+							if (e.lengthComputable) {
+								var percentage = Math.round((e.loaded * 100) / e.total);
+								progressTxt.innerHTML = e.loaded + ' / ' + e.total;
+								progressBar.style.width = percentage + '%';
+
+								if( percentage == 100 ) {
+									console.log( 'browser cost: ' + ( Date.now() - start ) + 'ms @' + (new Date()) );
+								}
+							}
+						}, false);
+						
+						xhr.send(form);
+					}, 'image/jpeg' );
+				}
+			};
+		})();
+
+		*/
+	
+		function sliceFiles( threads, files ) {
+			var files = [].slice.call( files, 0 ),
+				datalen = files.length,
+		        unitSize = Math.floor( datalen / threads ),
+		        leftSize = datalen % threads,
+		        i = 0,
+		        results = [];
+
+		    while( i < threads ) {
+		        var size = unitSize;
+		        if( i < leftSize ) {
+		            size++;
+		        }
+
+		        results.push( files.splice( 0, size ) );
+		        i++;
+		    }
+
+		    return results;
+		}
+
+
+		var selector = document.getElementById( 'selector' );
+
+		selector.onchange = function( e ) {
+
+			var start = Date.now(),
+				threads = document.getElementById( 'threadsInput' ).value * 1,
+				fileGroups = sliceFiles( threads, e.target.files );
+
+			console.log( 'files upload start!' );
+
+			for( var i = 0, len = fileGroups.length; i < len; i++ ) {
+				(function(idx){
+					var files = fileGroups[ idx ];
+					var spriter = new SpriterUploader( 'statusList' );
+					spriter.addFiles( files, null, function() {
+
+						console.log( 'sprites done!' );
+						console.log( 'duration: ' + (Date.now() - start) + 'ms' );
+
+						spriter.sendAsBlob( function() {
+							console.log( 'files upload done!' );
+							console.log( 'duration: ' + (Date.now() - start) + 'ms' );
+						} );
+					} );
+				})(i)
+			}
+			/*
+			model.addFiles( e.target.files, 
+				function(){
+					console.log( 'start to sprite.' );
+					start = Date.now();
+				},
+				function( canvas ){
+					console.log( 'files sprite done!' );
+					console.log( 'duration: ' + (Date.now() - start) + 'ms' );
+					model.sendAsBlob( function( serverData ) {
+						console.log( serverData );
+						console.log( 'files upload done!' );
+						console.log( 'duration: ' + (Date.now() - start) + 'ms' );
+					} );
+					// document.body.appendChild( canvas );
+			} );
+			*/
+		};
+
+		document.getElementById( 'threadsInput' ).oninput = function() {
+			document.getElementById( 'threads' ).innerHTML = this.value;
+		}
+
+	})(this);
+	</script>
+</html>
