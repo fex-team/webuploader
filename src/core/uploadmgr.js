@@ -52,7 +52,7 @@ define( 'webuploader/core/uploadmgr', [ 'webuploader/base',
 
             trHandler = function( type ) {
                 var args = [].slice.call( arguments, 1 ),
-                    ret, formData;
+                formData;
 
                 args.unshift( file );
                 args.unshift( 'upload' + type.substring( 0, 1 )
@@ -71,7 +71,6 @@ define( 'webuploader/core/uploadmgr', [ 'webuploader/base',
                 }
 
                 status[ type ] && file.setStatus( status[ type ] );
-                ret = api.trigger.apply( api, args );
 
                 if ( type === 'error' ) {
                     file.setStatus( Status.ERROR, args[ 2 ] );
@@ -87,7 +86,7 @@ define( 'webuploader/core/uploadmgr', [ 'webuploader/base',
                     tr.destroy();
                 }
 
-                return ret;
+                return api.trigger.apply( api, args );
             };
             tr.on( 'all', trHandler );
 
@@ -239,11 +238,18 @@ define( 'webuploader/core/uploadmgr', [ 'webuploader/base',
                 // setTimeout( _tick, 1 );
             },
 
-            retry: function() {
+            retry: function( file ) {
+
+                if ( file ) {
+                    file = file.id ? file : queue.getFile( file );
+                    file.setStatus( Status.QUEUED );
+                    api.start();
+                    return;
+                }
+
                 var files = queue.getFiles( Status.ERROR ),
                     i = 0,
-                    len = files.length,
-                    file;
+                    len = files.length;
 
                 for( ; i < len; i++ ) {
                     file = files[ i ];
