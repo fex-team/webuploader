@@ -370,7 +370,7 @@ define( 'webuploader/core/runtime/html5/image', [ 'webuploader/base',
                     cb = wating.shift();
                     cb( getInstance() );
                 }
-            }
+            };
 
         Html5Image.create = function( cb ) {
             wating.push( cb );
