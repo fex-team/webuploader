@@ -30,9 +30,10 @@ define( 'webuploader/core/uploadmgr', [ 'webuploader/base',
                 _sendFile( queue.fetch() );
             }
 
-            stats.numOfQueue || (runing = false);
-
-            stats.numOfQueue || requestsLength || api.trigger( 'uploadFinished' );
+            if ( !stats.numOfQueue && !requestsLength ) {
+                runing = false;
+                api.trigger( 'uploadFinished' );
+            }
         }
 
         function _sendFile( file ) {
@@ -51,7 +52,7 @@ define( 'webuploader/core/uploadmgr', [ 'webuploader/base',
 
             trHandler = function( type ) {
                 var args = [].slice.call( arguments, 1 ),
-                    ret, formData;
+                formData;
 
                 args.unshift( file );
                 args.unshift( 'upload' + type.substring( 0, 1 )
@@ -70,7 +71,6 @@ define( 'webuploader/core/uploadmgr', [ 'webuploader/base',
                 }
 
                 status[ type ] && file.setStatus( status[ type ] );
-                ret = api.trigger.apply( api, args );
 
                 if ( type === 'error' ) {
                     file.setStatus( Status.ERROR, args[ 2 ] );
@@ -86,7 +86,7 @@ define( 'webuploader/core/uploadmgr', [ 'webuploader/base',
                     tr.destroy();
                 }
 
-                return ret;
+                return api.trigger.apply( api, args );
             };
             tr.on( 'all', trHandler );
 
@@ -94,13 +94,20 @@ define( 'webuploader/core/uploadmgr', [ 'webuploader/base',
             requestsLength++;
 
             if ( opts.resize &&(file.type === 'image/jpg' ||
-                    file.type === 'image/jpeg' ) ) {
+                    file.type === 'image/jpeg' ) && !file.resized ) {
+
+                // @todo 如果是重新上传，则不需要再resize.
                 Image.resize( file.source, function( error, blob ) {
                     var size = file.size;
 
                     // @todo handle possible resize error.
+                    if ( error ) {
+                        return;
+                    }
+
                     file.source = blob;
                     file.size = blob.size;
+                    file.resized = true;
                     file.trigger( 'resize', blob.size, size );
 
                     tr.sendAsBlob( blob );
@@ -177,12 +184,17 @@ define( 'webuploader/core/uploadmgr', [ 'webuploader/base',
                 api.trigger( 'stopUpload' );
             },
 
+            isInProgress: function() {
+                return !!runing;
+            },
+
             getStats: function() {
                 return {
                     successNum: stats.numOfSuccess,
                     queueFailNum: 0,
                     cancelNum: stats.numOfCancel,
-                    uploadFailNum: stats.numOfUploadFailed + stats.numOfInvalid,
+                    invalidNum: stats.numOfInvalid,
+                    uploadFailNum: stats.numOfUploadFailed,
                     queueNum: stats.numOfQueue
                 };
             },
@@ -226,11 +238,18 @@ define( 'webuploader/core/uploadmgr', [ 'webuploader/base',
                 // setTimeout( _tick, 1 );
             },
 
-            retry: function() {
+            retry: function( file ) {
+
+                if ( file ) {
+                    file = file.id ? file : queue.getFile( file );
+                    file.setStatus( Status.QUEUED );
+                    api.start();
+                    return;
+                }
+
                 var files = queue.getFiles( Status.ERROR ),
                     i = 0,
-                    len = files.length,
-                    file;
+                    len = files.length;
 
                 for( ; i < len; i++ ) {
                     file = files[ i ];
