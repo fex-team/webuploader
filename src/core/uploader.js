@@ -231,6 +231,10 @@ define( 'webuploader/core/uploader', [ 'webuploader/base',
             return this._mgr.getFiles.apply( this._mgr, arguments );
         },
 
+        isInProgress: function() {
+            return this._mgr.isInProgress.apply( this._mgr, arguments );
+        },
+
         // 需要重写此方法来来支持opts.onEvent和instance.onEvent的处理器
         trigger: function( type/*, args...*/ ) {
             var args = [].slice.call( arguments, 1 ),
