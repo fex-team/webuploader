@@ -81,7 +81,7 @@ define( 'webuploader/core/runtime/html5/transport', [ 'webuploader/base',
                 }
 
                 reject = reject || (xhr.status ? 'http' : 'timeout');
-                return me._reject( reject );
+                return me._reject( reject, ret, rHeaders );
             };
 
             return me._xhr = xhr;
@@ -121,12 +121,12 @@ define( 'webuploader/core/runtime/html5/transport', [ 'webuploader/base',
             this.trigger( 'complete' );
         },
 
-        _reject: function( reason ) {
+        _reject: function( reason, ret, rHeaders ) {
             // @todo
             // 如果是timeout abort, 在chunk传输模式中应该自动重传。
             // chunkRetryCount = 3;
             this.state = 'fail';
-            this.trigger( 'error', reason );
+            this.trigger( 'error', reason, ret, rHeaders );
             this.trigger( 'complete' );
         },
 
