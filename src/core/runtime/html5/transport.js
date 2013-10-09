@@ -11,10 +11,14 @@ define( 'webuploader/core/runtime/html5/transport', [ 'webuploader/base',
     var $ = Base.$,
         noop = Base.noop,
         defaultOpts = {
-            url: '',
+            server: '',
+
+            // 跨域时，是否允许携带cookie
+            withCredentials: false,
             fileVar: 'file',
             chunked: true,
             chunkSize: 1024 * 512,    // 0.5M.
+            chunkRetryCount: 3,    // 当chunk传输时出错，可以重试3次。
             timeout: 2 * 60 * 1000,    // 2分钟
             formData: {},
             headers: {}
@@ -27,10 +31,16 @@ define( 'webuploader/core/runtime/html5/transport', [ 'webuploader/base',
     $.extend( Transport.prototype, {
         state: 'pending',
 
+        // @todo ie支持
         _initAjax: function() {
             var me = this,
                 opts = me.options,
                 xhr = new XMLHttpRequest();
+
+            if ( !('withCredentials' in xhr) &&
+                    typeof XDomainRequest !== 'undefined' ) {
+                xhr = new XDomainRequest();
+            }
 
             xhr.upload.onprogress = function( e ) {
                 var percentage = 0;
@@ -61,15 +71,17 @@ define( 'webuploader/core/runtime/html5/transport', [ 'webuploader/base',
                     rHeaders = me._getXhrHeaders( xhr );
 
                     // 说明server端返回的数据有问题。
-                    if ( !me.trigger( 'accept', ret, rHeaders ) ) {
-                        reject = 'server';
+                    if ( !me.trigger( 'accept', ret, rHeaders, function( val ) {
+                        reject = val;
+                    } ) ) {
+                        reject = reject || 'server';
                     } else {
                         return me._onsuccess.call( me, ret, rHeaders );
                     }
                 }
 
                 reject = reject || (xhr.status ? 'http' : 'timeout');
-                return me._reject( reject );
+                return me._reject( reject, ret, rHeaders );
             };
 
             return me._xhr = xhr;
@@ -109,12 +121,12 @@ define( 'webuploader/core/runtime/html5/transport', [ 'webuploader/base',
             this.trigger( 'complete' );
         },
 
-        _reject: function( reason ) {
+        _reject: function( reason, ret, rHeaders ) {
             // @todo
             // 如果是timeout abort, 在chunk传输模式中应该自动重传。
             // chunkRetryCount = 3;
             this.state = 'fail';
-            this.trigger( 'error', reason );
+            this.trigger( 'error', reason, ret, rHeaders );
             this.trigger( 'complete' );
         },
 
@@ -187,7 +199,13 @@ define( 'webuploader/core/runtime/html5/transport', [ 'webuploader/base',
             formData.append( opts.fileVar, blob, opts.formData &&
                     opts.formData.name || '' );
 
-            xhr.open( 'POST', opts.url );
+            if ( opts.withCredentials && 'withCredentials' in xhr ) {
+                xhr.open( 'POST', opts.server, true );
+                xhr.withCredentials = true;
+            } else {
+                xhr.open( 'POST', opts.server );
+            }
+
             this._setRequestHeader( xhr, opts.headers );
 
             if ( opts.timeout ) {
@@ -202,7 +220,12 @@ define( 'webuploader/core/runtime/html5/transport', [ 'webuploader/base',
         },
 
         pause: function() {
+            if ( this.paused ) {
+                return;
+            }
+
             this.paused = true;
+
             if ( this._xhr ) {
                 this._xhr.upload.onprogress = noop;
                 this._xhr.onreadystatechange = noop;
@@ -213,6 +236,10 @@ define( 'webuploader/core/runtime/html5/transport', [ 'webuploader/base',
         },
 
         resume: function() {
+            if ( !this.paused ) {
+                return;
+            }
+
             this.paused = false;
             this._upload();
         },
@@ -223,7 +250,7 @@ define( 'webuploader/core/runtime/html5/transport', [ 'webuploader/base',
                 this._xhr.onreadystatechange = noop;
                 clearTimeout( this.timoutTimer );
                 this._xhr.abort();
-                this._reject( 'abort' );
+                this._xhr = null;
             }
         },
 

@@ -116,7 +116,7 @@ define( 'webuploader/core/validator', [ 'webuploader/base',
             opts = uploader.options,
             mapping = {};
 
-        if ( !opts.duplicate ) {
+        if ( opts.duplicate ) {
             return;
         }
 
@@ -124,11 +124,11 @@ define( 'webuploader/core/validator', [ 'webuploader/base',
             var hash = 0,
                 i =0,
                 len = str.length,
-                char;
+                _char;
 
             for ( ; i < len; i++ ) {
-                char = str.charCodeAt( i );
-                hash = char + (hash << 6) + (hash << 16) - hash;
+                _char = str.charCodeAt( i );
+                hash = _char + (hash << 6) + (hash << 16) - hash;
             }
 
             return hash;
