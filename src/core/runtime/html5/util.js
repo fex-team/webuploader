@@ -58,7 +58,7 @@ define( 'webuploader/core/runtime/html5/util', [ 'webuploader/base',
         })(),
 
         dataURL2Blob: function( dataURI ) {
-            var byteStr, intArray, i, mimetype, bb, parts;
+            var byteStr, intArray, ab, i, mimetype, parts;
 
             parts = dataURI.split( ',' );
             if ( ~parts[ 0 ].indexOf( 'base64' ) ) {
@@ -67,7 +67,8 @@ define( 'webuploader/core/runtime/html5/util', [ 'webuploader/base',
                 byteStr = decodeURIComponent( parts[ 1 ] );
             }
 
-            intArray = new Uint8Array( byteStr.length );
+            ab = new ArrayBuffer( byteStr.length );
+            intArray = new Uint8Array( ab );
 
             for ( i = 0; i < byteStr.length; i++ ) {
                 intArray[ i ] = byteStr.charCodeAt( i );
@@ -75,11 +76,11 @@ define( 'webuploader/core/runtime/html5/util', [ 'webuploader/base',
 
             mimetype = parts[ 0 ].split( ':' )[ 1 ].split( ';' )[ 0 ];
 
-            return new Blob( [ intArray ], { type: mimetype } );
+            return new Blob( [ ab ], { type: mimetype } );
         },
 
         dataURL2ArrayBuffer: function( dataURI ) {
-            var byteStr, intArray, i, bb, parts;
+            var byteStr, intArray, i, parts;
 
             parts = dataURI.split( ',' );
             if ( ~parts[ 0 ].indexOf( 'base64' ) ) {
@@ -98,8 +99,7 @@ define( 'webuploader/core/runtime/html5/util', [ 'webuploader/base',
         },
 
         arrayBufferToBlob: function( buffer, type ) {
-            var intArray = new Uint8Array( buffer );
-            return new Blob( [ intArray ], type ? { type: type } : {} );
+            return new Blob( [ buffer ], type ? { type: type } : {} );
         },
 
         binaryString2DataURL: function( bin ) {

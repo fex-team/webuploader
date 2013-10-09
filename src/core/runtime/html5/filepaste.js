@@ -43,6 +43,7 @@ define( 'webuploader/core/runtime/html5/filepaste', [
 
                     e.stopPropagation();
                     e.preventDefault();
+                    e = e.originalEvent || e;
                     files = e.clipboardData.items;
 
                     if ( opts.accept && opts.accept.length > 0 ) {
