@@ -98,12 +98,13 @@ define( 'webuploader/core/runtime/html5/dnd', [
                 } );
 
                 elem.on( 'drop', function( e ) {
-                    var dataTrans = e.dataTransfer,
-                        files = e.dataTransfer.files,
+                    var evt = e.originalEvent || e,
+                        dataTrans = evt.dataTransfer,
+                        files = evt.dataTransfer.files,
                         _tmp,
                         len,
                         i;
-
+    
                     e.stopPropagation();
                     e.preventDefault();
 
@@ -117,7 +118,7 @@ define( 'webuploader/core/runtime/html5/dnd', [
                     };
 
                     me.trigger( 'drop', triggerFiles );
-                    e.dataTransfer.clearData();
+                    evt.dataTransfer.clearData();
                     triggerFiles = [];
                     elem.removeClass( 'webuploader-dnd-over' );
                 } );

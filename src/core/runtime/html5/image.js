@@ -20,7 +20,8 @@ define( 'webuploader/core/runtime/html5/image', [ 'webuploader/base',
 
         img.onload = function() {
             var ImageMeta = me.ImageMeta,
-                len = ImageMeta.maxMetaDataSize;
+                len = ImageMeta.maxMetaDataSize,
+                blob, slice;
 
             me.width = img.width;
             me.height = img.height;
@@ -29,7 +30,9 @@ define( 'webuploader/core/runtime/html5/image', [ 'webuploader/base',
 
             // 读取meta信息。
             if ( me.type === 'image/jpeg' && ImageMeta ) {
-                me._fileRead( me._blob.slice( 0, len ) , function( ret ) {
+                blob = me._blob;
+                slice = blob.slice || blob.webkitSlice || blob.mozSlice,
+                me._fileRead( slice.call( blob, 0, len ) , function( ret ) {
                     me.metas = ImageMeta.parse( ret );
                     me.trigger( 'load' );
                 }, 'readAsArrayBuffer' );
@@ -38,6 +41,11 @@ define( 'webuploader/core/runtime/html5/image', [ 'webuploader/base',
             }
         };
 
+        img.onerror = function() {
+            me.state = 'error';
+            me.trigger( 'error' );
+        }
+
         me.ImageMeta = me.runtime.getComponent( 'ImageMeta' );
         me._img = img;
     }
@@ -45,7 +53,7 @@ define( 'webuploader/core/runtime/html5/image', [ 'webuploader/base',
     Html5Image.defaultOptions = {
         quality: 90,
         crossOrigin: 'Anonymous',
-        downsize: {
+        resize: {
             crop: false,
             width: 1600,
             height: 1600
@@ -101,14 +109,14 @@ define( 'webuploader/core/runtime/html5/image', [ 'webuploader/base',
             return me;
         },
 
-        downsize: function( width, height, crop ) {
+        resize: function( width, height, crop ) {
             var opts = this.options,
                 canvas = this._canvas ||
                     (this._canvas = document.createElement( 'canvas' ));
 
-            width = width || opts.downsize.width;
-            height = height || opts.downsize.height;
-            crop = typeof crop === 'undefined' ? opts.downsize.crop : crop;
+            width = width || opts.resize.width;
+            height = height || opts.resize.height;
+            crop = typeof crop === 'undefined' ? opts.resize.crop : crop;
 
             this._resize( canvas, width, height, crop, true );
             this.width = width;
@@ -175,8 +183,14 @@ define( 'webuploader/core/runtime/html5/image', [ 'webuploader/base',
             return blob;
         },
 
+        getOrientation: function() {
+            return this.metas && this.metas.exif &&
+                    this.metas.exif.get( 'Orientation' ) || 1;
+        },
+
         destroy: function() {
             var canvas = this._canvas;
+            this.trigger( 'destroy' );
             this.off();
             this._img.onload = null;
 
@@ -187,18 +201,21 @@ define( 'webuploader/core/runtime/html5/image', [ 'webuploader/base',
                 this._canvas = null;
             }
 
+            // 释放内存。非常重要，否则释放不了image的内存。
+            this._img.src = 'data:image/gif;base64,R0lGODlhAQABAAD/ACwAAAAAAQABAAACADs%3D';
             this._img = this._blob = null;
         },
 
         _loadAsBlob: function( blob ) {
             var me = this,
-                img = this._img;
+                img = me._img;
 
             me._blob = blob;
             me.type = blob.type;
             img.src = util.createObjectURL( blob );
             me.once( 'load', function() {
                 util.revokeObjectURL( img.src );
+                img = null;
             } );
         },
 
@@ -211,8 +228,7 @@ define( 'webuploader/core/runtime/html5/image', [ 'webuploader/base',
             var img = this._img,
                 naturalWidth = img.width,
                 naturalHeight = img.height,
-                orientation = this.metas && this.metas.exif &&
-                    this.metas.exif.get( 'Orientation' ) || 1,
+                orientation = this.getOrientation(),
                 scale, w, h, x, y;
 
              // values that require 90 degree rotation
@@ -241,12 +257,12 @@ define( 'webuploader/core/runtime/html5/image', [ 'webuploader/base',
                 canvas.height = h;
             }
 
-            x = w > canvas.width ? (w - canvas.width) / 2  : 0;
-            y = h > canvas.height ? (h - canvas.height) / 2 : 0;
+            x = (canvas.width - w) / 2;
+            y = (canvas.height - h) / 2;
 
             preserveHeaders || this._rotateToOrientaion( canvas, orientation );
 
-            this._renderImageToCanvas( canvas, img, -x, -y, w, h );
+            this._renderImageToCanvas( canvas, img, x, y, w, h );
         },
 
         _rotateToOrientaion: function( canvas, orientation ) {
@@ -330,30 +346,77 @@ define( 'webuploader/core/runtime/html5/image', [ 'webuploader/base',
         }
     } );
 
-    Html5Image.makeThumbnail = function( source, cb, width, height, crop ) {
-        var image = new Html5Image();
+    // 带有节流性质的创建器
+    (function( threads ){
+        var runing = 0,
+            wating = [],
+            getInstance = function() {
+                var image = new Html5Image();
 
-        image.once( 'load', function() {
-            var ret = image.makeThumbnail( width, height, crop );
-            image.destroy();
-            image = null;
-            cb( ret );
-        } );
-        image.load( source );
+                image.on( 'destroy', function() {
+                    runing--;
+
+                    // 等待200ms
+                    setTimeout(tick, 200);
+                });
+
+                return image;
+            },
+            tick = function() {
+                var cb;
+                while ( runing < threads && wating.length ) {
+                    runing++;
+
+                    cb = wating.shift();
+                    cb( getInstance() );
+                }
+            };
+
+        Html5Image.create = function( cb ) {
+            wating.push( cb );
+            tick();
+        };
+    })( 3 );
+
+    Html5Image.makeThumbnail = function( source, cb, width, height, crop ) {
+        Html5Image.create(function( image ) {
+            image.once( 'load', function() {
+                var ret = image.makeThumbnail( width, height, crop ),
+                    orientation = image.getOrientation();
+                image.destroy();
+                image = null;
+                cb( null, ret, orientation );
+            } );
+
+            image.once( 'error', function() {
+                image.destroy();
+                image = null;
+                cb( true );
+            } );
+
+            image.load( source );
+        });
     };
 
-    Html5Image.downsize = function( source, cb, width, height, crop ) {
-        var image = new Html5Image();
+    Html5Image.resize = function( source, cb, width, height, crop ) {
+        Html5Image.create(function( image ) {
+            image.once( 'load', function() {
+                var ret;
+                image.resize( width, height, crop );
+                ret = image.toBlob();
+                image.destroy();
+                image = null;
+                cb( null, ret );
+            } );
 
-        image.once( 'load', function() {
-            var ret;
-            image.downsize( width, height, crop );
-            ret = image.toBlob();
-            image.destroy();
-            image = null;
-            cb( ret );
-        } );
-        image.load( source );
+            image.once( 'error', function() {
+                image.destroy();
+                image = null;
+                cb( true );
+            } );
+
+            image.load( source );
+        });
     };
 
     Html5Runtime.register( 'Image', Html5Image );
