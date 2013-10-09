@@ -21,7 +21,7 @@ define( 'webuploader/core/uploadmgr', [ 'webuploader/base',
             Status = WUFile.Status,
             api;
 
-        opts.resize && $.extend( Image.defaultOptions.downsize, opts.resize );
+        opts.resize && $.extend( Image.defaultOptions.resize, opts.resize );
 
         function _tick() {
             while( runing && stats.numOfProgress < threads &&
@@ -30,13 +30,14 @@ define( 'webuploader/core/uploadmgr', [ 'webuploader/base',
                 _sendFile( queue.fetch() );
             }
 
-            stats.numOfQueue || (runing = false);
-
-            stats.numOfQueue || requestsLength || api.trigger( 'uploadFinished' );
+            if ( !stats.numOfQueue && !requestsLength ) {
+                runing = false;
+                api.trigger( 'uploadFinished' );
+            }
         }
 
         function _sendFile( file ) {
-            var tr;
+            var tr, trHandler, fileHandler;
 
             // 有必要？
             // 如果外部阻止了此文件上传，则跳过此文件
@@ -47,14 +48,11 @@ define( 'webuploader/core/uploadmgr', [ 'webuploader/base',
                 return;
             }
 
-            tr = new Transport({
-                url: opts.server,
-                formData: opts.formData || {}
-            } );
+            tr = new Transport( opts );
 
-            tr.on( 'all', function( type ) {
+            trHandler = function( type ) {
                 var args = [].slice.call( arguments, 1 ),
-                    ret, formData;
+                formData;
 
                 args.unshift( file );
                 args.unshift( 'upload' + type.substring( 0, 1 )
@@ -73,31 +71,44 @@ define( 'webuploader/core/uploadmgr', [ 'webuploader/base',
                 }
 
                 status[ type ] && file.setStatus( status[ type ] );
-                ret = api.trigger.apply( api, args );
 
                 if ( type === 'error' ) {
                     file.setStatus( Status.ERROR, args[ 2 ] );
                 } else if ( type === 'success' ) {
                     file.setStatus( Status.COMPLETE );
-                } else if ( type === 'complete' ) {    // error or success.
+                } else if ( type === 'complete' &&
+                        file.getStatus() !== Status.INTERRUPT ) {
+
+                    // 如果是interrupt中断了，还需重传的。
                     delete requests[ file.id ];
                     requestsLength--;
-                    tr.off( 'all', arguments.callee );
+                    tr.off( 'all', trHandler );
+                    tr.destroy();
                 }
 
-                return ret;
-            } );
+                return api.trigger.apply( api, args );
+            };
+            tr.on( 'all', trHandler );
 
             requests[ file.id ] =  tr;
             requestsLength++;
 
-            if ( opts.resize ) {
-                Image.downsize( file.source, function( blob ) {
+            if ( opts.resize &&(file.type === 'image/jpg' ||
+                    file.type === 'image/jpeg' ) && !file.resized ) {
+
+                // @todo 如果是重新上传，则不需要再resize.
+                Image.resize( file.source, function( error, blob ) {
                     var size = file.size;
+
+                    // @todo handle possible resize error.
+                    if ( error ) {
+                        return;
+                    }
 
                     file.source = blob;
                     file.size = blob.size;
-                    file.trigger( 'downsize', blob.size, size );
+                    file.resized = true;
+                    file.trigger( 'resize', blob.size, size );
 
                     tr.sendAsBlob( blob );
                 } );
@@ -107,15 +118,25 @@ define( 'webuploader/core/uploadmgr', [ 'webuploader/base',
 
             file.setStatus( Status.PROGRESS );
 
-            file.on( 'statuschange', function( cur, prev ) {
+            fileHandler = function( cur, prev ) {
+                if ( cur === Status.INVALID ) {
+                    tr.cancel();
+                    delete requests[ file.id ];
+                    requestsLength--;
+                    tr.off( 'all', trHandler );
+                    tr.destroy();
+                }
+
                 if ( prev === Status.PROGRESS ) {
                     setTimeout( _tick, 1 );
 
                     if ( cur !== Status.INTERRUPT ) {
-                        file.off( 'statuschange', arguments.callee );
+                        file.off( 'statuschange', fileHandler );
                     }
                 }
-            } );
+            };
+
+            file.on( 'statuschange', fileHandler );
         }
 
         // 只暴露此对象下的方法。
@@ -124,25 +145,34 @@ define( 'webuploader/core/uploadmgr', [ 'webuploader/base',
             start: function() {
 
                 // 移出invalid的文件
-                $.each( queue.getFiles( Status.INVALID ), function() {
+                $.each( api.getFiles( Status.INVALID ), function() {
                     api.removeFile( this );
                 } );
 
                 if ( runing || !stats.numOfQueue && !requestsLength ) {
                     return;
                 }
+
                 runing = true;
 
                 // 如果有暂停的，则续传
                 $.each( requests, function( id, transport ) {
                     var file = queue.getFile( id );
-                    file.setStatus( Status.PROGRESS, '' );
-                    transport.resume();
+                    if ( file.getStatus() !== Status.PROGRESS ) {
+                        file.setStatus( Status.PROGRESS, '' );
+                        transport.resume();
+                    }
                 });
-                _tick();
+
+                api.trigger( 'startUpload' );
+                setTimeout( _tick, 1 );
             },
 
             stop: function( interrupt ) {
+                if ( runing === false ) {
+                    return;
+                }
+
                 runing = false;
 
                 interrupt && $.each( requests, function( id, transport ) {
@@ -150,6 +180,12 @@ define( 'webuploader/core/uploadmgr', [ 'webuploader/base',
                     file.setStatus( Status.INTERRUPT );
                     transport.pause();
                 } );
+
+                api.trigger( 'stopUpload' );
+            },
+
+            isInProgress: function() {
+                return !!runing;
             },
 
             getStats: function() {
@@ -157,6 +193,7 @@ define( 'webuploader/core/uploadmgr', [ 'webuploader/base',
                     successNum: stats.numOfSuccess,
                     queueFailNum: 0,
                     cancelNum: stats.numOfCancel,
+                    invalidNum: stats.numOfInvalid,
                     uploadFailNum: stats.numOfUploadFailed,
                     queueNum: stats.numOfQueue
                 };
@@ -198,13 +235,21 @@ define( 'webuploader/core/uploadmgr', [ 'webuploader/base',
 
                 file.setStatus( Status.CANCELLED );
                 api.trigger( 'fileDequeued', file );
+                // setTimeout( _tick, 1 );
             },
 
-            retry: function() {
+            retry: function( file ) {
+
+                if ( file ) {
+                    file = file.id ? file : queue.getFile( file );
+                    file.setStatus( Status.QUEUED );
+                    api.start();
+                    return;
+                }
+
                 var files = queue.getFiles( Status.ERROR ),
                     i = 0,
-                    len = files.length,
-                    file;
+                    len = files.length;
 
                 for( ; i < len; i++ ) {
                     file = files[ i ];
@@ -212,6 +257,10 @@ define( 'webuploader/core/uploadmgr', [ 'webuploader/base',
                 }
 
                 api.start();
+            },
+
+            getFiles: function() {
+                return queue.getFiles.apply( queue, arguments );
             }
         };
 
