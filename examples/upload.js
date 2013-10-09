@@ -34,8 +34,8 @@
             thumbnailWidth = 110 * ratio,
             thumbnailHeight = 110 * ratio,
 
-            // 可能有inited, uploading, paused四个值
-            state = 'inited',
+            // 可能有pedding, ready, uploading, confirm, done.
+            state = 'pedding',
 
             // 所有文件的进度信息，key为file id
             percentages = {},
@@ -51,7 +51,7 @@
             },
             dnd: '#dndArea',
             paste: '#uploader',
-            server: 'http://liaoxuezhi.fe.baidu.com/webupload/fileupload.php?debug=3',
+            server: '../server/fileupload.php',
             fileNumLimit: 300,
             fileSizeLimit: 400 * 1024 * 1024,    // 400 M
             fileSingleSizeLimit: 50 * 1024 * 1024    // 50 M
@@ -97,8 +97,9 @@
                 showError( file.statusText );
             } else {
                 // @todo lazyload
-                uploader.makeThumb( file, function( img ) {
-                    $wrap.html( img );
+                uploader.makeThumb( file, function( error, src ) {
+                    var img = $('<img src="'+src+'">');
+                    $wrap.empty().append( img );
                 }, thumbnailWidth, thumbnailHeight );
                 $wrap.text( '预览中' );
 
@@ -108,17 +109,21 @@
 
             file.on('statuschange', function( cur, prev ) {
                 if ( prev === 'progress' ) {
-                    $prgress.width( 0 );
+                    $prgress.hide().width(0);
                 } else if ( prev === 'queued' ) {
                     $li.off( 'mouseenter mouseleave' );
                     $btns.remove();
-                } else if ( prev === 'error' ) {
-                    $info.remove();
                 }
 
                 // 成功
                 if ( cur === 'error' || cur === 'invalid' ) {
                     showError( file.statusText );
+                    percentages[ file.id ][ 1 ] = 1;
+                } else if ( cur === 'queued' ) {
+                    percentages[ file.id ][ 1 ] = 0;
+                } else if ( cur === 'progress' ) {
+                    $info.remove();
+                    $prgress.css('display', 'block');
                 }
 
                 $li.removeClass( 'state-' + prev ).addClass( 'state-' + cur );
@@ -139,7 +144,7 @@
                 switch ( index ) {
                     case 0:
                         uploader.removeFile( file );
-                        break;
+                        return;
 
                     case 1:
                         file.ratation += 90;
@@ -167,7 +172,7 @@
             var $li = $('#'+file.id);
 
             delete percentages[ file.id ];
-
+            updateTotalProgress();
             $li.off().find('.file-panel').off().end().remove();
         }
 
@@ -182,10 +187,10 @@
                 loaded += v[ 0 ] * v[ 1 ];
             } );
 
-            percent = loaded / total;
+            percent = total ? loaded / total : 0;
 
             spans.eq( 0 ).text( Math.round( percent * 100 ) + '%' );
-            spans.eq( 1 ).css( 'width', percent * 100 + '%' );
+            spans.eq( 1 ).css( 'width', Math.round( percent * 100 ) + '%' );
             updateStatus();
         }
 
@@ -216,32 +221,64 @@
             $info.html( text );
         }
 
-        function setState( val, isRetry ) {
-            var file;
+        function setState( val ) {
+            var file, stats;
 
-            switch ( val ) {
-                case 'uploading':
-                    $progress.show();
-                    uploader[ isRetry ? 'retry' : 'upload' ]();
-                    $upload.text( '暂停上传' );
-                    break;
-
-                case 'paused':
-                    uploader.stop();
-                    $upload.text( '继续上传' );
-                    break;
-
-                case 'confirm':
-                    $progress.hide();
-                    $( '#filePicker2' ).hide();
-
-                    $upload.text( '确认上传' );
-                    break;
+            if ( val === state ) {
+                return;
             }
 
             $upload.removeClass( 'state-' + state );
             $upload.addClass( 'state-' + val );
             state = val;
+
+            switch ( state ) {
+                case 'pedding':
+                    $placeHolder.show();
+                    $queue.hide();
+                    $statusBar.hide();
+                    break;
+
+                case 'ready':
+                    $placeHolder.hide();
+                    $( '#filePicker2' ).show();
+                    $queue.show();
+                    $statusBar.show();
+                    break;
+
+                case 'uploading':
+                    $( '#filePicker2' ).hide();
+                    $progress.show();
+                    $upload.text( '暂停上传' );
+                    break;
+
+                case 'paused':
+                    $progress.show();
+                    $upload.text( '继续上传' );
+                    break;
+
+                case 'confirm':
+                    $progress.hide();
+                    $upload.text( '开始上传' ).addClass( 'disabled' );
+
+                    stats = uploader.getStats();
+                    if ( stats.successNum && !stats.uploadFailNum ) {
+                        setState( 'finish' );
+                        return;
+                    }
+                    break;
+                case 'finish':
+                    stats = uploader.getStats();
+                    if ( stats.successNum ) {
+                        alert( '上传成功' );
+                    } else {
+                        // 没有成功的图片，重设
+                        state = 'done';
+                        location.reload();
+                    }
+                    break;
+            }
+
             updateStatus();
         }
 
@@ -264,7 +301,7 @@
             }
 
             addFile( file );
-            updateStatus();
+            setState( 'ready' );
         };
 
         uploader.onFileDequeued = function( file ) {
@@ -272,37 +309,51 @@
             fileSize -= file.size;
 
             if ( !fileCount ) {
-                $placeHolder.show();
-                $statusBar.hide();
+                setState( 'pedding' );
             }
 
             removeFile( file );
             updateStatus();
         };
 
-        uploader.onUploadFinished = function() {
-            setState( 'confirm' );
-        };
+        uploader.on( 'all', function( type ) {
+            var stats;
+            switch( type ) {
+                case 'uploadFinished':
+                    setState( 'confirm' );
+                    break;
+
+                case 'startUpload':
+                    setState( 'uploading' );
+                    break;
+
+                case 'stopUpload':
+                    setState( 'paused' );
+                    break;
+
+            }
+        });
 
         uploader.onError = function( code ) {
             alert( 'Eroor: ' + code );
         };
 
         $upload.on('click', function() {
-            var nextstate = '';
-            if ( state === 'inited' || state === 'paused'  ) {
-                nextstate = 'uploading';
-            } else if ( state === 'uploading' ) {
-                nextstate = 'paused';
-            } else if ( state === 'confirm' ) {
-                nextstate = 'finish';
+            if ( $(this).hasClass( 'disabled' ) ) {
+                return false;
             }
 
-            nextstate && setState( nextstate );
+            if ( state === 'ready' ) {
+                uploader.upload();
+            } else if ( state === 'paused' ) {
+                uploader.upload();
+            } else if ( state === 'uploading' ) {
+                uploader.stop();
+            }
         });
 
         $info.on( 'click', '.retry', function() {
-            setState( 'uploading', true );
+            uploader.retry();
         } );
 
         $info.on( 'click', '.ignore', function() {
