@@ -129,7 +129,7 @@ define( 'webuploader/core/runtime/html5/image', [ 'webuploader/base',
         /**
          * 创建缩略图，但是不会修改原始图片大小。
          */
-        makeThumbnail: function( width, height, crop, type, quality ) {
+        makeThumbnail: function( width, height, crop, quality, type ) {
             var opts = this.options,
                 canvas = document.createElement( 'canvas' ),
                 result;
@@ -477,47 +477,78 @@ define( 'webuploader/core/runtime/html5/image', [ 'webuploader/base',
     //         tick();
     //     };
     // })( 3 );
+    //
+
+    // 带有节流性质的创建器, 根据文件大小来节流
+    (function( throttle ){
+        var runing = 0,
+            wating = [],
+            getInstance = function( size ) {
+                var image = new Html5Image();
+
+                image.on( 'destroy', function() {
+                    runing -= size;
+                    Base.nextTick( tick );
+                });
+
+                return image;
+            },
+            tick = function() {
+                var item;
+                while ( runing < throttle && wating.length ) {
+                    item = wating.shift();
+                    runing += item[ 1 ];
+                    item[ 0 ]( getInstance( item[ 1 ] ) );
+                }
+            };
+
+        Html5Image.getInstance = function( cb, source ) {
+            wating.push( [cb, source.size || source.length] );
+            tick();
+        };
+    })( 5 * 1024 * 1024 );
 
     Html5Image.makeThumbnail = function( source, cb ) {
-        var image = new Html5Image(),
-            args = [].slice.call( arguments, 2 );
+        var args = [].slice.call( arguments, 2 );
 
-        image.once( 'load', function() {
-            var ret = image.makeThumbnail.apply( image, args ),
-                orientation = image.getOrientation();
-            image.destroy();
-            image = null;
-            cb( null, ret, orientation );
-        } );
+        Html5Image.getInstance(function( image ) {
+            image.once( 'load', function() {
+                var ret = image.makeThumbnail.apply( image, args ),
+                    orientation = image.getOrientation();
+                image.destroy();
+                image = null;
+                cb( null, ret, orientation );
+            } );
 
-        image.once( 'error', function() {
-            image.destroy();
-            image = null;
-            cb( true );
-        } );
+            image.once( 'error', function() {
+                image.destroy();
+                image = null;
+                cb( true );
+            } );
 
-        image.load( source );
+            image.load( source );
+        }, source );
     };
 
     Html5Image.resize = function( source, cb, width, height, crop ) {
-        var image = new Html5Image();
+        Html5Image.getInstance(function( image ) {
+            image.once( 'load', function() {
+                var ret;
+                image.resize( width, height, crop );
+                ret = image.toBlob();
+                image.destroy();
+                image = null;
+                cb( null, ret );
+            } );
 
-        image.once( 'load', function() {
-            var ret;
-            image.resize( width, height, crop );
-            ret = image.toBlob();
-            image.destroy();
-            image = null;
-            cb( null, ret );
-        } );
+            image.once( 'error', function() {
+                image.destroy();
+                image = null;
+                cb( true );
+            } );
 
-        image.once( 'error', function() {
-            image.destroy();
-            image = null;
-            cb( true );
-        } );
-
-        image.load( source );
+            image.load( source );
+        }, source );
     };
 
     Html5Runtime.register( 'Image', Html5Image );
