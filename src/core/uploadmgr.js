@@ -39,20 +39,13 @@ define( 'webuploader/core/uploadmgr', [ 'webuploader/base',
         function _sendFile( file ) {
             var tr, trHandler, fileHandler;
 
-            // 有必要？
-            // 如果外部阻止了此文件上传，则跳过此文件
-            if ( !api.trigger( 'uploadStart', file ) ) {
-
-                // 先标记它是错误的。
-                file.setStatus( Status.CANCELLED );
-                return;
-            }
+            api.trigger( 'uploadStart', file );
 
             tr = new Transport( opts );
 
             trHandler = function( type ) {
                 var args = [].slice.call( arguments, 1 ),
-                formData;
+                    formData;
 
                 args.unshift( file );
                 args.unshift( 'upload' + type.substring( 0, 1 )
@@ -69,8 +62,6 @@ define( 'webuploader/core/uploadmgr', [ 'webuploader/base',
                         size: file.size
                     } );
                 }
-
-                status[ type ] && file.setStatus( status[ type ] );
 
                 if ( type === 'error' ) {
                     file.setStatus( Status.ERROR, args[ 2 ] );
@@ -93,8 +84,8 @@ define( 'webuploader/core/uploadmgr', [ 'webuploader/base',
             requests[ file.id ] =  tr;
             requestsLength++;
 
-            if ( opts.resize &&(file.type === 'image/jpg' ||
-                    file.type === 'image/jpeg' ) && !file.resized ) {
+            if ( opts.resize && (file.type === 'image/jpg' ||
+                    file.type === 'image/jpeg') && !file.resized ) {
 
                 // @todo 如果是重新上传，则不需要再resize.
                 Image.resize( file.source, function( error, blob ) {
@@ -128,7 +119,8 @@ define( 'webuploader/core/uploadmgr', [ 'webuploader/base',
                 }
 
                 if ( prev === Status.PROGRESS ) {
-                    setTimeout( _tick, 1 );
+                    Base.nextTick( _tick );
+                    // setTimeout( _tick, 1 );
 
                     if ( cur !== Status.INTERRUPT ) {
                         file.off( 'statuschange', fileHandler );
@@ -165,7 +157,8 @@ define( 'webuploader/core/uploadmgr', [ 'webuploader/base',
                 });
 
                 api.trigger( 'startUpload' );
-                setTimeout( _tick, 1 );
+                Base.nextTick( _tick );
+                // setTimeout( _tick, 1 );
             },
 
             stop: function( interrupt ) {
