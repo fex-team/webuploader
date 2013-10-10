@@ -118,7 +118,7 @@ define( 'webuploader/core/runtime/html5/image', [ 'webuploader/base',
             height = height || opts.resize.height;
             crop = typeof crop === 'undefined' ? opts.resize.crop : crop;
 
-            this._resize( canvas, width, height, crop, true );
+            this._resize( this._img, canvas, width, height, crop, true );
             this.width = width;
             this.height = height;
 
@@ -136,13 +136,22 @@ define( 'webuploader/core/runtime/html5/image', [ 'webuploader/base',
 
             type = type || this.type;
             quality = quality || opts.quality;
-            this._resize( canvas, width, height, crop );
+
+
+            // if ( this.metas && this.metas.exif && (result =
+            //         this.metas.exif.get( 'Thumbnail' )) ) {
+            //     return result;
+            // }
+
+            // console.time( 'resize' );
+            this._resize( this._img, canvas, width, height, crop );
 
             if ( type === 'image/jpeg' ) {
                 result = canvas.toDataURL( 'image/jpeg', quality / 100 );
             } else {
                 result = canvas.toDataURL( type );
             }
+            // console.timeEnd( 'resize' );
 
             canvas.getContext( '2d' )
                     .clearRect( 0, 0, canvas.width, canvas.height );
@@ -219,14 +228,13 @@ define( 'webuploader/core/runtime/html5/image', [ 'webuploader/base',
             } );
         },
 
-        _resize: function( canvas, width, height, crop, preserveHeaders ) {
+        _resize: function( img, canvas, width, height, crop, preserveHeaders ) {
             // 调用时机不对。
             if ( this.state !== 'loaded' ) {
                 return;
             }
 
-            var img = this._img,
-                naturalWidth = img.width,
+            var naturalWidth = img.width,
                 naturalHeight = img.height,
                 orientation = this.getOrientation(),
                 scale, w, h, x, y;
@@ -339,84 +347,177 @@ define( 'webuploader/core/runtime/html5/image', [ 'webuploader/base',
             return me;
         },
 
-        // @todo 在ios6中，处理像素点过万的图片有问题，待解决
-        // 解决方法：https://github.com/stomita/ios-imagefile-megapixel
         _renderImageToCanvas: function( canvas, img, x, y, w, h ) {
             canvas.getContext( '2d' ).drawImage( img, x, y, w, h );
         }
+
+        //
+        /*_renderImageToCanvas: (function() {
+            var subsampled, vertSquashRatio;
+
+            // Detect subsampling in loaded image.
+            // In iOS, larger images than 2M pixels may be subsampled in rendering.
+            function detectSubsampling(img) {
+                var iw = img.naturalWidth,
+                    ih = img.naturalHeight;
+                if (iw * ih > 1024 * 1024) { // subsampling may happen over megapixel image
+                    var canvas = document.createElement('canvas');
+                    canvas.width = canvas.height = 1;
+                    var ctx = canvas.getContext('2d');
+                    ctx.drawImage(img, -iw + 1, 0);
+                    // subsampled image becomes half smaller in rendering size.
+                    // check alpha channel value to confirm image is covering edge pixel or not.
+                    // if alpha value is 0 image is not covering, hence subsampled.
+                    return ctx.getImageData(0, 0, 1, 1).data[3] === 0;
+                } else {
+                    return false;
+                }
+            }
+
+
+            // Detecting vertical squash in loaded image.
+            // Fixes a bug which squash image vertically while drawing into canvas for some images.
+            function detectVerticalSquash(img, iw, ih) {
+                var canvas = document.createElement('canvas');
+                canvas.width = 1;
+                canvas.height = ih;
+                var ctx = canvas.getContext('2d');
+                ctx.drawImage(img, 0, 0);
+                var data = ctx.getImageData(0, 0, 1, ih).data;
+                // search image edge pixel position in case it is squashed vertically.
+                var sy = 0;
+                var ey = ih;
+                var py = ih;
+                while (py > sy) {
+                    var alpha = data[(py - 1) * 4 + 3];
+                    if (alpha === 0) {
+                        ey = py;
+                    } else {
+                        sy = py;
+                    }
+                    py = (ey + sy) >> 1;
+                }
+                var ratio = (py / ih);
+                return (ratio === 0) ? 1 : ratio;
+            }
+
+            return function( canvas, img, x, y, w, h ) {
+
+
+                var iw = img.naturalWidth, ih = img.naturalHeight;
+                var width = w, height = h;
+                var ctx = canvas.getContext('2d');
+                ctx.save();
+
+                subsampled = typeof subsampled === 'undefined' ? detectSubsampling( img ) : subsampled;
+                if ( subsampled ) {
+                    iw /= 2;
+                    ih /= 2;
+                }
+
+                var d = 1024; // size of tiling canvas
+                var tmpCanvas = document.createElement('canvas');
+                tmpCanvas.width = tmpCanvas.height = d;
+                var tmpCtx = tmpCanvas.getContext('2d');
+
+                vertSquashRatio = vertSquashRatio || detectVerticalSquash(img, iw, ih);
+                console.log( vertSquashRatio );
+
+                var dw = Math.ceil(d * width / iw);
+                var dh = Math.ceil(d * height / ih / vertSquashRatio);
+                var sy = 0;
+                var dy = 0;
+                while (sy < ih) {
+                  var sx = 0;
+                  var dx = 0;
+                  while (sx < iw) {
+                    tmpCtx.clearRect(0, 0, d, d);
+                    tmpCtx.drawImage(img, x - sx, y - sy );
+                    ctx.drawImage(tmpCanvas, 0, 0, d, d, dx, dy, dw, dh);
+                    sx += d;
+                    dx += dw;
+                  }
+                  sy += d;
+                  dy += dh;
+                }
+                ctx.restore();
+                tmpCanvas = tmpCtx = null;
+            };
+        })()*/
     } );
 
     // 带有节流性质的创建器
-    (function( threads ){
-        var runing = 0,
-            wating = [],
-            getInstance = function() {
-                var image = new Html5Image();
+    // (function( threads ){
+    //     var runing = 0,
+    //         wating = [],
+    //         getInstance = function() {
+    //             var image = new Html5Image();
 
-                image.on( 'destroy', function() {
-                    runing--;
+    //             image.on( 'destroy', function() {
+    //                 runing--;
 
-                    // 等待200ms
-                    setTimeout(tick, 200);
-                });
+    //                 // 等待200ms
+    //                 setTimeout(tick, 200);
+    //             });
 
-                return image;
-            },
-            tick = function() {
-                var cb;
-                while ( runing < threads && wating.length ) {
-                    runing++;
+    //             return image;
+    //         },
+    //         tick = function() {
+    //             var cb;
+    //             while ( runing < threads && wating.length ) {
+    //                 runing++;
 
-                    cb = wating.shift();
-                    cb( getInstance() );
-                }
-            };
+    //                 cb = wating.shift();
+    //                 cb( getInstance() );
+    //             }
+    //         };
 
-        Html5Image.create = function( cb ) {
-            wating.push( cb );
-            tick();
-        };
-    })( 3 );
+    //     Html5Image.create = function( cb ) {
+    //         wating.push( cb );
+    //         tick();
+    //     };
+    // })( 3 );
 
-    Html5Image.makeThumbnail = function( source, cb, width, height, crop ) {
-        Html5Image.create(function( image ) {
-            image.once( 'load', function() {
-                var ret = image.makeThumbnail( width, height, crop ),
-                    orientation = image.getOrientation();
-                image.destroy();
-                image = null;
-                cb( null, ret, orientation );
-            } );
+    Html5Image.makeThumbnail = function( source, cb ) {
+        var image = new Html5Image(),
+            args = [].slice.call( arguments, 2 );
 
-            image.once( 'error', function() {
-                image.destroy();
-                image = null;
-                cb( true );
-            } );
+        image.once( 'load', function() {
+            var ret = image.makeThumbnail.apply( image, args ),
+                orientation = image.getOrientation();
+            image.destroy();
+            image = null;
+            cb( null, ret, orientation );
+        } );
 
-            image.load( source );
-        });
+        image.once( 'error', function() {
+            image.destroy();
+            image = null;
+            cb( true );
+        } );
+
+        image.load( source );
     };
 
     Html5Image.resize = function( source, cb, width, height, crop ) {
-        Html5Image.create(function( image ) {
-            image.once( 'load', function() {
-                var ret;
-                image.resize( width, height, crop );
-                ret = image.toBlob();
-                image.destroy();
-                image = null;
-                cb( null, ret );
-            } );
+        var image = new Html5Image();
 
-            image.once( 'error', function() {
-                image.destroy();
-                image = null;
-                cb( true );
-            } );
+        image.once( 'load', function() {
+            var ret;
+            image.resize( width, height, crop );
+            ret = image.toBlob();
+            image.destroy();
+            image = null;
+            cb( null, ret );
+        } );
 
-            image.load( source );
-        });
+        image.once( 'error', function() {
+            image.destroy();
+            image = null;
+            cb( true );
+        } );
+
+        image.load( source );
     };
 
     Html5Runtime.register( 'Image', Html5Image );
