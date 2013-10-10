@@ -118,7 +118,7 @@ define( 'webuploader/core/runtime/html5/image', [ 'webuploader/base',
             height = height || opts.resize.height;
             crop = typeof crop === 'undefined' ? opts.resize.crop : crop;
 
-            this._resize( this._img, canvas, width, height, crop, true );
+            this._resize( this._img, canvas, width, height, crop, true, true );
             this.width = width;
             this.height = height;
 
@@ -228,7 +228,7 @@ define( 'webuploader/core/runtime/html5/image', [ 'webuploader/base',
             } );
         },
 
-        _resize: function( img, canvas, width, height, crop, preserveHeaders ) {
+        _resize: function( img, cvs, width, height, crop, ph, noMagnify ) {
             // 调用时机不对。
             if ( this.state !== 'loaded' ) {
                 return;
@@ -252,25 +252,25 @@ define( 'webuploader/core/runtime/html5/image', [ 'webuploader/base',
                     height / naturalHeight );
 
             // 不允许放大。
-            scale = Math.min( 1, scale );
+            scale = noMagnify ? Math.min( 1, scale ) : scale;
 
             w = naturalWidth * scale;
             h = naturalHeight * scale;
 
             if ( crop ) {
-                canvas.width = width;
-                canvas.height = height;
+                cvs.width = width;
+                cvs.height = height;
             } else {
-                canvas.width = w;
-                canvas.height = h;
+                cvs.width = w;
+                cvs.height = h;
             }
 
-            x = (canvas.width - w) / 2;
-            y = (canvas.height - h) / 2;
+            x = (cvs.width - w) / 2;
+            y = (cvs.height - h) / 2;
 
-            preserveHeaders || this._rotateToOrientaion( canvas, orientation );
+            ph || this._rotateToOrientaion( cvs, orientation );
 
-            this._renderImageToCanvas( canvas, img, x, y, w, h );
+            this._renderImageToCanvas( cvs, img, x, y, w, h );
         },
 
         _rotateToOrientaion: function( canvas, orientation ) {
