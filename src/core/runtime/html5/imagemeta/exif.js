@@ -212,6 +212,22 @@ define( 'webuploader/core/runtime/html5/imagemta/exif',
         return dataView.getUint32( dirEndOffset, littleEndian );
     };
 
+    // EXIF.getExifThumbnail = function(dataView, offset, length) {
+    //     var hexData,
+    //         i,
+    //         b;
+    //     if (!length || offset + length > dataView.byteLength) {
+    //         console.log('Invalid Exif data: Invalid thumbnail data.');
+    //         return;
+    //     }
+    //     hexData = [];
+    //     for (i = 0; i < length; i += 1) {
+    //         b = dataView.getUint8(offset + i);
+    //         hexData.push((b < 16 ? '0' : '') + b.toString(16));
+    //     }
+    //     return 'data:image/jpeg,%' + hexData.join('%');
+    // };
+
     EXIF.parseExifData = function( dataView, offset, length, data ) {
 
         var tiffOffset = offset + 10,
@@ -264,6 +280,27 @@ define( 'webuploader/core/runtime/html5/imagemta/exif',
         // offset to the next directory, usually the thumbnail directory:
         dirOffset = EXIF.parseExifTags( dataView, tiffOffset,
                 tiffOffset + dirOffset, littleEndian, data );
+
+        // 尝试读取缩略图
+        // if ( dirOffset ) {
+        //     thumbnailData = {exif: {}};
+        //     dirOffset = EXIF.parseExifTags(
+        //         dataView,
+        //         tiffOffset,
+        //         tiffOffset + dirOffset,
+        //         littleEndian,
+        //         thumbnailData
+        //     );
+
+        //     // Check for JPEG Thumbnail offset:
+        //     if (thumbnailData.exif[0x0201]) {
+        //         data.exif.Thumbnail = EXIF.getExifThumbnail(
+        //             dataView,
+        //             tiffOffset + thumbnailData.exif[0x0201],
+        //             thumbnailData.exif[0x0202] // Thumbnail data length
+        //         );
+        //     }
+        // }
     };
 
     ImageMeta.parsers[ 0xffe1 ].push( EXIF.parseExifData );
