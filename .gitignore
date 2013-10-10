@@ -3,5 +3,8 @@
 /dist
 /doc
 /server/upload
+/server/upload_temp
+/server/md5list.txt
+/server/md5list2.txt
 .tags
 .tags_sorted_by_file
