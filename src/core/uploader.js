@@ -166,12 +166,13 @@ define( 'webuploader/core/uploader', [ 'webuploader/base',
             picker.init();
         },
 
-        makeThumb: function( file, cb, width, height ) {
+        makeThumb: function( file, cb, width, height, type, quality ) {
             var runtime = this._runtime,
                 Image = runtime.getComponent( 'Image' );
 
             file = this.getFile( file );
-            Image.makeThumbnail( file.getSource(), cb, width, height, true );
+            Image.makeThumbnail( file.getSource(), cb, width, height,
+                    true, type, quality );
         },
 
         formatSize: function( size, pointLength ) {
