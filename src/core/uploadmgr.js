@@ -39,20 +39,13 @@ define( 'webuploader/core/uploadmgr', [ 'webuploader/base',
         function _sendFile( file ) {
             var tr, trHandler, fileHandler;
 
-            // 有必要？
-            // 如果外部阻止了此文件上传，则跳过此文件
-            if ( !api.trigger( 'uploadStart', file ) ) {
-
-                // 先标记它是错误的。
-                file.setStatus( Status.CANCELLED );
-                return;
-            }
+            api.trigger( 'uploadStart', file );
 
             tr = new Transport( opts );
 
             trHandler = function( type ) {
                 var args = [].slice.call( arguments, 1 ),
-                    ret, formData;
+                    formData;
 
                 args.unshift( file );
                 args.unshift( 'upload' + type.substring( 0, 1 )
@@ -70,9 +63,6 @@ define( 'webuploader/core/uploadmgr', [ 'webuploader/base',
                     } );
                 }
 
-                status[ type ] && file.setStatus( status[ type ] );
-                ret = api.trigger.apply( api, args );
-
                 if ( type === 'error' ) {
                     file.setStatus( Status.ERROR, args[ 2 ] );
                 } else if ( type === 'success' ) {
@@ -89,21 +79,28 @@ define( 'webuploader/core/uploadmgr', [ 'webuploader/base',
                     tr.destroy();
                 }
 
-                return ret;
+                return api.trigger.apply( api, args );
             };
             tr.on( 'all', trHandler );
 
             requests[ file.id ] =  tr;
             requestsLength++;
 
-            if ( opts.resize &&(file.type === 'image/jpg' ||
-                    file.type === 'image/jpeg' ) ) {
+            if ( opts.resize && (file.type === 'image/jpg' ||
+                    file.type === 'image/jpeg') && !file.resized ) {
+
+                // @todo 如果是重新上传，则不需要再resize.
                 Image.resize( file.source, function( error, blob ) {
                     var size = file.size;
 
                     // @todo handle possible resize error.
+                    if ( error ) {
+                        return;
+                    }
+
                     file.source = blob;
                     file.size = blob.size;
+                    file.resized = true;
                     file.trigger( 'resize', blob.size, size );
 
                     tr.sendAsBlob( blob );
@@ -124,7 +121,8 @@ define( 'webuploader/core/uploadmgr', [ 'webuploader/base',
                 }
 
                 if ( prev === Status.PROGRESS ) {
-                    setTimeout( _tick, 1 );
+                    Base.nextTick( _tick );
+                    // setTimeout( _tick, 1 );
 
                     if ( cur !== Status.INTERRUPT ) {
                         file.off( 'statuschange', fileHandler );
@@ -161,7 +159,8 @@ define( 'webuploader/core/uploadmgr', [ 'webuploader/base',
                 });
 
                 api.trigger( 'startUpload' );
-                setTimeout( _tick, 1 );
+                Base.nextTick( _tick );
+                // setTimeout( _tick, 1 );
             },
 
             stop: function( interrupt ) {
@@ -234,11 +233,18 @@ define( 'webuploader/core/uploadmgr', [ 'webuploader/base',
                 // setTimeout( _tick, 1 );
             },
 
-            retry: function() {
+            retry: function( file ) {
+
+                if ( file ) {
+                    file = file.id ? file : queue.getFile( file );
+                    file.setStatus( Status.QUEUED );
+                    api.start();
+                    return;
+                }
+
                 var files = queue.getFiles( Status.ERROR ),
                     i = 0,
-                    len = files.length,
-                    file;
+                    len = files.length;
 
                 for( ; i < len; i++ ) {
                     file = files[ i ];
