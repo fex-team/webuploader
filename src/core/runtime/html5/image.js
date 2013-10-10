@@ -504,7 +504,7 @@ define( 'webuploader/core/runtime/html5/image', [ 'webuploader/base',
 
         Html5Image.getInstance = function( cb, source ) {
             wating.push( [cb, source.size || source.length] );
-            tick();
+            Base.nextTick( tick );
         };
     })( 5 * 1024 * 1024 );
 
