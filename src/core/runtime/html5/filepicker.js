@@ -76,7 +76,18 @@ define( 'webuploader/core/runtime/html5/filepicker', [
                 }
 
                 input.on( 'change', function( e ) {
+                    var fn = arguments.callee,
+                        clone;
+
                     me.trigger( 'select', e.target.files );
+
+
+                    // reset input
+                    clone = this.cloneNode( true );
+                    this.parentNode.replaceChild( clone, this );
+
+                    input.off( 'change', fn );
+                    $( clone ).on( 'change', fn );
                 } );
 
                 // label.on( 'mouseover', function( e ) {

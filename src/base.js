@@ -77,7 +77,7 @@ define( 'webuploader/base', [ 'jq-bridge' ], function( $ ) {
 
         noop: noop,
 
-        log: (function(){
+        log: (function() {
             if ( window.console.log ) {
                 return function() {
                     console.log.apply( console, arguments );
@@ -91,6 +91,20 @@ define( 'webuploader/base', [ 'jq-bridge' ], function( $ ) {
             return fn.bind ? fn.bind( context ) : function() {
                 return fn.apply( context, arguments );
             };
-        }
+        },
+
+        nextTick: (function() {
+            var next = window.requestAnimationFrame ||
+                window.webkitRequestAnimationFrame ||
+                window.mozRequestAnimationFrame ||
+                function( cb ) {
+                    window.setTimeout( cb, 1000 / 60 );
+                };
+
+            // fix: Uncaught TypeError: Illegal invocation
+            return function() {
+                next.apply( window, arguments );
+            }
+        })()
     };
 } );
