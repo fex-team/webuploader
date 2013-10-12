@@ -197,7 +197,7 @@
         function updateStatus() {
             var text = '', stats;
 
-            if ( state === 'inited' ) {
+            if ( state === 'ready' ) {
                 text = '选中' + fileCount + '张图片，共' +
                         uploader.formatSize( fileSize ) + '。';
             } else if ( state === 'confirm' ) {
