@@ -27,6 +27,13 @@
 
 *说明：未计算服务器端将合并后图片拆解所需时间；
 
+speed = 256 K/S delay = 5ms(ADSL)
+
+    T               1       2       3       4       5
+    Sprites(ms)     148563  146993  146910  147149  147957
+    Normal(ms)      203878  184155  187438  183793  183533
+    %               28      20      22      20      19
+
 speed = 10 M/S delay = 1ms(WIFI Good Connectivity)
 
     T               1       2       3       4       5
