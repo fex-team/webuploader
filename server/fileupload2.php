@@ -24,7 +24,7 @@ header("Pragma: no-cache");
 
 // header("HTTP/1.0 500 Internal Server Error");
 
-
+// echo mymd5('upload/C程序设计语言.pdf'); die;
 // Support CORS
 // header("Access-Control-Allow-Origin: *");
 // other CORS headers if any...
@@ -76,7 +76,7 @@ if (isset($_REQUEST["name"])) {
     $fileName = uniqid("file_");
 }
 
-$md5File = @file('md5list.txt', FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES);
+$md5File = @file('md5list2.txt', FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES);
 $md5File = $md5File ? $md5File : array();
 
 if (isset($_REQUEST["md5"]) && array_search($_REQUEST["md5"], $md5File ) !== FALSE ) {
@@ -147,10 +147,26 @@ if (!$chunks || $chunk == $chunks - 1) {
     rename("{$filePath}.part", $filePath);
 
     rename($filePath, $uploadPath);
-    array_push($md5File, md5(file_get_contents($uploadPath)));
+    array_push($md5File, mymd5($uploadPath));
     $md5File = array_unique($md5File);
-    file_put_contents('md5list.txt', join($md5File, "\n"));
+    file_put_contents('md5list2.txt', join($md5File, "\n"));
 }
+
+function mymd5( $file ) {
+    $fragment = 65536;
+
+    $rh = fopen($file, 'rb');
+    $size = filesize($file);
+
+    $part1 = fread( $rh, $fragment );
+    fseek($rh, $size-$fragment);
+    $part2 = fread( $rh, $fragment);
+    fclose($rh);
+
+    return md5( $part1.$part2 );
+}
+
+
 
 // Return Success JSON-RPC response
 die('{"jsonrpc" : "2.0", "result" : null, "id" : "id"}');
