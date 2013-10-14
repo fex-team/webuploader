@@ -45,23 +45,18 @@
 
         // 实例化
         uploader = WebUploader.create({
-            pick: {
-                id: '#filePicker',
-                btnName: '点击选择图片'
-            },
+            pick: '#filePicker',
             dnd: '#dndArea',
             paste: '#uploader',
-            server: '../server/fileupload.php',
+            server: '../server/fileupload2.php',
+            accept: '',
             fileNumLimit: 300,
-            fileSizeLimit: 200 * 1024 * 1024,    // 200 M
-            fileSingleSizeLimit: 50 * 1024 * 1024    // 50 M
+            fileSizeLimit: 0,
+            fileSingleSizeLimit: 512 * 1024 * 1024    // 512 M
         });
 
         // 添加“添加文件”的按钮，
-        uploader.addButton({
-            id: '#filePicker2',
-            btnName: '继续添加'
-        });
+        uploader.addButton('#filePicker2');
 
         // 当有文件添加进来时执行，负责view的创建
         function addFile( file ) {
@@ -287,6 +282,10 @@
             updateStatus();
         }
 
+        uploader.onUploadBeforeSend = function( file, data ) {
+            data.md5 = file.md5 || '';
+        };
+
         uploader.onUploadProgress = function( file, percentage ) {
             var $li = $('#'+file.id),
                 $percent = $li.find('.progress span');
@@ -297,6 +296,8 @@
         };
 
         uploader.onFileQueued = function( file ) {
+            var start = Date.now();
+
             fileCount++;
             fileSize += file.size;
 
@@ -304,6 +305,15 @@
                 $placeHolder.hide();
                 $statusBar.show();
             }
+
+            Md5File( file, function( value ) {
+                var $li = $('#'+file.id);
+                file.md5 = value;
+
+                console.log( value );
+
+                $li.append( '<p class="log">md5:' + ((Date.now() - start)/1000).toFixed(2) + '秒</p>')
+            });
 
             addFile( file );
             setState( 'ready' );
@@ -345,6 +355,15 @@
             alert( 'Eroor: ' + code );
         };
 
+        uploader.onUploadChunkcontinue = function( file, ret ) {
+            if ( ret.exist ) {
+                var $li = $( '#'+file.id );
+
+                $li.append( '<p class="log">跳过' + uploader.formatSize( file.size - file.loaded ) + '</p>' );
+                return false;
+            }
+        };
+
         $upload.on('click', function() {
             if ( $(this).hasClass( 'disabled' ) ) {
                 return false;
@@ -369,6 +388,20 @@
 
         $upload.addClass( 'state-' + state );
         updateTotalProgress();
+
+        var Md5File = (function(){
+
+
+            return function( file, cb ) {
+                var worker = new Worker( 'hashFile.js' );
+                worker.onmessage = function( e ) {
+                    cb( e.data, file );
+                    worker.terminate();
+                };
+
+                worker.postMessage( file.source );
+            }
+        })();
     });
 
 })( jQuery );
