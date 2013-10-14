@@ -148,6 +148,11 @@ table {
     font-size: 12px;
 }
 
+#uploader .filelist li p.log {
+    position: relative;
+    top: -45px;
+}
+
 #uploader .filelist li p.title {
     position: absolute;
     top: 0;
