@@ -4,8 +4,10 @@
 define( 'webuploader/core/uploader', [ 'webuploader/base',
         'webuploader/core/mediator',
         'webuploader/core/uploadmgr',
-        'webuploader/core/runtime'
-        ], function( Base, Mediator, UploadMgr, Runtime ) {
+        'webuploader/core/dnd',
+        'webuploader/core/filepaste',
+        'webuploader/core/filepicker'
+        ], function( Base, Mediator, UploadMgr, DragAndDrop, FilePaste, FilePicker ) {
 
     var $ = Base.$,
         defaultOpts = {
