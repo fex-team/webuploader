@@ -19,6 +19,7 @@ module.exports = function(grunt) {
                     'src/amd.js',
                     'src/jq-bridge.js',
                     'src/base.js',
+                    'src/promise.js',
                     'src/core/mediator.js',
                     'src/core/file.js',
                     'src/core/error.js',
