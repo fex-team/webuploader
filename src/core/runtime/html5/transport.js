@@ -104,6 +104,10 @@ define( 'webuploader/core/runtime/html5/transport', [ 'webuploader/base',
 
         _onsuccess: function( ret, headers ) {
             if ( this.chunks && this.chunk < this.chunks - 1 ) {
+                if ( !this.trigger( 'chunkcontinue', ret, headers, this.chunk,
+                        this.chunks ) ) {
+                    return this._resolve( ret, headers );
+                }
                 this.chunk++;
                 this._upload();
             } else {
@@ -116,6 +120,8 @@ define( 'webuploader/core/runtime/html5/transport', [ 'webuploader/base',
         },
 
         _resolve: function( ret, headers ) {
+            this.chunks = 0;
+            this._onprogress( 1 );
             this.state = 'done';
             this.trigger( 'success', ret, headers );
             this.trigger( 'complete' );
