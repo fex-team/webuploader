@@ -93,6 +93,7 @@ define( 'webuploader/core/file', [
             statusMap[ this.id ] = WUFile.Status.INITED;
 
             this.source = file;
+            this.loaded = 0;
 
             this.on( 'error', function( msg ) {
                 this.setStatus( WUFile.Status.ERROR, msg );
