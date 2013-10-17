@@ -67,6 +67,8 @@ define( 'webuploader/core/uploadmgr', [ 'webuploader/base',
                     file.setStatus( Status.ERROR, args[ 2 ] );
                 } else if ( type === 'success' ) {
                     file.setStatus( Status.COMPLETE );
+                } else if ( type === 'progress' ) {
+                    file.loaded = file.size * args[ 2 ];
                 } else if ( type === 'complete' &&
                         file.getStatus() !== Status.INTERRUPT ) {
 
