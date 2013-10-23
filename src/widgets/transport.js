@@ -12,73 +12,76 @@ define( 'webuploader/widgets/transport', [
     var $ = Base.$,
         Status = WUFile.Status;
 
-    return Uploader.register({
-
-        init: function( opts ) {
-            this.requests = {};
-            this.Transport = this.runtime.getComponent( 'Transport' );
+    return Uploader.register(
+        {
+            'cancel-transport': 'cancel',
+            'remove-transport': 'remove',
+            'resume-transports': 'resumeAll',
+            'pause-all': 'pauseAll',
+            'send-blob': 'sendBlob'
         },
+        
+        {
 
-        sendBlob: function( file, callback ) {
-            var blob = file.source,
-                me = this,
-                tr = new this.Transport( me.options );
+            init: function( opts ) {
+                this.requests = {};
+                this.Transport = this.runtime.getComponent( 'Transport' );
+            },
 
-            me.requests[ file.id ] = tr;
-            tr.on( 'all', callback );
+            sendBlob: function( file, callback ) {
+                var blob = file.source,
+                    me = this,
+                    tr = new this.Transport( me.options );
 
-            tr.sendAsBlob( blob );
-        },
+                me.requests[ file.id ] = tr;
+                tr.on( 'all', callback );
 
-        cancel: function( fileId ) {
-            var tr = this.requests[ fileId ];
+                tr.sendAsBlob( blob );
+            },
 
-            if ( !tr ) {
-                return;
-            }
+            cancel: function( fileId ) {
+                var tr = this.requests[ fileId ];
 
-            tr.cancel();
-
-            this.remove( fileId );
-        },
-
-        remove: function( fileId ) {
-            var tr = this.requests[ fileId ];
-
-            if ( !tr ) {
-                return;
-            }
-
-            tr.off();
-            tr.destroy();
-
-            delete this.requests[ fileId ];
-        },
-
-        resumeAll: function( ) {
-            var me = this;
-
-            $.each( me.requests, function( id, transport ) {
-                var file = me.request( 'get-file', [ id ] );
-                if ( file.getStatus() !== Status.PROGRESS ) {
-                    file.setStatus( Status.PROGRESS, '' );
-                    transport.resume();
+                if ( !tr ) {
+                    return;
                 }
-            });
-        },
 
-        pauseAll: function( ) {
-            var me = this;
+                tr.cancel();
 
-            $.each( me.requests, function( id, transport ) {
-                transport.pause();
-            });
-        }
-    }, {
-        'cancel-transport': 'cancel',
-        'remove-transport': 'remove',
-        'resume-transports': 'resumeAll',
-        'pause-all': 'pauseAll',
-        'send-blob': 'sendBlob'
+                this.remove( fileId );
+            },
+
+            remove: function( fileId ) {
+                var tr = this.requests[ fileId ];
+
+                if ( !tr ) {
+                    return;
+                }
+
+                tr.off();
+                tr.destroy();
+
+                delete this.requests[ fileId ];
+            },
+
+            resumeAll: function( ) {
+                var me = this;
+
+                $.each( me.requests, function( id, transport ) {
+                    var file = me.request( 'get-file', [ id ] );
+                    if ( file.getStatus() !== Status.PROGRESS ) {
+                        file.setStatus( Status.PROGRESS, '' );
+                        transport.resume();
+                    }
+                });
+            },
+
+            pauseAll: function( ) {
+                var me = this;
+
+                $.each( me.requests, function( id, transport ) {
+                    transport.pause();
+                });
+            }
     });
 } );
