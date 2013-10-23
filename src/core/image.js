@@ -25,7 +25,9 @@ define( 'webuploader/core/image', [ 'webuploader/base',
 
         },
 
-        getAsBlob
+        getAsBlob: function() {
+
+        }
     } );
 
     return Image;
