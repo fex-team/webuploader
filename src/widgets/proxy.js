@@ -95,8 +95,15 @@ define( 'webuploader/widgets/proxy', [ 'webuploader/base',
          *         'make-thumb': 'makeThumb'
          *     } );
          */
-        register: function( widgetProto, responseMap ) {
-            widgetProto.responseMap = responseMap;
+        register: function( responseMap, widgetProto ) {
+
+            if ( arguments.length === 1 ) {
+                widgetProto = responseMap;
+            }
+            else {
+                widgetProto.responseMap = responseMap;
+            }
+
             var klass = Base.inherits( Widget, widgetProto );
             return widgetClass.push( klass );
         }
