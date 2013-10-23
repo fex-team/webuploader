@@ -12,221 +12,224 @@ define( 'webuploader/widgets/uploadmgr', [
     var $ = Base.$,
         Status = WUFile.Status;
 
-    return Uploader.register({
-        events: {
-            // 'filesin': 'addFile',
-            // '.transport': 'handleTransport'
-        },
-        init: function( opts ) {
-            var me = this;
-
-            this.threads = opts.threads || 3;
-            this.runing = false;
-            this.requestsLength = 0;
-            
+    return Uploader.register(
+        {
+            'start-upload': 'start',
+            'stop-upload': 'stop',
+            'is-in-progress': 'isInProgress'
         },
 
-        _tick: function() {
-            var me = this,
-                stats = me.getStats();
+        {
+            events: {
+                // 'filesin': 'addFile',
+                // '.transport': 'handleTransport'
+            },
+            init: function( opts ) {
+                var me = this;
 
-            while( me.runing && stats.numOfProgress < me.threads &&
-                    stats.numOfQueue ) {
+                this.threads = opts.threads || 3;
+                this.runing = false;
+                this.requestsLength = 0;
+                
+            },
 
-                me._sendFile( me.request( 'fetch-file' ) );
-            }
+            _tick: function() {
+                var me = this,
+                    stats = me.getStats();
 
-            if ( !stats.numOfQueue && !me.requestsLength ) {
-                me.runing = false;
-                me.owner.trigger( 'uploadFinished' );
-            }
-        },
+                while( me.runing && stats.numOfProgress < me.threads &&
+                        stats.numOfQueue ) {
 
-        _sendFile: function( file ) {
-            var me = this,
-                trHandler,
-                fileHandler;
+                    me._sendFile( me.request( 'fetch-file' ) );
+                }
 
-            me.owner.trigger( 'uploadStart', file );
+                if ( !stats.numOfQueue && !me.requestsLength ) {
+                    me.runing = false;
+                    me.owner.trigger( 'uploadFinished' );
+                }
+            },
 
-            // tr = new Transport( opts );
+            _sendFile: function( file ) {
+                var me = this,
+                    trHandler,
+                    fileHandler;
 
-            trHandler = function( type ) {
-                var args = [].slice.call( arguments, 1 ),
-                    formData;
+                me.owner.trigger( 'uploadStart', file );
 
-                args.unshift( file );
-                args.unshift( 'upload' + type.substring( 0, 1 )
-                    .toUpperCase() + type.substring( 1 ) );
+                // tr = new Transport( opts );
 
-                if ( type === 'beforeSend' ) {
-                    formData = args[ 2 ];
+                trHandler = function( type ) {
+                    var args = [].slice.call( arguments, 1 ),
+                        formData;
 
-                    $.extend( formData, {
-                        id: file.id,
-                        name: file.name,
-                        type: file.type,
-                        lastModifiedDate: file.lastModifiedDate,
-                        size: file.size
+                    args.unshift( file );
+                    args.unshift( 'upload' + type.substring( 0, 1 )
+                        .toUpperCase() + type.substring( 1 ) );
+
+                    if ( type === 'beforeSend' ) {
+                        formData = args[ 2 ];
+
+                        $.extend( formData, {
+                            id: file.id,
+                            name: file.name,
+                            type: file.type,
+                            lastModifiedDate: file.lastModifiedDate,
+                            size: file.size
+                        } );
+                    }
+
+                    if ( type === 'error' ) {
+                        file.setStatus( Status.ERROR, args[ 2 ] );
+                    } else if ( type === 'success' ) {
+                        file.setStatus( Status.COMPLETE );
+                    } else if ( type === 'progress' ) {
+                        file.loaded = file.size * args[ 2 ];
+                    } else if ( type === 'complete' &&
+                            file.getStatus() !== Status.INTERRUPT ) {
+
+                        // 如果是interrupt中断了，还需重传的。
+                        // delete me.requests[ file.id ];
+                        me.request( 'remove-transport', [ file.id ] );
+                        me.requestsLength--;
+                        // tr.off( 'all', trHandler );
+                        // tr.destroy();
+                    }
+
+                    me.owner.trigger.apply( me.owner, args );
+                };
+
+                // tr.on( 'all', trHandler );
+                
+
+                // requests[ file.id ] =  tr;
+                me.requestsLength++;
+
+                if ( me.options.resize && (file.type === 'image/jpg' ||
+                        file.type === 'image/jpeg') && !file.resized ) {
+
+                    // @todo 如果是重新上传，则不需要再resize.
+                    /*
+                    Image.resize( file.source, function( error, blob ) {
+                        var size = file.size;
+
+                        // @todo handle possible resize error.
+                        if ( error ) {
+                            return;
+                        }
+
+                        file.source = blob;
+                        file.size = blob.size;
+                        file.resized = true;
+                        file.trigger( 'resize', blob.size, size );
+
+                        tr.sendAsBlob( blob );
                     } );
-                }
+                    */
+                   me.request( 'image-resize', [ file.source ,
+                    function( error, blob ) {
+                        var size = file.size;
 
-                if ( type === 'error' ) {
-                    file.setStatus( Status.ERROR, args[ 2 ] );
-                } else if ( type === 'success' ) {
-                    file.setStatus( Status.COMPLETE );
-                } else if ( type === 'progress' ) {
-                    file.loaded = file.size * args[ 2 ];
-                } else if ( type === 'complete' &&
-                        file.getStatus() !== Status.INTERRUPT ) {
+                        // @todo handle possible resize error.
+                        if ( error ) {
+                            return;
+                        }
 
-                    // 如果是interrupt中断了，还需重传的。
-                    // delete me.requests[ file.id ];
-                    me.request( 'remove-transport', [ file.id ] );
-                    me.requestsLength--;
-                    // tr.off( 'all', trHandler );
-                    // tr.destroy();
-                }
+                        file.source = blob;
+                        file.size = blob.size;
+                        file.resized = true;
+                        file.trigger( 'resize', blob.size, size );
 
-                // return api.trigger.apply( api, args );
-            };
-
-            // tr.on( 'all', trHandler );
-            
-
-            // requests[ file.id ] =  tr;
-            me.requestsLength++;
-
-            if ( me.options.resize && (file.type === 'image/jpg' ||
-                    file.type === 'image/jpeg') && !file.resized ) {
-
-                // @todo 如果是重新上传，则不需要再resize.
-                /*
-                Image.resize( file.source, function( error, blob ) {
-                    var size = file.size;
-
-                    // @todo handle possible resize error.
-                    if ( error ) {
-                        return;
-                    }
-
-                    file.source = blob;
-                    file.size = blob.size;
-                    file.resized = true;
-                    file.trigger( 'resize', blob.size, size );
-
-                    tr.sendAsBlob( blob );
-                } );
-                */
-               me.request( 'image-resize', [ file.source ,
-                function( error, blob ) {
-                    var size = file.size;
-
-                    // @todo handle possible resize error.
-                    if ( error ) {
-                        return;
-                    }
-
-                    file.source = blob;
-                    file.size = blob.size;
-                    file.resized = true;
-                    file.trigger( 'resize', blob.size, size );
-
+                        me.request( 'send-blob', [ file, trHandler ] );
+                    } ]);
+                } else {
                     me.request( 'send-blob', [ file, trHandler ] );
-                } ]);
-            } else {
-                me.request( 'send-blob', [ file, trHandler ] );
-            }
-
-            file.setStatus( Status.PROGRESS );
-
-            fileHandler = function( cur, prev ) {
-                if ( cur === Status.INVALID ) {
-                    // tr.cancel();
-                    // delete me.requests[ file.id ];
-                    me.request( 'remove-transport', [ file.id ] );
-                    me.requestsLength--;
-                    // tr.off( 'all', trHandler );
-                    // tr.destroy();
                 }
 
-                if ( prev === Status.PROGRESS ) {
-                    Base.nextTick( Base.bindFn( me._tick, me ) );
-                    // setTimeout( _tick, 1 );
+                file.setStatus( Status.PROGRESS );
 
-                    if ( cur !== Status.INTERRUPT ) {
-                        file.off( 'statuschange', fileHandler );
+                fileHandler = function( cur, prev ) {
+                    if ( cur === Status.INVALID ) {
+                        // tr.cancel();
+                        // delete me.requests[ file.id ];
+                        me.request( 'remove-transport', [ file.id ] );
+                        me.requestsLength--;
+                        // tr.off( 'all', trHandler );
+                        // tr.destroy();
                     }
+
+                    if ( prev === Status.PROGRESS ) {
+                        Base.nextTick( Base.bindFn( me._tick, me ) );
+                        // setTimeout( _tick, 1 );
+
+                        if ( cur !== Status.INTERRUPT ) {
+                            file.off( 'statuschange', fileHandler );
+                        }
+                    }
+                };
+
+                file.on( 'statuschange', fileHandler );
+            },
+
+            getStats: function( ) {
+                if ( !this.stats ) {
+                    this.stats = this.request( 'get-stats' );
                 }
-            };
 
-            file.on( 'statuschange', fileHandler );
-        },
+                return this.stats;
+            },
 
-        getStats: function( ) {
-            if ( !this.stats ) {
-                this.stats = this.request( 'get-stats' );
-            }
+            start: function() {
+                var me = this;
 
-            return this.stats;
-        },
+                // 移出invalid的文件
+                $.each( me.request( 'get-files', [ Status.INVALID ] ), function() {
+                    me.request( 'remove-file', [ this ] );
+                    me.request( 'cancel-transport', [ this.id ] );
+                } );
 
-        start: function() {
-            var me = this;
-
-            // 移出invalid的文件
-            $.each( me.request( 'get-files', [ Status.INVALID ] ), function() {
-                me.request( 'remove-file', [ this ] );
-                me.request( 'cancel-transport', [ this.id ] );
-            } );
-
-            if ( me.runing || !me.getStats().numOfQueue && !me.requestsLength ) {
-                return;
-            }
-
-            me.runing = true;
-
-            // 如果有暂停的，则续传
-            me.request( 'resume-transports', [ this.id ] );
-
-            /*
-            $.each( me.requests, function( id, transport ) {
-                var file = queue.getFile( id );
-                if ( file.getStatus() !== Status.PROGRESS ) {
-                    file.setStatus( Status.PROGRESS, '' );
-                    transport.resume();
+                if ( me.runing || !me.getStats().numOfQueue && !me.requestsLength ) {
+                    return;
                 }
-            });
-            */
 
-            me.owner.trigger( 'startUpload' );
-            Base.nextTick( Base.bindFn( me._tick, me ) );
-            // setTimeout( _tick, 1 );
-        },
+                me.runing = true;
 
-        stop: function( interrupt ) {
-            var me = this;
+                // 如果有暂停的，则续传
+                me.request( 'resume-transports', [ this.id ] );
 
-            if ( me.runing === false ) {
-                return;
+                /*
+                $.each( me.requests, function( id, transport ) {
+                    var file = queue.getFile( id );
+                    if ( file.getStatus() !== Status.PROGRESS ) {
+                        file.setStatus( Status.PROGRESS, '' );
+                        transport.resume();
+                    }
+                });
+                */
+
+                me.owner.trigger( 'startUpload' );
+                Base.nextTick( Base.bindFn( me._tick, me ) );
+                // setTimeout( _tick, 1 );
+            },
+
+            stop: function( interrupt ) {
+                var me = this;
+
+                if ( me.runing === false ) {
+                    return;
+                }
+
+                me.runing = false;
+
+                if ( interrupt ) {
+                    me.request( 'pause-all' );
+                }
+
+                me.owner.trigger( 'stopUpload' );
+            },
+
+            isInProgress: function() {
+                return !!this.runing;
             }
-
-            me.runing = false;
-
-            if ( interrupt ) {
-                me.request( 'pause-all' );
-            }
-
-            me.owner.trigger( 'stopUpload' );
-        },
-
-        isInProgress: function() {
-            return !!this.runing;
-        }
-    }, {
-        'start-upload': 'start',
-        'stop-upload': 'stop',
-        'is-in-progress': 'isInProgress'
     });
     
 } );
