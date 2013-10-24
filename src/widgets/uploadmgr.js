@@ -1,12 +1,12 @@
 /**
  * @fileOverview 组件基类。
- * @import widget.js
+ * @import base.js, widgets/widget.js, core/uploader.js, core/file.js, core/queue.js
  */
-define( 'webuploader/widgets/uploadmgr', [ 
+define( 'webuploader/widgets/uploadmgr', [
     'webuploader/base',
     'webuploader/core/uploader',
     'webuploader/core/file',
-    'webuploader/core/queue' ], function( 
+    'webuploader/core/queue' ], function(
         Base, Uploader, WUFile, Queue ) {
 
     var $ = Base.$,
@@ -30,7 +30,7 @@ define( 'webuploader/widgets/uploadmgr', [
                 this.threads = opts.threads || 3;
                 this.runing = false;
                 this.requestsLength = 0;
-                
+
             },
 
             _tick: function() {
@@ -99,7 +99,7 @@ define( 'webuploader/widgets/uploadmgr', [
                 };
 
                 // tr.on( 'all', trHandler );
-                
+
 
                 // requests[ file.id ] =  tr;
                 me.requestsLength++;
@@ -231,5 +231,5 @@ define( 'webuploader/widgets/uploadmgr', [
                 return !!this.runing;
             }
     });
-    
+
 } );

@@ -1,12 +1,12 @@
 /**
  * @fileOverview 文件队列
+ * @import base.js, core/mediator.js, core/file.js
  */
 define( 'webuploader/core/queue', [
         'webuploader/base',
         'webuploader/core/mediator',
-        'webuploader/core/error',
         'webuploader/core/file'
-	], function( Base, Mediator, Error, WUFile ) {
+	], function( Base, Mediator, WUFile ) {
 
         var $ = Base.$,
             STATUS = WUFile.Status;

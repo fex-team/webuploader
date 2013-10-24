@@ -1,71 +1,37 @@
 /**
  * @fileOverview Uploader上传类
+ * @import base.js, core/mediator.js
  */
 define( 'webuploader/core/uploader', [ 'webuploader/base',
-        'webuploader/core/mediator',
-        // 'webuploader/core/uploadmgr',
-        'webuploader/core/runtime'
+        'webuploader/core/mediator'
         ], function( Base, Mediator, Runtime ) {
 
-    var $ = Base.$,
-        defaultOpts = {
-            threads: 3,
-            compress: true,
-            server: '../server/fileupload.php',
-            pick: {
-                multiple: true,
-                id: 'uploaderBtn'
-            },
-            accept: [{
-                title: 'image',
-                extensions: 'gif,jpg,jpeg,bmp,png'
-            }],
-            dnd: '',
-            paste: '',
-            fileSizeLimit: 0,
-            fileNumLimit: 0,
-            duplicate: false,
-            resize: {
-                width: 1600,
-                height: 1600,
-                quality: 90
-            }
-        };
+    var $ = Base.$;
 
     function Uploader( opts ) {
-        this.options = $.extend( true, {}, defaultOpts, opts || {} );
-        this._connectRuntime( this.options, Base.bindFn( this._init, this ) );
-        Mediator.trigger( 'uploaderInit', this );
+        this.options = $.extend( true, {}, Uploader.options, opts );
+        this._init( this.options );
     }
 
-    Uploader.defaultOptions = defaultOpts;
+    // default Options
+    Uploader.options = {
+        accept: [{
+            title: 'image',
+            extensions: 'gif,jpg,jpeg,bmp,png'
+        }]
+    };
     Mediator.installTo( Uploader.prototype );
 
     $.extend( Uploader.prototype, {
-        state: 'pedding',
+        state: 'pending',
 
-        _init: function() {
+        _init: function( opts ) {
+            var me = this;
 
-        },
-
-        // todo 根据opts，告诉runtime需要具备哪些能力
-        _connectRuntime: function( opts, cb ) {
-            var caps = {
-                    resizeImage: true
-                },
-
-                runtime;
-
-            if ( opts.pick ) {
-                caps.selectFile = true;
-
-                caps.selectMultiple = opts.pick.multiple;
-            }
-
-            $.extend( opts, { requiredCaps: caps } );
-            this._runtime = runtime = Runtime.getInstance( opts );
-            runtime.once( 'ready', cb );
-            runtime.init();
+            me.request( 'init', opts).then(function() {
+                me.state = 'ready';
+                me.trigger( 'ready' );
+            });
         },
 
         option: function( key, val ) {
@@ -186,6 +152,8 @@ define( 'webuploader/core/uploader', [ 'webuploader/base',
 
             return true;
         },
+
+        request: Base.noop,
 
         reset: function() {
             // todo
