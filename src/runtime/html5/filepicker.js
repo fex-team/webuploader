@@ -12,8 +12,8 @@ define( 'webuploader/runtime/html5/filepicker', [
 
         return Html5Runtime.register( 'FilePicker', {
             init: function() {
-                var me = this,
-                    opts = me.options,
+                var owner = this.owner,
+                    opts = owner.options,
                     elem = opts.container,
                     acceptStr = [],
                     extStr = [],
@@ -54,10 +54,10 @@ define( 'webuploader/runtime/html5/filepicker', [
 
                 input.on( 'change', function( e ) {
                     var fn = arguments.callee,
-                        ruid = me.getRuid(),
+                        ruid = owner.getRuid(),
                         clone;
 
-                    me.trigger( 'select', $.map( e.target.files, function( file ) {
+                    owner.trigger( 'select', $.map( e.target.files, function( file ) {
                         return new File( ruid, file );
                     }) );
 
