@@ -1,5 +1,6 @@
 /**
  * @fileOverview Promise/A+
+ * @import base.js
  */
 define( 'webuploader/promise', [ 'webuploader/base'  ], function( Base ) {
     var $ = Base.$,
@@ -92,7 +93,7 @@ define( 'webuploader/promise', [ 'webuploader/base'  ], function( Base ) {
         return self;
     }
 
-    function Deferred() {
+    function Deferred( func ) {
         var tuples = [
                 // action, add listener, listener list, final state
                 [ "resolve", "done", Callbacks( true ), "resolved" ],

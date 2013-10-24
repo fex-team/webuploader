@@ -1,9 +1,9 @@
 /**
  * @fileOverview Runtime管理器，负责Runtime的选择, 连接
- * @import base.js
+ * @import base.js, runtime/runtime.js
  */
-define( 'webuploader/core/runtime/client', [ 'webuploader/base',
-        'webuploader/core/runtime/runtime'
+define( 'webuploader/runtime/client', [ 'webuploader/base',
+        'webuploader/runtime/runtime'
         ], function( Base, Runtime ) {
 
     var cache = {};
@@ -11,7 +11,7 @@ define( 'webuploader/core/runtime/client', [ 'webuploader/base',
     function RuntimeClient() {
         var runtime;
 
-        this.connectRuntime = function( options ) {
+        this.connectRuntime = function( options, cb ) {
 
             if ( runtime ) {
                 return;
@@ -22,7 +22,7 @@ define( 'webuploader/core/runtime/client', [ 'webuploader/base',
             } else {
                 runtime = Runtime.create( options );
                 cache[ runtime.uid ] = runtime;
-                runtime.connect();
+                runtime.connect( cb );
                 runtime.client = 0;
             }
 
@@ -38,7 +38,7 @@ define( 'webuploader/core/runtime/client', [ 'webuploader/base',
 
             runtime.client--;
 
-            if ( runtime <= 0 ) {
+            if ( runtime.client <= 0 ) {
                 delete cache[ ruid ];
                 runtime.destroy();
                 runtime = null;
@@ -52,7 +52,11 @@ define( 'webuploader/core/runtime/client', [ 'webuploader/base',
             }
 
             return runtime.exec.apply( this, arguments );
-        }
+        };
+
+        this.getRuid = function() {
+            return runtime && runtime.uid;
+        };
     }
 
     return RuntimeClient;
