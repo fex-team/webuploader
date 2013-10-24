@@ -88,13 +88,12 @@ define( 'webuploader/widgets/widget', [ 'webuploader/base',
                 };
             }
 
-            if ( !dfds.length ) {
-                // 暂时只返回单个结果
+            // 如果有callback，则用异步方式。
+            if ( callback ) {
+                return Base.when( dfds ).done( callback );
+            } else {
                 return rlts[ 0 ];
             }
-
-            // 等待所有Deferred对象完成后调用回调
-            return Base.when( dfds ).done( callback || Base.noop );
         }
     } );
 

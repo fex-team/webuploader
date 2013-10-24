@@ -7,24 +7,28 @@ define( 'webuploader/lib/blob', [ 'webuploader/base',
     var $ = Base.$;
 
     function Blob( ruid, source ) {
-        this.source = source;
-        this.ruid = ruid;
+        var me = this;
 
-        RuntimeClient.call( this );
+        me.source = source;
+        me.ruid = ruid;
+
+        RuntimeClient.call( me, 'Blob' );
 
         if ( ruid ) {
-            this.connectRuntime( ruid );
+            me.connectRuntime( ruid, function() {
+                me.size = me.exec( 'getSize', source );
+            } );
         }
     }
 
     $.extend( Blob.prototype, {
 
-        slice: function() {
-
+        slice: function( start, end ) {
+            return this.exec( 'slice', start, end );
         },
 
         getSource: function() {
-
+            return this.source;
         }
 
     } );

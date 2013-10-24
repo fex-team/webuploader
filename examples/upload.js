@@ -204,7 +204,7 @@
 
             if ( state === 'ready' ) {
                 text = '选中' + fileCount + '张图片，共' +
-                        uploader.formatSize( fileSize ) + '。';
+                        WebUploader.formatSize( fileSize ) + '。';
             } else if ( state === 'confirm' ) {
                 stats = uploader.getStats();
                 if ( stats.uploadFailNum ) {
@@ -215,7 +215,7 @@
             } else {
                 stats = uploader.getStats();
                 text = '共' + fileCount + '张（' +
-                        uploader.formatSize( fileSize )  +
+                        WebUploader.formatSize( fileSize )  +
                         '），已上传' + stats.successNum + '张';
 
                 if ( stats.uploadFailNum ) {

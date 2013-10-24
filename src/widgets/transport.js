@@ -1,13 +1,14 @@
 /**
  * @fileOverview 数据发送
- * @import base.js, core/uploader.js, core/file.js
+ * @import base.js, core/uploader.js, core/file.js, lib/transport.js
  */
 
 define( 'webuploader/widgets/transport', [
     'webuploader/base',
     'webuploader/core/uploader',
-    'webuploader/core/file' ], function(
-        Base, Uploader, WUFile ) {
+    'webuploader/core/file',
+    'webuploader/lib/transport' ], function(
+        Base, Uploader, WUFile, Transport ) {
 
     var $ = Base.$,
         Status = WUFile.Status;
@@ -15,28 +16,92 @@ define( 'webuploader/widgets/transport', [
     return Uploader.register(
         {
             'cancel-transport': 'cancel',
-            'remove-transport': 'remove',
             'resume-transports': 'resumeAll',
-            'pause-all': 'pauseAll',
-            'send-blob': 'sendBlob'
+            'pause-transports': 'pauseAll',
+            'start-transport': 'sendFile',
+            'has-requests': 'hasRequests'
         },
 
         {
 
             init: function( opts ) {
                 this.requests = {};
-                this.Transport = this.runtime.getComponent( 'Transport' );
             },
 
-            sendBlob: function( file, callback ) {
-                var blob = file.source,
-                    me = this,
-                    tr = new this.Transport( me.options );
+            sendFile: function( file ) {
+                var me = this,
+                    tr = new Transport( me.options ),
+                    trHandler, fileHander;
 
+                me.owner.trigger( 'uploadStart', file );
+
+                trHandler = function( type ) {
+                    var args = Base.slice( arguments, 1 ),
+                        formData;
+
+                    args.unshift( file );
+                    args.unshift( 'upload' + type.substring( 0, 1 )
+                        .toUpperCase() + type.substring( 1 ) );
+
+                    if ( type === 'beforeSend' ) {
+                        formData = args[ 2 ];
+
+                        // 添加文件信息，待服务器发送。
+                        $.extend( formData, {
+                            id: file.id,
+                            name: file.name,
+                            type: file.type,
+                            lastModifiedDate: file.lastModifiedDate,
+                            size: file.size
+                        } );
+                    }
+
+                    if ( type === 'error' ) {
+                        file.setStatus( Status.ERROR, args[ 2 ] );
+                    } else if ( type === 'success' ) {
+                        file.setStatus( Status.COMPLETE );
+                    } else if ( type === 'progress' ) {
+                        file.loaded = file.size * args[ 2 ];
+                    } else if ( type === 'complete' &&
+                            file.getStatus() !== Status.INTERRUPT ) {
+
+                        // 如果是interrupt中断了，还需重传的。
+                        delete me.requests[ file.id ];
+                        tr.destroy();
+                        file.off( 'statuschange', fileHandler );
+                    }
+
+                    // 通过owner广播出去
+                    me.owner.trigger.apply( me.owner, args );
+                };
+
+                fileHandler = function( cur, prev ) {
+                    if ( cur === Status.INVALID ) {
+                        delete me.requests[ file.id ];
+                        tr.destroy();
+                        file.off( 'statuschange', fileHandler );
+                    }
+                };
+
+                file.on( 'statuschange', fileHandler );
+                file.setStatus( Status.PROGRESS );
+                tr.on( 'all', trHandler );
+                tr.setFile( file );
                 me.requests[ file.id ] = tr;
-                tr.on( 'all', callback );
 
-                tr.sendAsBlob( blob );
+                this.request( 'before-start-transport', file, function() {
+                    tr.start();
+                });
+            },
+
+            hasRequests: function() {
+                var key;
+
+                for( key in this.requests ) {
+                    return true;
+                }
+
+                return false;
             },
 
             cancel: function( fileId ) {
@@ -47,28 +112,13 @@ define( 'webuploader/widgets/transport', [
                 }
 
                 tr.cancel();
-
-                this.remove( fileId );
-            },
-
-            remove: function( fileId ) {
-                var tr = this.requests[ fileId ];
-
-                if ( !tr ) {
-                    return;
-                }
-
-                tr.off();
-                tr.destroy();
-
-                delete this.requests[ fileId ];
             },
 
             resumeAll: function( ) {
                 var me = this;
 
                 $.each( me.requests, function( id, transport ) {
-                    var file = me.request( 'get-file', [ id ] );
+                    var file = me.request( 'get-file', id );
                     if ( file.getStatus() !== Status.PROGRESS ) {
                         file.setStatus( Status.PROGRESS, '' );
                         transport.resume();
