@@ -71,14 +71,13 @@ define( 'webuploader/widgets/queue', [
 
                 file.setStatus( Status.CANCELLED );
                 me.owner.trigger( 'fileDequeued', file );
-                // setTimeout( _tick, 1 );
             },
 
-            getFiles: function( status ) {
+            getFiles: function() {
                 return this.queue.getFiles.apply( this.queue, arguments );
             },
 
-            fetchFile: function( status ) {
+            fetchFile: function() {
                 return this.queue.fetch.apply( this.queue, arguments );
             },
 

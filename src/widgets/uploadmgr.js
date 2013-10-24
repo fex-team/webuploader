@@ -12,6 +12,10 @@ define( 'webuploader/widgets/uploadmgr', [
     var $ = Base.$,
         Status = WUFile.Status;
 
+    $.extend( Uploader.options, {
+        threads: 3
+    } );
+
     return Uploader.register(
         {
             'start-upload': 'start',
@@ -20,17 +24,15 @@ define( 'webuploader/widgets/uploadmgr', [
         },
 
         {
-            events: {
-                // 'filesin': 'addFile',
-                // '.transport': 'handleTransport'
-            },
             init: function( opts ) {
                 var me = this;
 
                 this.threads = opts.threads || 3;
                 this.runing = false;
-                this.requestsLength = 0;
 
+                this.owner.on( 'uploadDestroy', function() {
+                    Base.nextTick( Base.bindFn( me._tick, me ) );
+                });
             },
 
             _tick: function() {
@@ -40,134 +42,13 @@ define( 'webuploader/widgets/uploadmgr', [
                 while( me.runing && stats.numOfProgress < me.threads &&
                         stats.numOfQueue ) {
 
-                    me._sendFile( me.request( 'fetch-file' ) );
+                    me.request( 'start-transport', me.request( 'fetch-file' ) );
                 }
 
-                if ( !stats.numOfQueue && !me.requestsLength ) {
+                if ( !stats.numOfQueue && !me.request('has-requests') ) {
                     me.runing = false;
                     me.owner.trigger( 'uploadFinished' );
                 }
-            },
-
-            _sendFile: function( file ) {
-                var me = this,
-                    trHandler,
-                    fileHandler;
-
-                me.owner.trigger( 'uploadStart', file );
-
-                // tr = new Transport( opts );
-
-                trHandler = function( type ) {
-                    var args = [].slice.call( arguments, 1 ),
-                        formData;
-
-                    args.unshift( file );
-                    args.unshift( 'upload' + type.substring( 0, 1 )
-                        .toUpperCase() + type.substring( 1 ) );
-
-                    if ( type === 'beforeSend' ) {
-                        formData = args[ 2 ];
-
-                        $.extend( formData, {
-                            id: file.id,
-                            name: file.name,
-                            type: file.type,
-                            lastModifiedDate: file.lastModifiedDate,
-                            size: file.size
-                        } );
-                    }
-
-                    if ( type === 'error' ) {
-                        file.setStatus( Status.ERROR, args[ 2 ] );
-                    } else if ( type === 'success' ) {
-                        file.setStatus( Status.COMPLETE );
-                    } else if ( type === 'progress' ) {
-                        file.loaded = file.size * args[ 2 ];
-                    } else if ( type === 'complete' &&
-                            file.getStatus() !== Status.INTERRUPT ) {
-
-                        // 如果是interrupt中断了，还需重传的。
-                        // delete me.requests[ file.id ];
-                        me.request( 'remove-transport', [ file.id ] );
-                        me.requestsLength--;
-                        // tr.off( 'all', trHandler );
-                        // tr.destroy();
-                    }
-
-                    me.owner.trigger.apply( me.owner, args );
-                };
-
-                // tr.on( 'all', trHandler );
-
-
-                // requests[ file.id ] =  tr;
-                me.requestsLength++;
-
-                if ( me.options.resize && (file.type === 'image/jpg' ||
-                        file.type === 'image/jpeg') && !file.resized ) {
-
-                    // @todo 如果是重新上传，则不需要再resize.
-                    /*
-                    Image.resize( file.source, function( error, blob ) {
-                        var size = file.size;
-
-                        // @todo handle possible resize error.
-                        if ( error ) {
-                            return;
-                        }
-
-                        file.source = blob;
-                        file.size = blob.size;
-                        file.resized = true;
-                        file.trigger( 'resize', blob.size, size );
-
-                        tr.sendAsBlob( blob );
-                    } );
-                    */
-                   me.request( 'image-resize', [ file.source ,
-                    function( error, blob ) {
-                        var size = file.size;
-
-                        // @todo handle possible resize error.
-                        if ( error ) {
-                            return;
-                        }
-
-                        file.source = blob;
-                        file.size = blob.size;
-                        file.resized = true;
-                        file.trigger( 'resize', blob.size, size );
-
-                        me.request( 'send-blob', [ file, trHandler ] );
-                    } ]);
-                } else {
-                    me.request( 'send-blob', [ file, trHandler ] );
-                }
-
-                file.setStatus( Status.PROGRESS );
-
-                fileHandler = function( cur, prev ) {
-                    if ( cur === Status.INVALID ) {
-                        // tr.cancel();
-                        // delete me.requests[ file.id ];
-                        me.request( 'remove-transport', [ file.id ] );
-                        me.requestsLength--;
-                        // tr.off( 'all', trHandler );
-                        // tr.destroy();
-                    }
-
-                    if ( prev === Status.PROGRESS ) {
-                        Base.nextTick( Base.bindFn( me._tick, me ) );
-                        // setTimeout( _tick, 1 );
-
-                        if ( cur !== Status.INTERRUPT ) {
-                            file.off( 'statuschange', fileHandler );
-                        }
-                    }
-                };
-
-                file.on( 'statuschange', fileHandler );
             },
 
             getStats: function( ) {
@@ -183,32 +64,20 @@ define( 'webuploader/widgets/uploadmgr', [
 
                 // 移出invalid的文件
                 $.each( me.request( 'get-files', [ Status.INVALID ] ), function() {
-                    me.request( 'remove-file', [ this ] );
-                    me.request( 'cancel-transport', [ this.id ] );
+                    me.request( 'remove-file', this );
+                    me.request( 'cancel-transport', this.id );
                 } );
 
-                if ( me.runing || !me.getStats().numOfQueue && !me.requestsLength ) {
+                if ( me.runing || !me.getStats().numOfQueue && !me.request('has-requests') ) {
                     return;
                 }
 
                 me.runing = true;
 
                 // 如果有暂停的，则续传
-                me.request( 'resume-transports', [ this.id ] );
-
-                /*
-                $.each( me.requests, function( id, transport ) {
-                    var file = queue.getFile( id );
-                    if ( file.getStatus() !== Status.PROGRESS ) {
-                        file.setStatus( Status.PROGRESS, '' );
-                        transport.resume();
-                    }
-                });
-                */
-
+                me.request( 'resume-transports' );
                 me.owner.trigger( 'startUpload' );
                 Base.nextTick( Base.bindFn( me._tick, me ) );
-                // setTimeout( _tick, 1 );
             },
 
             stop: function( interrupt ) {
