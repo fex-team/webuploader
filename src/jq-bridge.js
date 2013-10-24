@@ -71,7 +71,10 @@ define( 'webuploader/jq-bridge', [], function() {
         elem = typeof elem === 'string' && rId.test( elem ) ?
                 doc.getElementById( RegExp.$1 ) : elem;
 
-        elem && (api[ 0 ] = elem, api.length = 1);
+        if ( elem ) {
+            api[ 0 ] = elem;
+            api.length = 1;
+        }
 
         return $.extend( api, {
             _wrap: true,

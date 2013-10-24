@@ -4,8 +4,8 @@
  * Uint8Array, FileReader, BlobBuilder, atob, ArrayBuffer
  * @fileOverview Image控件
  */
-define( 'webuploader/core/runtime/html5/imagemta', [ 'webuploader/base',
-        'webuploader/core/runtime/html5/runtime'
+define( 'webuploader/runtime/html5/imagemta', [ 'webuploader/base',
+        'webuploader/runtime/html5/runtime'
         ], function( Base, Html5Runtime ) {
 
     var $ = Base.$,

@@ -1,14 +1,15 @@
 /**
  * @fileOverview 错误信息
+ * @import base.js, core/mediator.js, runtime/client.js
  */
-define( 'webuploader/core/filepicker', [ 'webuploader/base',
+define( 'webuploader/lib/filepicker', [ 'webuploader/base',
         'webuploader/core/mediator',
-        'webuploader/core/runtime/client'
+        'webuploader/runtime/client'
         ], function( Base, Mediator, RuntimeClent ) {
 
     var $ = Base.$,
         defaultOpts = {
-            container: '',
+            container: null,
             label: '选择文件',
             multiple: true,
 
@@ -42,24 +43,20 @@ define( 'webuploader/core/filepicker', [ 'webuploader/base',
             var me = this,
                 args = Base.slice( arguments );
 
-            me.on( 'runtimeInit', function( runtime ){
-                this.runtime = runtime;
-                this.ruid = runtime.uid;
+            me.connectRuntime( this.options, function() {
                 me.exec( 'FilePicker', 'init', args );
-            } );
-
-            me.conncetRuntime();
+            });
         },
 
         destroy: function() {
             if ( this.runtime ) {
                 this.exec( 'FilePicker', 'destroy' );
-                this.disconncetRuntime();
+                this.disconnectRuntime();
             }
         }
     } );
 
     Mediator.installTo( FilePicker.prototype );
 
-    return FilePicker();
+    return FilePicker;
 });
