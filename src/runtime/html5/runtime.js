@@ -1,9 +1,9 @@
 /**
  * @fileOverview Html5Runtime
  */
-define( 'webuploader/core/runtime/html5/runtime', [
+define( 'webuploader/runtime/html5/runtime', [
         'webuploader/base',
-        'webuploader/core/runtime/runtime'
+        'webuploader/runtime/runtime'
     ], function( Base, Runtime ) {
 
         var type = 'html5',
@@ -33,13 +33,13 @@ define( 'webuploader/core/runtime/html5/runtime', [
                     throw new Error( 'Exec Error' );
                 }
 
-                return fn.apply( component, args );
+                return fn.apply( this, args );
             }
 
         } );
 
         Html5Runtime.register = function( name, component ) {
-            components[ name ] = component;
+            return components[ name ] = component;
         };
 
         // 注册html5运行时。
