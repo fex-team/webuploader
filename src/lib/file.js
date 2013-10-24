@@ -1,5 +1,9 @@
-define( 'webuploader/core/file/blob', [ 'webuploader/base',
-        'webuploader/core/runtime/client' ], function( Base, RuntimeClient ) {
+/**
+ * @fileOverview File
+ * @import base.js, runtime/client.js, lib/blob.js
+ */
+define( 'webuploader/lib/file', [ 'webuploader/base',
+        'webuploader/lib/blob' ], function( Base, Blob ) {
     var $ = Base.$,
         uid = 0;
 
@@ -11,7 +15,5 @@ define( 'webuploader/core/file/blob', [ 'webuploader/base',
         Blob.apply( this, arguments );
     }
 
-    Base.inherits( Blob, File );
-
-    return File;
+    return Base.inherits( Blob, File );
 } );

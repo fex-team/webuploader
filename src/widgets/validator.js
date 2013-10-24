@@ -1,5 +1,6 @@
 /**
  * @fileOverview 负责文件验证
+ * @import base.js, core/mediator.js, core/file.js
  */
 define( 'webuploader/core/validator', [ 'webuploader/base',
         'webuploader/core/mediator',
