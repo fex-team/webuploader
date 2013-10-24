@@ -1,7 +1,7 @@
 /**
  * @fileOverview FilePaste
  */
-define( 'webuploader/core/runtime/html5/filepaste', [
+define( 'webuploader/runtime/html5/filepaste', [
         'webuploader/base'
     ], function( Base, Html5Runtime ) {
 

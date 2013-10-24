@@ -1,12 +1,12 @@
 /**
  * @fileOverview 队列
- * @import queue.js
+ * @import base.js, widgets/widget.js, core/uploader.js, core/queue.js, core/file.js
  */
-define( 'webuploader/widgets/queue', [ 
+define( 'webuploader/widgets/queue', [
     'webuploader/base',
     'webuploader/core/uploader',
     'webuploader/core/queue',
-    'webuploader/core/file' ], function( 
+    'webuploader/core/file' ], function(
         Base, Uploader, Queue, WUFile ) {
 
     var $ = Base.$,
@@ -22,12 +22,8 @@ define( 'webuploader/widgets/queue', [
             'remove-file': 'removeFile',
             'pause-all': 'pauseAll'
         },
-        
-        {
-            events: {
-                'filesin': 'addFiles'
-            },
 
+        {
             init: function() {
                 this.queue = new Queue();
                 this.stats = this.queue.stats;
@@ -116,5 +112,5 @@ define( 'webuploader/widgets/queue', [
                 } );
             }
     });
-    
+
 } );

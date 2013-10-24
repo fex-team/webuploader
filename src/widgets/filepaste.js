@@ -1,11 +1,12 @@
 /**
  * @fileOverview 组件基类。
- * @import widget.js
+ * @import base.js, core/uploader.js
  */
-define( 'webuploader/widgets/filepaste', [ 
+define( 'webuploader/widgets/filepaste', [
     'webuploader/base',
-    'webuploader/core/uploader' ], function( 
-        Base, Uploader ) {
+    'webuploader/core/uploader',
+    'webuploader/lib/filepaste' ], function(
+        Base, Uploader, FilePaste ) {
 
     var $ = Base.$;
 
@@ -17,20 +18,23 @@ define( 'webuploader/widgets/filepaste', [
             }
 
             var me = this,
+                deferred = Base.Deferred(),
                 options = $.extend( {}, {
                     id: opts.paste,
                     accept: opts.accept
                 } ),
-                FilePaste = me.runtime.getComponent( 'FilePaste' ),
                 paste;
 
             paste = new FilePaste( options );
 
+            paste.one( 'ready', deferred.resolve );
             paste.on( 'paste', function( files ) {
                 me.owner.trigger( 'filesin', files );
             } );
             paste.init();
+
+            return deferred.promise();
         }
     });
-    
+
 } );

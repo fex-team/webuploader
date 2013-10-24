@@ -1,9 +1,10 @@
 /**
  * @fileOverview 错误信息
+ * @import base.js, core/mediator.js, runtime/client.js
  */
 define( 'webuploader/core/dnd', [ 'webuploader/base',
         'webuploader/core/mediator',
-        'webuploader/core/runtime/client'
+        'webuploader/runtime/client'
         ], function( Base, Mediator, RuntimeClent ) {
 
     var $ = Base.$,

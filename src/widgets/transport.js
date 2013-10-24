@@ -1,12 +1,12 @@
 /**
  * @fileOverview 数据发送
- * @import queue.js
+ * @import base.js, core/uploader.js, core/file.js
  */
 
-define( 'webuploader/widgets/transport', [ 
+define( 'webuploader/widgets/transport', [
     'webuploader/base',
     'webuploader/core/uploader',
-    'webuploader/core/file' ], function( 
+    'webuploader/core/file' ], function(
         Base, Uploader, WUFile ) {
 
     var $ = Base.$,
@@ -20,7 +20,7 @@ define( 'webuploader/widgets/transport', [
             'pause-all': 'pauseAll',
             'send-blob': 'sendBlob'
         },
-        
+
         {
 
             init: function( opts ) {
