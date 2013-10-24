@@ -3,38 +3,24 @@
  * @todo 支持chunked传输，优势：
  * 可以将大文件分成小块，挨个传输，可以提高大文件成功率，当失败的时候，也只需要重传那小部分，
  * 而不需要重头再传一次。另外断点续传也需要用chunked方式。
+ * @import base.js, runtime/html5/runtime.js
  */
 define( 'webuploader/runtime/html5/transport', [ 'webuploader/base',
         'webuploader/runtime/html5/runtime'
         ], function( Base, Html5Runtime ) {
 
-    var $ = Base.$,
-        noop = Base.noop,
-        defaultOpts = {
-            server: '',
+    var noop = Base.noop;
 
-            // 跨域时，是否允许携带cookie
-            withCredentials: false,
-            fileVar: 'file',
-            chunked: true,
-            chunkSize: 1024 * 512,    // 0.5M.
-            chunkRetryCount: 3,    // 当chunk传输时出错，可以重试3次。
-            timeout: 2 * 60 * 1000,    // 2分钟
-            formData: {},
-            headers: {}
-        };
-
-    function Transport( opts ) {
-        opts = this.options = $.extend( true, {}, defaultOpts, opts || {} );
-    }
-
-    $.extend( Transport.prototype, {
-        state: 'pending',
+    return Html5Runtime.register( 'Transport', {
+        setFile: function( file ) {
+            this.file = file;
+        },
 
         // @todo ie支持
         _initAjax: function() {
             var me = this,
-                opts = me.options,
+                owner = this.owner,
+                opts = owner.options,
                 xhr = new XMLHttpRequest();
 
             if ( !('withCredentials' in xhr) &&
@@ -71,7 +57,7 @@ define( 'webuploader/runtime/html5/transport', [ 'webuploader/base',
                     rHeaders = me._getXhrHeaders( xhr );
 
                     // 说明server端返回的数据有问题。
-                    if ( !me.trigger( 'accept', ret, rHeaders, function( val ) {
+                    if ( !owner.trigger( 'accept', ret, rHeaders, function( val ) {
                         reject = val;
                     } ) ) {
                         reject = reject || 'server';
@@ -88,7 +74,7 @@ define( 'webuploader/runtime/html5/transport', [ 'webuploader/base',
         },
 
         _onprogress: function( percentage ) {
-            var opts = this.options,
+            var opts = this.owner.options,
                 start, end, total;
 
             if ( this.chunks ) {
@@ -104,7 +90,7 @@ define( 'webuploader/runtime/html5/transport', [ 'webuploader/base',
 
         _onsuccess: function( ret, headers ) {
             if ( this.chunks && this.chunk < this.chunks - 1 ) {
-                if ( !this.trigger( 'chunkcontinue', ret, headers, this.chunk,
+                if ( !this.owner.trigger( 'chunkcontinue', ret, headers, this.chunk,
                         this.chunks ) ) {
                     return this._resolve( ret, headers );
                 }
@@ -116,24 +102,28 @@ define( 'webuploader/runtime/html5/transport', [ 'webuploader/base',
         },
 
         _notify: function( percentage ) {
-            this.trigger( 'progress', percentage || 0 );
+            this.owner.trigger( 'progress', percentage || 0 );
         },
 
         _resolve: function( ret, headers ) {
+            var owner = this.owner;
+
             this.chunks = 0;
             this._onprogress( 1 );
-            this.state = 'done';
-            this.trigger( 'success', ret, headers );
-            this.trigger( 'complete' );
+            owner.state = 'done';
+            owner.trigger( 'success', ret, headers );
+            owner.trigger( 'complete' );
         },
 
         _reject: function( reason, ret, rHeaders ) {
+            var owner = this.owner;
+
             // @todo
             // 如果是timeout abort, 在chunk传输模式中应该自动重传。
             // chunkRetryCount = 3;
-            this.state = 'fail';
-            this.trigger( 'error', reason, ret, rHeaders );
-            this.trigger( 'complete' );
+            owner.state = 'fail';
+            owner.trigger( 'error', reason, ret, rHeaders );
+            owner.trigger( 'complete' );
         },
 
         _setRequestHeader: function( xhr, headers ) {
@@ -176,18 +166,18 @@ define( 'webuploader/runtime/html5/transport', [ 'webuploader/base',
                 return this;
             }
 
-            var opts = this.options,
+            var owner = this.owner,
+                opts = owner.options,
                 xhr = this._initAjax(),
                 formData = new FormData(),
                 blob = this._blob,
-                slice = blob.slice || blob.webkitSlice || blob.mozSlice,
                 start, end;
 
             if ( this.chunks ) {
                 start = this.chunk * opts.chunkSize;
                 end = Math.min( blob.size, start + opts.chunkSize );
 
-                blob = slice.call( blob, start, end );
+                blob = blob.slice( start, end );
                 opts.formData.chunk = this.chunk;
                 opts.formData.chunks = this.chunks;
 
@@ -196,13 +186,13 @@ define( 'webuploader/runtime/html5/transport', [ 'webuploader/base',
             }
 
             // 外部可以在这个时机中添加其他信息
-            this.trigger( 'beforeSend', opts.formData, opts.headers, xhr );
+            owner.trigger( 'beforeSend', opts.formData, opts.headers, xhr );
 
             $.each( opts.formData, function( key, val ) {
                 formData.append( key, val );
             } );
 
-            formData.append( opts.fileVar, blob, opts.formData &&
+            formData.append( opts.fileVar, blob.getSource(), opts.formData &&
                     opts.formData.name || '' );
 
             if ( opts.withCredentials && 'withCredentials' in xhr ) {
@@ -221,7 +211,7 @@ define( 'webuploader/runtime/html5/transport', [ 'webuploader/base',
             }
 
             xhr.send( formData );
-            this.state = 'progress';
+            owner.state = 'progress';
             return this;
         },
 
@@ -267,8 +257,9 @@ define( 'webuploader/runtime/html5/transport', [ 'webuploader/base',
          * @return {Transport} 返回实例自己，便于链式调用。
          * @chainable
          */
-        sendAsBlob: function( blob ) {
-            var opts = this.options;
+        start: function() {
+            var opts = this.owner.options,
+                blob = this.file.source;
 
             if ( opts.chunked && blob.size > opts.chunkSize ) {
                 this.chunk = 0;
@@ -285,15 +276,5 @@ define( 'webuploader/runtime/html5/transport', [ 'webuploader/base',
         destroy: function() {
             this._blob = null;
         }
-
     } );
-
-    // 静态方法直接发送内容。
-    Transport.sendAsBlob = function( blob, options ) {
-        var instance = new Transport( options );
-        instance.sendAsBlob( blob );
-        return instance;
-    };
-
-    Html5Runtime.register( 'Transport', Transport );
 } );
