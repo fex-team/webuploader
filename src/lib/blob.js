@@ -1,5 +1,9 @@
-define( 'webuploader/core/file/blob', [ 'webuploader/base',
-        'webuploader/core/runtime/client' ], function( Base, RuntimeClient ) {
+/**
+ * @fileOverview Blob
+ * @import base.js, runtime/client.js
+ */
+define( 'webuploader/lib/blob', [ 'webuploader/base',
+        'webuploader/runtime/client' ], function( Base, RuntimeClient ) {
     var $ = Base.$;
 
     function Blob( ruid, source ) {

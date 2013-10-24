@@ -2,8 +2,7 @@
  * @fileOverview Runtime管理器，负责Runtime的选择, 连接
  * @import base.js
  */
-define( 'webuploader/core/runtime/runtime', [ 'webuploader/base',
-        'webuploader/core/mediator' ], function( Base, Mediator ) {
+define( 'webuploader/runtime/runtime', [ 'webuploader/base' ], function( Base ) {
 
     var $ = Base.$,
         factories = {};
@@ -15,9 +14,6 @@ define( 'webuploader/core/runtime/runtime', [ 'webuploader/base',
         }, options );
         this.uid = Base.guid( 'rt_' );
     }
-
-    // 添加事件功能
-    Mediator.installTo( Runtime.prototype );
 
     Runtime.prototype.connect = Base.notImplement;
     Runtime.prototype.exec = Base.notImplement;
@@ -33,11 +29,6 @@ define( 'webuploader/core/runtime/runtime', [ 'webuploader/base',
      * @param {Runtime} factory 具体Runtime实现。
      */
     Runtime.addRuntime = function( type, factory ) {
-        if ( !(factory instanceof Runtime) ) {
-            Base.log( 'Runtime类型错误。' );
-            return;
-        }
-
         factories[ type ] = factory;
     };
 
@@ -49,7 +40,7 @@ define( 'webuploader/core/runtime/runtime', [ 'webuploader/base',
         var type, runtime;
 
         orders = orders || Runtime.orders;
-        Base.each( orders.split( /\s*,\s*/g ), function() {
+        $.each( orders.split( /\s*,\s*/g ), function() {
             if ( factories[ this ] ) {
                 type = this;
                 return false;
@@ -62,7 +53,7 @@ define( 'webuploader/core/runtime/runtime', [ 'webuploader/base',
             throw new Error( 'Runtime Error' );
         }
 
-        runtime = new factories[ type ]( opts );
+        return runtime = new factories[ type ]( opts );
     };
 
     // 获取对象的第一个key

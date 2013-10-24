@@ -1,10 +1,10 @@
 /**
  * @fileOverview 组件基类。
- * @import widget.js
+ * @import base.js, core/uploader.js
  */
-define( 'webuploader/widgets/network', [ 
+define( 'webuploader/widgets/network', [
     'webuploader/base',
-    'webuploader/core/uploader' ], function( 
+    'webuploader/core/uploader' ], function(
         Base, Uploader ) {
 
     var $ = Base.$;
@@ -19,5 +19,5 @@ define( 'webuploader/widgets/network', [
             } );
         }
     });
-    
+
 } );

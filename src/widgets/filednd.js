@@ -1,11 +1,12 @@
 /**
- * @fileOverview 组件基类。
- * @import widget.js
+ * @fileOverview DragAndDrop Widget。
+ * @import base.js, widgets/widget.js, core/uploader.js
  */
-define( 'webuploader/widgets/filednd', [ 
+define( 'webuploader/widgets/filednd', [
     'webuploader/base',
-    'webuploader/core/uploader' ], function( 
-        Base, Uploader ) {
+    'webuploader/core/uploader',
+    'webuploader/lib/dnd' ], function(
+        Base, Uploader, Dnd ) {
 
     var $ = Base.$;
 
@@ -17,20 +18,23 @@ define( 'webuploader/widgets/filednd', [
             }
 
             var me = this,
+                deferred = Base.Deferred(),
                 options = $.extend( {}, {
                     id: opts.dnd,
                     accept: opts.accept
                 } ),
-                Dnd = me.runtime.getComponent( 'Dnd' ),
                 dnd;
 
             dnd = new Dnd( options );
 
+            dnd.one( 'ready', deferred.resolve );
             dnd.on( 'drop', function( files ) {
                 me.owner.trigger( 'filesin', files );
             } );
             dnd.init();
+
+            return deferred.promise();
         }
     });
-    
+
 } );
