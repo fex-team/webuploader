@@ -140,6 +140,19 @@ define( 'webuploader/base', [ 'webuploader/jq-bridge' ], function( $ ) {
 
                 return (prefix || 'o_') + guid + (counter++).toString( 32 );
             };
-        }())
+        }()),
+
+        formatSize: function( size, pointLength ) {
+            var units = [ 'B', 'K', 'M', 'G', 'TB' ],
+                unit = units.shift();
+
+            while ( size > 1024 && units.length ) {
+                unit = units.shift();
+                size = size / 1024;
+            }
+
+            return (unit === 'B' ? size : size.toFixed( pointLength || 2 )) +
+                    unit;
+        }
     };
 } );

@@ -28,7 +28,7 @@ define( 'webuploader/core/uploader', [ 'webuploader/base',
         _init: function( opts ) {
             var me = this;
 
-            me.request( 'init', opts).then(function() {
+            me.request( 'init', opts, function() {
                 me.state = 'ready';
                 me.trigger( 'ready' );
             });
@@ -54,19 +54,6 @@ define( 'webuploader/core/uploader', [ 'webuploader/base',
 
         makeThumb: function( file, cb, width, height, type, quality ) {
             this.request( 'make-thumb', arguments );
-        },
-
-        formatSize: function( size, pointLength ) {
-            var units = [ 'B', 'K', 'M', 'G', 'TB' ],
-                unit = units.shift();
-
-            while ( size > 1024 && units.length ) {
-                unit = units.shift();
-                size = size / 1024;
-            }
-
-            return (unit === 'B' ? size : size.toFixed( pointLength || 2 )) +
-                    unit;
         },
 
         // ----------------------------------------------
