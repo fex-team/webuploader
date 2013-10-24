@@ -40,8 +40,8 @@
 // WhiteBalance : Auto white balance
 // FocalLengthIn35mmFilm : 35
 // SceneCaptureType : Standard
-define( 'webuploader/core/runtime/html5/imagemta/exif',
-        [ 'webuploader/core/runtime/html5/imagemta' ], function( ImageMeta ) {
+define( 'webuploader/runtime/html5/imagemta/exif',
+        [ 'webuploader/runtime/html5/imagemta' ], function( ImageMeta ) {
 
     var EXIF = {};
 

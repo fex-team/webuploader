@@ -1,5 +1,6 @@
 /**
  * @fileOverview Mediator
+ * @import base.js
  */
 define( 'webuploader/core/mediator', [ 'webuploader/base' ], function( Base ) {
     var $ = Base.$,

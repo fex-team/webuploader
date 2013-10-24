@@ -1,10 +1,10 @@
 /**
  * @fileOverview 图片操作
- * @import queue.js
+ * @import base.js, core/uploader.js
  */
-define( 'webuploader/widgets/image', [ 
+define( 'webuploader/widgets/image', [
     'webuploader/base',
-    'webuploader/core/uploader' ], function( 
+    'webuploader/core/uploader' ], function(
         Base, Uploader ) {
 
     var $ = Base.$;

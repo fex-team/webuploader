@@ -1,25 +1,23 @@
 /**
  * @fileOverview FilePicker
+ * @import base.js, runtime/html5/runtime.js, lib/file.js
  */
-define( 'webuploader/core/runtime/html5/filepicker', [
-        'webuploader/base'
-    ], function( Base, Html5Runtime ) {
+define( 'webuploader/runtime/html5/filepicker', [
+        'webuploader/base',
+        'webuploader/runtime/html5/runtime',
+        'webuploader/lib/file'
+    ], function( Base, Html5Runtime, File ) {
 
         var $ = Base.$;
 
-        Html5Runtime.register( 'FilePicker', {
+        return Html5Runtime.register( 'FilePicker', {
             init: function() {
                 var me = this,
                     opts = me.options,
-                    elem = $( opts.container ),
-                    i,
-                    ii,
-                    len,
+                    elem = opts.container,
                     acceptStr = [],
                     extStr = [],
-                    label,
-                    input,
-                    inputId;
+                    i, ii, len, label, input, inputId;
 
                 inputId = 'btn' + Date.now();
                 input = $( document.createElement( 'input' ) );
@@ -33,7 +31,7 @@ define( 'webuploader/core/runtime/html5/filepicker', [
 
 
                 label.addClass( 'webuploader-btn' );
-                label.html( opts.label );
+                label.html( opts.btnName || elem.text() || '选择文件'  );
                 label.attr( 'for', inputId );
 
                 if ( opts.multiple ) {
@@ -56,10 +54,12 @@ define( 'webuploader/core/runtime/html5/filepicker', [
 
                 input.on( 'change', function( e ) {
                     var fn = arguments.callee,
+                        ruid = me.getRuid(),
                         clone;
 
-                    me.trigger( 'select', e.target.files );
-
+                    me.trigger( 'select', $.map( e.target.files, function( file ) {
+                        return new File( ruid, file );
+                    }) );
 
                     // reset input
                     clone = this.cloneNode( true );
@@ -77,6 +77,4 @@ define( 'webuploader/core/runtime/html5/filepicker', [
                 // todo
             }
         } );
-
-        return FilePicker;
     } );
