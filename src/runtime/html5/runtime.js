@@ -7,6 +7,7 @@ define( 'webuploader/runtime/html5/runtime', [
     ], function( Base, Runtime ) {
 
         var type = 'html5',
+            pool = {},
             components = {};
 
         function Html5Runtime() {
@@ -16,24 +17,31 @@ define( 'webuploader/runtime/html5/runtime', [
         Base.inherits( Runtime, {
             constructor: Html5Runtime,
 
-            // ---------- 原型方法 ------------
-
             // 不需要连接其他程序，直接执行callback
             connect: function( cb ) {
                 setTimeout( cb, 1 );
             },
 
             exec: function( component, fn/*, args...*/ ) {
-                var args = Base.slice( arguments, 2 );
+                var client = this,
+                    args = Base.slice( arguments, 2 );
 
                 component = components[ component ] || {};
+
+                if ( !pool[ client.uid ] ) {
+                    pool[ client.uid ] = $.extend( {
+                        owner: client
+                    }, component );
+                }
+
+                component = pool[ client.uid ];
                 fn = component[ fn ];
 
                 if ( !fn ) {
                     throw new Error( 'Exec Error' );
                 }
 
-                return fn.apply( this, args );
+                return fn.apply( component, args );
             }
 
         } );
