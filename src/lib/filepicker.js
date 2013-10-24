@@ -33,7 +33,7 @@ define( 'webuploader/lib/filepicker', [ 'webuploader/base',
         opts.label = opts.label || opts.container.text();
 
         opts = this.options = $.extend( {}, defaultOpts, opts );
-        RuntimeClent.call( this, opts );
+        RuntimeClent.call( this );
     }
 
     Base.inherits( RuntimeClent, {

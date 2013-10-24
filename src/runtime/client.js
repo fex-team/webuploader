@@ -8,8 +8,10 @@ define( 'webuploader/runtime/client', [ 'webuploader/base',
 
     var cache = {};
 
-    function RuntimeClient() {
+    function RuntimeClient( component ) {
         var runtime;
+
+        this.uid = Base.guid( 'client_' );
 
         this.connectRuntime = function( options, cb ) {
 
@@ -19,6 +21,7 @@ define( 'webuploader/runtime/client', [ 'webuploader/base',
 
             if ( typeof options === 'string' ) {
                 runtime = cache[ options ];
+                cb && cb();
             } else {
                 runtime = Runtime.create( options );
                 cache[ runtime.uid ] = runtime;
@@ -51,7 +54,10 @@ define( 'webuploader/runtime/client', [ 'webuploader/base',
                 return;
             }
 
-            return runtime.exec.apply( this, arguments );
+            var args = Base.slice( arguments );
+            component && args.unshift( component );
+
+            return runtime.exec.apply( this, args );
         };
 
         this.getRuid = function() {
