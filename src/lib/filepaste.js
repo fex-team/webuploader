@@ -2,59 +2,50 @@
  * @fileOverview 错误信息
  * @import base.js, core/mediator.js, runtime/client.js
  */
-define( 'webuploader/core/filepaste', [ 'webuploader/base',
+define( 'webuploader/lib/filepaste', [ 'webuploader/base',
         'webuploader/core/mediator',
         'webuploader/runtime/client'
         ], function( Base, Mediator, RuntimeClent ) {
 
-    var $ = Base.$,
-        defaultOpts = {
-            accept: [{
-                title: 'image',
-                extensions: 'gif,jpg,bmp,png'
-            }]
-        };
+    var $ = Base.$;
 
     function FilePaste( opts ) {
-        var container;
-
-        opts = opts || {};
+        opts = this.options = $.extend( {}, FilePaste.options, opts );
 
         opts.container = $( opts.container );
-
         if ( !opts.container.length ) {
             throw new Error( '容器没有找到' );
         }
 
-        opts = this.options = $.extend( {}, defaultOpts, opts );
-        RuntimeClent.call( this, opts );
+        RuntimeClent.call( this, 'FilePaste' );
+    }
+
+    FilePaste.options = {
+        accept: [{
+            title: 'image',
+            extensions: 'gif,jpg,bmp,png'
+        }]
     }
 
     Base.inherits( RuntimeClent, {
         constructor: FilePaste,
 
         init: function() {
-            var me = this,
-                args = Base.slice( arguments );
+            var me = this;
 
-            me.on( 'runtimeInit', function( runtime ){
-                this.runtime = runtime;
-                this.ruid = runtime.uid;
-                me.exec( 'FilePaste', 'init', args );
-            } );
-
-            me.conncetRuntime();
+            me.connectRuntime( me.options, function() {
+                me.exec( 'init' );
+            });
         },
 
         destroy: function() {
-            if ( this.runtime ) {
-                this.exec( 'FilePaste', 'destroy' );
-                this.disconncetRuntime();
-            }
+            this.exec( 'destroy' );
+            this.disconnectRuntime();
+            this.off();
         }
     } );
 
     Mediator.installTo( FilePaste.prototype );
 
-    return FilePaste();
+    return FilePaste;
 });
