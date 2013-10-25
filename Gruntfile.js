@@ -45,10 +45,12 @@ module.exports = function(grunt) {
 
 
                         };
+                    // console.log( files );
                     files.forEach( process );
                     ret = ret.filter(function( item, idx, arr ){
                         return idx === arr.indexOf( item );
                     });
+
                     return ret;
                 }
             },
@@ -77,12 +79,15 @@ module.exports = function(grunt) {
                     'widgets/queue.js',
                     'widgets/uploadmgr.js',
                     'widgets/transport.js',
+                    'widgets/image.js',
 
 
 
                     'runtime/html5/filepicker.js',
                     'runtime/html5/blob.js',
                     'runtime/html5/transport.js',
+                    'runtime/html5/image.js',
+                    'runtime/html5/imagemeta/exif.js',
 
 
                     '!exports.js',
