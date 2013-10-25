@@ -49,11 +49,11 @@ define( 'webuploader/core/uploader', [ 'webuploader/base',
         },
 
         addButton: function( pick ) {
-            this.request( 'add-btn', arguments );
+            return this.request( 'add-btn', arguments );
         },
 
-        makeThumb: function( file, cb, width, height, type, quality ) {
-            this.request( 'make-thumb', arguments );
+        makeThumb: function( file, cb, width, height ) {
+            return this.request( 'make-thumb', arguments );
         },
 
         // ----------------------------------------------
