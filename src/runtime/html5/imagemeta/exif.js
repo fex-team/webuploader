@@ -4,6 +4,7 @@
  *
  * 去除了 Exif Sub IFD Pointer, GPS Info IFD Pointer, Exif Thumbnail.
  * @fileOverview EXIF解析
+ * @import runtime/html5/imagemeta.js
  */
 // Sample
 // ====================================
@@ -41,7 +42,7 @@
 // FocalLengthIn35mmFilm : 35
 // SceneCaptureType : Standard
 define( 'webuploader/runtime/html5/imagemta/exif',
-        [ 'webuploader/runtime/html5/imagemta' ], function( ImageMeta ) {
+        [ 'webuploader/runtime/html5/imagemeta' ], function( ImageMeta ) {
 
     var EXIF = {};
 

@@ -88,8 +88,7 @@ define( 'webuploader/widgets/transport', [
                 tr.on( 'all', trHandler );
                 tr.setFile( file );
                 me.requests[ file.id ] = tr;
-
-                this.request( 'before-start-transport', file, function() {
+                me.request( 'before-start-transport', file, function() {
                     tr.start();
                 });
             },
