@@ -63,7 +63,7 @@ define( 'webuploader/widgets/uploadmgr', [
                 var me = this;
 
                 // 移出invalid的文件
-                $.each( me.request( 'get-files', [ Status.INVALID ] ), function() {
+                $.each( me.request( 'get-files', Status.INVALID ), function() {
                     me.request( 'remove-file', this );
                     me.request( 'cancel-transport', this.id );
                 } );
