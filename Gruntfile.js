@@ -80,6 +80,8 @@ module.exports = function(grunt) {
                     'widgets/uploadmgr.js',
                     'widgets/transport.js',
                     'widgets/image.js',
+                    'widgets/filednd.js',
+                    'widgets/filepaste.js',
 
 
 
@@ -88,6 +90,8 @@ module.exports = function(grunt) {
                     'runtime/html5/transport.js',
                     'runtime/html5/image.js',
                     'runtime/html5/imagemeta/exif.js',
+                    'runtime/html5/dnd.js',
+                    'runtime/html5/filepaste.js',
 
 
                     '!exports.js',
