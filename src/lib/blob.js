@@ -17,6 +17,7 @@ define( 'webuploader/lib/blob', [ 'webuploader/base',
         if ( ruid ) {
             me.connectRuntime( ruid, function() {
                 me.size = me.exec( 'getSize', source );
+                me.type = me.exec( 'getType', source );
             } );
         }
     }

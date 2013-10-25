@@ -9,9 +9,14 @@ define( 'webuploader/runtime/client', [ 'webuploader/base',
     var cache = {};
 
     function RuntimeClient( component ) {
-        var runtime;
+        var deferred = Base.Deferred(),
+            runtime;
 
         this.uid = Base.guid( 'client_' );
+
+        this.runtimeReady = function( cb ) {
+            return deferred.done( cb );
+        };
 
         this.connectRuntime = function( options, cb ) {
 
@@ -19,13 +24,14 @@ define( 'webuploader/runtime/client', [ 'webuploader/base',
                 return;
             }
 
+            deferred.done( cb );
             if ( typeof options === 'string' ) {
                 runtime = cache[ options ];
-                cb && cb();
+                deferred.resolve( runtime );
             } else {
                 runtime = Runtime.create( options );
                 cache[ runtime.uid ] = runtime;
-                runtime.connect( cb );
+                runtime.connect( deferred.resolve );
                 runtime.client = 0;
             }
 
