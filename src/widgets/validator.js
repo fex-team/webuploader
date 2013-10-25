@@ -1,10 +1,14 @@
 /**
- * @fileOverview 负责文件验证
- * @import base.js, core/mediator.js, core/file.js
+ * @fileOverview 数据发送
+ * @import base.js, core/uploader.js, core/file.js, lib/transport.js
  */
-define( 'webuploader/core/validator', [ 'webuploader/base',
-        'webuploader/core/mediator',
-        'webuploader/core/file' ], function( Base, Mediator, File ) {
+
+define( 'webuploader/widgets/validator', [
+    'webuploader/base',
+    'webuploader/core/uploader',
+    'webuploader/core/file',
+    'webuploader/lib/transport' ], function(
+        Base, Uploader, WUFile, Transport ) {
 
     var $ = Base.$,
         validators = {},
@@ -20,18 +24,21 @@ define( 'webuploader/core/validator', [ 'webuploader/base',
         }
     };
 
-    Mediator.on( 'uploaderInit', function( uploader ) {
-        $.each( validators, function() {
-            this.call( uploader );
-        } );
-    } );
+    Uploader.register({
+        init: function( opts ) {
+            var me = this;
+            $.each(validators, function() {
+                this.call( me.owner );
+            });
+        }
+    });
 
     // 验证文件数量
     api.addValidator( 'fileNumLimit', function() {
         var uploader = this,
             opts = uploader.options,
             count = 0,
-            max = opts.fileNumLimit >>> 0,
+            max = opts.fileNumLimit >> 0,
             flag = true;
 
         if ( !max ) {
