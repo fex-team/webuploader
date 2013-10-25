@@ -115,15 +115,16 @@ define( 'webuploader/widgets/widget', [ 'webuploader/base',
      *     } );
      */
     Uploader.register = function( responseMap, widgetProto ) {
+        var map = { init: 'init' }, klass;
 
         if ( arguments.length === 1 ) {
             widgetProto = responseMap;
-        }
-        else {
-            widgetProto.responseMap = $.extend({ init: 'init' }, responseMap);
+            widgetProto.responseMap = map;
+        } else {
+            widgetProto.responseMap = $.extend(map, responseMap);
         }
 
-        var klass = Base.inherits( Widget, widgetProto );
+        klass = Base.inherits( Widget, widgetProto );
         widgetClass.push( klass );
 
         return klass;

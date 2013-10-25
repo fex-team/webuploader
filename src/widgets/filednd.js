@@ -1,6 +1,6 @@
 /**
  * @fileOverview DragAndDrop Widget。
- * @import base.js, widgets/widget.js, core/uploader.js
+ * @import base.js, widgets/widget.js, core/uploader.js, lib/dnd.js
  */
 define( 'webuploader/widgets/filednd', [
     'webuploader/base',
@@ -9,6 +9,8 @@ define( 'webuploader/widgets/filednd', [
         Base, Uploader, Dnd ) {
 
     var $ = Base.$;
+
+    Uploader.options.dnd = '';
 
     return Uploader.register({
         init: function( opts ) {
@@ -20,16 +22,16 @@ define( 'webuploader/widgets/filednd', [
             var me = this,
                 deferred = Base.Deferred(),
                 options = $.extend( {}, {
-                    id: opts.dnd,
+                    container: opts.dnd,
                     accept: opts.accept
                 } ),
                 dnd;
 
             dnd = new Dnd( options );
 
-            dnd.one( 'ready', deferred.resolve );
+            dnd.once( 'ready', deferred.resolve );
             dnd.on( 'drop', function( files ) {
-                me.owner.trigger( 'filesin', files );
+                me.request('add-file', [files]);
             } );
             dnd.init();
 
