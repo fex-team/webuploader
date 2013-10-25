@@ -2,17 +2,20 @@
  * @fileOverview FilePaste
  */
 define( 'webuploader/runtime/html5/dnd', [
-        'webuploader/base'
-    ], function( Base, Html5Runtime ) {
+        'webuploader/base',
+        'webuploader/runtime/html5/runtime',
+        'webuploader/lib/file'
+    ], function( Base, Html5Runtime, File ) {
 
     var $ = Base.$;
 
-    Html5Runtime.register( 'DragAndDrop', {
+    return Html5Runtime.register( 'DragAndDrop', {
         init: function() {
             var me = this,
                 opts = me.options,
                 elem = opts.container,
-                triggerFiles = [];
+                triggerFiles = [],
+                ruid = this.owner.getRuid();
 
             var isAcceptType = function( type ) {
                 var acceptStr = [],
@@ -98,7 +101,9 @@ define( 'webuploader/runtime/html5/dnd', [
                     }
                 };
 
-                me.trigger( 'drop', triggerFiles );
+                me.owner.trigger( 'drop', $.map(triggerFiles, function( file ) {
+                    return new File( ruid, file );
+                }) );
                 evt.dataTransfer.clearData();
                 triggerFiles = [];
                 elem.removeClass( 'webuploader-dnd-over' );
@@ -113,6 +118,4 @@ define( 'webuploader/runtime/html5/dnd', [
             // todo
         }
     } );
-
-    return true;
 } );

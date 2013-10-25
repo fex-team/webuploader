@@ -1,6 +1,6 @@
 /**
  * @fileOverview 组件基类。
- * @import base.js, core/uploader.js
+ * @import base.js, core/uploader.js, lib/filepaste.js
  */
 define( 'webuploader/widgets/filepaste', [
     'webuploader/base',
@@ -20,16 +20,16 @@ define( 'webuploader/widgets/filepaste', [
             var me = this,
                 deferred = Base.Deferred(),
                 options = $.extend( {}, {
-                    id: opts.paste,
+                    container: opts.paste,
                     accept: opts.accept
                 } ),
                 paste;
 
             paste = new FilePaste( options );
 
-            paste.one( 'ready', deferred.resolve );
+            paste.once( 'ready', deferred.resolve );
             paste.on( 'paste', function( files ) {
-                me.owner.trigger( 'filesin', files );
+                me.owner.request('add-file', [files]);
             } );
             paste.init();
 

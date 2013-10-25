@@ -1,16 +1,20 @@
 /**
  * @fileOverview FilePaste
+ * @import base.js, runtime/html5/runtime.js, lib/file.js
  */
 define( 'webuploader/runtime/html5/filepaste', [
-        'webuploader/base'
-    ], function( Base, Html5Runtime ) {
+        'webuploader/base',
+        'webuploader/runtime/html5/runtime',
+        'webuploader/lib/file'
+    ], function( Base, Html5Runtime, File ) {
 
     var $ = Base.$;
 
-    Html5Runtime.register( 'FilePaste', {
+    return Html5Runtime.register( 'FilePaste', {
         init: function() {
             var me = this,
                 opts = me.options,
+                ruid = me.owner.getRuid(),
                 elem = $( opts.container );
 
             elem.on( 'paste', function( e ) {
@@ -48,7 +52,12 @@ define( 'webuploader/runtime/html5/filepaste', [
 
                 };
 
-                me.trigger( 'paste', triggerFiles );
+                me.owner.trigger( 'paste', $.map(triggerFiles, function( file ) {
+                    if ( !file.name ) {
+                        file.name = 'Image' + Date.now() + '.' + file.type.split('/')[1];
+                    }
+                    return new File( ruid, file );
+                }) );
             } );
         },
 
@@ -56,6 +65,4 @@ define( 'webuploader/runtime/html5/filepaste', [
             // todo
         }
     } );
-
-    return FilePaste;
 } );
