@@ -8,7 +8,12 @@ define( 'webuploader/widgets/widget', [ 'webuploader/base',
     var $ = Base.$
         _init = Uploader.prototype._init,
         IGNORE = {},
-        widgetClass = [];
+        widgetClass = [],
+        toString = Object.prototype.toString;
+
+    function isArrayLike( obj ) {
+        return obj && ~[ '[object Arguments]', '[object Array]'].indexOf( toString.call( obj ) );
+    }
 
     function Widget( uploader ) {
         this.owner = uploader;
@@ -71,7 +76,7 @@ define( 'webuploader/widgets/widget', [ 'webuploader/base',
                 dfds = [],
                 widget, rlt;
 
-            args = args && args.length ? args : [ args ];
+            args = isArrayLike( args ) ? args : [ args ];
 
             for( ; i < len; i++ ) {
                 widget = widgets[ i ];
@@ -89,8 +94,8 @@ define( 'webuploader/widgets/widget', [ 'webuploader/base',
             }
 
             // 如果有callback，则用异步方式。
-            if ( callback ) {
-                return Base.when( dfds ).done( callback );
+            if ( callback || dfds.length ) {
+                Base.when.apply( Base, dfds ).done( callback || Base.noop );
             } else {
                 return rlts[ 0 ];
             }
