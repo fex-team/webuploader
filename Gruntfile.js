@@ -73,25 +73,7 @@ module.exports = function(grunt) {
                     // 'promise.js',
 
                     // 把剩余的打包进来。
-                    // '**/*.js',
-                    //
-                    'widgets/filepicker.js',
-                    'widgets/queue.js',
-                    'widgets/uploadmgr.js',
-                    'widgets/transport.js',
-                    'widgets/image.js',
-                    'widgets/filednd.js',
-                    'widgets/filepaste.js',
-
-
-
-                    'runtime/html5/filepicker.js',
-                    'runtime/html5/blob.js',
-                    'runtime/html5/transport.js',
-                    'runtime/html5/image.js',
-                    'runtime/html5/imagemeta/exif.js',
-                    'runtime/html5/dnd.js',
-                    'runtime/html5/filepaste.js',
+                    '**/*.js',
 
 
                     '!exports.js',
