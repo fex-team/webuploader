@@ -3,10 +3,11 @@
  *
  * Uint8Array, FileReader, BlobBuilder, atob, ArrayBuffer
  * @fileOverview Image控件
+ * @import base.js, runtime/html5/util.js
  */
-define( 'webuploader/runtime/html5/imagemta', [ 'webuploader/base',
-        'webuploader/runtime/html5/runtime'
-        ], function( Base, Html5Runtime ) {
+define( 'webuploader/runtime/html5/imagemeta', [ 'webuploader/base',
+    'webuploader/runtime/html5/util'
+        ], function( Base, Util ) {
 
     var $ = Base.$,
         api;
@@ -18,7 +19,25 @@ define( 'webuploader/runtime/html5/imagemta', [ 'webuploader/base',
 
         maxMetaDataSize: 262144,
 
-        parse: function( buffer, noParse ) {
+        parse: function( blob, cb ) {
+            var me = this;
+
+            Util.getFileReader(function( reader ) {
+                reader.onload = function() {
+                    cb( false, me._parse( this.result ) );
+                    reader = reader.onload = reader.onerror = null;
+                };
+
+                reader.onerror = function( e ) {
+                    cb( e.message );
+                    reader = reader.onload = reader.onerror = null;
+                };
+
+                reader.readAsArrayBuffer( blob.slice( 0, me.maxMetaDataSize ).getSource() );
+            });
+        },
+
+        _parse: function( buffer, noParse ) {
             if ( buffer.byteLength < 6 ) {
                 return;
             }
@@ -76,7 +95,7 @@ define( 'webuploader/runtime/html5/imagemta', [ 'webuploader/base',
         },
 
         updateImageHead: function( buffer, head ) {
-            var data = this.parse( buffer, true ),
+            var data = this._parse( buffer, true ),
                 buf1, buf2, head, bodyoffset ;
 
 
@@ -103,6 +122,5 @@ define( 'webuploader/runtime/html5/imagemta', [ 'webuploader/base',
         }
     };
 
-    Html5Runtime.register( 'ImageMeta', api );
     return api;
 } );

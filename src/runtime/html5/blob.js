@@ -9,6 +9,10 @@ define('runtime/html5/blob', ['webuploader/runtime/html5/runtime',
             return source.size;
         },
 
+        getType: function( source ) {
+            return source.type;
+        },
+
         slice: function( start, end ) {
             var owner = this.owner,
                 blob = owner.source,
