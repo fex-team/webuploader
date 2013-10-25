@@ -19,7 +19,10 @@ define( 'webuploader/runtime/html5/runtime', [
 
             // 不需要连接其他程序，直接执行callback
             connect: function( cb ) {
-                setTimeout( cb, 1 );
+                var me = this;
+                setTimeout( function() {
+                    cb( me );
+                }, 1 );
             },
 
             exec: function( component, fn/*, args...*/ ) {
@@ -30,7 +33,8 @@ define( 'webuploader/runtime/html5/runtime', [
 
                 if ( !pool[ client.uid ] ) {
                     pool[ client.uid ] = $.extend( {
-                        owner: client
+                        owner: client,
+                        options: client.options
                     }, component );
                 }
 
