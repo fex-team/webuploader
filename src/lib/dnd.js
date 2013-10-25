@@ -2,23 +2,15 @@
  * @fileOverview 错误信息
  * @import base.js, core/mediator.js, runtime/client.js
  */
-define( 'webuploader/core/dnd', [ 'webuploader/base',
+define( 'webuploader/lib/dnd', [ 'webuploader/base',
         'webuploader/core/mediator',
         'webuploader/runtime/client'
         ], function( Base, Mediator, RuntimeClent ) {
 
-    var $ = Base.$,
-        defaultOpts = {
-            accept: [{
-                title: 'image',
-                extensions: 'gif,jpg,bmp,png'
-            }]
-        };
+    var $ = Base.$;
 
     function DragAndDrop( opts ) {
-        var container;
-
-        opts = opts || {};
+        opts = this.options = $.extend( {}, DragAndDrop.options, opts );
 
         opts.container = $( opts.container );
 
@@ -26,35 +18,33 @@ define( 'webuploader/core/dnd', [ 'webuploader/base',
             throw new Error( '容器没有找到' );
         }
 
-        opts = this.options = $.extend( {}, defaultOpts, opts );
-        RuntimeClent.call( this, opts );
+        RuntimeClent.call( this, 'DragAndDrop' );
     }
+
+    DragAndDrop.options = {
+        accept: [{
+            title: 'image',
+            extensions: 'gif,jpg,bmp,png'
+        }]
+    };
 
     Base.inherits( RuntimeClent, {
         constructor: DragAndDrop,
 
         init: function() {
-            var me = this,
-                args = Base.slice( arguments );
+            var me = this;
 
-            me.on( 'runtimeInit', function( runtime ){
-                this.runtime = runtime;
-                this.ruid = runtime.uid;
-                me.exec( 'DragAndDrop', 'init', args );
-            } );
-
-            me.conncetRuntime();
+            me.connectRuntime( me.options, function() {
+                me.exec( 'init' );
+            });
         },
 
         destroy: function() {
-            if ( this.runtime ) {
-                this.exec( 'DragAndDrop', 'destroy' );
-                this.disconncetRuntime();
-            }
+            this.disconnectRuntime();
         }
     } );
 
     Mediator.installTo( DragAndDrop.prototype );
 
-    return DragAndDrop();
+    return DragAndDrop;
 });
