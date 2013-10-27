@@ -73,6 +73,7 @@ module.exports = function(grunt) {
                     // 'promise.js',
 
                     // 把剩余的打包进来。
+                    'widgets/filepicker.js',
                     '**/*.js',
 
 
