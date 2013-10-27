@@ -1,8 +1,9 @@
 /**
  * @fileOverview Runtime管理器，负责Runtime的选择, 连接
- * @import base.js
+ * @import base.js, core/mediator.js
  */
-define( 'webuploader/runtime/runtime', [ 'webuploader/base' ], function( Base ) {
+define( 'webuploader/runtime/runtime', [ 'webuploader/base',
+    'webuploader/core/mediator' ], function( Base, Mediator ) {
 
     var $ = Base.$,
         factories = {};
@@ -15,9 +16,38 @@ define( 'webuploader/runtime/runtime', [ 'webuploader/base' ], function( Base ) 
         this.uid = Base.guid( 'rt_' );
     }
 
-    Runtime.prototype.connect = Base.notImplement;
-    Runtime.prototype.exec = Base.notImplement;
-    Runtime.prototype.destroy = Base.notImplement;
+    $.extend( Runtime.prototype, {
+
+        getContainer: function() {
+            var opts = this.options,
+                parent, container;
+
+            if ( this.container ) {
+                return this.container;
+            }
+
+            parent = opts.container || $( document.body );
+
+            container = $(document.createElement( 'div' ));
+
+            container.attr( 'id', 'flash' + this.uid );
+            container.css({
+                position: 'absolute',
+                top: '0px',
+                left: '0px',
+                width: '1px',
+                height: '1px',
+                overflow: 'hidden'
+            });
+
+            parent.append( container );
+
+            return this.container = container;
+        },
+
+        init: Base.notImplement,
+        exec: Base.notImplement
+    });
 
     Runtime.orders = 'html5,flash';
 
@@ -69,5 +99,6 @@ define( 'webuploader/runtime/runtime', [ 'webuploader/base' ], function( Base ) 
         return '';
     }
 
+    Mediator.installTo( Runtime.prototype );
     return Runtime;
 } );

@@ -1,14 +1,45 @@
 /**
  * @fileOverview Runtime管理器，负责Runtime的选择, 连接
- * @import base.js, runtime/runtime.js
+ * @import base.js, core/mediator.js, runtime/runtime.js
  */
 define( 'webuploader/runtime/client', [ 'webuploader/base',
+        'webuploader/core/mediator',
         'webuploader/runtime/runtime'
-        ], function( Base, Runtime ) {
+        ], function( Base, Mediator, Runtime ) {
 
-    var cache = {};
+    var cache = (function() {
+        var obj = {};
 
-    function RuntimeClient( component ) {
+        return {
+            add: function( runtime ) {
+                obj[ runtime.uid ] = runtime;
+            },
+
+            get: function( ruid ) {
+                var i;
+
+                if ( ruid ) {
+                    return obj[ ruid ];
+                }
+
+                for ( i in obj ) {
+                    return obj[ i ];
+                }
+
+                return null;
+            },
+
+            remove: function( runtime ) {
+                delete obj[ runtime.uid ];
+            },
+
+            has: function() {
+                return !!this.get.apply( this, arguments );
+            }
+        }
+    })();
+
+    function RuntimeClient( component, standalone ) {
         var deferred = Base.Deferred(),
             runtime;
 
@@ -19,24 +50,35 @@ define( 'webuploader/runtime/client', [ 'webuploader/base',
         };
 
         this.connectRuntime = function( options, cb ) {
-
             if ( runtime ) {
                 return;
             }
 
             deferred.done( cb );
-            if ( typeof options === 'string' ) {
-                runtime = cache[ options ];
-                deferred.resolve( runtime );
-            } else {
-                runtime = Runtime.create( options );
-                cache[ runtime.uid ] = runtime;
-                runtime.connect( deferred.resolve );
-                runtime.client = 0;
+
+            if ( typeof options === 'string' && cache.get( options ) ) {
+                runtime = cache.get( options );
+            } else if ( !standalone && cache.has() ) {
+                runtime = cache.get();
             }
 
-            runtime.client++;
+            if ( !runtime ) {
+                runtime = Runtime.create( options );
+                runtime.standalone = standalone;
+                cache.add( runtime );
+                runtime.promise = deferred.promise();
+                runtime.once( 'ready', deferred.resolve );
+                runtime.init();
+                runtime.client = 1;
+                return runtime;
+            }
 
+            runtime.promise.then( deferred.resolve );
+            runtime.client++;
+            return runtime;
+        };
+
+        this.getRuntime = function() {
             return runtime;
         };
 
@@ -48,7 +90,8 @@ define( 'webuploader/runtime/client', [ 'webuploader/base',
             runtime.client--;
 
             if ( runtime.client <= 0 ) {
-                delete cache[ ruid ];
+                cache.remove( runtime );
+                delete runtime.promise;
                 runtime.destroy();
                 runtime = null;
             }
@@ -71,5 +114,6 @@ define( 'webuploader/runtime/client', [ 'webuploader/base',
         };
     }
 
+    Mediator.installTo( RuntimeClient.prototype );
     return RuntimeClient;
 } );

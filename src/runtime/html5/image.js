@@ -42,6 +42,13 @@ define( 'webuploader/runtime/html5/transport', [ 'webuploader/base',
             me._img = img;
         },
 
+        getInfo: function() {
+            return {
+                type: this.type,
+                meta: this.metas
+            }
+        },
+
         /**
          * @method load
          */
@@ -126,7 +133,7 @@ define( 'webuploader/runtime/html5/transport', [ 'webuploader/base',
             return result;
         },
 
-        toBlob: function( type ) {
+        getAsBlob: function( type ) {
             var blob = this._blob,
                 opts = this.options,
                 ruid, canvas;
