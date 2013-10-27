@@ -14,15 +14,19 @@ define( 'webuploader/lib/blob', [ 'webuploader/base',
 
         RuntimeClient.call( me, 'Blob' );
 
+
+        this.uid = source.uid || this.uid
+
+        this.type = source.type || '';
+        this.size = source.size || 0;
+
         if ( ruid ) {
-            me.connectRuntime( ruid, function() {
-                me.size = me.exec( 'getSize', source );
-                me.type = me.exec( 'getType', source );
-            } );
+            me.connectRuntime( ruid );
         }
     }
 
-    $.extend( Blob.prototype, {
+    Base.inherits( RuntimeClient, {
+        constructor: Blob,
 
         slice: function( start, end ) {
             return this.exec( 'slice', start, end );
@@ -31,7 +35,6 @@ define( 'webuploader/lib/blob', [ 'webuploader/base',
         getSource: function() {
             return this.source;
         }
-
     } );
 
     return Blob;

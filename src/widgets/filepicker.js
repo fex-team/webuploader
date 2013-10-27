@@ -37,15 +37,15 @@ define('webuploader/widgets/filepicker', ['webuploader/base',
                 deferred = Base.Deferred();
                 if (typeof pick === 'string') {
                     pick = {
-                        container: pick
+                        id: pick
                     };
                 }
 
                 options = $.extend({}, pick, {
-                    accept: opts.accept
+                    accept: opts.accept,
+                    swf: opts.swf
                 });
 
-                options.container = options.id;
                 picker = new FilePicker(options);
 
                 picker.once('ready', deferred.resolve);
