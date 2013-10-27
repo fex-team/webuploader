@@ -5,14 +5,6 @@
 define('runtime/html5/blob', ['webuploader/runtime/html5/runtime',
     'webuploader/lib/blob' ], function( Html5Runtime, Blob ) {
     return Html5Runtime.register( 'Blob', {
-        getSize: function( source ) {
-            return source.size;
-        },
-
-        getType: function( source ) {
-            return source.type;
-        },
-
         slice: function( start, end ) {
             var owner = this.owner,
                 blob = owner.source,
