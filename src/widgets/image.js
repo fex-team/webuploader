@@ -96,19 +96,18 @@ define( 'webuploader/widgets/image', [
 
                     getInstance( file.source, function( image ) {
                         image.once( 'load', function() {
-                            var ret, size;
+                            var blob, size;
 
                             image.downsize( resize.width, resize.height, resize.quality );
-
-                            ret = image.getAsBlob();
+                            blob = image.getAsBlob();
                             image.destroy();
                             image = null;
 
                             size = file.size;
-                            file.source = ret;
-                            file.size = ret.size;
+                            file.source = blob;
+                            file.size = blob.size;
                             file.resized = true;
-                            file.trigger( 'resize', ret.size, size );
+                            file.trigger( 'resize', blob.size, size );
                             deferred.resolve( true );
 
                         });
