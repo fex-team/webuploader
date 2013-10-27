@@ -3,14 +3,19 @@
  * @import base.js, runtime/client.js
  */
 define( 'webuploader/lib/image', [ 'webuploader/base',
-        'webuploader/runtime/client',
-        'webuploader/core/mediator' ],
-        function( Base, RuntimeClient, Mediator ) {
+        'webuploader/runtime/client' ],
+        function( Base, RuntimeClient ) {
     var $ = Base.$;
 
     function Image( opts ) {
-        this.options = $.extend( {}, Image.options, opts );
-        RuntimeClient.call( this, 'Image' )
+        var me = this;
+
+        me.options = $.extend( {}, Image.options, opts );
+        RuntimeClient.call( me, 'Image' );
+
+        me.once( 'load', function() {
+            me.info = me.exec( 'getInfo' );
+        });
     }
 
     Image.options = {
@@ -47,7 +52,9 @@ define( 'webuploader/lib/image', [ 'webuploader/base',
         },
 
         getAsBlob: function( type, quality ) {
-            return this.exec( 'toBlob', type, quality );
+            type = type || this.info.type;
+            quality = quality || 90;
+            return this.exec( 'getAsBlob', type, quality );
         },
 
         getMetas: function() {
@@ -56,7 +63,7 @@ define( 'webuploader/lib/image', [ 'webuploader/base',
 
         setMetas: function( val ) {
             var me = this;
-            this.runtimeReady( function() {
+            this.runtimeReady(function() {
                 me.exec( 'setMetas', val );
             });
             return true;
@@ -68,8 +75,6 @@ define( 'webuploader/lib/image', [ 'webuploader/base',
             this.exec( 'destroy' );
         }
     } );
-
-    Mediator.installTo( Image.prototype );
 
     return Image;
 } );

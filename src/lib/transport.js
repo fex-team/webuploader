@@ -19,6 +19,7 @@ define( 'webuploader/lib/transport', [ 'webuploader/base',
 
     Transport.options = {
         server: '',
+        method: 'POST',
 
         // 跨域时，是否允许携带cookie
         withCredentials: false,
