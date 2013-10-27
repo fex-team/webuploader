@@ -12,65 +12,67 @@ define( 'webuploader/runtime/html5/filepicker', [
 
         return Html5Runtime.register( 'FilePicker', {
             init: function() {
-                var owner = this.owner,
-                    opts = owner.options,
-                    elem = opts.container,
-                    acceptStr = [],
-                    extStr = [],
-                    i, ii, len, label, input, inputId;
+                var container = this.getRuntime().getContainer(),
+                    me = this,
+                    owner = me.owner,
+                    opts = me.options,
+                    input = $( document.createElement( 'input' ) ),
+                    arr, i, len, mouseHandler;
 
-                inputId = 'btn' + Date.now();
-                input = $( document.createElement( 'input' ) );
-                label = $( document.createElement( 'label' ) );
+                input.attr( 'type', 'file' );
 
-                input.attr({
-                    type: 'file',
-                    id: inputId
+                input.css({
+                    opacity: 0,
+                    width: '100%',
+                    height: '100%',
+                    display: 'block',
+                    cursor: 'pointer'
                 });
-                // input.addClass( 'webuploader-btn-input' );
-
-
-                label.addClass( 'webuploader-btn' );
-                label.html( opts.btnName || elem.text() || '选择文件'  );
-                label.attr( 'for', inputId );
 
                 if ( opts.multiple ) {
                     input.attr( 'multiple', 'multiple' );
                 }
 
                 if ( opts.accept && opts.accept.length > 0 ) {
+                    arr = [];
+
                     for (i = 0, len = opts.accept.length; i < len; i++) {
-                        extStr = opts.accept[i].extensions.split( ',' );
-                        for (var ii = 0; ii < extStr.length; ii++) {
-                            acceptStr.push( opts.accept[i].title + '/' + extStr[ii] );
-                        };
+                        arr.push( opts.accept[i].mimeTypes );
                     };
-                    input.attr( 'accept', acceptStr.join( ',' ) );
+
+                    input.attr( 'accept', arr.join( ',' ) );
                 }
 
-                if ( opts.btnClass) {
-                    label.addClass( opts.btnClass );
-                }
+                container.append( input );
+
+                mouseHandler = function( e ) {
+                    owner.trigger( e.type );
+                };
 
                 input.on( 'change', function( e ) {
                     var fn = arguments.callee,
                         ruid = owner.getRuid(),
                         clone;
 
-                    owner.trigger( 'select', $.map( e.target.files, function( file ) {
-                        return new File( ruid, file );
-                    }) );
+                    me.files = e.target.files;
 
                     // reset input
                     clone = this.cloneNode( true );
                     this.parentNode.replaceChild( clone, this );
 
-                    input.off( 'change', fn );
-                    $( clone ).on( 'change', fn );
+                    input.off();
+                    $( clone ).on( 'change', fn ).on( 'mouseenter mouseleave', mouseHandler);
+
+                    owner.trigger( 'change' );
                 } );
 
-                elem.empty().addClass( 'webuploader-pick' ).append( input );
-                elem.append( label );
+                input.on( 'mouseenter mouseleave', mouseHandler );
+
+            },
+
+
+            getFiles: function() {
+                return this.files;
             },
 
             destroy: function() {

@@ -1,39 +1,42 @@
 /**
  * @fileOverview 错误信息
- * @import base.js, core/mediator.js, runtime/client.js
+ * @import base.js, runtime/client.js, lib/file.js
  */
 define( 'webuploader/lib/filepicker', [ 'webuploader/base',
-        'webuploader/core/mediator',
-        'webuploader/runtime/client'
-        ], function( Base, Mediator, RuntimeClent ) {
+        'webuploader/runtime/client',
+        'webuploader/lib/file'
+        ], function( Base, RuntimeClent, File ) {
 
-    var $ = Base.$,
-        defaultOpts = {
-            container: null,
-            label: '选择文件',
-            multiple: true,
-
-            accept: [{
-                title: 'image',
-                extensions: 'gif,jpg,bmp'
-            }]
-        };
+    var $ = Base.$;
 
     function FilePicker( opts ) {
-        var container;
+        opts = this.options = $.extend( {}, FilePicker.options, opts );
 
-        opts = opts || {};
+        opts.button = $( opts.id );
 
-        opts.container = $( opts.container );
-
-        if ( !opts.container.length ) {
-            throw new Error( '容器没有找到' );
+        if ( !opts.button.length ) {
+            throw new Error( '按钮指定错误' );
         }
 
-        opts.label = opts.label || opts.container.text();
+        opts.container = opts.container || opts.button.parent();
+        opts.container.css( 'position', 'relative' );
 
-        opts = this.options = $.extend( {}, defaultOpts, opts );
-        RuntimeClent.call( this );
+        opts.label = opts.label || opts.container.text();
+        opts.button.text( opts.label );
+
+        RuntimeClent.call( this, 'FilePicker', true );
+    }
+
+    FilePicker.options = {
+        button: null,
+        container: null,
+        label: '选择文件',
+        multiple: true,
+        accept: [{
+            title: 'Images',
+            extensions: 'gif,jpg,bmp,png',
+            mimeTypes: 'image/*'
+        }]
     }
 
     Base.inherits( RuntimeClent, {
@@ -41,22 +44,61 @@ define( 'webuploader/lib/filepicker', [ 'webuploader/base',
 
         init: function() {
             var me = this,
-                args = Base.slice( arguments );
+                opts = me.options,
+                button = opts.button;
 
-            me.connectRuntime( this.options, function() {
-                me.exec( 'FilePicker', 'init', args );
+            button.addClass( 'webuploader-pick' );
+
+            me.on( 'all', function( type ) {
+                var files;
+
+                switch ( type ) {
+                    case 'mouseenter':
+                        button.addClass( 'webuploader-pick-hover');
+                        break;
+
+                    case 'mouseleave':
+                        button.removeClass( 'webuploader-pick-hover' );
+                        break;
+
+                    case 'change':
+                        files = me.exec( 'getFiles' );
+                        me.trigger( 'select', $.map( files, function( file ) {
+                            return new File( me.getRuid(), file );
+                        } ));
+                        break;
+                }
+            });
+
+            me.connectRuntime( opts, function() {
+                me.refresh();
+                me.exec( 'init', opts );
+            });
+        },
+
+        refresh: function() {
+            var shimContainer = this.getRuntime().getContainer(),
+                button = this.options.button,
+                width = button.width(),
+                height = button.height(),
+                pos = button.position();
+
+            shimContainer.css({
+                position: 'absolute',
+                width: width + 'px',
+                height: height + 'px',
+                left: pos.left + 'px',
+                top: pos.top + 'px'
             });
         },
 
         destroy: function() {
             if ( this.runtime ) {
-                this.exec( 'FilePicker', 'destroy' );
+                this.exec( 'destroy' );
                 this.disconnectRuntime();
             }
         }
     } );
-
-    Mediator.installTo( FilePicker.prototype );
 
     return FilePicker;
 });

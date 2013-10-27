@@ -1,57 +1,65 @@
 /**
  * @fileOverview Html5Runtime
+ * @import base.js, runtime/runtime.js, runtime/compbase.js
  */
 define( 'webuploader/runtime/html5/runtime', [
         'webuploader/base',
-        'webuploader/runtime/runtime'
-    ], function( Base, Runtime ) {
+        'webuploader/runtime/runtime',
+        'webuploader/runtime/compbase'
+    ], function( Base, Runtime, CompBase ) {
 
-        var type = 'html5',
+        var $ = Base.$,
+            type = 'html5',
             pool = {},
             components = {};
 
         function Html5Runtime() {
+            var pool = {},
+                destory = this.destory;
+
             Runtime.apply( this, arguments );
+            this.type = type;
+
+
+            // 这个方法的调用者，实际上是RuntimeClient
+            this.exec = function( comp, fn/*, args...*/) {
+                var client = this,
+                    uid = client.uid,
+                    args = Base.slice( arguments, 2 ),
+                    instance;
+
+                if ( components[ comp ] ) {
+                    instance = pool[ uid ] = pool[ uid ] || new components[ comp ]( client.getRuntime() );
+
+                    if ( instance[ fn ] ) {
+                        instance.owner = client;
+                        instance.options = client.options;
+                        return instance[ fn ].apply( instance, args );
+                    }
+                }
+            }
+
+            this.destory = function() {
+                // @todo 删除池子中的所有实例
+                return destory && destory.apply( this, arguments );
+            };
         }
 
         Base.inherits( Runtime, {
             constructor: Html5Runtime,
 
             // 不需要连接其他程序，直接执行callback
-            connect: function( cb ) {
+            init: function( cb ) {
                 var me = this;
                 setTimeout( function() {
-                    cb( me );
+                    me.trigger('ready');
                 }, 1 );
-            },
-
-            exec: function( component, fn/*, args...*/ ) {
-                var client = this,
-                    args = Base.slice( arguments, 2 );
-
-                component = components[ component ] || {};
-
-                if ( !pool[ client.uid ] ) {
-                    pool[ client.uid ] = $.extend( {
-                        owner: client,
-                        options: client.options
-                    }, component );
-                }
-
-                component = pool[ client.uid ];
-                fn = component[ fn ];
-
-                if ( !fn ) {
-                    throw new Error( 'Exec Error' );
-                }
-
-                return fn.apply( component, args );
             }
 
         } );
 
         Html5Runtime.register = function( name, component ) {
-            return components[ name ] = component;
+            return components[ name ] = Base.inherits( CompBase, component );
         };
 
         // 注册html5运行时。

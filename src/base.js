@@ -34,6 +34,8 @@ define( 'webuploader/base', [ 'webuploader/jq-bridge' ], function( $ ) {
 
         when: $.when,
 
+        isIE: /*@cc_on!@*/false,
+
         version: '@version@',
 
         /**
