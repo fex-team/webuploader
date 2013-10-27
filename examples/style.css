@@ -73,6 +73,11 @@ table {
     margin: 20px;
 }
 
+#uploader .placeholder.hide {
+    position: absolute!important;
+    top: -99999px;
+}
+
 #uploader .placeholder {
     border: 3px dashed #e6e6e6;
     min-height: 238px;
@@ -96,7 +101,8 @@ table {
     cursor: pointer;
     box-shadow: 0 1px 1px rgba(0, 0, 0, 0.1);
 }
-#uploader .placeholder .webuploader-pick:hover {
+
+#uploader .placeholder .webuploader-pick-hover {
     background: #00a2d4;
 }
 
