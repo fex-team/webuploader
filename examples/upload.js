@@ -51,6 +51,7 @@
             },
             dnd: '#dndArea',
             paste: '#uploader',
+            swf: '../dist/Uploader.swf',
             server: '../server/fileupload.php',
             fileNumLimit: 300,
             fileSizeLimit: 200 * 1024 * 1024,    // 200 M
@@ -58,10 +59,10 @@
         });
 
         // 添加“添加文件”的按钮，
-        uploader.addButton({
-            id: '#filePicker2',
-            btnName: '继续添加'
-        });
+        // uploader.addButton({
+        //     id: '#filePicker2',
+        //     btnName: '继续添加'
+        // });
 
         // 当有文件添加进来时执行，负责view的创建
         function addFile( file ) {
@@ -239,13 +240,13 @@
 
             switch ( state ) {
                 case 'pedding':
-                    $placeHolder.show();
+                    $placeHolder.removeClass( 'hide' );
                     $queue.hide();
                     $statusBar.hide();
                     break;
 
                 case 'ready':
-                    $placeHolder.hide();
+                    $placeHolder.addClass( 'hide' );
                     $( '#filePicker2' ).show();
                     $queue.show();
                     $statusBar.show();
@@ -301,7 +302,7 @@
             fileSize += file.size;
 
             if ( fileCount === 1 ) {
-                $placeHolder.hide();
+                $placeHolder.addClass( 'hide' );
                 $statusBar.show();
             }
 
