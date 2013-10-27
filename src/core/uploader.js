@@ -16,8 +16,9 @@ define( 'webuploader/core/uploader', [ 'webuploader/base',
     // default Options
     Uploader.options = {
         accept: [{
-            title: 'image',
-            extensions: 'gif,jpg,jpeg,bmp,png'
+            title: 'Images',
+            extensions: 'gif,jpg,bmp,png',
+            mimeTypes: 'image/*'
         }]
     };
     Mediator.installTo( Uploader.prototype );
