@@ -266,8 +266,7 @@ table {
     z-index: 100;
 }
 
-#uploader .filelist li.state-complete:after {
-    content: '';
+#uploader .filelist li .success {
     display: block;
     position: absolute;
     left: 0;

@@ -10,6 +10,7 @@ define( 'webuploader/lib/filepicker', [ 'webuploader/base',
     var $ = Base.$;
 
     function FilePicker( opts ) {
+
         opts = this.options = $.extend( {}, FilePicker.options, opts );
 
         opts.container = $( opts.id );

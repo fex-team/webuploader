@@ -14,7 +14,8 @@ define( 'webuploader/lib/image', [ 'webuploader/base',
         RuntimeClient.call( me, 'Image' );
 
         me.once( 'load', function() {
-            me.info = me.exec( 'getInfo' );
+            var info = me.exec( 'getInfo' );
+            $.extend( me, info );
         });
     }
 
@@ -52,7 +53,7 @@ define( 'webuploader/lib/image', [ 'webuploader/base',
         },
 
         getAsBlob: function( type, quality ) {
-            type = type || this.info.type;
+            type = type || this.type;
             quality = quality || 90;
             return this.exec( 'getAsBlob', type, quality );
         },
