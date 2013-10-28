@@ -68,8 +68,7 @@ define( 'webuploader/runtime/flash/runtime', [
                 return runtime.flashExec.apply( client, arguments );
             }
 
-            // flash的接受器。
-            window[ jsreciver ] = function( evt, obj ) {
+            function hander( evt, obj ) {
                 var type = evt.type || evt,
                     parts, uid;
 
@@ -80,8 +79,19 @@ define( 'webuploader/runtime/flash/runtime', [
                 if ( type === 'Ready' && uid === runtime.uid ) {
                     runtime.trigger( 'ready' );
                 } else if ( clients[ uid ] ) {
+                    console.log( type, evt, obj );
                     clients[ uid ].trigger( type.toLowerCase(), evt, obj );
                 }
+            }
+
+            // flash的接受器。
+            window[ jsreciver ] = function( evt, obj ) {
+                var args = arguments;
+
+                // 为了能捕获得到。
+                setTimeout(function(){
+                    hander.apply( null, args );
+                }, 1);
             };
 
             this.jsreciver = jsreciver;

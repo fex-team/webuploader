@@ -113,7 +113,7 @@ define( 'webuploader/widgets/validator', [
 
         uploader.on( 'fileQueued', function( file ) {
             if ( file.size > max ) {
-                file.setStatus( File.Status.INVALID, 'exceed_size' );
+                file.setStatus( WUFile.Status.INVALID, 'exceed_size' );
             }
         } );
     } );
