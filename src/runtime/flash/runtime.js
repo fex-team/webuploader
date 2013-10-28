@@ -36,7 +36,7 @@ define( 'webuploader/runtime/flash/runtime', [
                 clients = {},
                 destory = this.destory,
                 runtime = this,
-                jsreciver = 'webuploader_' + Date.now();
+                jsreciver = 'webuploader_' +(new Date());
 
             Runtime.apply( this, arguments );
             this.type = type;
