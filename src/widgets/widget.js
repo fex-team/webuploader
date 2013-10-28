@@ -5,14 +5,14 @@
 define( 'webuploader/widgets/widget', [ 'webuploader/base',
         'webuploader/core/uploader' ], function( Base, Uploader ) {
 
-    var $ = Base.$
+    var $ = Base.$,
         _init = Uploader.prototype._init,
         IGNORE = {},
         widgetClass = [],
         toString = Object.prototype.toString;
 
     function isArrayLike( obj ) {
-        return obj && ~[ '[object Arguments]', '[object Array]'].indexOf( toString.call( obj ) );
+        return obj && ~'[object Arguments],[object Array]'.indexOf( toString.call( obj ) );
     }
 
     function Widget( uploader ) {
