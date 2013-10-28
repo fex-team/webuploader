@@ -8,11 +8,23 @@ define( 'webuploader/widgets/widget', [ 'webuploader/base',
     var $ = Base.$,
         _init = Uploader.prototype._init,
         IGNORE = {},
-        widgetClass = [],
-        toString = Object.prototype.toString;
+        widgetClass = [];
 
     function isArrayLike( obj ) {
-        return obj && ~'[object Arguments],[object Array]'.indexOf( toString.call( obj ) );
+        if ( !obj ) {
+            return false;
+        }
+
+        var length = obj.length,
+            type = $.type( obj );
+
+        if ( obj.nodeType === 1 && length ) {
+            return true;
+        }
+
+        return type === 'array' || type !== 'function' && type !== 'string' &&
+            ( length === 0 ||
+            typeof length === 'number' && length > 0 && ( length - 1 ) in obj );
     }
 
     function Widget( uploader ) {

@@ -36,7 +36,7 @@ define( 'webuploader/runtime/flash/runtime', [
                 clients = {},
                 destory = this.destory,
                 runtime = this,
-                jsreciver = 'webuploader_' + (+new Date());
+                jsreciver = Base.guid( 'webuploader_' );
 
             Runtime.apply( this, arguments );
             this.type = type;
@@ -68,6 +68,7 @@ define( 'webuploader/runtime/flash/runtime', [
                 return runtime.flashExec.apply( client, arguments );
             }
 
+            // flash的接受器。
             window[ jsreciver ] = function( evt, obj ) {
                 var type = evt.type || evt,
                     parts, uid;
@@ -76,14 +77,13 @@ define( 'webuploader/runtime/flash/runtime', [
                 uid = parts[ 0 ];
                 type = parts[ 1 ];
 
-                console.log.apply( console, arguments );
-
                 if ( type === 'Ready' && uid === runtime.uid ) {
                     runtime.trigger( 'ready' );
                 } else if ( clients[ uid ] ) {
                     clients[ uid ].trigger( type.toLowerCase(), evt, obj );
                 }
             };
+
             this.jsreciver = jsreciver;
 
             this.destory = function() {
