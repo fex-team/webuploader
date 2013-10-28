@@ -9,14 +9,22 @@ define( 'webuploader/core/mediator', [ 'webuploader/base' ], function( Base ) {
 
     // 根据条件过滤出事件handlers.
     function findHandlers( arr, name, callback, context ) {
-        // @todo IE8不支持filter，需要换种写法。
-        return arr.filter(function( handler ) {
+        return $.grep( arr, function( handler ) {
             return handler &&
-                    (!name || handler.e === name) &&
-                    (!callback || handler.cb === callback ||
-                    handler.cb._cb === callback) &&
-                    (!context || handler.ctx === context);
+                (!name || handler.e === name) &&
+                (!callback || handler.cb === callback ||
+                handler.cb._cb === callback) &&
+                (!context || handler.ctx === context);
         });
+
+        // @todo IE8不支持filter，需要换种写法。
+        // return arr.filter(function( handler ) {
+        //     return handler &&
+        //             (!name || handler.e === name) &&
+        //             (!callback || handler.cb === callback ||
+        //             handler.cb._cb === callback) &&
+        //             (!context || handler.ctx === context);
+        // });
     }
 
     function triggerHanders( events, args ) {
@@ -122,10 +130,9 @@ define( 'webuploader/core/mediator', [ 'webuploader/base' ], function( Base ) {
                 return this;
             }
 
-            findHandlers( events, name, callback, context )
-                    .forEach(function( handler ) {
-                        delete events[ handler.id ];
-                    });
+            $.each( findHandlers( events, name, callback, context ), function() {
+                delete events[ this.id ];
+            });
 
             return this;
         },

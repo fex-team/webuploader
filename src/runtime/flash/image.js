@@ -22,9 +22,11 @@ define( 'webuploader/runtime/flash/image', [
             },
 
             makeThumbnail: function( width, height ) {
-                var blob, target, base64;
+                var owner = this.owner,
+                    blob, target, base64;
+
                 this.flashExec( 'Image', 'downsize', width, height, true );
-                blob = this.flashExec( 'Image', 'getAsBlob', 'image/jpeg' );
+                blob = this.flashExec( 'Image', 'getAsBlob', owner.type || 'image/jpeg' );
 
                 target = new RuntimeTarget( 'FileReaderSync' );
                 target.connectRuntime( this.owner.getRuid() );
@@ -41,7 +43,7 @@ define( 'webuploader/runtime/flash/image', [
             },
 
             getOrientation: function() {
-                var meta = this.owner.info.meta;
+                var meta = this.owner.meta;
                 return meta.tiff && meta.tiff.Orientation || 1;
             },
 
