@@ -47,7 +47,9 @@ define( 'webuploader/widgets/uploadmgr', [
 
                 if ( !stats.numOfQueue && !me.request('has-requests') ) {
                     me.runing = false;
-                    me.owner.trigger( 'uploadFinished' );
+                    Base.nextTick(function() {
+                        me.owner.trigger( 'uploadFinished' );
+                    });
                 }
             },
 
