@@ -36,14 +36,14 @@ define( 'webuploader/runtime/flash/runtime', [
                 clients = {},
                 destory = this.destory,
                 runtime = this,
-                jsreciver = 'webuploader_' +(new Date());
+                jsreciver = 'webuploader_' + (+new Date());
 
             Runtime.apply( this, arguments );
             this.type = type;
 
 
             // 这个方法的调用者，实际上是RuntimeClient
-            this.exec = function( comp, fn/*, args...*/) {
+            this.exec = function( comp, fn/*, args...*/ ) {
                 var client = this,
                     uid = client.uid,
                     args = Base.slice( arguments, 2 ),
@@ -75,6 +75,8 @@ define( 'webuploader/runtime/flash/runtime', [
                 parts = type.split('::');
                 uid = parts[ 0 ];
                 type = parts[ 1 ];
+
+                console.log.apply( console, arguments );
 
                 if ( type === 'Ready' && uid === runtime.uid ) {
                     runtime.trigger( 'ready' );
