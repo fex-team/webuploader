@@ -23,6 +23,18 @@ define( 'webuploader/base', [ 'webuploader/jq-bridge' ], function( $ ) {
         };
     }
 
+    function createObject( proto ) {
+        var f;
+
+        if ( Object.create ) {
+            return Object.create( proto )
+        } else {
+            f = function(){};
+            f.prototype = proto;
+            return new f();
+        }
+    }
+
     return {
         $: $,
 
@@ -93,7 +105,7 @@ define( 'webuploader/base', [ 'webuploader/jq-bridge' ], function( $ ) {
 
             // 构建原型，添加原型方法或属性。
             // 暂时用Object.create实现。
-            child.prototype = Object.create( Super.prototype );
+            child.prototype = createObject( Super.prototype );
             protos && $.extend( true, child.prototype, protos );
 
             return child;
@@ -133,7 +145,7 @@ define( 'webuploader/base', [ 'webuploader/jq-bridge' ], function( $ ) {
             var counter = 0;
 
             return function( prefix ) {
-                var guid = Date.now().toString( 32 ),
+                var guid = (+new Date()).toString( 32 ),
                     i = 0;
 
                 for ( ; i < 5; i++ ) {
