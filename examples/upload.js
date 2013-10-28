@@ -130,6 +130,8 @@
                 } else if ( cur === 'progress' ) {
                     $info.remove();
                     $prgress.css('display', 'block');
+                } else if ( cur === 'complete' ) {
+                    $li.append( '<span class="success"></span>' );
                 }
 
                 $li.removeClass( 'state-' + prev ).addClass( 'state-' + cur );
