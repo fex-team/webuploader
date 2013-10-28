@@ -20,7 +20,8 @@ define( 'webuploader/widgets/queue', [
             'get-stats': 'getStats',
             'get-files': 'getFiles',
             'remove-file': 'removeFile',
-            'pause-all': 'pauseAll'
+            'pause-all': 'pauseAll',
+            'retry': 'retry'
         },
 
         {
