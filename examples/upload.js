@@ -47,7 +47,7 @@
         uploader = WebUploader.create({
             pick: {
                 id: '#filePicker',
-                btnName: '点击选择图片'
+                label: '点击选择图片'
             },
             dnd: '#dndArea',
             paste: '#uploader',
@@ -59,10 +59,10 @@
         });
 
         // 添加“添加文件”的按钮，
-        // uploader.addButton({
-        //     id: '#filePicker2',
-        //     btnName: '继续添加'
-        // });
+        uploader.addButton({
+            id: '#filePicker2',
+            label: '继续添加'
+        });
 
         // 当有文件添加进来时执行，负责view的创建
         function addFile( file ) {
@@ -166,7 +166,8 @@
                     '-webkit-transform': deg,
                     '-mos-transform': deg,
                     '-o-transform': deg,
-                    'transform': deg
+                    'transform': deg,
+                    'filter': 'progid:DXImageTransform.Microsoft.BasicImage(rotation='+ (file.ratation/90)>>0 +');'
                 }));
             });
 
@@ -240,20 +241,22 @@
 
             switch ( state ) {
                 case 'pedding':
-                    $placeHolder.removeClass( 'hide' );
+                    $placeHolder.removeClass( 'element-invisible' );
                     $queue.hide();
-                    $statusBar.hide();
+                    $statusBar.addClass( 'element-invisible' );
+                    uploader.refresh();
                     break;
 
                 case 'ready':
-                    $placeHolder.addClass( 'hide' );
-                    $( '#filePicker2' ).show();
+                    $placeHolder.addClass( 'element-invisible' );
+                    $( '#filePicker2' ).removeClass( 'element-invisible');
                     $queue.show();
                     $statusBar.show();
+                    uploader.refresh();
                     break;
 
                 case 'uploading':
-                    $( '#filePicker2' ).hide();
+                    $( '#filePicker2' ).addClass( 'element-invisible' );
                     $progress.show();
                     $upload.text( '暂停上传' );
                     break;
@@ -302,7 +305,7 @@
             fileSize += file.size;
 
             if ( fileCount === 1 ) {
-                $placeHolder.addClass( 'hide' );
+                $placeHolder.addClass( 'element-invisible' );
                 $statusBar.show();
             }
 

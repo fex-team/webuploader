@@ -14,14 +14,31 @@ define( 'webuploader/core/uploader', [ 'webuploader/base',
     }
 
     // default Options
-    Uploader.options = {
-        accept: [{
-            title: 'Images',
-            extensions: 'gif,jpg,bmp,png',
-            mimeTypes: 'image/*'
-        }]
-    };
+    // widgets中有相应扩展
+    Uploader.options = {};
     Mediator.installTo( Uploader.prototype );
+
+    // 批量添加纯命令式方法。
+    $.each({
+        upload: 'start-upload',
+        stop: 'stop-upload',
+        getFile: 'get-file',
+        getFiles: 'get-files',
+        addFile: 'add-file',
+        addFiles: 'add-file',
+        removeFiles: 'remove-file',
+        retry: 'retry',
+        isInProgress: 'is-in-progress',
+        makeThumb: 'make-thumb',
+        addButton: 'add-btn',
+        refresh: 'refresh',
+        disable: 'disable',
+        enable: 'enable'
+    }, function( fn, command ) {
+        Uploader.prototype[ fn ] = function() {
+            return this.request( command, arguments );
+        };
+    });
 
     $.extend( Uploader.prototype, {
         state: 'pending',
@@ -49,48 +66,6 @@ define( 'webuploader/core/uploader', [ 'webuploader/base',
             }
         },
 
-        addButton: function( pick ) {
-            return this.request( 'add-btn', arguments );
-        },
-
-        makeThumb: function( file, cb, width, height ) {
-            return this.request( 'make-thumb', arguments );
-        },
-
-        // ----------------------------------------------
-        // 中转到uploadMgr中去。
-        // ----------------------------------------------
-
-        /**
-         * 开始上传
-         * @method upload
-         */
-        upload: function() {
-            // return this._mgr.start.apply( this._mgr, arguments );
-            return this.request( 'start-upload', arguments );
-        },
-
-        stop: function() {
-            return this.request( 'stop-upload', arguments );
-        },
-
-        getFile: function() {
-            // return this._mgr.getFile.apply( this._mgr, arguments );
-            return this.request( 'get-file', arguments );
-        },
-
-        addFile: function() {
-            return this.request( 'add-file', arguments );
-        },
-
-        addFiles: function() {
-            return this.request( 'add-file', arguments );
-        },
-
-        removeFile: function() {
-            return this.request( 'remove-file', arguments );
-        },
-
         getStats: function() {
             // return this._mgr.getStats.apply( this._mgr, arguments );
             var stats = this.request( 'get-stats' );
@@ -103,18 +78,6 @@ define( 'webuploader/core/uploader', [ 'webuploader/base',
                 uploadFailNum: stats.numOfUploadFailed,
                 queueNum: stats.numOfQueue
             };
-        },
-
-        retry: function() {
-            return this.request( 'retry', arguments );
-        },
-
-        getFiles: function() {
-            return this.request( 'get-files', arguments );
-        },
-
-        isInProgress: function() {
-            return this.request( 'is-in-progress', arguments );;
         },
 
         // 需要重写此方法来来支持opts.onEvent和instance.onEvent的处理器
@@ -144,9 +107,8 @@ define( 'webuploader/core/uploader', [ 'webuploader/base',
         request: Base.noop,
 
         reset: function() {
-            // todo
+            // @todo
         }
-
     } );
 
     Base.create = function( opts ) {

@@ -12,17 +12,16 @@ define( 'webuploader/lib/filepicker', [ 'webuploader/base',
     function FilePicker( opts ) {
         opts = this.options = $.extend( {}, FilePicker.options, opts );
 
-        opts.button = $( opts.id );
+        opts.container = $( opts.id );
 
-        if ( !opts.button.length ) {
+        if ( !opts.container.length ) {
             throw new Error( '按钮指定错误' );
         }
 
-        opts.container = opts.container || opts.button.parent();
-        opts.container.css( 'position', 'relative' );
-
         opts.label = opts.label || opts.container.text();
+        opts.button = $( document.createElement('div') );
         opts.button.text( opts.label );
+        opts.container.append( opts.button );
 
         RuntimeClent.call( this, 'FilePicker', true );
     }
@@ -79,17 +78,14 @@ define( 'webuploader/lib/filepicker', [ 'webuploader/base',
         refresh: function() {
             var shimContainer = this.getRuntime().getContainer(),
                 button = this.options.button,
-                width = button.width(),
-                height = button.height(),
-                pos = button.position();
+                width = button.outerWidth(),
+                height = button.outerHeight(),
+                pos = button.offset();
 
-            shimContainer.css({
-                position: 'absolute',
+            width && shimContainer.css({
                 width: width + 'px',
-                height: height + 'px',
-                left: pos.left + 'px',
-                top: pos.top + 'px'
-            });
+                height: height + 'px'
+            }).offset( pos );
         },
 
         destroy: function() {
