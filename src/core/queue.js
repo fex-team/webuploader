@@ -111,7 +111,7 @@ define( 'webuploader/core/queue', [
                 for( ; i < len; i++ ) {
                     file = this._queue[ i ];
 
-                    if ( sts.length && !~sts.indexOf( file.getStatus() ) ) {
+                    if ( sts.length && !~$.inArray( file.getStatus(), sts ) ) {
                         continue;
                     }
 

@@ -28,9 +28,9 @@ define('webuploader/widgets/filepicker', ['webuploader/base',
         },
 
         {
-            init: function(opts) {
+            init: function( opts ) {
                 this.pickers = [];
-                return opts.pick && this.addButton(opts.pick);
+                return opts.pick && this.addButton( opts.pick );
             },
 
             refresh: function() {
@@ -39,12 +39,12 @@ define('webuploader/widgets/filepicker', ['webuploader/base',
                 });
             },
 
-            addButton: function(pick) {
+            addButton: function( pick ) {
                 var me = this,
                     opts = me.options,
                     options, picker, deferred;
 
-                if (!pick) {
+                if ( !pick ) {
                     return;
                 }
 
