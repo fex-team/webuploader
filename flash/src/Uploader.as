@@ -91,7 +91,7 @@ package
                 if (comp.hasOwnProperty(action)) {
 					var ret:* = comp[action].apply(comp, args as Array);
 					
-					Uploader.log([uid, compName, action, args, ret]);
+					// Uploader.log([uid, compName, action, args, ret]);
                     return ret;
                 } else {
                     _fireEvent(uid + "::Exception", { name: "RuntimeError", code: RuntimeError.NOT_SUPPORTED_ERR });
