@@ -169,7 +169,7 @@
                     '-mos-transform': deg,
                     '-o-transform': deg,
                     'transform': deg,
-                    'filter': 'progid:DXImageTransform.Microsoft.BasicImage(rotation='+ (file.ratation/90)>>0 +');'
+                    'filter': 'progid:DXImageTransform.Microsoft.BasicImage(rotation='+ (Math.round(file.ratation/90)%4+4)%4 +');'
                 }));
             });
 
@@ -253,7 +253,7 @@
                     $placeHolder.addClass( 'element-invisible' );
                     $( '#filePicker2' ).removeClass( 'element-invisible');
                     $queue.show();
-                    $statusBar.show();
+                    $statusBar.removeClass('element-invisible');
                     uploader.refresh();
                     break;
 
