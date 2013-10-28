@@ -27,7 +27,7 @@ define( 'webuploader/runtime/flash/transport', [
 
                 xhr.connectRuntime( ruid );
 
-                xhr.on( 'progress', function( data ) {
+                xhr.on( 'uploadprogress', function( data ) {
                     var percentage = data.loaded / data.total;
                     return me._onprogress.call( me, percentage );
                 });
@@ -198,14 +198,7 @@ define( 'webuploader/runtime/flash/transport', [
                 }
 
                 this.paused = true;
-
-                if ( this._xhr ) {
-                    this._xhr.upload.onprogress = noop;
-                    this._xhr.onreadystatechange = noop;
-                    clearTimeout( this.timoutTimer );
-                    this._xhr.abort();
-                    this._onprogress( 0 );
-                }
+                this.cancel();
             },
 
             resume: function() {
@@ -219,10 +212,9 @@ define( 'webuploader/runtime/flash/transport', [
 
             cancel: function() {
                 if ( this._xhr ) {
-                    this._xhr.upload.onprogress = noop;
-                    this._xhr.onreadystatechange = noop;
+                    this._xhr.off();
                     clearTimeout( this.timoutTimer );
-                    this._xhr.abort();
+                    this._xhr.exec( 'abort' );
                     this._xhr = null;
                 }
             },
