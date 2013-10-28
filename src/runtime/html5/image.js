@@ -11,7 +11,32 @@ define( 'webuploader/runtime/html5/transport', [ 'webuploader/base',
 
     var $ = Base.$,
         rdataurl = /^data:/i,
-        BLANK_IMAGE = 'data:image/gif;base64,R0lGODlhAQABAAD/ACwAAAAAAQABAAACADs%3D';
+        BLANK_IMAGE = 'data:image/gif;base64,R0lGODlhAQABAAD/ACwAAAAAAQABAAACADs%3D',
+        throttle;
+
+    // 根据要处理的文件大小来节流，一次不能处理太多，会卡。
+    throttle = (function( max ) {
+        var occupied = 0,
+            waiting = [],
+            tick = function() {
+                var item;
+
+                while( waiting.length && occupied < max ) {
+                    item = waiting.shift();
+                    occupied += item[ 0 ];
+                    item[ 1 ]();
+                }
+            };
+
+        return function( emiter, size, cb ) {
+            waiting.push( [ size, cb ] );
+            emiter.once( 'destroy', function() {
+                occupied -= size;
+                setTimeout( tick, 1 );
+            } );
+            setTimeout( tick, 1 );
+        }
+    })( 5 * 1024 * 1024 );
 
     return Html5Runtime.register( 'Image', {
 
@@ -198,12 +223,14 @@ define( 'webuploader/runtime/html5/transport', [ 'webuploader/base',
             var me = this,
                 img = me._img;
 
-            me._blob = blob;
-            me.type = blob.type;
-            img.src = Util.createObjectURL( blob.getSource() );
-            me.owner.once( 'load', function() {
-                Util.revokeObjectURL( img.src );
-            } );
+            throttle( me.owner, blob.size, function() {
+                me._blob = blob;
+                me.type = blob.type;
+                img.src = Util.createObjectURL( blob.getSource() );
+                me.owner.once( 'load', function() {
+                    Util.revokeObjectURL( img.src );
+                } );
+            });
         },
 
         _resize: function( img, cvs, width, height ) {
