@@ -73,9 +73,9 @@ table {
     margin: 20px;
 }
 
-#uploader .placeholder.hide {
-    position: absolute!important;
-    top: -99999px;
+.element-invisible {
+    position: absolute !important;
+    clip: rect(1px,1px,1px,1px);
 }
 
 #uploader .placeholder {
@@ -372,6 +372,7 @@ table {
 
 #filePicker2 {
     display: inline-block;
+    float: left;
 }
 
 #uploader .statusBar .btns .webuploader-pick,
@@ -389,7 +390,7 @@ table {
     font-size: 14px;
     float: left;
 }
-#uploader .statusBar .btns .webuploader-pick:hover,
+#uploader .statusBar .btns .webuploader-pick-hover,
 #uploader .statusBar .btns .uploadBtn:hover,
 #uploader .statusBar .btns .uploadBtn.state-uploading:hover,
 #uploader .statusBar .btns .uploadBtn.state-paused:hover {

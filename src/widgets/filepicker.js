@@ -13,16 +13,30 @@ define('webuploader/widgets/filepicker', ['webuploader/base',
         pick: {
             multiple: true,
             id: '#uploaderBtn'
-        }
+        },
+
+        accept: [{
+            title: 'Images',
+            extensions: 'gif,jpg,bmp,png',
+            mimeTypes: 'image/*'
+        }]
     });
 
     return Uploader.register({
-            'add-btn': 'addButton'
+            'add-btn': 'addButton',
+            'refresh': 'refresh'
         },
 
         {
             init: function(opts) {
+                this.pickers = [];
                 return opts.pick && this.addButton(opts.pick);
+            },
+
+            refresh: function() {
+                $.each( this.pickers, function() {
+                    this.refresh();
+                });
             },
 
             addButton: function(pick) {
@@ -53,6 +67,8 @@ define('webuploader/widgets/filepicker', ['webuploader/base',
                     me.owner.request('add-file', [files]);
                 });
                 picker.init();
+
+                this.pickers.push( picker );
 
                 return deferred.promise();
             }
