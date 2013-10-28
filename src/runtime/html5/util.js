@@ -9,11 +9,11 @@ define( 'webuploader/runtime/html5/util', [ 'webuploader/base' ], function( Base
     var $ = Base.$,
         urlAPI = window.createObjectURL && window ||
             window.URL && URL.revokeObjectURL && URL ||
-            webkitURL
+            window.webkitURL
 
     return {
-        createObjectURL: urlAPI.createObjectURL,
-        revokeObjectURL: urlAPI.revokeObjectURL,
+        createObjectURL: urlAPI && urlAPI.createObjectURL,
+        revokeObjectURL: urlAPI && urlAPI.revokeObjectURL,
 
         // 限制fileReader, 因为不能回收，所以只能共用。
         getFileReader: (function(){

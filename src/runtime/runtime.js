@@ -30,7 +30,7 @@ define( 'webuploader/runtime/runtime', [ 'webuploader/base',
 
             container = $(document.createElement( 'div' ));
 
-            container.attr( 'id', 'flash' + this.uid );
+            container.attr( 'id', 'rt_' + this.uid );
             container.css({
                 position: 'absolute',
                 top: '0px',
