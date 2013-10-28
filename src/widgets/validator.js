@@ -96,7 +96,7 @@ define( 'webuploader/widgets/validator', [
             count += file.size;
         } );
 
-        uploader.on( 'fileDequeued', function() {
+        uploader.on( 'fileDequeued', function( file ) {
             count -= file.size;
         } );
     } );
