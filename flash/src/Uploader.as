@@ -73,7 +73,7 @@ package
 
         public function exec(uid:String, compName:String, action:String, args:* = null) : *
         {
-            Uploader.log([uid, compName, action, args]);
+            // Uploader.log([uid, compName, action, args]);
 
             uid = Utils.sanitize(uid); // make it safe
 
@@ -89,7 +89,10 @@ package
 
                 // execute the action if available
                 if (comp.hasOwnProperty(action)) {
-                    return comp[action].apply(comp, args as Array);
+					var ret:* = comp[action].apply(comp, args as Array);
+					
+					Uploader.log([uid, compName, action, args, ret]);
+                    return ret;
                 } else {
                     _fireEvent(uid + "::Exception", { name: "RuntimeError", code: RuntimeError.NOT_SUPPORTED_ERR });
                 }
@@ -121,7 +124,6 @@ package
             }
 
             evt.type = [uid, exType].join('::');
-			Uploader.log([exType]);
 			_fireEvent(evt, e.hasOwnProperty('data') ? e.data : null);
         }
 
