@@ -1,14 +1,16 @@
 package com
 {
 	import com.errors.DOMError;
-	import com.events.OProgressEvent;
 	import com.events.OErrorEvent;
+	import com.events.OProgressEvent;
 	import com.utils.Base64;
-	import com.utils.OEventDispatcher;
 	import com.utils.Buffer;
+	import com.utils.OEventDispatcher;
+	
 	import flash.events.Event;
 	import flash.events.IOErrorEvent;
 	import flash.events.ProgressEvent;
+	import flash.external.ExternalInterface;
 	import flash.net.FileReference;
 	import flash.utils.ByteArray;
 	
