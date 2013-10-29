@@ -76,10 +76,11 @@ define( 'webuploader/runtime/flash/runtime', [
                 uid = parts[ 0 ];
                 type = parts[ 1 ];
 
+                // console.log.apply( console, arguments );
+
                 if ( type === 'Ready' && uid === runtime.uid ) {
                     runtime.trigger( 'ready' );
                 } else if ( clients[ uid ] ) {
-                    console.log( type, evt, obj );
                     clients[ uid ].trigger( type.toLowerCase(), evt, obj );
                 }
             }

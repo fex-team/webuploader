@@ -1,9 +1,10 @@
 package
 {
-    import com.*;
-	import com.errors.*;
-	import com.events.*
-
+    import com.Utils;
+    import com.errors.RuntimeError;
+    import com.events.OProgressEvent;
+    import com.utils.Zhenpin;
+    
     import flash.display.Sprite;
     import flash.display.StageAlign;
     import flash.display.StageScaleMode;
@@ -11,7 +12,7 @@ package
     import flash.events.ProgressEvent;
     import flash.external.ExternalInterface;
     import flash.system.Security;
-    import flash.utils.*;
+    import flash.utils.getQualifiedClassName;
 
     [SWF(width='500', height='500')]
     public class Uploader extends Sprite
@@ -60,6 +61,9 @@ package
             if (params.hasOwnProperty("jsreciver") && /^[\w\.]+$/.test(params["jsreciver"])) {
                 jsReciver = params["jsreciver"];
             }
+			
+			// 整个很重要，用来增加as贞频的。
+			Zhenpin.start();
 
             //ExternalInterface.marshallExceptions = true; // propagate AS exceptions to JS and vice-versa
             ExternalInterface.addCallback('exec', exec);
@@ -89,6 +93,7 @@ package
 
                 // execute the action if available
                 if (comp.hasOwnProperty(action)) {
+					// Uploader.log([uid, compName, action, args]);
 					var ret:* = comp[action].apply(comp, args as Array);
 					
 					// Uploader.log([uid, compName, action, args, ret]);
@@ -98,7 +103,8 @@ package
                 }
 
             } catch(err:*) { // re-route exceptions thrown by components (TODO: check marshallExceptions feature)
-                _fireEvent(uid + "::Exception", { name: getQualifiedClassName(err).replace(/^[^:*]::/, ''), code: err.errorID });
+				// Uploader.log([ getQualifiedClassName(err)]);
+				_fireEvent(uid + "::Exception", { name: getQualifiedClassName(err).replace(/^[^:*]::/, ''), code: err.errorID });
             }
         }
 
@@ -124,6 +130,7 @@ package
             }
 
             evt.type = [uid, exType].join('::');
+			// Uploader.log([uid, exType, e.hasOwnProperty('data') ? e.data : null]);
 			_fireEvent(evt, e.hasOwnProperty('data') ? e.data : null);
         }
 
@@ -140,7 +147,7 @@ package
             try {
 				ExternalInterface.call(jsReciver, evt, obj);
             } catch(err:*) {
-				Uploader.log(["Exception", { name: 'RuntimeError', message: 4 } ]);
+				Uploader.log(err);
                 //_fireEvent("Exception", { name: 'RuntimeError', message: 4 });
 
                 // throwing an exception would be better here
