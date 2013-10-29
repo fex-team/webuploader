@@ -1,12 +1,13 @@
 /**
  * @fileOverview 图片操作
- * @import base.js, widgets/widget.js, core/uploader.js, lib/image.js
+ * @import base.js, widgets/widget.js, core/uploader.js, lib/imagecompress.js, lib/imagepreview.js
  */
 define( 'webuploader/widgets/image', [
     'webuploader/base',
     'webuploader/core/uploader',
-    'webuploader/lib/image' ], function(
-        Base, Uploader, Image ) {
+    'webuploader/lib/imagecompress',
+    'webuploader/lib/imagepreview' ], function(
+        Base, Uploader, ImageCompress, ImagePreivew ) {
 
     var $ = Base.$,
         getInstance;
@@ -27,7 +28,7 @@ define( 'webuploader/widgets/image', [
 
         {
             makeThumb: function( file, cb, width, height ) {
-                var image;
+                var previewer;
 
                 file = this.request( 'get-file', file );
 
@@ -37,48 +38,47 @@ define( 'webuploader/widgets/image', [
                     return;
                 }
 
-                image = new Image({
+                previewer = new ImagePreivew({
                     allowMagnify: true,
-                    crop: true,
-                    preserveHeader:false
+                    crop: true
                 });
 
-                image.once( 'load', function() {
-                    file.metas = image.getMetas();
-                    file.orientation = image.getOrientation();
-                    cb( false, image.makeThumbnail( width, height ) );
-                    image.destroy();
+                previewer.once( 'complete', function() {
+                    // 复用，下次图片操作的时候，直接赋值。
+                    file.metas = previewer.getMetas();
+                    file.orientation = previewer.getOrientation();
+
+                    cb( false, previewer.getThumbnail() );
+                    previewer.destroy();
                 });
 
-                image.once( 'error', function( reason ) {
-                    cb( reason );
-                    image.destroy();
-                    deferred.reject( reason );
+                previewer.once( 'error', function( reason ) {
+                    cb( reason || true );
+                    previewer.destroy();
                 });
 
-                image.load( file.source );
+                previewer.preview( file.source, width, height );
             },
 
             resizeImage: function( file ) {
                 var resize = this.options.resize,
-                    deferred, image;
+                    deferred, compressor;
 
                 if ( resize && (file.type === 'image/jpg' ||
                         file.type === 'image/jpeg') && !file.resized ) {
 
                     deferred = Base.Deferred();
 
-                    image = new Image({
+                    compressor = new ImageCompress({
                         preserveHeader: true
                     });
 
-                    image.once( 'load', function() {
+                    compressor.once( 'complete', function() {
                         var blob, size;
 
-                        image.downsize( resize.width, resize.height, resize.quality );
-                        blob = image.getAsBlob();
-                        image.destroy();
-                        image = null;
+                        blob = compressor.getAsBlob();
+                        compressor.destroy();
+                        compressor = null;
 
                         size = file.size;
                         file.source = blob;
@@ -89,13 +89,13 @@ define( 'webuploader/widgets/image', [
 
                     });
 
-                    image.once( 'error', function( reason ) {
-                        image.destroy();
+                    compressor.once( 'error', function( reason ) {
+                        compressor.destroy();
                         deferred.reject( reason );
                     });
 
-                    file.metas && image.setMetas( file.metas );
-                    image.load( file.source );
+                    file.metas && compressor.setMetas( file.metas );
+                    compressor.compress( file.source, resize.width, resize.height );
 
                     return deferred.promise();
                 }

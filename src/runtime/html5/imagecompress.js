@@ -2,7 +2,7 @@
  * @fileOverview Image
  * @import base.js, runtime/html5/runtime.js, runtime/html5/util.js, runtime/html5/imagemeta.js, lib/blob.js
  */
-define( 'webuploader/runtime/html5/transport', [ 'webuploader/base',
+define( 'webuploader/runtime/html5/imagecompress', [ 'webuploader/base',
         'webuploader/runtime/html5/runtime',
         'webuploader/runtime/html5/util',
         'webuploader/runtime/html5/imagemeta',
@@ -10,47 +10,21 @@ define( 'webuploader/runtime/html5/transport', [ 'webuploader/base',
         ], function( Base, Html5Runtime, Util, ImageMeta, Blob ) {
 
     var $ = Base.$,
-        rdataurl = /^data:/i,
-        BLANK_IMAGE = 'data:image/gif;base64,R0lGODlhAQABAAD/ACwAAAAAAQABAAACADs%3D',
-        throttle;
+        BLANK_IMAGE = 'data:image/gif;base64,R0lGODlhAQABAAD/ACwAAAAAAQABAAACADs%3D'
 
-    // 根据要处理的文件大小来节流，一次不能处理太多，会卡。
-    throttle = (function( max ) {
-        var occupied = 0,
-            waiting = [],
-            tick = function() {
-                var item;
-
-                while( waiting.length && occupied < max ) {
-                    item = waiting.shift();
-                    occupied += item[ 0 ];
-                    item[ 1 ]();
-                }
-            };
-
-        return function( emiter, size, cb ) {
-            waiting.push( [ size, cb ] );
-            emiter.once( 'destroy', function() {
-                occupied -= size;
-                setTimeout( tick, 1 );
-            } );
-            setTimeout( tick, 1 );
-        }
-    })( 5 * 1024 * 1024 );
-
-    return Html5Runtime.register( 'Image', {
+    return Html5Runtime.register( 'ImageCompress', {
 
         // flag: 标记是否被修改过。
         modified: false,
 
-        _init: function() {
+        init: function() {
             var me = this,
                 img = new Image(),
                 opts = this.options;
 
             img.onload = function() {
                 // 读取meta信息。
-                if ( opts.metaHead && !me.metas && me.type === 'image/jpeg' ) {
+                if ( !me.metas && me.type === 'image/jpeg' ) {
                     ImageMeta.parse( me._blob , function( error, ret ) {
                         me.metas = ret;
                         me.owner.trigger( 'load' );
@@ -67,55 +41,6 @@ define( 'webuploader/runtime/html5/transport', [ 'webuploader/base',
             me._img = img;
         },
 
-        getInfo: function() {
-            return {
-                type: this.type,
-                meta: this.metas
-            }
-        },
-
-        /**
-         * @method load
-         */
-        load: function( source ) {
-            var me = this,
-                opts = this.options,
-                img, blob;
-
-            me._init();
-
-            // 如果已经是blob了，则直接loadAsBlob
-            if ( source instanceof Blob ) {
-                me._loadAsBlob( source );
-            } else if( rdataurl.test( source ) ) {
-                blob = Util.dataURL2Blob( source );
-                me._loadAsBlob( blob );
-            } else {
-                // @todo
-                // 如果是uri, 远程图片地址，或者ObjectUrl
-                // 注意此方法load进来的图片是不带head meta信息的。
-                // 如果需要head meta信息，需要改用xhr去读取二进制数据。
-                // img = new Image();
-                // img.crossOrigin = opts.crossOrigin;
-                // img.onload = function() {
-                //     var canvas = document.createElement( 'canvas' );
-                //     canvas.width = img.width;
-                //     canvas.height = img.height;
-                //     me._renderImageToCanvas( canvas, img, 0, 0 );
-                //     blob = Util.dataURL2Blob( canvas.toDataURL( 'image/png' ) );
-                //     me._loadAsBlob( blob );
-
-                //     canvas.getContext( '2d' )
-                //         .clearRect( 0, 0, canvas.width, canvas.height );
-                //     canvas.width = canvas.height = 0;
-                //     img.src = BLANK_IMAGE;
-                //     img = img.onload = canvas = null;
-                // };
-                // img.src = source;
-            }
-            return me;
-        },
-
         downsize: function( width, height ) {
             var opts = this.options,
                 canvas = this._canvas ||
@@ -129,35 +54,6 @@ define( 'webuploader/runtime/html5/transport', [ 'webuploader/base',
             this.modified = true;
         },
 
-        /**
-         * 创建缩略图，但是不会修改原始图片大小。
-         */
-        makeThumbnail: function( width, height ) {
-            var opts = this.options,
-                canvas = document.createElement( 'canvas' ),
-                result;
-
-            // if ( this.metas && this.metas.exif && (result =
-            //         this.metas.exif.get( 'Thumbnail' )) ) {
-            //     return result;
-            // }
-
-            this._resize( this._img, canvas, width, height, true );
-
-            if ( this.type === 'image/jpeg' ) {
-                result = canvas.toDataURL( 'image/jpeg', opts.quality / 100 );
-            } else {
-                result = canvas.toDataURL( this.type );
-            }
-
-            canvas.getContext( '2d' )
-                    .clearRect( 0, 0, canvas.width, canvas.height );
-            canvas.width = canvas.height = 0;
-            canvas = null;
-
-            return result;
-        },
-
         getAsBlob: function( type ) {
             var blob = this._blob,
                 opts = this.options,
@@ -168,7 +64,6 @@ define( 'webuploader/runtime/html5/transport', [ 'webuploader/base',
             // blob需要重新生成。
             if ( this.modified || this.type !== type ) {
                 canvas = this._canvas;
-                ruid = this.owner.getRuid();
 
                 if ( type === 'image/jpeg' ) {
                     blob = canvas.toDataURL( 'image/jpeg', opts.quality / 100 );
@@ -178,29 +73,25 @@ define( 'webuploader/runtime/html5/transport', [ 'webuploader/base',
                         blob = ImageMeta.updateImageHead( blob,
                                 this.metas.imageHead );
                         blob = Util.arrayBufferToBlob( blob, type );
-                        return new Blob( ruid, blob );
+                        return blob;
                     }
                 } else {
                     blob = canvas.toDataURL( type );
                 }
 
-                blob = new Blob( ruid, Util.dataURL2Blob( blob ) );
+                blob = Util.dataURL2Blob( blob );
             }
 
             return blob;
         },
 
+        setMetas: function( val ) {
+            this.metas = val;
+        },
+
         getOrientation: function() {
             return this.metas && this.metas.exif &&
                     this.metas.exif.get( 'Orientation' ) || 1;
-        },
-
-        getMetas: function() {
-            return this.metas;
-        },
-
-        setMetas: function( val ) {
-            this.metas = val;
         },
 
         destroy: function() {
@@ -219,18 +110,19 @@ define( 'webuploader/runtime/html5/transport', [ 'webuploader/base',
             this._img = this._blob = null;
         },
 
-        _loadAsBlob: function( blob ) {
+        compress: function( blob, width, height ) {
             var me = this,
                 img = me._img;
 
-            throttle( me.owner, blob.size, function() {
-                me._blob = blob;
-                me.type = blob.type;
-                img.src = Util.createObjectURL( blob.getSource() );
-                me.owner.once( 'load', function() {
-                    Util.revokeObjectURL( img.src );
-                } );
-            });
+            me._blob = blob;
+            me.type = blob.type;
+            img.src = Util.createObjectURL( blob.getSource() );
+            me.owner.once( 'load', function() {
+                Util.revokeObjectURL( img.src );
+
+                me.downsize( width, height );
+                me.owner.trigger( 'complete' );
+            } );
         },
 
         _resize: function( img, cvs, width, height ) {
