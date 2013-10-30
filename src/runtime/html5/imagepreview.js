@@ -70,14 +70,13 @@ define( 'webuploader/runtime/html5/imagepreview', [ 'webuploader/base',
             var me = this,
                 img = me._img;
 
-            me.width = width;
-            me.height = height;
             throttle( me.owner, blob.size, function() {
                 me._blob = blob;
                 me.type = blob.type;
                 img.src = Util.createObjectURL( blob.getSource() );
                 me.owner.once( 'load', function() {
                     Util.revokeObjectURL( img.src );
+                    me.resize( width, height );
                     me.owner.trigger( 'complete' );
                 } );
             });
@@ -90,12 +89,8 @@ define( 'webuploader/runtime/html5/imagepreview', [ 'webuploader/base',
         /**
          * 创建缩略图，但是不会修改原始图片大小。
          */
-        getThumbnail: function() {
-            var opts = this.options,
-                canvas = document.createElement( 'canvas' ),
-                width = this.width,
-                height = this.height,
-                result;
+        resize: function( width, height ) {
+            var canvas = this.canvas = document.createElement( 'canvas' );
 
             // if ( this.metas && this.metas.exif && (result =
             //         this.metas.exif.get( 'Thumbnail' )) ) {
@@ -103,6 +98,12 @@ define( 'webuploader/runtime/html5/imagepreview', [ 'webuploader/base',
             // }
 
             this._resize( this._img, canvas, width, height, true );
+        },
+
+        getAsDataURL: function() {
+            var canvas = this.canvas,
+                opts = this.options,
+                result;
 
             if ( this.type === 'image/jpeg' ) {
                 result = canvas.toDataURL( 'image/jpeg', opts.quality / 100 );
@@ -114,7 +115,6 @@ define( 'webuploader/runtime/html5/imagepreview', [ 'webuploader/base',
                     .clearRect( 0, 0, canvas.width, canvas.height );
             canvas.width = canvas.height = 0;
             canvas = null;
-
             return result;
         },
 
