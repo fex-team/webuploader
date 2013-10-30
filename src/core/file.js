@@ -1,5 +1,6 @@
 /**
  * @fileOverview 文件属性封装
+ * @import base.js, core/mediator.js
  */
 define( 'webuploader/core/file', [
         'webuploader/base',
