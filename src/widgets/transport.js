@@ -72,7 +72,7 @@ define( 'webuploader/widgets/transport', [
                     }
 
                     // 通过owner广播出去
-                    me.owner.trigger.apply( me.owner, args );
+                    return me.owner.trigger.apply( me.owner, args );
                 };
 
                 fileHandler = function( cur, prev ) {
