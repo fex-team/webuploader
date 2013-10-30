@@ -17,7 +17,6 @@
   "readmeFilename": "README.md",
   "devDependencies": {
     "grunt": "~0.4.1",
-    "grunt-contrib-concat": "~0.3.0",
     "grunt-size": "~0.1.0",
     "grunt-jsbint": "~0.0.4",
     "grunt-contrib-watch": "~0.4.4"
