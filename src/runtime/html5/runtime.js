@@ -64,7 +64,7 @@ define( 'webuploader/runtime/html5/runtime', [
 
         // 注册html5运行时。
         if ( window.Blob && window.FileReader && window.DataView ) {
-            // Runtime.addRuntime( type, Html5Runtime );
+            Runtime.addRuntime( type, Html5Runtime );
         }
 
         return Html5Runtime;
