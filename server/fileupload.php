@@ -22,8 +22,6 @@ header("Cache-Control: no-store, no-cache, must-revalidate");
 header("Cache-Control: post-check=0, pre-check=0", false);
 header("Pragma: no-cache");
 
-// header("HTTP/1.0 500 Internal Server Error");
-
 
 // Support CORS
 // header("Access-Control-Allow-Origin: *");
@@ -46,7 +44,7 @@ if ( !empty($_REQUEST[ 'debug' ]) ) {
 @set_time_limit(5 * 60);
 
 // Uncomment this one to fake upload time
-// usleep(5000);
+usleep(5000);
 
 // Settings
 // $targetDir = ini_get("upload_tmp_dir") . DIRECTORY_SEPARATOR . "plupload";
