@@ -31,8 +31,8 @@ define( 'webuploader/lib/imagepreview', [ 'webuploader/base',
             });
         },
 
-        getThumbnail: function() {
-            return this.exec( 'getThumbnail' );
+        getAsDataURL: function() {
+            return this.exec( 'getAsDataURL' );
         },
 
         getOrientation: function() {

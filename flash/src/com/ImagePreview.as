@@ -229,7 +229,7 @@ package com
 			return _orientation;
 		}
 		
-		public function getThumbnail():String {
+		public function getAsDataURL():String {
 			return 'data:' + type + ';base64,' + Base64.encode( _ba );
 		}
 		
