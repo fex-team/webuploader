@@ -159,7 +159,7 @@ define( 'webuploader/runtime/html5/imagepreview', [ 'webuploader/base',
                     height / naturalHeight );
 
             // 不允许放大。
-            scale = opts.allowMagnify ? Math.min( 1, scale ) : scale;
+            scale = !opts.allowMagnify ? Math.min( 1, scale ) : scale;
 
             w = naturalWidth * scale;
             h = naturalHeight * scale;
