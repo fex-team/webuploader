@@ -1,5 +1,6 @@
 /**
  * @file 暴露变量给外部使用。
+ * @import base.js
  */
 require( [ 'webuploader/base' ], function( Base ) {
     var exportName, origin;
