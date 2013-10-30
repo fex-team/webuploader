@@ -41,6 +41,7 @@ define( 'webuploader/core/mediator', [ 'webuploader/base' ], function( Base ) {
                 break;
             }
         }
+
         return !stoped;
     }
 
