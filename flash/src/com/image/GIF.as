@@ -9,15 +9,16 @@
 package com.image
 {
 	import com.BinaryReader;
+	
 	import flash.utils.ByteArray;
 	
-	public class PNG 
+	public class GIF 
 	{		
-		public static const MIME:String = 'image/png';
+		public static const MIME:String = 'image/gif';
 		
 		protected var _br:BinaryReader;
 		
-		public function PNG(binData:ByteArray)
+		public function GIF(binData:ByteArray)
 		{
 			_br = new BinaryReader;
 			_br.init(binData);
@@ -25,7 +26,7 @@ package com.image
 		
 		static public function test(binData:ByteArray) : Boolean
 		{
-			var sign:Array = [ 137, 80, 78, 71, 13, 10, 26, 10 ];
+			var sign:Array = [ 71, 73, 70 ];
 			
 			for (var i:int = sign.length - 1; i >= 0 ; i--) {
 				if (binData[i] != sign[i]) {
@@ -38,20 +39,16 @@ package com.image
 		
 		public function info() : Object
 		{
-			var chunk:Object, idx:uint;
+			var a:uint = _br.BYTE(6),
+				b:uint = _br.BYTE(7),
+				c:uint = _br.BYTE(8),
+				d:uint = _br.BYTE(9);
 			
-			chunk = _getChunkAt(8);
-			
-			if (chunk.type == 'IHDR') {
-				idx = chunk.start;
-				return {
-					width: _br.LONG(idx),
-					height: _br.LONG(idx += 4),
-					type: PNG.MIME
-				};
+			return {
+				width: b * 256 + a,
+				height: d * 256 + c,
+				type: GIF.MIME
 			}
-				
-			return null;
 		}
 		
 		
@@ -84,5 +81,6 @@ package com.image
 		}
 		
 	}
-
+	
 }
+
