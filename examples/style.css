@@ -73,6 +73,11 @@ table {
     margin: 20px;
 }
 
+.element-invisible {
+    position: absolute !important;
+    clip: rect(1px,1px,1px,1px);
+}
+
 #uploader .placeholder {
     border: 3px dashed #e6e6e6;
     min-height: 238px;
@@ -96,7 +101,8 @@ table {
     cursor: pointer;
     box-shadow: 0 1px 1px rgba(0, 0, 0, 0.1);
 }
-#uploader .placeholder .webuploader-pick:hover {
+
+#uploader .placeholder .webuploader-pick-hover {
     background: #00a2d4;
 }
 
@@ -260,8 +266,7 @@ table {
     z-index: 100;
 }
 
-#uploader .filelist li.state-complete:after {
-    content: '';
+#uploader .filelist li .success {
     display: block;
     position: absolute;
     left: 0;
@@ -275,6 +280,7 @@ table {
 #uploader .filelist div.file-panel {
     position: absolute;
     height: 0;
+    filter: progid:DXImageTransform.Microsoft.gradient(GradientType=0,startColorstr='#80000000', endColorstr='#80000000')\0;
     background: rgba( 0, 0, 0, 0.5 );
     width: 100%;
     top: 0;
@@ -366,6 +372,7 @@ table {
 
 #filePicker2 {
     display: inline-block;
+    float: left;
 }
 
 #uploader .statusBar .btns .webuploader-pick,
@@ -383,7 +390,7 @@ table {
     font-size: 14px;
     float: left;
 }
-#uploader .statusBar .btns .webuploader-pick:hover,
+#uploader .statusBar .btns .webuploader-pick-hover,
 #uploader .statusBar .btns .uploadBtn:hover,
 #uploader .statusBar .btns .uploadBtn.state-uploading:hover,
 #uploader .statusBar .btns .uploadBtn.state-paused:hover {
