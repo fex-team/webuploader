@@ -47,12 +47,14 @@
         uploader = WebUploader.create({
             pick: {
                 id: '#filePicker',
-                btnName: '点击选择图片'
+                label: '点击选择图片'
             },
             dnd: '#dndArea',
             paste: '#uploader',
+            swf: '../dist/Uploader.swf',
             server: '../server/fileupload.php',
             fileNumLimit: 300,
+            runtimeOrder: 'flash,html5',
             fileSizeLimit: 200 * 1024 * 1024,    // 200 M
             fileSingleSizeLimit: 50 * 1024 * 1024    // 50 M
         });
@@ -60,7 +62,7 @@
         // 添加“添加文件”的按钮，
         uploader.addButton({
             id: '#filePicker2',
-            btnName: '继续添加'
+            label: '继续添加'
         });
 
         // 当有文件添加进来时执行，负责view的创建
@@ -129,6 +131,8 @@
                 } else if ( cur === 'progress' ) {
                     $info.remove();
                     $prgress.css('display', 'block');
+                } else if ( cur === 'complete' ) {
+                    $li.append( '<span class="success"></span>' );
                 }
 
                 $li.removeClass( 'state-' + prev ).addClass( 'state-' + cur );
@@ -165,7 +169,8 @@
                     '-webkit-transform': deg,
                     '-mos-transform': deg,
                     '-o-transform': deg,
-                    'transform': deg
+                    'transform': deg,
+                    'filter': 'progid:DXImageTransform.Microsoft.BasicImage(rotation='+ (Math.round(file.ratation/90)%4+4)%4 +');'
                 }));
             });
 
@@ -204,7 +209,7 @@
 
             if ( state === 'ready' ) {
                 text = '选中' + fileCount + '张图片，共' +
-                        uploader.formatSize( fileSize ) + '。';
+                        WebUploader.formatSize( fileSize ) + '。';
             } else if ( state === 'confirm' ) {
                 stats = uploader.getStats();
                 if ( stats.uploadFailNum ) {
@@ -215,7 +220,7 @@
             } else {
                 stats = uploader.getStats();
                 text = '共' + fileCount + '张（' +
-                        uploader.formatSize( fileSize )  +
+                        WebUploader.formatSize( fileSize )  +
                         '），已上传' + stats.successNum + '张';
 
                 if ( stats.uploadFailNum ) {
@@ -239,20 +244,22 @@
 
             switch ( state ) {
                 case 'pedding':
-                    $placeHolder.show();
+                    $placeHolder.removeClass( 'element-invisible' );
                     $queue.hide();
-                    $statusBar.hide();
+                    $statusBar.addClass( 'element-invisible' );
+                    uploader.refresh();
                     break;
 
                 case 'ready':
-                    $placeHolder.hide();
-                    $( '#filePicker2' ).show();
+                    $placeHolder.addClass( 'element-invisible' );
+                    $( '#filePicker2' ).removeClass( 'element-invisible');
                     $queue.show();
-                    $statusBar.show();
+                    $statusBar.removeClass('element-invisible');
+                    uploader.refresh();
                     break;
 
                 case 'uploading':
-                    $( '#filePicker2' ).hide();
+                    $( '#filePicker2' ).addClass( 'element-invisible' );
                     $progress.show();
                     $upload.text( '暂停上传' );
                     break;
@@ -301,7 +308,7 @@
             fileSize += file.size;
 
             if ( fileCount === 1 ) {
-                $placeHolder.hide();
+                $placeHolder.addClass( 'element-invisible' );
                 $statusBar.show();
             }
 

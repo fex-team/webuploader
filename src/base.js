@@ -1,12 +1,52 @@
 /**
  * @fileOverview 基础类方法。其他模块中最好不要直接用jq-bridge, 而是通过Base来使用。
- * jQuery中有的方法，在jq-bridge中实现，jQuery外的方法在此方法中实现。
+ * jQuery中有的方法，在dom中实现，jQuery外的方法在此方法中实现。
  */
-define( 'webuploader/base', [ 'jq-bridge' ], function( $ ) {
-    var noop = function() {};
+
+// 如果生成依赖jquery版本，则用
+// define( 'webuploader/base', [ 'jQuery' ], function( $ ) {
+define( 'webuploader/base', [ 'webuploader/jq-bridge' ], function( $ ) {
+    var noop = function() {},
+        call = Function.call;
+
+    // http://jsperf.com/uncurrythis
+    // 反科里化
+    function uncurryThis( fn ) {
+        return function () {
+            return call.apply( fn, arguments );
+        };
+    }
+
+    function bindFn( fn, context ) {
+        return fn.bind ? fn.bind( context ) : function() {
+            return fn.apply( context, arguments );
+        };
+    }
+
+    function createObject( proto ) {
+        var f;
+
+        if ( Object.create ) {
+            return Object.create( proto )
+        } else {
+            f = function(){};
+            f.prototype = proto;
+            return new f();
+        }
+    }
 
     return {
         $: $,
+
+        isPromise: function( anything ) {
+            return anything && typeof anything.then === 'function';
+        },
+
+        Deferred: $.Deferred,
+
+        when: $.when,
+
+        isIE: /*@cc_on!@*/false,
 
         version: '@version@',
 
@@ -65,7 +105,7 @@ define( 'webuploader/base', [ 'jq-bridge' ], function( $ ) {
 
             // 构建原型，添加原型方法或属性。
             // 暂时用Object.create实现。
-            child.prototype = Object.create( Super.prototype );
+            child.prototype = createObject( Super.prototype );
             protos && $.extend( true, child.prototype, protos );
 
             return child;
@@ -77,21 +117,15 @@ define( 'webuploader/base', [ 'jq-bridge' ], function( $ ) {
 
         noop: noop,
 
+        // 修复方法的执行上下文。
+        bindFn: bindFn,
+
         log: (function() {
             if ( window.console.log ) {
-                return function() {
-                    console.log.apply( console, arguments );
-                };
+                return bindFn( console.log, console );
             }
             return noop;
         })(),
-
-        // Change the context of a function.
-        bindFn: function( fn, context ) {
-            return fn.bind ? fn.bind( context ) : function() {
-                return fn.apply( context, arguments );
-            };
-        },
 
         nextTick: (function() {
             var next = window.requestAnimationFrame ||
@@ -102,9 +136,37 @@ define( 'webuploader/base', [ 'jq-bridge' ], function( $ ) {
                 };
 
             // fix: Uncaught TypeError: Illegal invocation
-            return function() {
-                next.apply( window, arguments );
+            return bindFn( next, window );
+        })(),
+
+        slice: uncurryThis( [].slice ),
+
+        guid: (function() {
+            var counter = 0;
+
+            return function( prefix ) {
+                var guid = (+new Date()).toString( 32 ),
+                    i = 0;
+
+                for ( ; i < 5; i++ ) {
+                    guid += Math.floor( Math.random() * 65535 ).toString( 32 );
+                }
+
+                return (prefix || 'o_') + guid + (counter++).toString( 32 );
+            };
+        }()),
+
+        formatSize: function( size, pointLength ) {
+            var units = [ 'B', 'K', 'M', 'G', 'TB' ],
+                unit = units.shift();
+
+            while ( size > 1024 && units.length ) {
+                unit = units.shift();
+                size = size / 1024;
             }
-        })()
+
+            return (unit === 'B' ? size : size.toFixed( pointLength || 2 )) +
+                    unit;
+        }
     };
 } );
