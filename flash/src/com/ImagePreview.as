@@ -5,21 +5,26 @@ package com
 	import com.events.ODataEvent;
 	import com.events.OErrorEvent;
 	import com.events.OProgressEvent;
+	import com.image.BMP;
 	import com.image.GIF;
 	import com.image.JPEG;
 	import com.image.JPEGEncoder;
 	import com.image.PNG;
+	import com.utils.BMPDecoder;
 	import com.utils.Base64;
 	import com.utils.OEventDispatcher;
 	
+	import flash.display.Bitmap;
 	import flash.display.BitmapData;
 	import flash.display.IBitmapDrawable;
 	import flash.display.Loader;
 	import flash.display.PNGEncoderOptions;
+	import flash.errors.IOError;
 	import flash.events.Event;
 	import flash.events.IOErrorEvent;
 	import flash.external.ExternalInterface;
 	import flash.geom.Matrix;
+	import flash.net.URLLoaderDataFormat;
 	import flash.system.System;
 	import flash.utils.ByteArray;
 
@@ -90,6 +95,8 @@ package com
 				img = new PNG(ba);
 			} else if ( GIF.test(ba) ) {
 				img = new GIF( ba );
+			} else if ( BMP.test(ba) ) {
+				img = new BMP( ba );
 			} else {
 				dispatchEvent(new OErrorEvent(OErrorEvent.ERROR, ImageError.WRONG_FORMAT));
 				return;
@@ -139,6 +146,21 @@ package com
 				matrix.translate( 0, -Math.round(( destHeight - height) / 2));
 			}
 			
+			if ( type == 'image/bmp' ) {
+				var decoder:BMPDecoder = new BMPDecoder();
+				var bmp:Bitmap = new Bitmap( decoder.decode( ba ) );
+				
+				
+				
+				// draw preloaded data onto the prepared BitmapData
+				bd.draw(bmp, matrix, null, null, null, true);
+				
+				_ba =  encodeBitmapData( bd );
+				dispatchEvent(new ODataEvent(ODataEvent.DATA));
+				
+				return;
+			}
+			
 			
 			var loader:Loader = new Loader;
 			loader.contentLoaderInfo.addEventListener(Event.COMPLETE, function(e:Event) : void {
@@ -154,29 +176,18 @@ package com
 				loader.unload();
 				ba.clear();
 				
-				var encoder:JPEGEncoder;
-				if ( type === 'image/png' ) {
-					ba = bd.encode(bd.rect, new PNGEncoderOptions());
-				} else {
-					if (type == 'image/jpeg') {
-						bd = _rotateToOrientation(_orientation, bd);
-					}
-					
-					encoder = new JPEGEncoder( quality );
-					ba = encoder.encode(bd);
-					type = 'image/jpeg';
-				}
-				
-				_ba =  ba;
+				_ba =  encodeBitmapData( bd );
 				
 				dispatchEvent(new ODataEvent(ODataEvent.DATA));
 			});
 			
 			loader.contentLoaderInfo.addEventListener(IOErrorEvent.IO_ERROR, function(e:*) : void {
+				dispatchEvent(new OErrorEvent(OErrorEvent.ERROR, 2));
+				
 				ba.clear();
 				bd.dispose();
+				loader.unload();
 				img.purge();
-				Uploader.log(e);
 			});
 			
 			try {
@@ -184,6 +195,24 @@ package com
 			} catch (ex:*) {
 				Uploader.log(ex);
 			}
+			
+		}
+		
+		private function encodeBitmapData( bd:BitmapData ):ByteArray {
+			var encoder:JPEGEncoder, ba:ByteArray;
+			if ( type === 'image/png' ) {
+				ba = bd.encode(bd.rect, new PNGEncoderOptions());
+			} else {
+				if (type == 'image/jpeg') {
+					bd = _rotateToOrientation(_orientation, bd);
+				}
+				
+				encoder = new JPEGEncoder( quality );
+				ba = encoder.encode(bd);
+				type = 'image/jpeg';
+			}
+			
+			return ba;
 		}
 		
 		private function _rotateToOrientation(orientation:uint, bd:BitmapData) : BitmapData
