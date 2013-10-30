@@ -12,6 +12,8 @@ package
     import flash.events.ProgressEvent;
     import flash.external.ExternalInterface;
     import flash.system.Security;
+    import flash.ui.ContextMenu;
+    import flash.ui.ContextMenuItem;
     import flash.utils.getQualifiedClassName;
 
     [SWF(width='500', height='500')]
@@ -51,6 +53,11 @@ package
             // Align and scale stage
             stage.align = StageAlign.TOP_LEFT;
             stage.scaleMode = StageScaleMode.EXACT_FIT;
+			
+			var menu:ContextMenu = new ContextMenu();
+			menu.hideBuiltInItems();
+			menu.customItems.push(new ContextMenuItem("webuploader v1.0"));//???preprocessor.xml, antä¼???¨æ??°æ??????
+			this.contextMenu = menu;
 
             var params:Object = stage.loaderInfo.parameters;
 
