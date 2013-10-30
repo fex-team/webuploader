@@ -57,7 +57,8 @@ define('webuploader/widgets/filepicker', ['webuploader/base',
 
                 options = $.extend({}, pick, {
                     accept: opts.accept,
-                    swf: opts.swf
+                    swf: opts.swf,
+                    runtimeOrder: opts.runtimeOrder
                 });
 
                 picker = new FilePicker(options);
