@@ -5,6 +5,7 @@ package com
 	import com.events.ODataEvent;
 	import com.events.OErrorEvent;
 	import com.events.OProgressEvent;
+	import com.image.GIF;
 	import com.image.JPEG;
 	import com.image.JPEGEncoder;
 	import com.image.PNG;
@@ -80,12 +81,15 @@ package com
 		{
 			var img:*, info:Object, scale:Number, output:BitmapData, selector:Function;
 			
+			
 			if (JPEG.test(ba)) {
 				img = new JPEG(ba);		
 				img.extractHeaders(); // preserve headers for later
 				_meta = img.metaInfo();
 			} else if (PNG.test(ba)) {
 				img = new PNG(ba);
+			} else if ( GIF.test(ba) ) {
+				img = new GIF( ba );
 			} else {
 				dispatchEvent(new OErrorEvent(OErrorEvent.ERROR, ImageError.WRONG_FORMAT));
 				return;
@@ -151,14 +155,16 @@ package com
 				ba.clear();
 				
 				var encoder:JPEGEncoder;
-				if (type == 'image/jpeg') {
-					bd = _rotateToOrientation(_orientation, bd);
+				if ( type === 'image/png' ) {
+					ba = bd.encode(bd.rect, new PNGEncoderOptions());
+				} else {
+					if (type == 'image/jpeg') {
+						bd = _rotateToOrientation(_orientation, bd);
+					}
 					
 					encoder = new JPEGEncoder( quality );
 					ba = encoder.encode(bd);
-					// ba = output.encode(output.rect, new JPEGEncoderOptions(70));
-				} else if (type == 'image/png') {
-					ba = bd.encode(bd.rect, new PNGEncoderOptions());
+					type = 'image/jpeg';
 				}
 				
 				_ba =  ba;
