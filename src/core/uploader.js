@@ -1,132 +1,55 @@
 /**
  * @fileOverview Uploader上传类
+ * @import base.js, core/mediator.js
  */
 define( 'webuploader/core/uploader', [ 'webuploader/base',
-        'webuploader/core/mediator',
-        'webuploader/core/uploadmgr',
-        'webuploader/core/runtime'
-        ], function( Base, Mediator, UploadMgr, Runtime ) {
+        'webuploader/core/mediator'
+        ], function( Base, Mediator, Runtime ) {
 
-    var $ = Base.$,
-        defaultOpts = {
-            threads: 3,
-            compress: true,
-            server: '../server/fileupload.php',
-            pick: {
-                multiple: true,
-                id: 'uploaderBtn'
-            },
-            accept: [{
-                title: 'image',
-                extensions: 'gif,jpg,jpeg,bmp,png'
-            }],
-            dnd: '',
-            paste: '',
-            fileSizeLimit: 0,
-            fileNumLimit: 0,
-            duplicate: false,
-            resize: {
-                width: 1600,
-                height: 1600,
-                quality: 90
-            }
-        };
+    var $ = Base.$;
 
     function Uploader( opts ) {
-        this.options = $.extend( true, {}, defaultOpts, opts || {} );
-        this._connectRuntime( this.options, Base.bindFn( this._init, this ) );
-        Mediator.trigger( 'uploaderInit', this );
+        this.options = $.extend( true, {}, Uploader.options, opts );
+        this._init( this.options );
     }
 
-    Uploader.defaultOptions = defaultOpts;
+    // default Options
+    // widgets中有相应扩展
+    Uploader.options = {};
     Mediator.installTo( Uploader.prototype );
 
+    // 批量添加纯命令式方法。
+    $.each({
+        upload: 'start-upload',
+        stop: 'stop-upload',
+        getFile: 'get-file',
+        getFiles: 'get-files',
+        addFile: 'add-file',
+        addFiles: 'add-file',
+        removeFile: 'remove-file',
+        retry: 'retry',
+        isInProgress: 'is-in-progress',
+        makeThumb: 'make-thumb',
+        addButton: 'add-btn',
+        refresh: 'refresh',
+        disable: 'disable',
+        enable: 'enable'
+    }, function( fn, command ) {
+        Uploader.prototype[ fn ] = function() {
+            return this.request( command, arguments );
+        };
+    });
+
     $.extend( Uploader.prototype, {
-        state: 'pedding',
+        state: 'pending',
 
-        _init: function() {
-            var me = this,
-                opts = this.options;
+        _init: function( opts ) {
+            var me = this;
 
-            opts.pick && me.addButton( opts.pick );
-            opts.dnd && me._initDnd( opts );
-            opts.paste && me._initFilePaste( opts );
-
-            me._initNetWorkDetect();
-
-            me._mgr = UploadMgr( opts, me._runtime );
-
-            // 转发所有的事件出去。
-            me._mgr.on( 'all', function() {
-                return me.trigger.apply( me, arguments );
+            me.request( 'init', opts, function() {
+                me.state = 'ready';
+                me.trigger( 'ready' );
             });
-
-            me.state = 'inited';
-            me.trigger( 'ready' );
-        },
-
-        _initDnd: function( opts ) {
-            var me = this,
-                options = $.extend( {}, {
-                    id: opts.dnd,
-                    accept: opts.accept
-                } ),
-                Dnd = me._runtime.getComponent( 'Dnd' ),
-                dnd;
-
-            dnd = new Dnd( options );
-
-            dnd.on( 'drop', function( files ) {
-                me.addFiles( files );
-            } );
-            dnd.init();
-        },
-
-        _initFilePaste: function( opts ) {
-            var runtime = Runtime.getInstance(),
-                me = this,
-                options = $.extend( {}, {
-                    id: opts.paste,
-                    accept: opts.accept
-                } ),
-                FilePaste = runtime.getComponent( 'FilePaste' ),
-                paste;
-
-            paste = new FilePaste( options );
-
-            paste.on( 'paste', function( files ) {
-                me.addFiles( files );
-            } );
-            paste.init();
-        },
-
-        _initNetWorkDetect: function() {
-            var me = this,
-                Network = me._runtime.getComponent( 'Network' );
-
-            Network.getInstance().on( 'all', function() {
-                return me.trigger.apply( me, arguments );
-            } );
-        },
-
-        // todo 根据opts，告诉runtime需要具备哪些能力
-        _connectRuntime: function( opts, cb ) {
-            var caps = {
-                    resizeImage: true
-                },
-
-                runtime;
-
-            if ( opts.pick ) {
-                caps.selectFile = true;
-
-                caps.selectMultiple = opts.pick.multiple;
-            }
-
-            $.extend( opts, { requiredCaps: caps } );
-            this._runtime = runtime = Runtime.getInstance( opts );
-            runtime.once( 'ready', cb );
-            runtime.init();
         },
 
         option: function( key, val ) {
@@ -143,104 +66,18 @@ define( 'webuploader/core/uploader', [ 'webuploader/base',
             }
         },
 
-        addButton: function( pick ) {
-            if ( typeof pick === 'string' ) {
-                pick = {
-                    id: pick
-                };
-            }
-
-            var me = this,
-                opts = me.options,
-                options = $.extend( {}, pick, {
-                    accept: opts.accept
-                } ),
-                FilePicker = me._runtime.getComponent( 'FilePicker' ),
-                picker;
-
-            picker = new FilePicker( options );
-
-            picker.on( 'select', function( files ) {
-                me.addFiles( files );
-            } );
-            picker.init();
-        },
-
-        makeThumb: function( file, cb, width, height, type, quality ) {
-            var runtime = this._runtime,
-                Image = runtime.getComponent( 'Image' );
-
-            file = this.getFile( file );
-
-            // 只预览图片格式。
-            if ( !file.type.match( /^image/ ) ) {
-                cb( true );
-                return;
-            }
-
-            Image.makeThumbnail( file.getSource(), cb, width, height,
-                    true, type, quality );
-        },
-
-        formatSize: function( size, pointLength ) {
-            var units = [ 'B', 'K', 'M', 'G', 'TB' ],
-                unit = units.shift();
-
-            while ( size > 1024 && units.length ) {
-                unit = units.shift();
-                size = size / 1024;
-            }
-
-            return (unit === 'B' ? size : size.toFixed( pointLength || 2 )) +
-                    unit;
-        },
-
-        // ----------------------------------------------
-        // 中转到uploadMgr中去。
-        // ----------------------------------------------
-
-        /**
-         * 开始上传
-         * @method upload
-         */
-        upload: function() {
-            return this._mgr.start.apply( this._mgr, arguments );
-        },
-
-        stop: function() {
-            return this._mgr.stop.apply( this._mgr, arguments );
-        },
-
-        getFile: function() {
-            return this._mgr.getFile.apply( this._mgr, arguments );
-        },
-
-        addFile: function() {
-            return this._mgr.addFile.apply( this._mgr, arguments );
-        },
-
-        addFiles: function() {
-            return this._mgr.addFiles.apply( this._mgr, arguments );
-        },
-
-        removeFile: function() {
-            return this._mgr.removeFile.apply( this._mgr, arguments );
-        },
-
         getStats: function() {
-            return this._mgr.getStats.apply( this._mgr, arguments );
-        },
+            // return this._mgr.getStats.apply( this._mgr, arguments );
+            var stats = this.request( 'get-stats' );
 
-        retry: function() {
-            return this._mgr.retry.apply( this._mgr, arguments );
-        },
-
-        getFiles: function() {
-            return this._mgr.getFiles.apply( this._mgr, arguments );
-        },
-
-        isInProgress: function() {
-            return this._mgr.isInProgress.apply( this._mgr, arguments );
+            return {
+                successNum: stats.numOfSuccess,
+                queueFailNum: 0,
+                cancelNum: stats.numOfCancel,
+                invalidNum: stats.numOfInvalid,
+                uploadFailNum: stats.numOfUploadFailed,
+                queueNum: stats.numOfQueue
+            };
         },
 
         // 需要重写此方法来来支持opts.onEvent和instance.onEvent的处理器
@@ -267,10 +104,24 @@ define( 'webuploader/core/uploader', [ 'webuploader/base',
             return true;
         },
 
-        reset: function() {
-            // todo
-        }
+        request: Base.noop,
 
+        reset: function() {
+            // @todo
+        },
+
+        formatSize: function( size, pointLength ) {
+            var units = [ 'B', 'K', 'M', 'G', 'TB' ],
+                unit = units.shift();
+
+            while ( size > 1024 && units.length ) {
+                unit = units.shift();
+                size = size / 1024;
+            }
+
+            return (unit === 'B' ? size : size.toFixed( pointLength || 2 )) +
+                    unit;
+        }
     } );
 
     Base.create = function( opts ) {

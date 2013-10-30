@@ -2,7 +2,7 @@
  * @fileOverview  jq-bridge 主要实现像jQuery一样的功能方法，可以替换成jQuery，
  * 这里只实现了此组件所需的部分。
  */
-define( 'jq-bridge', [], function() {
+define( 'webuploader/jq-bridge', [], function() {
     var doc = window.document,
         emptyArray = [],
         slice = emptyArray.slice,
@@ -71,7 +71,10 @@ define( 'jq-bridge', [], function() {
         elem = typeof elem === 'string' && rId.test( elem ) ?
                 doc.getElementById( RegExp.$1 ) : elem;
 
-        elem && (api[ 0 ] = elem, api.length = 1);
+        if ( elem ) {
+            api[ 0 ] = elem;
+            api.length = 1;
+        }
 
         return $.extend( api, {
             _wrap: true,
