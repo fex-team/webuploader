@@ -49,21 +49,21 @@ define( 'webuploader/runtime/client', [ 'webuploader/base',
             return deferred.done( cb );
         };
 
-        this.connectRuntime = function( options, cb ) {
+        this.connectRuntime = function( opts, cb ) {
             if ( runtime ) {
                 return;
             }
 
             deferred.done( cb );
 
-            if ( typeof options === 'string' && cache.get( options ) ) {
-                runtime = cache.get( options );
+            if ( typeof opts === 'string' && cache.get( opts ) ) {
+                runtime = cache.get( opts );
             } else if ( !standalone && cache.has() ) {
                 runtime = cache.get();
             }
 
             if ( !runtime ) {
-                runtime = Runtime.create( options );
+                runtime = Runtime.create( opts, opts.runtimeOrder );
                 runtime.standalone = standalone;
                 cache.add( runtime );
                 runtime.promise = deferred.promise();
