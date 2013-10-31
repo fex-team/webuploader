@@ -62,13 +62,16 @@ define( 'webuploader/widgets/image', [
 
             resizeImage: function( file ) {
                 var resize = this.options.resize,
+                    compressSize = 300 * 1024,
                     deferred, compressor;
 
-                if ( resize && (file.type === 'image/jpg' ||
-                        file.type === 'image/jpeg') && !file.resized ) {
+                if ( resize &&(file.type === 'image/jpg' ||
+                        file.type === 'image/jpeg') &&
+                        file.size > compressSize && !file.resized ) {
 
                     deferred = Base.Deferred();
 
+                    console.time( 'Compress' + file.name );
                     compressor = new ImageCompress({
                         preserveHeader: true
                     });
@@ -83,8 +86,14 @@ define( 'webuploader/widgets/image', [
                         size = file.size;
                         file.source = blob;
                         file.size = blob.size;
+
+                        // 同一个文件可能重传，没必要多次压缩。
                         file.resized = true;
                         file.trigger( 'resize', blob.size, size );
+                        console.log( (blob.size * 100 / size).toFixed(2) + '%' );
+
+                        console.timeEnd( 'Compress' + file.name );
+
                         deferred.resolve( true );
 
                     });
