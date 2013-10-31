@@ -68,6 +68,8 @@ define( 'webuploader/widgets/transport', [
                         // 如果是interrupt中断了，还需重传的。
                         delete me.requests[ file.id ];
                         tr.destroy();
+
+                        console.timeEnd( 'upload ' + file.name );
                         file.off( 'statuschange', fileHandler );
                     }
 
@@ -89,6 +91,7 @@ define( 'webuploader/widgets/transport', [
                 tr.setFile( file );
                 me.requests[ file.id ] = tr;
                 me.request( 'before-start-transport', file, function() {
+                    console.time( 'upload ' + file.name );
                     tr.start();
                 });
             },
