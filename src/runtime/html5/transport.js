@@ -66,7 +66,7 @@ define( 'webuploader/runtime/html5/transport', [ 'webuploader/base',
                     }
                 }
 
-                reject = reject || (xhr.status ? 'http' : 'timeout');
+                reject = reject || (xhr.status ? 'http' : me.isTimeout ? 'timeout': 'abort');
                 return me._reject( reject, ret, rHeaders );
             };
 
@@ -166,8 +166,9 @@ define( 'webuploader/runtime/html5/transport', [ 'webuploader/base',
                 return this;
             }
 
-            var owner = this.owner,
-                opts = owner.options,
+            var me = this,
+                owner = me.owner,
+                opts = me.options,
                 xhr = this._initAjax(),
                 formData = new FormData(),
                 blob = this._blob,
@@ -204,8 +205,10 @@ define( 'webuploader/runtime/html5/transport', [ 'webuploader/base',
 
             this._setRequestHeader( xhr, opts.headers );
 
+            me.isTimeout = false;
             if ( opts.timeout ) {
                 this.timoutTimer = setTimeout(function() {
+                    me.isTimeout = true;
                     xhr.abort();
                 }, opts.timeout );
             }
@@ -215,20 +218,13 @@ define( 'webuploader/runtime/html5/transport', [ 'webuploader/base',
             return this;
         },
 
-        pause: function() {
+        pause: function( interupt ) {
             if ( this.paused ) {
                 return;
             }
 
             this.paused = true;
-
-            if ( this._xhr ) {
-                this._xhr.upload.onprogress = noop;
-                this._xhr.onreadystatechange = noop;
-                clearTimeout( this.timoutTimer );
-                this._xhr.abort();
-                this._onprogress( 0 );
-            }
+            interupt && this.cancel();
         },
 
         resume: function() {
@@ -258,14 +254,13 @@ define( 'webuploader/runtime/html5/transport', [ 'webuploader/base',
          * @chainable
          */
         start: function() {
-            var opts = this.owner.options,
+            var opts = this.options,
                 blob = this.file.source;
 
             if ( opts.chunked && blob.size > opts.chunkSize ) {
                 this.chunk = 0;
                 this.chunks = Math.ceil( blob.size / opts.chunkSize );
             }
-
             this._blob = blob;
 
             this._upload();
