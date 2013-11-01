@@ -10,7 +10,7 @@ package com.image
 {	
 	import flash.utils.ByteArray;
 	
-	import com.BinaryReader;
+	import com.utils.BinaryReader;
 	import com.image.ExifParser;
 
 	public class JPEG 

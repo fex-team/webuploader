@@ -1,8 +1,8 @@
 package com
 {
 	import com.errors.RuntimeError;
-	import com.events.OProgressEvent;
 	import com.events.OErrorEvent;
+	import com.events.OProgressEvent;
 	import com.utils.URLStreamProgress;
 	
 	import flash.events.DataEvent;
@@ -20,6 +20,7 @@ package com
 	import flash.utils.ByteArray;
 	import flash.utils.clearTimeout;
 	import flash.utils.setTimeout;
+	import com.utils.Utils;
 
 	
 	public class XMLHttpRequest extends EventDispatcher
@@ -146,6 +147,14 @@ package com
 			blob = new File([_response], { name: _options.url.replace(/^.+?\/([\w\-\.]+)$/, '$1').toLowerCase() });
 			Uploader.compFactory.add(blob.uid, blob);
 			return blob.toObject();
+		}
+		
+		public function getResponse():String {
+			if ( !_response ) {
+				return '';
+			}
+			
+			return _response.readUTFBytes(_response.length);
 		}
 		
 		
@@ -390,7 +399,7 @@ package com
 		
 		private function _formatAsMultipart(ba:ByteArray, request:URLRequest) : ByteArray
 		{
-			var boundary:String = '----moxieboundary' + new Date().getTime(),
+			var boundary:String = '----webuploaderboundary' + new Date().getTime(),
 				dashdash:String = '--', crlf:String = '\r\n',
 				tmpBa:ByteArray, param:Array;
 			
