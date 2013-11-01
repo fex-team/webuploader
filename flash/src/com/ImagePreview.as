@@ -7,12 +7,14 @@ package com
 	import com.events.OProgressEvent;
 	import com.image.BMP;
 	import com.image.GIF;
+	import com.image.ImageEditor;
 	import com.image.JPEG;
 	import com.image.JPEGEncoder;
 	import com.image.PNG;
 	import com.utils.BMPDecoder;
 	import com.utils.Base64;
 	import com.utils.OEventDispatcher;
+	import com.utils.Utils;
 	
 	import flash.display.Bitmap;
 	import flash.display.BitmapData;
@@ -24,6 +26,7 @@ package com
 	import flash.events.IOErrorEvent;
 	import flash.external.ExternalInterface;
 	import flash.geom.Matrix;
+	import flash.geom.Rectangle;
 	import flash.net.URLLoaderDataFormat;
 	import flash.system.System;
 	import flash.utils.ByteArray;
@@ -133,6 +136,11 @@ package com
 			destWidth = naturalWidth * scale;
 			destHeight = naturalHeight * scale;
 			
+//			if ( type === 'image/jpeg' ) {
+//				_ba = Uploader.encodeJpeg( ba , width, height, quality);
+//				dispatchEvent(new ODataEvent(ODataEvent.DATA));
+//				return;
+//			}
 			
 			var bd:BitmapData = new BitmapData( width, height );
 			var matrix:Matrix = new Matrix;
@@ -206,9 +214,15 @@ package com
 				if (type == 'image/jpeg') {
 					bd = _rotateToOrientation(_orientation, bd);
 				}
+				//ExternalInterface.call("console.time", "new compress");
 				
 				encoder = new JPEGEncoder( quality );
 				ba = encoder.encode(bd);
+				
+				//var baSource: ByteArray = bd.clone().getPixels( new Rectangle( 0, 0, bd.width, bd.height) );
+				//ba = Uploader.encodeJpeg(baSource, bd.width, bd.height, quality);
+				
+				//ExternalInterface.call("console.timeEnd", "new compress");
 				type = 'image/jpeg';
 			}
 			

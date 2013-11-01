@@ -7,7 +7,7 @@
  * Contributing: http://www.plupload.com/contributing
  */
 
-package com {
+package com.utils {
 	import flash.utils.ByteArray;
 	import flash.utils.Endian;
 	

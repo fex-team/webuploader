@@ -15,31 +15,30 @@ define( 'webuploader/runtime/html5/runtime', [
 
         function Html5Runtime() {
             var pool = {},
+                me = this,
                 destory = this.destory;
 
-            Runtime.apply( this, arguments );
-            this.type = type;
+            Runtime.apply( me, arguments );
+            me.type = type;
 
 
             // 这个方法的调用者，实际上是RuntimeClient
-            this.exec = function( comp, fn/*, args...*/) {
+            me.exec = function( comp, fn/*, args...*/) {
                 var client = this,
                     uid = client.uid,
                     args = Base.slice( arguments, 2 ),
                     instance;
 
                 if ( components[ comp ] ) {
-                    instance = pool[ uid ] = pool[ uid ] || new components[ comp ]( client.getRuntime() );
+                    instance = pool[ uid ] = pool[ uid ] || new components[ comp ]( client, me );
 
                     if ( instance[ fn ] ) {
-                        instance.owner = client;
-                        instance.options = client.options;
                         return instance[ fn ].apply( instance, args );
                     }
                 }
             }
 
-            this.destory = function() {
+            me.destory = function() {
                 // @todo 删除池子中的所有实例
                 return destory && destory.apply( this, arguments );
             };
