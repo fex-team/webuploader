@@ -21,6 +21,7 @@ package com
 	import flash.geom.Matrix;
 	import flash.system.System;
 	import flash.utils.ByteArray;
+	import com.utils.Utils;
 	
 	public class ImageCompress extends OEventDispatcher
 	{
