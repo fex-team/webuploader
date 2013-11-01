@@ -11,7 +11,7 @@ package com.image {
 	import flash.external.ExternalInterface;
 	import flash.utils.ByteArray;
 
-	import com.BinaryReader;
+	import com.utils.BinaryReader;
 
 	public class ExifParser extends EventDispatcher {
 

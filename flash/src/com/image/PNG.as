@@ -8,7 +8,7 @@
 
 package com.image
 {
-	import com.BinaryReader;
+	import com.utils.BinaryReader;
 	import flash.utils.ByteArray;
 	
 	public class PNG 

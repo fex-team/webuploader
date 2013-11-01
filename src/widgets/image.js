@@ -71,7 +71,6 @@ define( 'webuploader/widgets/image', [
 
                     deferred = Base.Deferred();
 
-                    console.time( 'Compress' + file.name );
                     compressor = new ImageCompress({
                         preserveHeader: true
                     });
@@ -90,9 +89,7 @@ define( 'webuploader/widgets/image', [
                         // 同一个文件可能重传，没必要多次压缩。
                         file.resized = true;
                         file.trigger( 'resize', blob.size, size );
-                        console.log( (blob.size * 100 / size).toFixed(2) + '%' );
-
-                        console.timeEnd( 'Compress' + file.name );
+                        // console.log( (blob.size * 100 / size).toFixed(2) + '%' );
 
                         deferred.resolve( true );
 
