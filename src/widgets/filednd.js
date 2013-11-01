@@ -15,7 +15,7 @@ define( 'webuploader/widgets/filednd', [
     return Uploader.register({
         init: function( opts ) {
 
-            if ( !opts.dnd ) {
+            if ( !opts.dnd || !Dnd.support() ) {
                 return;
             }
 

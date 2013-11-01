@@ -10,29 +10,46 @@ define( 'webuploader/runtime/html5/filepicker', [
 
         var $ = Base.$;
 
+        function getMineTypeByExtensions( extensition ) {
+
+        }
+
         return Html5Runtime.register( 'FilePicker', {
             init: function() {
                 var container = this.getRuntime().getContainer(),
                     me = this,
                     owner = me.owner,
                     opts = me.options,
+                    lable = $( document.createElement( 'label' ) ),
                     input = $( document.createElement( 'input' ) ),
+                    browser = Base.browser,
                     arr, i, len, mouseHandler;
 
                 input.attr( 'type', 'file' );
 
                 input.css({
+                    position: 'absolute',
+                    clip: 'rect(1px,1px,1px,1px)'
+                });
+
+                lable.on( 'click', function() {
+                    input.trigger( 'click' );
+                });
+
+                lable.css({
                     opacity: 0,
                     width: '100%',
                     height: '100%',
                     display: 'block',
-                    cursor: 'pointer'
+                    cursor: 'pointer',
+                    background: '#ffffff'
                 });
 
                 if ( opts.multiple ) {
                     input.attr( 'multiple', 'multiple' );
                 }
 
+                // @todo Firefox不支持单独指定后缀
                 if ( opts.accept && opts.accept.length > 0 ) {
                     arr = [];
 
@@ -44,6 +61,7 @@ define( 'webuploader/runtime/html5/filepicker', [
                 }
 
                 container.append( input );
+                container.append( lable );
 
                 mouseHandler = function( e ) {
                     owner.trigger( e.type );
@@ -66,7 +84,7 @@ define( 'webuploader/runtime/html5/filepicker', [
                     owner.trigger( 'change' );
                 } );
 
-                input.on( 'mouseenter mouseleave', mouseHandler );
+                lable.on( 'mouseenter mouseleave', mouseHandler );
 
             },
 

@@ -69,7 +69,6 @@ define( 'webuploader/widgets/transport', [
                         delete me.requests[ file.id ];
                         tr.destroy();
 
-                        console.timeEnd( 'upload ' + file.name );
                         file.off( 'statuschange', fileHandler );
                     }
 
@@ -91,7 +90,6 @@ define( 'webuploader/widgets/transport', [
                 tr.setFile( file );
                 me.requests[ file.id ] = tr;
                 me.request( 'before-start-transport', file, function() {
-                    console.time( 'upload ' + file.name );
                     tr.start();
                 });
             },
