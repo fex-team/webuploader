@@ -25,13 +25,35 @@ define( 'webuploader/widgets/queue', [
         },
 
         {
-            init: function() {
+            init: function( opts ) {
+                var len, i, item, arr, accept;
+
+                // accept中的中生成匹配正则。
+                if ( opts.accept ) {
+                    arr = [];
+
+                    for ( i = 0, len = opts.accept.length; i < len; i++ ) {
+                        item = opts.accept[ i ].extensions;
+                        item && arr.push( item );
+                    }
+
+                    if ( arr.length ) {
+                        accept = arr.join( ',' );
+                        accept = accept.replace(/,/g, '$|').replace(/\*/g, '.*');
+                    }
+                }
+                this.accept = accept = new RegExp(accept, 'i');
+
                 this.queue = new Queue();
                 this.stats = this.queue.stats;
             },
 
             addFile: function( file ) {
                 var me = this;
+
+                if ( !file || file.size < 6 || !me.accept.test( file.type ) ) {
+                    return;
+                }
 
                 if ( !(file instanceof WUFile) ) {
                     file = new WUFile( file );

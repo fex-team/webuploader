@@ -35,15 +35,15 @@ define( 'webuploader/runtime/flash/runtime', [
             var pool = {},
                 clients = {},
                 destory = this.destory,
-                runtime = this,
+                me = this,
                 jsreciver = Base.guid( 'webuploader_' );
 
-            Runtime.apply( this, arguments );
-            this.type = type;
+            Runtime.apply( me, arguments );
+            me.type = type;
 
 
             // 这个方法的调用者，实际上是RuntimeClient
-            this.exec = function( comp, fn/*, args...*/ ) {
+            me.exec = function( comp, fn/*, args...*/ ) {
                 var client = this,
                     uid = client.uid,
                     args = Base.slice( arguments, 2 ),
@@ -53,19 +53,17 @@ define( 'webuploader/runtime/flash/runtime', [
 
                 if ( components[ comp ] ) {
                     if ( !pool[ uid ] ) {
-                        pool[ uid ] = new components[ comp ]( runtime );
+                        pool[ uid ] = new components[ comp ]( client, me );
                     }
 
                     instance = pool[ uid ];
 
                     if ( instance[ fn ] ) {
-                        instance.owner = client;
-                        instance.options = client.options;
                         return instance[ fn ].apply( instance, args );
                     }
                 }
 
-                return runtime.flashExec.apply( client, arguments );
+                return me.flashExec.apply( client, arguments );
             }
 
             function hander( evt, obj ) {
@@ -78,8 +76,8 @@ define( 'webuploader/runtime/flash/runtime', [
 
                 // console.log.apply( console, arguments );
 
-                if ( type === 'Ready' && uid === runtime.uid ) {
-                    runtime.trigger( 'ready' );
+                if ( type === 'Ready' && uid === me.uid ) {
+                    me.trigger( 'ready' );
                 } else if ( clients[ uid ] ) {
                     clients[ uid ].trigger( type.toLowerCase(), evt, obj );
                 }
@@ -103,7 +101,7 @@ define( 'webuploader/runtime/flash/runtime', [
             };
 
             this.flashExec = function( comp, fn ) {
-                var flash = runtime.getFlash(),
+                var flash = me.getFlash(),
                     args = Base.slice( arguments, 2 );
 
                 return flash.exec( this.uid, comp, fn, args );
