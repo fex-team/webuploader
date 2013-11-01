@@ -32,11 +32,7 @@ define( 'webuploader/lib/filepicker', [ 'webuploader/base',
         container: null,
         label: '选择文件',
         multiple: true,
-        accept: [{
-            title: 'Images',
-            extensions: 'gif,jpg,bmp,png',
-            mimeTypes: 'image/*'
-        }]
+        accept: null
     }
 
     Base.inherits( RuntimeClent, {
@@ -73,6 +69,10 @@ define( 'webuploader/lib/filepicker', [ 'webuploader/base',
             me.connectRuntime( opts, function() {
                 me.refresh();
                 me.exec( 'init', opts );
+            });
+
+            $( window ).on( 'resize', function(){
+                me.refresh();
             });
         },
 
