@@ -83,14 +83,18 @@ define( 'webuploader/widgets/image', [
                         compressor = null;
 
                         size = file.size;
-                        file.source = blob;
-                        file.size = blob.size;
 
-                        // 同一个文件可能重传，没必要多次压缩。
+                        // 如果压缩后，比原来还大则不用压缩后的。
+                        if ( blob.size < size ) {
+                            file.source = blob;
+                            file.size = blob.size;
+
+                            // 同一个文件可能重传，没必要多次压缩。
+                            file.trigger( 'resize', blob.size, size );
+                            // console.log( (blob.size * 100 / size).toFixed(2) + '%' );
+                        }
+
                         file.resized = true;
-                        file.trigger( 'resize', blob.size, size );
-                        // console.log( (blob.size * 100 / size).toFixed(2) + '%' );
-
                         deferred.resolve( true );
 
                     });
