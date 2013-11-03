@@ -8,3 +8,5 @@
 /server/md5list2.txt
 .tags
 .tags_sorted_by_file
+/flash/bin-debug
+/flash/html-template
