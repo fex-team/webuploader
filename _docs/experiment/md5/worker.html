@@ -1,0 +1,68 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
+<html lang="en">
+<head>
+	<meta http-equiv="Content-Type" content="text/html;charset=UTF-8">
+	<title>Worker Md5</title>
+</head>
+<body>
+	<input type="file" id="fileselect" name="fileselect[]" multiple="multiple" />
+<script type="text/javascript">
+(function( input ){
+	
+	
+
+ 	// Web Worker.
+ 	function Md5File( file, callback ) {
+ 		var worker = new Worker( 'work.js' );
+
+ 		worker.onmessage = function( e ) {
+ 			var ret = e.data;
+
+ 			switch( ret ) {
+ 				case 'start read':
+ 					console.time('file read' + file.name);
+ 					break;
+
+ 				case 'end read':
+ 					console.timeEnd('file read' + file.name);
+ 					break;
+
+ 				case 'start md5':
+ 					console.time('file md5' + file.name);
+ 					break;
+
+ 				case 'end md5':
+ 					console.timeEnd('file md5' + file.name);
+ 					break;
+
+ 				default:
+ 					console.log( e.data );
+		 			worker.terminate();
+		 			callback();
+ 					break;
+ 			}
+        };
+
+        worker.postMessage( file );
+ 	}
+
+	input.addEventListener( 'change', function( e ) {
+		var files = e.target.files,
+			remain = files.length,
+			check = function() {
+				if ( !--remain ) {
+					console.timeEnd('All Done');
+				}
+			};
+
+		console.time('All Done');
+
+		for ( var i = 0, len = files.length; i<len; i++ ) {
+			Md5File( files[ i ], check );
+		}
+	});
+
+})( document.getElementById('fileselect'));
+</script>
+</body>
+</html>
