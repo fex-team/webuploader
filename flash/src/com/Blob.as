@@ -4,6 +4,7 @@ package com
 	
 	import flash.net.FileReference;
 	import flash.utils.ByteArray;
+	import com.utils.Utils;
 
 	public class Blob
 	{	

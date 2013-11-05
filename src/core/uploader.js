@@ -31,6 +31,7 @@ define( 'webuploader/core/uploader', [ 'webuploader/base',
         isInProgress: 'is-in-progress',
         makeThumb: 'make-thumb',
         addButton: 'add-btn',
+        getRuntimeType: 'get-runtime-type',
         refresh: 'refresh',
         disable: 'disable',
         enable: 'enable'
@@ -52,6 +53,7 @@ define( 'webuploader/core/uploader', [ 'webuploader/base',
             });
         },
 
+        // @todo trigger change event.
         option: function( key, val ) {
             var opts = this.options;
             if ( arguments.length > 1 ) {    // setter

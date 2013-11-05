@@ -21,7 +21,7 @@ define( 'webuploader/lib/transport', [ 'webuploader/base',
         server: '',
         method: 'POST',
 
-        // 跨域时，是否允许携带cookie
+        // 跨域时，是否允许携带cookie, 只有html5 runtime才有效
         withCredentials: false,
         fileVar: 'file',
         chunked: true,
@@ -35,15 +35,18 @@ define( 'webuploader/lib/transport', [ 'webuploader/base',
     $.extend( Transport.prototype, {
 
         setFile: function( file ) {
-            var ruid;
+            var me = this,
+                ruid;
 
-            if ( this.getRuid() ) {
-                this.disconnectRuntime();
+            if ( me.getRuid() ) {
+                me.disconnectRuntime();
             }
 
             ruid = file.source.getRuid();
-            this.connectRuntime( ruid );
-            this.exec( 'setFile', file );
+            this.connectRuntime( ruid, function() {
+                me.exec( 'init', me.options );
+                me.exec( 'setFile', file );
+            } );
         },
 
         start: function() {
