@@ -1,0 +1,91 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
+<html lang="en">
+<head>
+	<meta http-equiv="Content-Type" content="text/html;charset=UTF-8">
+	<title>Md5 File Test</title>
+</head>
+<body>
+	<input type="file" id="fileselect" name="fileselect[]" multiple="multiple" />
+<script type="text/javascript">
+(function( input ){
+
+	// iframe中读取
+	function Md5File( file, callback ) {
+    	console.time( 'read file content: ' + file.name );
+
+    	var iframe = document.createElement( 'iframe' ),
+    		root = window,
+    		win;
+
+    	iframe.setAttribute('src', './subpage.html');
+    	iframe.setAttribute('width', '1px');
+    	iframe.setAttribute('height', '1px');
+    	document.body.appendChild( iframe );
+    	win = iframe.contentWindow;
+
+    	win.addEventListener('DOMContentLoaded', function() {
+    		var fn = arguments.callee;
+
+    		win.readContent( file, function( ret ) {
+	    		console.timeEnd( 'read file content: ' + file.name );
+	    		console.time( 'md5 content: ' + file.name );
+
+	    		console.log( ret );
+	    		ret = null;
+
+	    		console.timeEnd( 'md5 content: ' + file.name );
+	    		setTimeout(callback, 1);
+
+	    		win.removeEventListener('DOMContentLoaded', fn);
+	    		fn = null;
+	    		iframe.setAttribute('src', 'about:blank');
+	    		win.location.reload();
+	    		iframe.parentNode.removeChild( iframe );
+	    	});
+    	});
+    }
+
+
+	function eachSeries(arr, iterator, callback) {
+        var len = arr.length;
+
+        callback = callback || function() {};
+        if (!arr.length) {
+            return callback();
+        }
+        var completed = 0;
+        var iterate = function() {
+            iterator(arr[completed], function(err) {
+                if (err) {
+                    callback(err);
+                    callback = function() {};
+                } else {
+                    completed += 1;
+                    if (completed >= len) {
+                        callback(null);
+                    } else {
+                        iterate();
+                    }
+                }
+            });
+        };
+        iterate();
+    }
+
+	input.addEventListener( 'change', function( e ) {
+		var files = e.target.files;
+
+		console.time('All Done');
+		eachSeries( files, function( file, next ) {
+			Md5File( file, next );
+		}, function() {
+			console.timeEnd('All Done');
+			// input.parentNode.removeChild(input);
+			// @todo
+		});
+	});
+
+})( document.getElementById('fileselect'));
+</script>
+</body>
+</html>
