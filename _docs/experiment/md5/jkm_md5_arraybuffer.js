@@ -126,12 +126,7 @@
 	function md51_array(a) {
         var n = a.length,
             state = [1732584193, -271733879, -1732584194, 271733878],
-            i,
-            length,
-            tail,
-            tmp,
-            lo,
-            hi;
+            i, length, tail, tmp, lo, hi;
 
         for (i = 64; i <= n; i += 64) {
             md5cycle(state, md5blk_array(a.subarray(i - 64, i)));
@@ -141,7 +136,7 @@
         // containing the last element of the parent array if the sub array specified starts
         // beyond the length of the parent array - weird.
         // https://connect.microsoft.com/IE/feedback/details/771452/typed-array-subarray-issue
-        a = (i - 64) < n ? a.subarray(i - 64) : new Uint8Array(0);
+        a = (i - 64) < n ? a.subarray(i-64) : new Uint8Array(0);
 
         length = a.length;
         tail = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
@@ -166,9 +161,7 @@
         // tail[14] = lo;
         // tail[15] = hi;
         tail[14] = n * 8;
-
         md5cycle(state, tail);
-
         return state;
     }
 
