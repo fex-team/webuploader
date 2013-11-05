@@ -1,8 +1,8 @@
 package
 {
-    import com.Utils;
     import com.errors.RuntimeError;
     import com.events.OProgressEvent;
+    import com.utils.Utils;
     import com.utils.Zhenpin;
     
     import flash.display.Sprite;
@@ -15,6 +15,8 @@ package
     import flash.ui.ContextMenu;
     import flash.ui.ContextMenuItem;
     import flash.utils.getQualifiedClassName;
+    
+//    import cmodule.as3_jpeg_wrapper.CLibInit;
 
     [SWF(width='500', height='500')]
     public class Uploader extends Sprite
@@ -22,6 +24,8 @@ package
         public static var uid:String;
 
         private var jsReciver:String = "Uploader.reciver";
+		
+//		private static var clib:Object;
 
         public static var compFactory:ComponentFactory;
 
@@ -49,6 +53,9 @@ package
 
             // Allow scripting on swf loaded from another domain
 			Security.allowDomain("*");
+			
+//			var loader:CLibInit = new CLibInit();
+//			clib = loader.init();
 
             // Align and scale stage
             stage.align = StageAlign.TOP_LEFT;
@@ -140,6 +147,10 @@ package
 			// Uploader.log([uid, exType, e.hasOwnProperty('data') ? e.data : null]);
 			_fireEvent(evt, e.hasOwnProperty('data') ? e.data : null);
         }
+		
+//		public static function encodeJpeg(ba:ByteArray, width:uint, height:uint, quality:uint=90 ):ByteArray{
+//			return clib.write_jpeg_file(ba, width, height, 3, 2, quality);
+//		}
 
 
 

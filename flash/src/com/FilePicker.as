@@ -8,6 +8,7 @@ package com
 	import flash.net.FileFilter;
 	import flash.net.FileReference;
 	import flash.net.FileReferenceList;
+	import com.utils.Utils;
 	
 	public class FilePicker extends Sprite
 	{
