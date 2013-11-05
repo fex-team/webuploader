@@ -576,6 +576,6 @@
 
     // return SparkMD5;
     exports.md5 = function( val ){
-        return SparkMD5.hash( val );
+        return SparkMD5.ArrayBuffer.hash( val );
     };
 })(this);
