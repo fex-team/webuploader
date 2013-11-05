@@ -7,7 +7,8 @@ define('webuploader/widgets/filepicker', ['webuploader/base',
     'webuploader/lib/filepicker'
 ], function(Base, Uploader, FilePicker) {
 
-    var $ = Base.$;
+    var $ = Base.$,
+        browser = Base.browser;
 
     $.extend(Uploader.options, {
         pick: {
@@ -17,7 +18,7 @@ define('webuploader/widgets/filepicker', ['webuploader/base',
 
         accept: [{
             title: 'Images',
-            extensions: 'gif,jpg,bmp,png',
+            extensions: 'gif,jpg,jpeg,bmp,png',
             mimeTypes: 'image/*'
         }]
     });
