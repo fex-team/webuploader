@@ -8,61 +8,59 @@ define( 'webuploader/runtime/html5/filepaste', [
         'webuploader/lib/file'
     ], function( Base, Html5Runtime, File ) {
 
-    var $ = Base.$;
-
     return Html5Runtime.register( 'FilePaste', {
         init: function() {
-            var me = this,
-                opts = me.options,
-                ruid = me.owner.getRuid(),
-                elem = $( opts.container );
+            var opts = this.options,
+                elem = this.elem = opts.container,
+                accept = '.*',
+                arr, i, len, item;
 
-            elem.on( 'paste', function( e ) {
-                var files,
-                    triggerFiles = [],
-                    acceptStr = [],
-                    _tmp = [],
-                    len,
-                    ii,
-                    i;
+            // accetp的mimeTypes中生成匹配正则。
+            if ( opts.accept ) {
+                arr = [];
 
-                e.stopPropagation();
-                e.preventDefault();
-                e = e.originalEvent || e;
-                files = e.clipboardData.items;
-
-                if ( opts.accept && opts.accept.length > 0 ) {
-                    for (i = 0, len = opts.accept.length; i < len; i++) {
-                        _tmp = opts.accept[i].extensions.split( ',' );
-                        for (ii = 0; ii < _tmp.length; ii++) {
-                            acceptStr.push(  opts.accept[i].title + '/' + _tmp[ii] );
-                        };
-                    };
-                    acceptStr = acceptStr.join(',');
+                for ( i = 0, len = opts.accept.length; i < len; i++ ) {
+                    item = opts.accept[ i ].mimeTypes;
+                    item && arr.push( item );
                 }
 
-                for (i = 0, len = files.length; i < len; i++) {
-                    if ( acceptStr != '' ) {
-                        if ( files[i].type != '' && acceptStr.indexOf( files[i].type ) > -1 ) {
-                            triggerFiles.push( files[i].getAsFile() );
-                        }
-                    } else {
-                        triggerFiles.push( files[i].getAsFile() );
-                    }
+                if ( arr.length ) {
+                    accept = arr.join( ',' );
+                    accept = accept.replace(/,/g, '|').replace(/\*/g, '.*');
+                }
+            }
+            this.accept = accept = new RegExp(accept, 'i');
+            this.hander = Base.bindFn( this._pasteHander, this );
+            elem.on( 'paste', this.hander );
+        },
 
-                };
+        _pasteHander: function( e ) {
+            var allowed = [],
+                ruid = this.getRuid(),
+                files, file, blob, i, len;
 
-                me.owner.trigger( 'paste', $.map(triggerFiles, function( file ) {
-                    if ( !file.name ) {
-                        file.name = 'Image' + Date.now() + '.' + file.type.split('/')[1];
-                    }
-                    return new File( ruid, file );
-                }) );
-            } );
+            e = e.originalEvent || e;
+            e.preventDefault();
+            e.stopPropagation();
+
+            files = e.clipboardData.items;
+
+            for ( i = 0, len = files.length; i < len; i++ ) {
+                file = files[ i ];
+
+                if ( !file.type || !(blob = file.getAsFile()) ||
+                        blob.size < 6 ) {
+                    continue;
+                }
+
+                allowed.push( blob );
+            }
+
+            allowed.length && this.trigger( 'paste', allowed );
         },
 
         destroy: function() {
-            // todo
+            this.elem.off( 'paste', this.hander );
         }
     } );
 } );

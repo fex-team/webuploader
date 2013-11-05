@@ -1,11 +1,12 @@
 /**
  * @fileOverview 错误信息
- * @import base.js, core/mediator.js, runtime/client.js
+ * @import base.js, core/mediator.js, runtime/client.js, runtime/runtime.js
  */
 define( 'webuploader/lib/dnd', [ 'webuploader/base',
         'webuploader/core/mediator',
-        'webuploader/runtime/client'
-        ], function( Base, Mediator, RuntimeClent ) {
+        'webuploader/runtime/client',
+        'webuploader/runtime/runtime'
+        ], function( Base, Mediator, RuntimeClent, Runtime ) {
 
     var $ = Base.$;
 
@@ -22,10 +23,7 @@ define( 'webuploader/lib/dnd', [ 'webuploader/base',
     }
 
     DragAndDrop.options = {
-        accept: [{
-            title: 'image',
-            extensions: 'gif,jpg,bmp,png'
-        }]
+        accept: null
     };
 
     Base.inherits( RuntimeClent, {
@@ -45,6 +43,10 @@ define( 'webuploader/lib/dnd', [ 'webuploader/base',
     } );
 
     Mediator.installTo( DragAndDrop.prototype );
+
+    DragAndDrop.support = function() {
+        return Runtime.hasRuntime( 'html5' );
+    };
 
     return DragAndDrop;
 });

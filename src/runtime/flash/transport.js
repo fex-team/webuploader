@@ -1,12 +1,11 @@
 /**
  * @fileOverview Image
- * @import base.js, runtime/flash/runtime.js, core/file.js, runtime/target.js, core/encode.js
+ * @import base.js, runtime/flash/runtime.js, core/file.js, runtime/target.js
  */
 define( 'webuploader/runtime/flash/transport', [
         'webuploader/base',
         'webuploader/runtime/flash/runtime',
-        'webuploader/runtime/target',
-        'webuploader/core/encode'
+        'webuploader/runtime/target'
     ], function( Base, FlashRuntime, RuntimeTarget, Encode ) {
 
         var $ = Base.$;
@@ -34,19 +33,13 @@ define( 'webuploader/runtime/flash/transport', [
 
                 xhr.once( 'load', function() {
                     var status = xhr.exec( 'getStatus' ),
-                        blob = xhr.exec( 'getResponseAsBlob' ),
 
                         // @todo
                         rHeaders = {},
                         target, reject, response, base64, ret;
 
                     if ( status === 200 ) {
-                        target = new RuntimeTarget( 'FileReaderSync' );
-                        target.connectRuntime( ruid );
-                        base64 = target.exec( 'readAsBase64', blob.uid );
-                        target.destroy();
-
-                        response = Encode.atob( base64 );
+                        response = xhr.exec( 'getResponse' );
                         ret = me._parseResponse( response );
                         ret._raw = response;
 
@@ -55,13 +48,12 @@ define( 'webuploader/runtime/flash/transport', [
                             reject = val;
                         } ) ) {
                             reject = reject || 'server';
-
                         } else {
                             return me._onsuccess.call( me, ret, rHeaders );
                         }
                     }
 
-                    reject = reject || (status ? 'http' : 'timeout');
+                    reject = reject || (status ? 'http' : 'abort');
                     return me._reject( reject, ret, rHeaders );
                 });
 
