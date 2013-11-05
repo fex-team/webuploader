@@ -9,15 +9,16 @@
 package com.image
 {
 	import com.utils.BinaryReader;
+	
 	import flash.utils.ByteArray;
 	
-	public class PNG 
+	public class BMP 
 	{		
-		public static const MIME:String = 'image/png';
+		public static const MIME:String = 'image/bmp';
 		
 		protected var _br:BinaryReader;
 		
-		public function PNG(binData:ByteArray)
+		public function BMP(binData:ByteArray)
 		{
 			_br = new BinaryReader;
 			_br.init(binData);
@@ -25,7 +26,7 @@ package com.image
 		
 		static public function test(binData:ByteArray) : Boolean
 		{
-			var sign:Array = [ 137, 80, 78, 71, 13, 10, 26, 10 ];
+			var sign:Array = [ 66, 77 ];
 			
 			for (var i:int = sign.length - 1; i >= 0 ; i--) {
 				if (binData[i] != sign[i]) {
@@ -38,20 +39,16 @@ package com.image
 		
 		public function info() : Object
 		{
-			var chunk:Object, idx:uint;
+			var a:uint = _br.BYTE(18),
+				b:uint = _br.BYTE(19),
+				c:uint = _br.BYTE(22),
+				d:uint = _br.BYTE(23);
 			
-			chunk = _getChunkAt(8);
-			
-			if (chunk.type == 'IHDR') {
-				idx = chunk.start;
-				return {
-					width: _br.LONG(idx),
-					height: _br.LONG(idx += 4),
-					type: PNG.MIME
-				};
+			return {
+				width: b * 256 + a,
+				height: d * 256 + c,
+				type: BMP.MIME
 			}
-				
-			return null;
 		}
 		
 		
@@ -60,29 +57,12 @@ package com.image
 			return {};
 		}
 		
-		
-		private function _getChunkAt(idx:uint) : Object
-		{
-			var length:uint, type:String, start:uint, CRC:uint;
-			
-			length = _br.LONG(idx);
-			type = _br.STRING(idx += 4, 4);
-			start = idx += 4;	
-			CRC = _br.LONG(idx + length);
-			
-			return {
-				length: length,
-				type: type,
-				start: start,
-				CRC: CRC
-			};
-		}
-		
 		public function purge() : void
 		{
 			_br.clear();
 		}
 		
 	}
-
+	
 }
+
