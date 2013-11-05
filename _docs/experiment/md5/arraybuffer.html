@@ -2,24 +2,45 @@
 <html lang="en">
 <head>
 	<meta http-equiv="Content-Type" content="text/html;charset=UTF-8">
-	<title>Md5 File Test</title>
+	<title>Array BUffer</title>
 </head>
 <body>
 	<input type="file" id="fileselect" name="fileselect[]" multiple="multiple" />
 <!-- <script type="text/javascript" src="jkm_md5.js"></script> -->
 <!-- <script type="text/javascript" src="SparkMD5.js"></script> -->
-<script type="text/javascript" src="jkm_md5.js"></script>
+<script type="text/javascript" src="jkm_md5_arraybuffer.js"></script>
 <!-- <script type="text/javascript" src="fast_md5.js"></script> -->
 <script type="text/javascript">
 (function( input ){
 
 	var fr;
+
+	function concatArrayBuffer( arr ) {
+		var byteLength = 0,
+			len = arr.length,
+			position = 0,
+			i, tmp, buf;
+
+		for ( i = 0; i< len; i++ ) {
+			byteLength += arr[ i ].byteLength;
+		}
+
+		tmp = new Uint8Array( byteLength );
+
+		for ( i = 0; i< len; i++ ) {
+			buf = arr[ i ];
+			tmp.set(new Uint8Array(buf), position);
+			position += buf.byteLength;
+		}
+
+		return tmp.buffer;
+	}
 	
 	function readContent(file, cb) {
 		var chunkSize = 2 * 1024 * 1024,
 			chunks = Math.ceil(file.size / chunkSize),
 			chunk = 0,
-			ret = '',
+			ret = [],
 			blobSlice = file.mozSlice || file.webkitSlice || file.slice,
 			loadNext;
 
@@ -32,7 +53,7 @@
 			end = start + chunkSize >= file.size ? file.size : start + chunkSize;
 
 			fr.onload = function( e ) {
-				ret += fr.result;
+				ret.push( fr.result );
 				fr.result = null;
 			};
 
@@ -42,13 +63,13 @@
 				if (++chunk < chunks) {
 					setTimeout( loadNext, 1 );
 				} else {
-					fr.readAsBinaryString(new Blob(['a'], {type:'text/plain'}));
-					cb( ret);
+					fr.readAsArrayBuffer(new Blob(['a'], {type:'text/plain'}));
+					cb( concatArrayBuffer( ret ) );
 					ret = loadNext = blobSlice = file = null;
 				}
 			};
 
-			fr.readAsBinaryString(blobSlice.call(file, start, end));
+			fr.readAsArrayBuffer(blobSlice.call(file, start, end));
 		};
 
 		loadNext();
