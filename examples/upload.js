@@ -40,6 +40,17 @@
             // 所有文件的进度信息，key为file id
             percentages = {},
 
+            supportTransition = (function(){
+                var s = document.createElement('p').style,
+                    r = 'transition' in s ||
+                          'WebkitTransition' in s ||
+                          'MozTransition' in s ||
+                          'msTransition' in s ||
+                          'OTransition' in s;
+                s = null;
+                return r;
+            })(),
+
             // WebUploader实例
             uploader;
 
@@ -52,9 +63,11 @@
             dnd: '#dndArea',
             paste: '#uploader',
             swf: '../dist/Uploader.swf',
-            server: '../server/fileupload.php',
+            chunked: false,
+            //server: '../server/fileupload.php',
+            server: 'http://liaoxuezhi.fe.baidu.com/webupload/fileupload.php',
             fileNumLimit: 300,
-            runtimeOrder: 'flash,html5',
+            // runtimeOrder: 'flash,html5',
             fileSizeLimit: 200 * 1024 * 1024,    // 200 M
             fileSingleSizeLimit: 50 * 1024 * 1024    // 50 M
         });
@@ -111,7 +124,7 @@
                 }, thumbnailWidth, thumbnailHeight );
 
                 percentages[ file.id ] = [ file.size, 0 ];
-                file.ratation = 0;
+                file.rotation = 0;
             }
 
             file.on('statuschange', function( cur, prev ) {
@@ -156,22 +169,43 @@
                         return;
 
                     case 1:
-                        file.ratation += 90;
+                        file.rotation += 90;
                         break;
 
                     case 2:
-                        file.ratation -= 90;
+                        file.rotation -= 90;
                         break;
                 }
 
-                // -webkit-transform: rotate(90deg);
-                index && (deg = 'rotate(' + file.ratation + 'deg)', $wrap.css({
-                    '-webkit-transform': deg,
-                    '-mos-transform': deg,
-                    '-o-transform': deg,
-                    'transform': deg,
-                    'filter': 'progid:DXImageTransform.Microsoft.BasicImage(rotation='+ (Math.round(file.ratation/90)%4+4)%4 +');'
-                }));
+                if ( supportTransition ) {
+                    deg = 'rotate(' + file.rotation + 'deg)';
+                    $wrap.css({
+                        '-webkit-transform': deg,
+                        '-mos-transform': deg,
+                        '-o-transform': deg,
+                        'transform': deg
+                    });
+                } else {
+                    $wrap.css( 'filter', 'progid:DXImageTransform.Microsoft.BasicImage(rotation='+ (~~((file.rotation/90)%4 + 4)%4) +')');
+                    // use jquery animate to rotation
+                    // $({
+                    //     rotation: rotation
+                    // }).animate({
+                    //     rotation: file.rotation
+                    // }, {
+                    //     easing: 'linear',
+                    //     step: function( now ) {
+                    //         now = now * Math.PI / 180;
+
+                    //         var cos = Math.cos( now ),
+                    //             sin = Math.sin( now );
+
+                    //         $wrap.css( 'filter', "progid:DXImageTransform.Microsoft.Matrix(M11=" + cos + ",M12=" + (-sin) + ",M21=" + sin + ",M22=" + cos + ",SizingMethod='auto expand')");
+                    //     }
+                    // });
+                }
+
+
             });
 
             $li.appendTo( $queue );

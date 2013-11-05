@@ -68,6 +68,7 @@ define( 'webuploader/widgets/transport', [
                         // 如果是interrupt中断了，还需重传的。
                         delete me.requests[ file.id ];
                         tr.destroy();
+
                         file.off( 'statuschange', fileHandler );
                     }
 

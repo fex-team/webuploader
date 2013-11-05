@@ -1,11 +1,12 @@
 /**
  * @fileOverview 错误信息
- * @import base.js, core/mediator.js, runtime/client.js
+ * @import base.js, core/mediator.js, runtime/client.js, runtime/runtime.js
  */
 define( 'webuploader/lib/filepaste', [ 'webuploader/base',
         'webuploader/core/mediator',
-        'webuploader/runtime/client'
-        ], function( Base, Mediator, RuntimeClent ) {
+        'webuploader/runtime/client',
+        'webuploader/runtime/runtime'
+        ], function( Base, Mediator, RuntimeClent, Runtime ) {
 
     var $ = Base.$;
 
@@ -21,11 +22,8 @@ define( 'webuploader/lib/filepaste', [ 'webuploader/base',
     }
 
     FilePaste.options = {
-        accept: [{
-            title: 'image',
-            extensions: 'gif,jpg,bmp,png'
-        }]
-    }
+        accept: null
+    };
 
     Base.inherits( RuntimeClent, {
         constructor: FilePaste,
@@ -46,6 +44,10 @@ define( 'webuploader/lib/filepaste', [ 'webuploader/base',
     } );
 
     Mediator.installTo( FilePaste.prototype );
+
+    FilePaste.support = function() {
+        return Runtime.hasRuntime( 'html5' );
+    };
 
     return FilePaste;
 });

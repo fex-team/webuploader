@@ -145,7 +145,7 @@ define( 'webuploader/runtime/html5/imagecompress', [ 'webuploader/base',
                     height / naturalHeight );
 
             // 不允许放大。
-            scale = opts.allowMagnify ? Math.min( 1, scale ) : scale;
+            scale = Math.min( 1, scale );
 
             w = naturalWidth * scale;
             h = naturalHeight * scale;
