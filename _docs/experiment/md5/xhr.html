@@ -2,61 +2,77 @@
 <html lang="en">
 <head>
 	<meta http-equiv="Content-Type" content="text/html;charset=UTF-8">
-	<title>Md5 File Test</title>
+	<title>Xhr File Test</title>
 </head>
 <body>
 	<input type="file" id="fileselect" name="fileselect[]" multiple="multiple" />
-<!-- <script type="text/javascript" src="jkm_md5.js"></script> -->
+<script type="text/javascript" src="jkm_md5.js"></script>
 <!-- <script type="text/javascript" src="SparkMD5.js"></script> -->
-<script type="text/javascript" src="jkm_md5_arraybuffer.js"></script>
 <!-- <script type="text/javascript" src="fast_md5.js"></script> -->
 <script type="text/javascript">
 (function( input ){
 
-	var fr;
-	
+	var noop = function() {};
+
 	function readContent(file, cb) {
-		var chunkSize = 200 * 1024 * 1024,
+		var chunkSize = 2 * 1024 * 1024,
 			chunks = Math.ceil(file.size / chunkSize),
 			chunk = 0,
-			ret = [],
+			xhr = new XMLHttpRequest,
+			ret = '',
 			blobSlice = file.mozSlice || file.webkitSlice || file.slice,
 			loadNext;
 
-		fr = fr || new FileReader;
-
 		loadNext = function() {
-			var start, end;
+			var start, end, url;
 
 			start = chunk * chunkSize;
 			end = start + chunkSize >= file.size ? file.size : start + chunkSize;
 
-			fr.onload = function( e ) {
-				ret.push( fr.result );
-				fr.result = null;
-			};
-
-			fr.onloadend = function() {
-				fr.onload = fr.onloadend = null;
-
-				if (++chunk < chunks) {
+			xhr.onload = function() {
+	            URL.revokeObjectURL( url );
+	            ret += xhr.response;
+	            
+	            if (++chunk < chunks) {
 					setTimeout( loadNext, 1 );
 				} else {
-					fr.readAsArrayBuffer(new Blob(['a'], {type:'text/plain'}));
+					loadNext = blobSlice = file = null;
+					xhr = xhr.onload = test = null;
 
-					// 合并arraybuffer
-					// ret
-
-					cb( ret[0] );
-					ret = loadNext = blobSlice = file = null;
+					cb( ret );
+					ret = null;
 				}
-			};
+			}
 
-			fr.readAsArrayBuffer(blobSlice.call(file, start, end));
+			url = URL.createObjectURL( blobSlice.call(file, start, end) );
+			xhr.open( 'GET', url, true );
+        	xhr.send();
 		};
 
 		loadNext();
 	}
+
+	
+	// function readContent(file, cb) {
+	// 	var url = URL.createObjectURL( file ),
+	// 		xhr = new XMLHttpRequest(),
+	// 		join = [].join;
+
+	// 	xhr.onreadystatechange = function() {
+	// 		if ( xhr.readyState !== 4 ) {
+ //                return;
+ //            }
+ //            xhr.onreadystatechange = noop;
+ //            url = URL.revokeObjectURL( url );
+ //            cb( xhr.response );
+
+ //            xhr = xhr.response = null;
+	// 	}
+
+	// 	// xhr.responseType = 'text';
+	// 	xhr.open( 'GET', url );
+ //        xhr.send();
+	// }
 
 	// function readContent2( file, cb ) {
 	// 	var fr = new FileReader;
