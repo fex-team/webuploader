@@ -37,8 +37,11 @@ define( 'webuploader/lib/imagecompress', [ 'webuploader/base',
             return new Blob( this.getRuid(), blob );
         },
 
-        setMetas: function() {
-            return this.exec( 'setMetas' );
+        setMetas: function( val ) {
+            var me = this;
+            this.runtimeReady(function() {
+                me.exec( 'setMetas', val );
+            });
         },
 
         destroy: function() {

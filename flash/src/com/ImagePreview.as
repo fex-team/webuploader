@@ -5,20 +5,29 @@ package com
 	import com.events.ODataEvent;
 	import com.events.OErrorEvent;
 	import com.events.OProgressEvent;
+	import com.image.BMP;
+	import com.image.GIF;
+	import com.image.ImageEditor;
 	import com.image.JPEG;
 	import com.image.JPEGEncoder;
 	import com.image.PNG;
+	import com.utils.BMPDecoder;
 	import com.utils.Base64;
 	import com.utils.OEventDispatcher;
+	import com.utils.Utils;
 	
+	import flash.display.Bitmap;
 	import flash.display.BitmapData;
 	import flash.display.IBitmapDrawable;
 	import flash.display.Loader;
 	import flash.display.PNGEncoderOptions;
+	import flash.errors.IOError;
 	import flash.events.Event;
 	import flash.events.IOErrorEvent;
 	import flash.external.ExternalInterface;
 	import flash.geom.Matrix;
+	import flash.geom.Rectangle;
+	import flash.net.URLLoaderDataFormat;
 	import flash.system.System;
 	import flash.utils.ByteArray;
 
@@ -80,12 +89,17 @@ package com
 		{
 			var img:*, info:Object, scale:Number, output:BitmapData, selector:Function;
 			
+			
 			if (JPEG.test(ba)) {
 				img = new JPEG(ba);		
 				img.extractHeaders(); // preserve headers for later
 				_meta = img.metaInfo();
 			} else if (PNG.test(ba)) {
 				img = new PNG(ba);
+			} else if ( GIF.test(ba) ) {
+				img = new GIF( ba );
+			} else if ( BMP.test(ba) ) {
+				img = new BMP( ba );
 			} else {
 				dispatchEvent(new OErrorEvent(OErrorEvent.ERROR, ImageError.WRONG_FORMAT));
 				return;
@@ -122,6 +136,11 @@ package com
 			destWidth = naturalWidth * scale;
 			destHeight = naturalHeight * scale;
 			
+//			if ( type === 'image/jpeg' ) {
+//				_ba = Uploader.encodeJpeg( ba , width, height, quality);
+//				dispatchEvent(new ODataEvent(ODataEvent.DATA));
+//				return;
+//			}
 			
 			var bd:BitmapData = new BitmapData( width, height );
 			var matrix:Matrix = new Matrix;
@@ -133,6 +152,21 @@ package com
 			
 			if ( destHeight > height ) {
 				matrix.translate( 0, -Math.round(( destHeight - height) / 2));
+			}
+			
+			if ( type == 'image/bmp' ) {
+				var decoder:BMPDecoder = new BMPDecoder();
+				var bmp:Bitmap = new Bitmap( decoder.decode( ba ) );
+				
+				
+				
+				// draw preloaded data onto the prepared BitmapData
+				bd.draw(bmp, matrix, null, null, null, true);
+				
+				_ba =  encodeBitmapData( bd );
+				dispatchEvent(new ODataEvent(ODataEvent.DATA));
+				
+				return;
 			}
 			
 			
@@ -150,27 +184,18 @@ package com
 				loader.unload();
 				ba.clear();
 				
-				var encoder:JPEGEncoder;
-				if (type == 'image/jpeg') {
-					bd = _rotateToOrientation(_orientation, bd);
-					
-					encoder = new JPEGEncoder( quality );
-					ba = encoder.encode(bd);
-					// ba = output.encode(output.rect, new JPEGEncoderOptions(70));
-				} else if (type == 'image/png') {
-					ba = bd.encode(bd.rect, new PNGEncoderOptions());
-				}
-				
-				_ba =  ba;
+				_ba =  encodeBitmapData( bd );
 				
 				dispatchEvent(new ODataEvent(ODataEvent.DATA));
 			});
 			
 			loader.contentLoaderInfo.addEventListener(IOErrorEvent.IO_ERROR, function(e:*) : void {
+				dispatchEvent(new OErrorEvent(OErrorEvent.ERROR, 2));
+				
 				ba.clear();
 				bd.dispose();
+				loader.unload();
 				img.purge();
-				Uploader.log(e);
 			});
 			
 			try {
@@ -178,6 +203,30 @@ package com
 			} catch (ex:*) {
 				Uploader.log(ex);
 			}
+			
+		}
+		
+		private function encodeBitmapData( bd:BitmapData ):ByteArray {
+			var encoder:JPEGEncoder, ba:ByteArray;
+			if ( type === 'image/png' ) {
+				ba = bd.encode(bd.rect, new PNGEncoderOptions());
+			} else {
+				if (type == 'image/jpeg') {
+					bd = _rotateToOrientation(_orientation, bd);
+				}
+				//ExternalInterface.call("console.time", "new compress");
+				
+				encoder = new JPEGEncoder( quality );
+				ba = encoder.encode(bd);
+				
+				//var baSource: ByteArray = bd.clone().getPixels( new Rectangle( 0, 0, bd.width, bd.height) );
+				//ba = Uploader.encodeJpeg(baSource, bd.width, bd.height, quality);
+				
+				//ExternalInterface.call("console.timeEnd", "new compress");
+				type = 'image/jpeg';
+			}
+			
+			return ba;
 		}
 		
 		private function _rotateToOrientation(orientation:uint, bd:BitmapData) : BitmapData

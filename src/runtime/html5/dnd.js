@@ -11,111 +11,110 @@ define( 'webuploader/runtime/html5/dnd', [
 
     return Html5Runtime.register( 'DragAndDrop', {
         init: function() {
-            var me = this,
-                opts = me.options,
-                elem = opts.container,
-                triggerFiles = [],
-                ruid = this.owner.getRuid();
+            var elem = this.elem = this.options.container;
 
-            var isAcceptType = function( type ) {
-                var acceptStr = [],
-                    _tmp = [],
-                    len,
-                    ii,
-                    i;
+            this.dragEnterHander = Base.bindFn( this._dragEnterHander, this );
+            this.dragLeaveHander = Base.bindFn( this._dragLeaveHander, this );
+            this.dropHander = Base.bindFn( this._dropHander, this );
 
-                if ( opts.accept && opts.accept.length > 0 ) {
-                    for (i = 0, len = opts.accept.length; i < len; i++) {
-                        _tmp = opts.accept[i].extensions.split( ',' );
-                        for (ii = 0; ii < _tmp.length; ii++) {
-                            acceptStr.push(  opts.accept[i].title + '/' + _tmp[ii] );
-                        };
-                    };
-                    acceptStr = acceptStr.join(',');
+            elem.on( 'dragenter', this.dragEnterHander );
+            elem.on( 'dragover', this.dragEnterHander );
+            elem.on( 'dragleave', this.dragLeaveHander );
+            elem.on( 'drop', this.dropHander );
+        },
 
-                    if ( type != '' && acceptStr.indexOf( type ) > -1) {
-                        return true;
-                    } else {
-                        return false;
-                    }
-                } else {
-                    return true;
+        _dragEnterHander: function( e ) {
+            this.elem.addClass( 'webuploader-dnd-over' );
+            e.stopPropagation();
+            e.preventDefault();
+        },
+
+        _dragLeaveHander: function( e ) {
+            this.elem.removeClass( 'webuploader-dnd-over' );
+            e.stopPropagation();
+            e.preventDefault();
+        },
+
+        // _dragOverHander: function( e ) {
+        //     var elem = this.elem[ 0 ],
+        //         target = e.target;
+
+        //     $.contains( elem, target ) || elem === target || e.preventDefault();
+        //     e.stopPropagation();
+        // },
+
+        _dropHander: function( e ) {
+            var results  = [],
+                promises = [],
+                me = this,
+                ruid = me.getRuid(),
+                items, files, dataTransfer, file, i, len, canAccessFolder;
+
+            e.preventDefault();
+            e.stopPropagation();
+
+            e = e.originalEvent || e;
+            dataTransfer = e.dataTransfer;
+            items = dataTransfer.items;
+            files = dataTransfer.files;
+
+            canAccessFolder = !!(items && items[ 0 ].webkitGetAsEntry);
+
+            for ( i = 0, len = files.length; i < len; i++ ) {
+                file = files[ i ];
+                if ( file.type ) {
+                    results.push( file );
+                } else if ( !file.type && canAccessFolder ) {
+                    promises.push( this._traverseDirectoryTree( items[ i ].webkitGetAsEntry(), results ) )
                 }
-            };
+            }
 
-            var traverseDirectoryTree = function( entry ) {
-                var dirReader,
-                    i;
-
-                if ( entry.isDirectory ) {
-                    dirReader = entry.createReader();
-                    dirReader.readEntries( function( entries ) {
-
-                        for ( i = 0; i < entries.length; i++ ) {
-
-                            if ( entries[i].isFile ) {
-                                entries[i].file( function( file ) {
-                                    if ( isAcceptType( file.type ) ) {
-                                        triggerFiles.push( file );
-                                    }
-                                }, function( fileError ) {
-                                    Base.log('fileError');
-                                } );
-                            } else {
-                                triggerFiles.push( traverseDirectoryTree( entries[i] ) );
-                            }
-
-                        }
-
-                    }, function( fileError ) {});
-                }
-            };
-
-            elem.on( 'dragenter', function( e ) {
-                elem.addClass( 'webuploader-dnd-over' );
-            } );
-
-            elem.on( 'dragover', function( e ) {
-                e.stopPropagation();
-                e.preventDefault();
-                elem.addClass( 'webuploader-dnd-over' );
-            } );
-
-            elem.on( 'drop', function( e ) {
-                var evt = e.originalEvent || e,
-                    dataTrans = evt.dataTransfer,
-                    files = evt.dataTransfer.files,
-                    _tmp,
-                    len,
-                    i;
-
-                e.stopPropagation();
-                e.preventDefault();
-
-                for (i = 0, len = files.length; i < len; i++) {
-                    if ( files[i].type && isAcceptType( files[i].type ) ) {
-                        triggerFiles.push( files[i] );
-                    } else if ( dataTrans.items && dataTrans.items[i].webkitGetAsEntry ) {
-                        //文件夹处理
-                        traverseDirectoryTree( dataTrans.items[i].webkitGetAsEntry() );
-                    }
-                };
-
-                me.owner.trigger( 'drop', $.map(triggerFiles, function( file ) {
+            Base.when.apply( Base, promises ).done(function(){
+                me.trigger( 'drop', $.map( results, function( file ) {
                     return new File( ruid, file );
-                }) );
-                evt.dataTransfer.clearData();
-                triggerFiles = [];
-                elem.removeClass( 'webuploader-dnd-over' );
-            } );
+                }));
+            });
 
-            elem.on( 'dragleave', function( e ) {
-                elem.removeClass( 'webuploader-dnd-over' );
-            } );
+            this.elem.removeClass( 'webuploader-dnd-over' );
+        },
+
+        _traverseDirectoryTree: function( entry, results ) {
+            var deferred = Base.Deferred(),
+                me = this;
+
+            if ( entry.isFile ) {
+                entry.file(function( file ) {
+                    file.type && results.push( file );
+                    deferred.resolve( true );
+                });
+            } else if ( entry.isDirectory ) {
+                entry.createReader().readEntries(function( entries ) {
+                    var len = entries.length,
+                        promises = [],
+                        arr = [],  // 为了保证顺序。
+                        i;
+
+                    for ( i = 0; i < len; i++ ) {
+                        promises.push( me._traverseDirectoryTree( entries[ i ], arr ) );
+                    }
+
+                    Base.when.apply( Base, promises ).then(function() {
+                        results.push.apply( results, arr );
+                        deferred.resolve( true );
+                    }, deferred.reject);
+                });
+            }
+
+            return deferred.promise();
         },
 
         destroy: function() {
-            // todo
+            var elem = this.elem;
+
+            elem.on( 'dragenter', this.dragEnterHander );
+            elem.on( 'dragover', this.dragEnterHander );
+            elem.on( 'dragleave', this.dragLeaveHander );
+            elem.on( 'drop', this.dropHander );
         }
     } );
 } );
