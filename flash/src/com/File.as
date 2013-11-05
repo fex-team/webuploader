@@ -1,5 +1,7 @@
 package com
 {
+	import com.utils.Utils;
+
 	public class File extends Blob
 	{
 		private var _name:String = '';

@@ -16,7 +16,6 @@ package com.utils
 	import flash.utils.ByteArray;
 	import flash.utils.Timer;
 	
-	import com.Utils;
 	
 	public class URLStreamProgress extends OEventDispatcher
 	{
