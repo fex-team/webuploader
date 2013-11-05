@@ -3,7 +3,7 @@
 /dist
 /doc
 /server/upload
-/server/upload_temp
+/server/upload_tmp
 /server/md5list.txt
 /server/md5list2.txt
 .tags
