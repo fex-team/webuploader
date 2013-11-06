@@ -58,7 +58,6 @@ define( 'webuploader/runtime/flash/transport', [
                 });
 
                 xhr.on( 'error', function() {
-                    console.log.apply( console, arguments );
                     me._reject( 'http' );
                 });
 
