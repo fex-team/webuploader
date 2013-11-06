@@ -16,13 +16,12 @@ define( 'webuploader/lib/file', [ 'webuploader/base',
 
         if ( !this.type ) {
             ext = rExt.exec( file.name ) ? RegExp.$1.toLowerCase() : '';
-            if ( ~[ 'jpg', 'jpeg', 'png', 'gif', 'bmp' ] ) {
+            if ( ~'jpg,jpeg,png,gif,bmp'.indexOf( ext ) ) {
                 this.type = 'image/'+ext;
             }
         }
 
         this.lastModifiedDate = file.lastModifiedDate || (new Date()).toLocaleString();
-
     }
 
     return Base.inherits( Blob, File );
