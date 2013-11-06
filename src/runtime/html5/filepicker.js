@@ -79,7 +79,7 @@ define( 'webuploader/runtime/html5/filepicker', [
                     this.parentNode.replaceChild( clone, this );
 
                     input.off();
-                    $( clone ).on( 'change', fn ).on( 'mouseenter mouseleave', mouseHandler);
+                    input = $( clone ).on( 'change', fn ).on( 'mouseenter mouseleave', mouseHandler);
 
                     owner.trigger( 'change' );
                 } );
