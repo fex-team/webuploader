@@ -45,7 +45,9 @@ define( 'webuploader/widgets/uploadmgr', [
                     me.request( 'start-transport', me.request( 'fetch-file' ) );
                 }
 
-                if ( !stats.numOfQueue && !me.request('has-requests') ) {
+                if ( !stats.numOfQueue && !me.request('has-requests') &&
+                        !me.runing ) {
+                    
                     me.runing = false;
                     Base.nextTick(function() {
                         me.owner.trigger( 'uploadFinished' );
