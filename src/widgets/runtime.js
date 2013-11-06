@@ -13,6 +13,12 @@ define( 'webuploader/widgets/runtime', [
             'get-runtime-type': 'getRuntmeType'
         }, {
 
+        init: function() {
+            if ( !this.getRuntmeType() ) {
+                throw Error( 'Runtime Error' );
+            }
+        },
+
         getRuntmeType: function() {
             var orders = this.options.runtimeOrder || Runtime.orders,
                 type = this.type,
