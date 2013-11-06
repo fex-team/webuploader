@@ -146,15 +146,21 @@ define( 'webuploader/base', [ 'webuploader/jq-bridge' ], function( $ ) {
         })(),
 
         nextTick: (function() {
-            var next = window.requestAnimationFrame ||
-                window.webkitRequestAnimationFrame ||
-                window.mozRequestAnimationFrame ||
-                function( cb ) {
-                    window.setTimeout( cb, 1000 / 60 );
-                };
+            
+            return function( cb ) {
+                setTimeout( cb, 1 );
+            }
 
-            // fix: Uncaught TypeError: Illegal invocation
-            return bindFn( next, window );
+            // @bug 当浏览器不在当前窗口时就停了。
+            // var next = window.requestAnimationFrame ||
+            //     window.webkitRequestAnimationFrame ||
+            //     window.mozRequestAnimationFrame ||
+            //     function( cb ) {
+            //         window.setTimeout( cb, 1000 / 60 );
+            //     };
+
+            // // fix: Uncaught TypeError: Illegal invocation
+            // return bindFn( next, window );
         })(),
 
         slice: uncurryThis( [].slice ),
