@@ -60,7 +60,7 @@ define( 'webuploader/widgets/queue', [
                 }
 
                 if ( !me.owner.trigger( 'beforeFileQueued', file ) ) {
-                    return false;
+                    return;
                 }
 
                 me.queue.append( file );
