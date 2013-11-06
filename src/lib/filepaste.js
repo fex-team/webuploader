@@ -11,19 +11,10 @@ define( 'webuploader/lib/filepaste', [ 'webuploader/base',
     var $ = Base.$;
 
     function FilePaste( opts ) {
-        opts = this.options = $.extend( {}, FilePaste.options, opts );
-
-        opts.container = $( opts.container );
-        if ( !opts.container.length ) {
-            throw new Error( '容器没有找到' );
-        }
-
+        opts = this.options = $.extend( {}, opts );
+        opts.container = $( opts.container || document.body );
         RuntimeClent.call( this, 'FilePaste' );
     }
-
-    FilePaste.options = {
-        accept: null
-    };
 
     Base.inherits( RuntimeClent, {
         constructor: FilePaste,

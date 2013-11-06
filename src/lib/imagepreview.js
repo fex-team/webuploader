@@ -13,9 +13,9 @@ define( 'webuploader/lib/imagepreview', [ 'webuploader/base',
     }
 
     ImagePreview.options = {
-        quality: 90,
-        crop: false,
-        allowMagnify: false
+        quality: 70,
+        crop: true,
+        allowMagnify: true
     };
 
     Base.inherits( RuntimeClient, {
