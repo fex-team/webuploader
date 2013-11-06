@@ -26,7 +26,7 @@ define( 'webuploader/lib/transport', [ 'webuploader/base',
         fileVar: 'file',
         chunked: true,
         chunkSize: 1024 * 512,    // 0.5M.
-        chunkRetryCount: 3,    // 当chunk传输时出错，可以重试3次。
+        RetryCount: 2,    // 可以重试2次。
         timeout: 2 * 60 * 1000,    // 2分钟
         formData: {},
         headers: {}
