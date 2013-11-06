@@ -10,7 +10,7 @@ define( 'webuploader/widgets/runtime', [
     var $ = Base.$;
 
     return Uploader.register({
-            'get-runtime-type': 'getRuntmeType',
+            'get-runtime-type': 'getRuntmeType'
         }, {
 
         getRuntmeType: function() {
