@@ -9,7 +9,7 @@ define( 'webuploader/lib/imagecompress', [ 'webuploader/base',
     var $ = Base.$;
 
     function ImageCompress( opts ) {
-        this.options = $.extend( {}, Image.options, opts );
+        this.options = $.extend( {}, ImageCompress.options, opts );
         RuntimeClient.call( this, 'ImageCompress' );
     }
 

@@ -48,7 +48,7 @@ define( 'webuploader/widgets/image', [
                     file.metas = previewer.getMetas();
                     file.orientation = previewer.getOrientation();
 
-                    cb( false, previewer.getAsDataURL() );
+                    cb( false, previewer.getAsDataURL( 'image/jpeg' ) );
                     previewer.destroy();
                 });
 
