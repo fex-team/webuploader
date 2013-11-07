@@ -1,7 +1,6 @@
 package com
 {
 	import com.errors.ImageError;
-	import com.events.ImageEvent;
 	import com.events.ODataEvent;
 	import com.events.OErrorEvent;
 	import com.events.OProgressEvent;
@@ -21,13 +20,9 @@ package com
 	import flash.display.IBitmapDrawable;
 	import flash.display.Loader;
 	import flash.display.PNGEncoderOptions;
-	import flash.errors.IOError;
 	import flash.events.Event;
 	import flash.events.IOErrorEvent;
-	import flash.external.ExternalInterface;
 	import flash.geom.Matrix;
-	import flash.geom.Rectangle;
-	import flash.net.URLLoaderDataFormat;
 	import flash.system.System;
 	import flash.utils.ByteArray;
 
@@ -43,7 +38,7 @@ package com
 		private var _w:uint;
 		private var _h:uint;
 		private var _orientation:uint = 1;
-		private var _ba:ByteArray;
+		private var _bd:BitmapData;
 		private var _meta:Object;
 		
 		public var type:String = 'image/jpeg';
@@ -142,7 +137,7 @@ package com
 //				return;
 //			}
 			
-			var bd:BitmapData = new BitmapData( width, height );
+			_bd = new BitmapData( width, height );
 			var matrix:Matrix = new Matrix;
 			
 			matrix.scale( scale, scale );
@@ -161,9 +156,8 @@ package com
 				
 				
 				// draw preloaded data onto the prepared BitmapData
-				bd.draw(bmp, matrix, null, null, null, true);
+				_bd.draw(bmp, matrix, null, null, null, true);
 				
-				_ba =  encodeBitmapData( bd );
 				dispatchEvent(new ODataEvent(ODataEvent.DATA));
 				
 				return;
@@ -177,14 +171,12 @@ package com
 				img.purge(); // free some resources
 				
 				// draw preloaded data onto the prepared BitmapData
-				bd.draw(e.target.content as IBitmapDrawable, matrix, null, null, null, true);
+				_bd.draw(e.target.content as IBitmapDrawable, matrix, null, null, null, true);
 				
 				
 				
 				loader.unload();
 				ba.clear();
-				
-				_ba =  encodeBitmapData( bd );
 				
 				dispatchEvent(new ODataEvent(ODataEvent.DATA));
 			});
@@ -193,7 +185,7 @@ package com
 				dispatchEvent(new OErrorEvent(OErrorEvent.ERROR, 2));
 				
 				ba.clear();
-				bd.dispose();
+				_bd.dispose();
 				loader.unload();
 				img.purge();
 			});
@@ -206,7 +198,7 @@ package com
 			
 		}
 		
-		private function encodeBitmapData( bd:BitmapData ):ByteArray {
+		private function encodeBitmapData( bd:BitmapData, type:String ):ByteArray {
 			var encoder:JPEGEncoder, ba:ByteArray;
 			if ( type === 'image/png' ) {
 				ba = bd.encode(bd.rect, new PNGEncoderOptions());
@@ -278,12 +270,18 @@ package com
 			return _orientation;
 		}
 		
-		public function getAsDataURL():String {
-			return 'data:' + type + ';base64,' + Base64.encode( _ba );
+		public function getAsDataURL( type:String = null ):String {
+			var ba:ByteArray =  encodeBitmapData( _bd, type );
+			
+			type = type || this.type;
+			return 'data:' + type + ';base64,' + Base64.encode( ba );
 		}
 		
 		public function destroy():void {
-			_ba.clear();
+			if (_bd) {
+				_bd.dispose();
+				_bd = null;
+			}
 			
 			// one call to mark any dereferenced objects and sweep away old marks, 			
 			flash.system.System.gc();

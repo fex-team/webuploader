@@ -8,7 +8,7 @@ define( 'webuploader/lib/imagepreview', [ 'webuploader/base',
     var $ = Base.$;
 
     function ImagePreview( opts ) {
-        this.options = $.extend( {}, Image.options, opts );
+        this.options = $.extend( {}, ImagePreview.options, opts );
         RuntimeClient.call( this, 'ImagePreview' );
     }
 
@@ -31,8 +31,8 @@ define( 'webuploader/lib/imagepreview', [ 'webuploader/base',
             });
         },
 
-        getAsDataURL: function() {
-            return this.exec( 'getAsDataURL' );
+        getAsDataURL: function( type ) {
+            return this.exec( 'getAsDataURL', type );
         },
 
         getOrientation: function() {
