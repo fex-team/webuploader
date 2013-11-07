@@ -17,7 +17,7 @@ define( 'webuploader/widgets/transport', [
         {
             'cancel-transport': 'cancel',
             'resume-transports': 'resumeAll',
-            'pause-transports': 'pauseAll',
+            'pause-transports': 'pauseRuning',
             'start-transport': 'sendFile',
             'has-requests': 'hasRequests'
         },
@@ -64,12 +64,13 @@ define( 'webuploader/widgets/transport', [
                         file.loaded = file.size * args[ 2 ];
                     } else if ( type === 'complete' &&
                             file.getStatus() !== Status.INTERRUPT ) {
+                        file.off( 'statuschange', fileHandler );
 
                         // 如果是interrupt中断了，还需重传的。
                         delete me.requests[ file.id ];
                         tr.destroy();
 
-                        file.off( 'statuschange', fileHandler );
+                        
                     }
 
                     // 通过owner广播出去
@@ -126,11 +127,18 @@ define( 'webuploader/widgets/transport', [
                 });
             },
 
-            pauseAll: function( ) {
+            pauseRuning: function( interrupt ) {
                 var me = this;
 
                 $.each( me.requests, function( id, transport ) {
-                    transport.pause();
+                    var file;
+
+                    transport.pause( interrupt );
+
+                    if ( interrupt ) {
+                        file = me.request( 'get-file', id );
+                        file.setStatus( Status.INTERRUPT, '' );
+                    }
                 });
             }
     });
