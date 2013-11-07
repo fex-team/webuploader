@@ -90,11 +90,7 @@ define( 'webuploader/widgets/uploadmgr', [
                 }
 
                 me.runing = false;
-
-                if ( interrupt ) {
-                    me.request( 'pause-all' );
-                }
-
+                me.request( 'pause-transports', interrupt );
                 me.owner.trigger( 'stopUpload' );
             },
 
