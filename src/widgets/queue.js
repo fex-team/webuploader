@@ -127,7 +127,7 @@ define( 'webuploader/widgets/queue', [
             },
 
             pauseAll: function() {
-                var files = me.queue.getFiles();
+                var files = this.queue.getFiles();
 
                 $.each( files, function( idx, file ) {
                     file.setStatus( Status.INTERRUPT );
