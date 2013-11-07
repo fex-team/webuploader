@@ -20,7 +20,6 @@ define( 'webuploader/widgets/queue', [
             'get-stats': 'getStats',
             'get-files': 'getFiles',
             'remove-file': 'removeFile',
-            'pause-all': 'pauseAll',
             'retry': 'retry'
         },
 
@@ -124,14 +123,6 @@ define( 'webuploader/widgets/queue', [
                 }
 
                 me.request( 'start-upload' );
-            },
-
-            pauseAll: function() {
-                var files = this.queue.getFiles();
-
-                $.each( files, function( idx, file ) {
-                    file.setStatus( Status.INTERRUPT );
-                } );
             }
     });
 
