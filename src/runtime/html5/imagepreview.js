@@ -100,15 +100,17 @@ define( 'webuploader/runtime/html5/imagepreview', [ 'webuploader/base',
             this._resize( this._img, canvas, width, height, true );
         },
 
-        getAsDataURL: function() {
+        getAsDataURL: function( type ) {
             var canvas = this.canvas,
                 opts = this.options,
                 result;
 
-            if ( this.type === 'image/jpeg' ) {
+            type = type || this.type;
+
+            if ( type === 'image/jpeg' ) {
                 result = canvas.toDataURL( 'image/jpeg', opts.quality / 100 );
             } else {
-                result = canvas.toDataURL( this.type );
+                result = canvas.toDataURL( type );
             }
 
             canvas.getContext( '2d' )
