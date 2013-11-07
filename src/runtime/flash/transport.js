@@ -31,7 +31,7 @@ define( 'webuploader/runtime/flash/transport', [
                     return me._onprogress.call( me, percentage );
                 });
 
-                xhr.once( 'load', function() {
+                xhr.on( 'load', function() {
                     var status = xhr.exec( 'getStatus' ),
 
                         // @todo
@@ -80,6 +80,11 @@ define( 'webuploader/runtime/flash/transport', [
             },
 
             _onsuccess: function( ret, headers ) {
+                if ( this._xhr ) {
+                    this._xhr.off();
+                    this._xhr = null;
+                } 
+
                 if ( this.chunks && this.chunk < this.chunks - 1 ) {
                     if ( !this.owner.trigger( 'chunkcontinue', ret, headers, this.chunk,
                             this.chunks ) ) {
@@ -108,6 +113,11 @@ define( 'webuploader/runtime/flash/transport', [
 
             _reject: function( reason, ret, rHeaders ) {
                 var owner = this.owner;
+
+                if ( this._xhr ) {
+                    this._xhr.off();
+                    this._xhr = null;
+                } 
 
                 // @todo
                 // 如果是timeout abort, 在chunk传输模式中应该自动重传。
