@@ -50,22 +50,26 @@ define( 'webuploader/lib/transport', [ 'webuploader/base',
         },
 
         start: function() {
-            this.exec( 'start' );
+            return this.exec( 'start' );
         },
 
         abort: function() {
-            this.exec( 'abort' );
+            return this.exec( 'abort' );
         },
 
         pause: function() {
-            this.exec( 'pause' );
+            return this.exec( 'pause' );
+        },
+
+        resume: function() {
+            return this.exec('resume');
         },
 
         destroy: function() {
             this.trigger( 'destroy' );
             this.off();
-            this.disconnectRuntime();
             this.exec( 'destroy' );
+            this.disconnectRuntime();
         }
 
     } );
