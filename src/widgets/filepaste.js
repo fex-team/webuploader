@@ -13,7 +13,7 @@ define( 'webuploader/widgets/filepaste', [
     return Uploader.register({
         init: function( opts ) {
 
-            if ( !opts.paste ) {
+            if ( !opts.paste || !FilePaste.support() ) {
                 return;
             }
 
