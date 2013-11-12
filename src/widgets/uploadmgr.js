@@ -27,10 +27,10 @@ define( 'webuploader/widgets/uploadmgr', [
             init: function( opts ) {
                 var me = this;
 
-                this.threads = opts.threads || 3;
-                this.runing = false;
+                me.threads = opts.threads || 3;
+                me.runing = false;
 
-                this.owner.on( 'uploadDestroy', function() {
+                me.owner.on( 'uploadDestroy', function() {
                     Base.nextTick( Base.bindFn( me._tick, me ) );
                 });
             },

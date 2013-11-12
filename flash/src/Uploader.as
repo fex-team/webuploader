@@ -117,7 +117,7 @@ package
                 }
 
             } catch(err:*) { // re-route exceptions thrown by components (TODO: check marshallExceptions feature)
-				// Uploader.log([ getQualifiedClassName(err)]);
+				// Uploader.log([ getQualifiedClassName(err), compName, action]);
 				_fireEvent(uid + "::Exception", { name: getQualifiedClassName(err).replace(/^[^:*]::/, ''), code: err.errorID });
             }
         }

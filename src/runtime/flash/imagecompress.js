@@ -10,6 +10,8 @@ define( 'webuploader/runtime/flash/imagepreview', [
         var $ = Base.$;
 
         return FlashRuntime.register( 'ImageCompress', {
+            init: function( opts ) {
+            },
 
             compress: function( blob, width, height ) {
                var uid = blob.uid;
