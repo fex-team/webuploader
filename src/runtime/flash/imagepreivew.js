@@ -10,6 +10,8 @@ define( 'webuploader/runtime/flash/imagepreview', [
         var $ = Base.$;
 
         return FlashRuntime.register( 'ImagePreview', {
+            init: function( opts ) {
+            },
 
             preview: function( blob, width, height ) {
                var uid = blob.uid;
