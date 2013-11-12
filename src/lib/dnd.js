@@ -44,9 +44,5 @@ define( 'webuploader/lib/dnd', [ 'webuploader/base',
 
     Mediator.installTo( DragAndDrop.prototype );
 
-    DragAndDrop.support = function() {
-        return Runtime.hasRuntime( 'html5' );
-    };
-
     return DragAndDrop;
 });
