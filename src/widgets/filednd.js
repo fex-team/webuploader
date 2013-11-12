@@ -15,7 +15,7 @@ define( 'webuploader/widgets/filednd', [
     return Uploader.register({
         init: function( opts ) {
 
-            if ( !opts.dnd || !Dnd.support() ) {
+            if ( !opts.dnd || this.request( 'get-runtime-type' ) !== 'html5' ) {
                 return;
             }
 

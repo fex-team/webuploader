@@ -57,8 +57,8 @@ define( 'webuploader/lib/transport', [ 'webuploader/base',
             return this.exec( 'abort' );
         },
 
-        pause: function() {
-            return this.exec( 'pause' );
+        pause: function( interrupt ) {
+            return this.exec( 'pause', interrupt );
         },
 
         resume: function() {
