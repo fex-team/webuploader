@@ -36,9 +36,5 @@ define( 'webuploader/lib/filepaste', [ 'webuploader/base',
 
     Mediator.installTo( FilePaste.prototype );
 
-    FilePaste.support = function() {
-        return Runtime.hasRuntime( 'html5' );
-    };
-
     return FilePaste;
 });

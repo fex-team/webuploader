@@ -85,6 +85,7 @@ define( 'webuploader/runtime/html5/transport', [ 'webuploader/base',
                 percentage = (start + percentage * (end -start)) / total;
             }
 
+            this._timeout();
             this._notify( percentage );
         },
 
@@ -162,10 +163,6 @@ define( 'webuploader/runtime/html5/transport', [ 'webuploader/base',
         },
 
         _upload: function() {
-            if ( this.paused ) {
-                return this;
-            }
-
             var me = this,
                 owner = me.owner,
                 opts = me.options,
@@ -204,18 +201,25 @@ define( 'webuploader/runtime/html5/transport', [ 'webuploader/base',
             }
 
             this._setRequestHeader( xhr, opts.headers );
-
-            me.isTimeout = false;
-            if ( opts.timeout ) {
-                this.timoutTimer = setTimeout(function() {
-                    me.isTimeout = true;
-                    xhr.abort();
-                }, opts.timeout );
-            }
+            this._timeout();
 
             xhr.send( formData );
             owner.state = 'progress';
             return this;
+        },
+
+        _timeout: function() {
+            var me = this,
+                duration = me.options.timeout;
+
+            if ( duration ) {
+                me.isTimeout = false;
+                clearTimeout( me.timoutTimer );
+                me.timoutTimer = setTimeout(function() {
+                    me.isTimeout = true;
+                    me._xhr && me._xhr.abort();
+                }, duration );
+            }
         },
 
         pause: function( interupt ) {

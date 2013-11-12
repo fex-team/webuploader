@@ -11,6 +11,9 @@ define( 'webuploader/runtime/flash/transport', [
         var $ = Base.$;
 
         return FlashRuntime.register( 'Transport', {
+            init: function( opts ) {
+
+            },
 
             setFile: function( file ) {
                 this.file = file;
@@ -38,10 +41,16 @@ define( 'webuploader/runtime/flash/transport', [
                         rHeaders = {},
                         target, reject, response, base64, ret;
 
+                    xhr.off();
+                    clearTimeout( me.timoutTimer );
+                    me._xhr = null;
+
                     if ( status === 200 ) {
                         response = xhr.exec( 'getResponse' );
                         ret = me._parseResponse( response );
                         ret._raw = response;
+
+
 
                         // 说明server端返回的数据有问题。
                         if ( !owner.trigger( 'accept', ret, rHeaders, function( val ) {
@@ -58,6 +67,9 @@ define( 'webuploader/runtime/flash/transport', [
                 });
 
                 xhr.on( 'error', function() {
+                    xhr.off();
+                    clearTimeout( me.timoutTimer );
+                    me._xhr = null;
                     me._reject( 'http' );
                 });
 
@@ -76,15 +88,11 @@ define( 'webuploader/runtime/flash/transport', [
                     percentage = (start + percentage * (end -start)) / total;
                 }
 
+                this._timeout();
                 this._notify( percentage );
             },
 
             _onsuccess: function( ret, headers ) {
-                if ( this._xhr ) {
-                    this._xhr.off();
-                    this._xhr = null;
-                } 
-
                 if ( this.chunks && this.chunk < this.chunks - 1 ) {
                     if ( !this.owner.trigger( 'chunkcontinue', ret, headers, this.chunk,
                             this.chunks ) ) {
@@ -114,11 +122,6 @@ define( 'webuploader/runtime/flash/transport', [
             _reject: function( reason, ret, rHeaders ) {
                 var owner = this.owner;
 
-                if ( this._xhr ) {
-                    this._xhr.off();
-                    this._xhr = null;
-                } 
-
                 // @todo
                 // 如果是timeout abort, 在chunk传输模式中应该自动重传。
                 // chunkRetryCount = 3;
@@ -146,9 +149,6 @@ define( 'webuploader/runtime/flash/transport', [
             },
 
             _upload: function() {
-                if ( this.paused ) {
-                    return this;
-                }
 
                 var me = this,
                     owner = me.owner,
@@ -177,29 +177,37 @@ define( 'webuploader/runtime/flash/transport', [
                         opts.formData.name || '' );
 
                 me._setRequestHeader( xhr, opts.headers );
-
-                if ( opts.timeout ) {
-                    me.timoutTimer = setTimeout(function() {
-                        xhr.exec( 'abort' );
-                        me._reject( 'timeout' );
-                    }, opts.timeout );
-                }
+                me._timeout();
 
                 xhr.exec( 'send', {
                     method: opts.method,
-                    url: opts.server
+                    url: opts.server,
+                    transport: 'client'
                 } );
                 owner.state = 'progress';
                 return this;
             },
 
-            pause: function() {
+            _timeout: function() {
+                var me = this,
+                    duration = me.options.timeout;
+
+                if ( duration ) {
+                    clearTimeout( me.timoutTimer );
+                    me.timoutTimer = setTimeout(function() {
+                        me._xhr && me._xhr.exec( 'abort' );
+                        me._reject('timeout');
+                    }, duration );
+                }
+            },
+
+            pause: function( interrupt ) {
                 if ( this.paused ) {
                     return;
                 }
 
                 this.paused = true;
-                this.cancel();
+                interrupt && this.cancel();
             },
 
             resume: function() {
