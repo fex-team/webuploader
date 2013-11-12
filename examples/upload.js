@@ -64,10 +64,11 @@
             paste: '#uploader',
             swf: '../dist/Uploader.swf',
             chunked: false,
+            resize: false,
             //server: '../server/fileupload.php',
             server: 'http://liaoxuezhi.fe.baidu.com/webupload/fileupload.php',
             fileNumLimit: 300,
-            // runtimeOrder: 'flash,html5',
+            runtimeOrder: 'flash,html5',
             fileSizeLimit: 200 * 1024 * 1024,    // 200 M
             fileSingleSizeLimit: 50 * 1024 * 1024    // 50 M
         });
