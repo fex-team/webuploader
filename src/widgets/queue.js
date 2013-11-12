@@ -103,13 +103,13 @@ define( 'webuploader/widgets/queue', [
                 return this.queue.fetch.apply( this.queue, arguments );
             },
 
-            retry: function( file ) {
+            retry: function( file, noForceStart ) {
                 var me = this;
 
                 if ( file ) {
                     file = file.id ? file : me.queue.getFile( file );
                     file.setStatus( Status.QUEUED );
-                    me.request( 'start-upload' );
+                    noForceStart || me.request( 'start-upload' );
                     return;
                 }
 

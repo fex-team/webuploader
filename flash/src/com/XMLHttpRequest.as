@@ -153,7 +153,7 @@ package com
 			if ( !_response ) {
 				return '';
 			}
-			
+			_response.position = 0;
 			return _response.readUTFBytes(_response.length);
 		}
 		
@@ -212,6 +212,7 @@ package com
 				_response.writeUTFBytes(e.data);
 			} else if (_conn is URLStream) {
 				_conn.readBytes(_response);
+				
 			}
 			
 			removeEventListeners(e.target);	
