@@ -81,6 +81,8 @@ define( 'webuploader/runtime/flash/runtime', [
                 } else if ( clients[ uid ] ) {
                     clients[ uid ].trigger( type.toLowerCase(), evt, obj );
                 }
+
+                // Base.log( evt, obj );
             }
 
             // flash的接受器。
