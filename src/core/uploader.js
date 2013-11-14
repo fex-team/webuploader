@@ -117,5 +117,8 @@ define( 'webuploader/core/uploader', [ 'webuploader/base',
         return new Uploader( opts );
     };
 
+    // 暴露Uploader，可以通过它来扩展业务逻辑。
+    Base.Uploader = Uploader;
+
     return Uploader;
 } );
