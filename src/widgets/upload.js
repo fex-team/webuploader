@@ -70,14 +70,22 @@ define( 'webuploader/widgets/upload', [
     Uploader.register({
         'start-upload': 'start',
         'stop-upload': 'stop',
+        'skip-file': 'skipFile',
         'is-in-progress': 'isInProgress'
     }, {
 
         init: function( opts ) {
+            var owner = this.owner;
+
             this.runing = false;
             this.pool = [];
             this.remaning = 0;
             this.__tick = Base.bindFn( this._tick, this );
+
+            owner.on( 'uploadComplete', function( file ) {
+                delete file.blocks;
+                owner.trigger( 'uploadProgress', file, 1 );
+            });
         },
 
         start: function() {
@@ -133,6 +141,21 @@ define( 'webuploader/widgets/upload', [
             return this.request( 'get-stats' );
         },
 
+        skipFile: function( file, status ) {
+            file = this.request( 'get-file', file );
+
+            file.setStatus( status || Status.COMPLETE );
+
+            // 如果正在上传。
+            file.blocks && $.each( file.blocks, function( _, v ) {
+                var _tr = v.transport;
+
+                _tr && (_tr.abort(), _tr.destroy());
+            });
+
+            this.owner.trigger( 'uploadComplete', file );
+        },
+
         _tick: function() {
             var me = this,
                 opts = me.options,
@@ -180,7 +203,6 @@ define( 'webuploader/widgets/upload', [
 
                         _tr && (_tr.abort(), _tr.destroy());
                     });
-                    owner.trigger( 'uploadProgress', file, 1 );
                     owner.trigger( 'uploadComplete', file );
                 },
                 handler = function( cur, prev ) {
@@ -318,8 +340,7 @@ define( 'webuploader/widgets/upload', [
                     } else {
 
                         // skip this.
-                        me.owner.trigger( 'uploadProgress', file, 1 );
-                        me.owner.trigger( 'uploadComplete', file );
+                        me.request( 'skip-file', file );
                         deferred.resolve( null );
                     }
                 });
