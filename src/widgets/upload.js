@@ -70,14 +70,22 @@ define( 'webuploader/widgets/upload', [
     Uploader.register({
         'start-upload': 'start',
         'stop-upload': 'stop',
+        'skip-file': 'skipFile',
         'is-in-progress': 'isInProgress'
     }, {
 
         init: function( opts ) {
+            var owner = this.owner;
+
             this.runing = false;
             this.pool = [];
             this.remaning = 0;
             this.__tick = Base.bindFn( this._tick, this );
+
+            owner.on( 'uploadComplete', function( file ) {
+                delete file.blocks;
+                owner.trigger( 'uploadProgress', file, 1 );
+            });
         },
 
         start: function() {
@@ -133,6 +141,21 @@ define( 'webuploader/widgets/upload', [
             return this.request( 'get-stats' );
         },
 
+        skipFile: function( file, status ) {
+            file = this.request( 'get-file', file );
+
+            file.setStatus( status || Status.COMPLETE );
+
+            // 如果正在上传。
+            file.blocks && $.each( file.blocks, function( _, v ) {
+                var _tr = v.transport;
+
+                _tr && (_tr.abort(), _tr.destroy());
+            });
+
+            this.owner.trigger( 'uploadComplete', file );
+        },
+
         _tick: function() {
             var me = this,
                 opts = me.options,
@@ -148,7 +171,7 @@ define( 'webuploader/widgets/upload', [
                     me._tickPromise = next;
                     next.then(function( value ) {
                         me._tickPromise = null;
-                        me._startSend( value );
+                        value && me._startSend( value );
                         Base.nextTick( me.__tick );
                     });
                 } else {
@@ -180,7 +203,6 @@ define( 'webuploader/widgets/upload', [
 
                         _tr && (_tr.abort(), _tr.destroy());
                     });
-
                     owner.trigger( 'uploadComplete', file );
                 },
                 handler = function( cur, prev ) {
@@ -268,13 +290,19 @@ define( 'webuploader/widgets/upload', [
                     tr.trigger( 'error', reject );
                 } else {
                     owner.trigger( 'uploadSuccess', file, ret, headers );
-
                     file.remaning--;
                     if ( !file.remaning ) {
-                        file.setStatus( Status.COMPLETE );
-                        owner.trigger( 'uploadComplete', file );
+                        owner.request( 'after-send-file', [ file, ret, headers ], function() {
+                            file.setStatus( Status.COMPLETE );
+                            owner.trigger( 'uploadComplete', file );
+                        }).fail(function( reason ) {
+                            owner.trigger( 'uploadError', file, reason );
+                            if ( file.getStats() === Status.PROGRESS ) {
+                                file.setStatus( Status.ERROR, type );
+                            }
+                            cancelAll();
+                        });
                     }
-
                     tr.destroy();
                 }
             });
@@ -306,8 +334,15 @@ define( 'webuploader/widgets/upload', [
                 
                 // hook 可能会需要压缩图片。
                 me.request( 'before-send-file', file, function() {
-                    me._act = act = new Wrapper( file, opts.chunked ? opts.chunkSize : 0 );
-                    deferred.resolve( act.fetch() );
+                    if ( file.getStatus() === Status.PROGRESS ) {
+                        me._act = act = new Wrapper( file, opts.chunked ? opts.chunkSize : 0 );
+                        deferred.resolve( act.fetch() );
+                    } else {
+
+                        // skip this.
+                        me.request( 'skip-file', file );
+                        deferred.resolve( null );
+                    }
                 });
 
                 return deferred.promise();
