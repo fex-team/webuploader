@@ -107,7 +107,7 @@ define( 'webuploader/widgets/widget', [ 'webuploader/base',
 
             // 如果有callback，则用异步方式。
             if ( callback || dfds.length ) {
-                Base.when.apply( Base, dfds )
+                return Base.when.apply( Base, dfds )
                     .done( callback || Base.noop );
 
                 // @todo what if fail?
