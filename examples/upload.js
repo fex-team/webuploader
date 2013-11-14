@@ -63,12 +63,12 @@
             dnd: '#dndArea',
             paste: '#uploader',
             swf: '../dist/Uploader.swf',
-            chunked: false,
+            chunked: true,
             resize: false,
-            //server: '../server/fileupload.php',
+            // server: '../server/fileupload.php?debug=5',
             server: 'http://liaoxuezhi.fe.baidu.com/webupload/fileupload.php',
+            // server: 'http://www.2betop.net/fileupload.php',
             fileNumLimit: 300,
-            runtimeOrder: 'flash,html5',
             fileSizeLimit: 200 * 1024 * 1024,    // 200 M
             fileSingleSizeLimit: 50 * 1024 * 1024    // 50 M
         });
@@ -99,6 +99,10 @@
                     switch( code ) {
                         case 'exceed_size':
                             text = '文件大小超出';
+                            break;
+
+                        case 'interrupt':
+                            text = '上传暂停';
                             break;
 
                         default:
@@ -140,6 +144,8 @@
                 if ( cur === 'error' || cur === 'invalid' ) {
                     showError( file.statusText );
                     percentages[ file.id ][ 1 ] = 1;
+                } else if ( cur === 'interrupt' ) {
+                    showError( 'interrupt' );
                 } else if ( cur === 'queued' ) {
                     percentages[ file.id ][ 1 ] = 0;
                 } else if ( cur === 'progress' ) {

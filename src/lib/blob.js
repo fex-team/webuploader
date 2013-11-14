@@ -14,7 +14,6 @@ define( 'webuploader/lib/blob', [ 'webuploader/base',
 
         RuntimeClient.call( me, 'Blob' );
 
-
         this.uid = source.uid || this.uid;
         this.type = source.type || '';
         this.size = source.size || 0;

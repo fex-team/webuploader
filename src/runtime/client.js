@@ -64,7 +64,6 @@ define( 'webuploader/runtime/client', [ 'webuploader/base',
 
             if ( !runtime ) {
                 runtime = Runtime.create( opts, opts.runtimeOrder );
-                runtime.standalone = standalone;
                 cache.add( runtime );
                 runtime.promise = deferred.promise();
                 runtime.once( 'ready', deferred.resolve );
