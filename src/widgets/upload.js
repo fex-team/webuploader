@@ -148,7 +148,7 @@ define( 'webuploader/widgets/upload', [
                     me._tickPromise = next;
                     next.then(function( value ) {
                         me._tickPromise = null;
-                        me._startSend( value );
+                        value && me._startSend( value );
                         Base.nextTick( me.__tick );
                     });
                 } else {
@@ -180,7 +180,7 @@ define( 'webuploader/widgets/upload', [
 
                         _tr && (_tr.abort(), _tr.destroy());
                     });
-
+                    owner.trigger( 'uploadProgress', file, 1 );
                     owner.trigger( 'uploadComplete', file );
                 },
                 handler = function( cur, prev ) {
@@ -268,14 +268,17 @@ define( 'webuploader/widgets/upload', [
                     tr.trigger( 'error', reject );
                 } else {
                     owner.trigger( 'uploadSuccess', file, ret, headers );
-
                     file.remaning--;
                     if ( !file.remaning ) {
                         owner.request( 'after-send-file', [ file, ret, headers ], function() {
                             file.setStatus( Status.COMPLETE );
                             owner.trigger( 'uploadComplete', file );
                         }).fail(function( reason ) {
-                            tr.trigger( 'error', reason );
+                            owner.trigger( 'uploadError', file, reason );
+                            if ( file.getStats() === Status.PROGRESS ) {
+                                file.setStatus( Status.ERROR, type );
+                            }
+                            cancelAll();
                         });
                     }
                     tr.destroy();
@@ -309,8 +312,16 @@ define( 'webuploader/widgets/upload', [
                 
                 // hook 可能会需要压缩图片。
                 me.request( 'before-send-file', file, function() {
-                    me._act = act = new Wrapper( file, opts.chunked ? opts.chunkSize : 0 );
-                    deferred.resolve( act.fetch() );
+                    if ( file.getStatus() === Status.PROGRESS ) {
+                        me._act = act = new Wrapper( file, opts.chunked ? opts.chunkSize : 0 );
+                        deferred.resolve( act.fetch() );
+                    } else {
+
+                        // skip this.
+                        me.owner.trigger( 'uploadProgress', file, 1 );
+                        me.owner.trigger( 'uploadComplete', file );
+                        deferred.resolve( null );
+                    }
                 });
 
                 return deferred.promise();
