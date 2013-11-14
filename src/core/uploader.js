@@ -110,19 +110,6 @@ define( 'webuploader/core/uploader', [ 'webuploader/base',
 
         reset: function() {
             // @todo
-        },
-
-        formatSize: function( size, pointLength ) {
-            var units = [ 'B', 'K', 'M', 'G', 'TB' ],
-                unit = units.shift();
-
-            while ( size > 1024 && units.length ) {
-                unit = units.shift();
-                size = size / 1024;
-            }
-
-            return (unit === 'B' ? size : size.toFixed( pointLength || 2 )) +
-                    unit;
         }
     } );
 
