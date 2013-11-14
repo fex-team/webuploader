@@ -1,5 +1,5 @@
 /**
- * @fileOverview 图片操作
+ * @fileOverview 图片操作, 负责预览图片和上传前压缩图片
  * @import base.js, widgets/widget.js, core/uploader.js, lib/imagecompress.js, lib/imagepreview.js
  */
 define( 'webuploader/widgets/image', [
@@ -23,7 +23,7 @@ define( 'webuploader/widgets/image', [
     return Uploader.register(
         {
             'make-thumb': 'makeThumb',
-            'before-start-transport': 'resizeImage'
+            'before-send-file': 'resizeImage'
         },
 
         {
