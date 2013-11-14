@@ -6,6 +6,7 @@
 /server/upload_tmp
 /server/md5list.txt
 /server/md5list2.txt
+/examples/music/server
 .tags
 .tags_sorted_by_file
 /flash/bin-debug
