@@ -83,7 +83,7 @@ define( 'webuploader/core/queue', [
             /**
              * 从队列中取出一个指定状态的文件。
              */
-            fetch: function( status ) {
+            fetch: function() {
                 var len = this._queue.length,
                     i, file;
 

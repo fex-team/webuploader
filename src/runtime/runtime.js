@@ -45,8 +45,8 @@ define( 'webuploader/runtime/runtime', [ 'webuploader/base',
             return this.container = container;
         },
 
-        init: Base.notImplement,
-        exec: Base.notImplement
+        init: Base.noop,
+        exec: Base.noop
     });
 
     Runtime.orders = 'html5,flash';

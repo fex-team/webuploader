@@ -1,8 +1,5 @@
 /**
  * @fileOverview Transport
- * @todo 支持chunked传输，优势：
- * 可以将大文件分成小块，挨个传输，可以提高大文件成功率，当失败的时候，也只需要重传那小部分，
- * 而不需要重头再传一次。另外断点续传也需要用chunked方式。
  * @import base.js, runtime/client.js, core/mediator.js
  */
 define( 'webuploader/lib/transport', [ 'webuploader/base',
@@ -15,6 +12,12 @@ define( 'webuploader/lib/transport', [ 'webuploader/base',
     function Transport( opts ) {
         this.options = $.extend( true, {}, Transport.options, opts || {} );
         RuntimeClient.call( this, 'Transport' );
+
+        this._blob = null;
+        this._formData = opts.formData || {};
+        this._headers = opts.headers || {};
+
+        this.on( 'progress', this._timeout );
     }
 
     Transport.options = {
@@ -24,9 +27,6 @@ define( 'webuploader/lib/transport', [ 'webuploader/base',
         // 跨域时，是否允许携带cookie, 只有html5 runtime才有效
         withCredentials: false,
         fileVar: 'file',
-        chunked: true,
-        chunkSize: 1024 * 512,    // 0.5M.
-        RetryCount: 2,    // 可以重试2次。
         timeout: 2 * 60 * 1000,    // 2分钟
         formData: {},
         headers: {}
@@ -34,35 +34,52 @@ define( 'webuploader/lib/transport', [ 'webuploader/base',
 
     $.extend( Transport.prototype, {
 
-        setFile: function( file ) {
+        // 添加Blob, 只能添加一次，最后一次有效。
+        appendBlob: function( key, blob, filename ) {
             var me = this,
-                ruid;
+                opts = me.options;
 
             if ( me.getRuid() ) {
                 me.disconnectRuntime();
             }
 
-            ruid = file.source.getRuid();
-            this.connectRuntime( ruid, function() {
-                me.exec( 'init', me.options );
-                me.exec( 'setFile', file );
+            // 连接到blob归属的同一个runtime.
+            me.connectRuntime( blob.ruid, function() {
+                me.exec( 'init' );
             } );
+
+            me._blob = blob;
+            opts.fileVar = key || opts.fileVar;
+            opts.filename = filename;
         },
 
-        start: function() {
-            return this.exec( 'start' );
+        // 添加其他字段
+        append: function( key, value ) {
+            if ( typeof key === 'object' ) {
+                $.extend( this._formData, key );
+            } else {
+                this._formData[ key ] = value;
+            }
+        },
+
+        setRequestHeader: function( key, value ) {
+            if ( typeof key === 'object' ) {
+                $.extend( this._headers, key );
+            } else {
+                this._headers[ key ] = value;
+            }
+        },
+
+        send: function( method ) {
+
+            // 在发送之间可以添加字段什么的。。。
+            this.trigger( 'beforeSend', this._formData, this._headers );
+            this.exec( 'send' );
+            this._timeout();
         },
 
         abort: function() {
             return this.exec( 'abort' );
-        },
-
-        pause: function( interrupt ) {
-            return this.exec( 'pause', interrupt );
-        },
-
-        resume: function() {
-            return this.exec('resume');
         },
 
         destroy: function() {
@@ -70,6 +87,33 @@ define( 'webuploader/lib/transport', [ 'webuploader/base',
             this.off();
             this.exec( 'destroy' );
             this.disconnectRuntime();
+        },
+
+        getResponse: function() {
+            return this.exec( 'getResponse' );
+        },
+
+        getResponseAsJson: function() {
+            return this.exec( 'getResponseAsJson' );
+        },
+
+        getResponseHeader: function() {
+            return this.exec( 'getResponseHeader' );
+        },
+
+        _timeout: function() {
+            var me = this,
+                duration = me.options.timeout;
+
+            if ( !duration ) {
+                return;
+            }
+
+            clearTimeout( me._timer );
+            me._timer = setTimeout(function() {
+                me.abort();
+                me.trigger( 'error', 'timeout' );
+            }, duration );
         }
 
     } );
