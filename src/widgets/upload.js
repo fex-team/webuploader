@@ -271,11 +271,14 @@ define( 'webuploader/widgets/upload', [
 
                     file.remaning--;
                     if ( !file.remaning ) {
-                        file.setStatus( Status.COMPLETE );
-                        owner.trigger( 'uploadComplete', file );
+                        owner.request( 'after-send-file', [ file, ret, headers ], function() {
+                            file.setStatus( Status.COMPLETE );
+                            owner.trigger( 'uploadComplete', file );
+                            tr.destroy();
+                        }).fail(function( reason ) {
+                            tr.trigger( 'error', reason );
+                        });
                     }
-
-                    tr.destroy();
                 }
             });
 
