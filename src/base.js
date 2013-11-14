@@ -1,6 +1,5 @@
 /**
- * @fileOverview 基础类方法。其他模块中最好不要直接用jq-bridge, 而是通过Base来使用。
- * jQuery中有的方法，在dom中实现，jQuery外的方法在此方法中实现。
+ * @fileOverview 基础类方法。
  */
 
 // 如果生成依赖jquery版本，则用
@@ -36,6 +35,9 @@ define( 'webuploader/base', [ 'webuploader/jq-bridge' ], function( $ ) {
     }
 
     return {
+        // @version@ 将会被package.json中的version值替代。
+        version: '@version@',
+
         $: $,
 
         isPromise: function( anything ) {
@@ -65,8 +67,6 @@ define( 'webuploader/base', [ 'webuploader/jq-bridge' ], function( $ ) {
 
             return ret
         })( navigator.userAgent ),
-
-        version: '@version@',
 
         /**
          * 实现类与类之间的继承。
@@ -129,10 +129,6 @@ define( 'webuploader/base', [ 'webuploader/jq-bridge' ], function( $ ) {
             return child;
         },
 
-        notImplement: function() {
-            throw new Error( 'Not Implemented!' );
-        },
-
         noop: noop,
 
         // 修复方法的执行上下文。
@@ -180,12 +176,12 @@ define( 'webuploader/base', [ 'webuploader/jq-bridge' ], function( $ ) {
             };
         }()),
 
-        formatSize: function( size, pointLength ) {
-            var units = [ 'B', 'K', 'M', 'G', 'TB' ],
-                unit = units.shift();
+        formatSize: function( size, pointLength, units ) {
+            var unit;
 
-            while ( size > 1024 && units.length ) {
-                unit = units.shift();
+            units = units || [ 'B', 'K', 'M', 'G', 'TB' ];
+
+            while ( (unit = units.shift()) && size > 1024 ) {
                 size = size / 1024;
             }
 
