@@ -9,21 +9,78 @@ define( 'webuploader/runtime/html5/transport', [ 'webuploader/base',
         'webuploader/runtime/html5/runtime'
         ], function( Base, Html5Runtime ) {
 
-    var noop = Base.noop;
+    var noop = Base.noop,
+        $ = Base.$;
 
     return Html5Runtime.register( 'Transport', {
-        setFile: function( file ) {
-            this.file = file;
+        init: function() {
+            this._status = 0;
+            this._response = null;
+            this._responseHeader = null;
         },
 
-        // @todo ie支持
+        send: function() {
+            var owner = this.owner,
+                opts = this.options,
+                xhr = this._initAjax(),
+                blob = owner._blob,
+                formData = new FormData();
+
+            $.each( owner._formData, function( k, v ) {
+                formData.append( k, v );
+            });
+
+            formData.append( opts.fileVar, blob.getSource(), opts.filename || owner._formData.name || '' );
+
+            if ( opts.withCredentials && 'withCredentials' in xhr ) {
+                xhr.open( opts.method, opts.server, true );
+                xhr.withCredentials = true;
+            } else {
+                xhr.open( opts.method, opts.server );
+            }
+
+            this._setRequestHeader( xhr, opts.headers );
+            return xhr.send( formData );
+        },
+
+        getResponse: function() {
+            return this._response;
+        },
+
+        getResponseAsJson: function() {
+            return this._parseJson( this._response );
+        },
+
+        getStatus: function() {
+            return this._status;
+        },
+
+        getResponseHeader: function() {
+            return this._responseHeader;
+        },
+
+        abort: function() {
+            var xhr = this._xhr;
+
+            if ( xhr ) {
+                xhr.upload.onprogress = noop;
+                xhr.onreadystatechange = noop;
+                xhr.abort();
+
+                this._xhr = xhr = null;
+            }
+        },
+
+        destroy: function() {
+            this.abort();
+        },
+
         _initAjax: function() {
             var me = this,
-                owner = this.owner,
-                opts = owner.options,
-                xhr = new XMLHttpRequest();
+                xhr = new XMLHttpRequest(),
+                opts = this.options;
 
-            if ( !('withCredentials' in xhr) &&
+            if ( opts.withCredentials && !('withCredentials' in xhr) &&
                     typeof XDomainRequest !== 'undefined' ) {
                 xhr = new XDomainRequest();
             }
@@ -35,8 +92,8 @@ define( 'webuploader/runtime/html5/transport', [ 'webuploader/base',
                     percentage = e.loaded / e.total;
                 }
 
-                return me._onprogress.call( me, percentage );
-            };
+                return me.trigger( 'progress', percentage );
+            }
 
             xhr.onreadystatechange = function() {
                 var ret, rHeaders, reject;
@@ -47,233 +104,56 @@ define( 'webuploader/runtime/html5/transport', [ 'webuploader/base',
 
                 xhr.upload.onprogress = noop;
                 xhr.onreadystatechange = noop;
-                clearTimeout( me.timoutTimer );
                 me._xhr = null;
 
                 // 只考虑200的情况
                 if ( xhr.status === 200 ) {
-                    ret = me._parseResponse( xhr.responseText );
-                    ret._raw = xhr.responseText;
-                    rHeaders = me._getXhrHeaders( xhr );
-
-                    // 说明server端返回的数据有问题。
-                    if ( !owner.trigger( 'accept', ret, rHeaders, function( val ) {
-                        reject = val;
-                    } ) ) {
-                        reject = reject || 'server';
-                    } else {
-                        return me._onsuccess.call( me, ret, rHeaders );
-                    }
+                    me._response = xhr.responseText;
+                    me._responseHeader = me._parseXhrHeaders( xhr );
+                    return me.trigger( 'load' );
                 }
 
-                reject = reject || (xhr.status ? 'http' : me.isTimeout ? 'timeout': 'abort');
-                return me._reject( reject, ret, rHeaders );
+                me._status = xhr.status;
+                xhr = null;
+
+                return me.trigger( 'error', me._status ? 'http' : 'abort' );
             };
 
             return me._xhr = xhr;
         },
 
-        _onprogress: function( percentage ) {
-            var opts = this.owner.options,
-                start, end, total;
-
-            if ( this.chunks ) {
-                total = this._blob.size;
-                start = this.chunk * opts.chunkSize;
-                end = Math.min( start + opts.chunkSize, total );
-
-                percentage = (start + percentage * (end -start)) / total;
-            }
-
-            this._timeout();
-            this._notify( percentage );
-        },
-
-        _onsuccess: function( ret, headers ) {
-            if ( this.chunks && this.chunk < this.chunks - 1 ) {
-                if ( !this.owner.trigger( 'chunkcontinue', ret, headers, this.chunk,
-                        this.chunks ) ) {
-                    return this._resolve( ret, headers );
-                }
-                this.chunk++;
-                this._upload();
-            } else {
-                this._resolve( ret, headers );
-            }
-        },
-
-        _notify: function( percentage ) {
-            this.owner.trigger( 'progress', percentage || 0 );
-        },
-
-        _resolve: function( ret, headers ) {
-            var owner = this.owner;
-
-            this.chunks = 0;
-            this._onprogress( 1 );
-            owner.state = 'done';
-            owner.trigger( 'success', ret, headers );
-            owner.trigger( 'complete' );
-        },
-
-        _reject: function( reason, ret, rHeaders ) {
-            var owner = this.owner;
-
-            // @todo
-            // 如果是timeout abort, 在chunk传输模式中应该自动重传。
-            // chunkRetryCount = 3;
-            owner.state = 'fail';
-            owner.trigger( 'error', reason, ret, rHeaders );
-            owner.trigger( 'complete' );
-        },
-
         _setRequestHeader: function( xhr, headers ) {
             $.each( headers, function( key, val ) {
                 xhr.setRequestHeader( key, val );
-            } );
+            });
         },
 
-        _getXhrHeaders: function( xhr ) {
+        _parseXhrHeaders: function( xhr ) {
             var str = xhr.getAllResponseHeaders(),
-                ret = {},
-                match;
+                ret = {};
 
 
             $.each( str.split( /\n/ ), function( i, str ) {
-                match = /^(.*?): (.*)$/.exec( str );
+                var match = /^(.*?): (.*)$/.exec( str );
 
                 if ( match ) {
                     ret[ match[ 1 ] ] = match[ 2 ];
                 }
-            } );
+            });
 
             return ret;
         },
 
-        _parseResponse: function( json ) {
-            var ret;
+        _parseJson: function( str ) {
+            var json;
 
             try {
-                ret = JSON.parse( json );
+                json = JSON.parse( str );
             } catch ( ex ) {
-                ret = {};
+                json = {};
             }
 
-            return ret;
-        },
-
-        _upload: function() {
-            var me = this,
-                owner = me.owner,
-                opts = me.options,
-                xhr = this._initAjax(),
-                formData = new FormData(),
-                blob = this._blob,
-                start, end;
-
-            if ( this.chunks ) {
-                start = this.chunk * opts.chunkSize;
-                end = Math.min( blob.size, start + opts.chunkSize );
-
-                blob = blob.slice( start, end );
-                opts.formData.chunk = this.chunk;
-                opts.formData.chunks = this.chunks;
-
-                start === 0 &&
-                        xhr.overrideMimeType( 'application/octet-stream' );
-            }
-
-            // 外部可以在这个时机中添加其他信息
-            owner.trigger( 'beforeSend', opts.formData, opts.headers, xhr );
-
-            $.each( opts.formData, function( key, val ) {
-                formData.append( key, val );
-            } );
-
-            formData.append( opts.fileVar, blob.getSource(), opts.formData &&
-                    opts.formData.name || '' );
-
-            if ( opts.withCredentials && 'withCredentials' in xhr ) {
-                xhr.open( 'POST', opts.server, true );
-                xhr.withCredentials = true;
-            } else {
-                xhr.open( 'POST', opts.server );
-            }
-
-            this._setRequestHeader( xhr, opts.headers );
-            this._timeout();
-
-            xhr.send( formData );
-            owner.state = 'progress';
-            return this;
-        },
-
-        _timeout: function() {
-            var me = this,
-                duration = me.options.timeout;
-
-            if ( duration ) {
-                me.isTimeout = false;
-                clearTimeout( me.timoutTimer );
-                me.timoutTimer = setTimeout(function() {
-                    me.isTimeout = true;
-                    me._xhr && me._xhr.abort();
-                }, duration );
-            }
-        },
-
-        pause: function( interupt ) {
-            if ( this.paused ) {
-                return;
-            }
-
-            this.paused = true;
-            interupt && this.cancel();
-        },
-
-        resume: function() {
-            if ( !this.paused ) {
-                return;
-            }
-
-            this.paused = false;
-            this._upload();
-        },
-
-        cancel: function() {
-            if ( this._xhr ) {
-                this._xhr.upload.onprogress = noop;
-                this._xhr.onreadystatechange = noop;
-                clearTimeout( this.timoutTimer );
-                this._xhr.abort();
-                this._xhr = null;
-            }
-        },
-
-        /**
-         * 以Blob的方式发送数据到服务器
-         * @method sendAsBlob
-         * @param {Blob} blob Blob数据
-         * @return {Transport} 返回实例自己，便于链式调用。
-         * @chainable
-         */
-        start: function() {
-            var opts = this.options,
-                blob = this.file.source;
-
-            if ( opts.chunked && blob.size > opts.chunkSize ) {
-                this.chunk = 0;
-                this.chunks = Math.ceil( blob.size / opts.chunkSize );
-            }
-            this._blob = blob;
-
-            this._upload();
-            this._notify( 0 );
-            return this;
-        },
-
-        destroy: function() {
-            this._blob = null;
+            return json;
         }
-    } );
-} );
+    });
+});
