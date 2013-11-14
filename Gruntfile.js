@@ -117,6 +117,48 @@ module.exports = function(grunt) {
 
 
                 dest: '/Users/liaoxuezhi/www/xiangcefis/xiangce/static/picture/ui/webuploader/webuploader.js'
+            },
+
+            music: {
+                options: {
+                    banner: '/* WebUploader <%= pkg.version %> */\n(function( window, undefined ) {\n',
+                    footer: '\n})( this );',
+                    separator: '\n\n',
+                    process: function( src, filepath ) {
+                        return src
+                            .replace( /webuploader\/jq-bridge/g, 'jQuery' )
+                            .replace( /@version@/g, grunt.config.get('pkg.version') )
+                            .replace( /(^|\r\n|\r|\n)/g, '$1    ');
+                    }
+                },
+
+                cwd: 'src',
+
+                src: [
+                    'amd.js',
+                    // 'jq-bridge.js',
+                    'base.js',
+                    // 'promise.js',
+
+                    // 把剩余的打包进来。
+                    'widgets/filepicker.js',
+                    'widgets/filednd.js',
+                    'widgets/queue.js',
+                    'widgets/runtime.js',
+                    'widgets/upload.js',
+
+                    'runtime/html5/blob.js',
+                    'runtime/html5/transport.js',
+                    'runtime/html5/filepicker.js',
+                    'runtime/html5/dnd.js',
+
+
+                    '!exports.js',
+                    'exports.js'
+                ],
+
+
+                dest: 'examples/music/webuploader.js'
             }
 
 
@@ -140,6 +182,11 @@ module.exports = function(grunt) {
             dev: {
                 files: ['src/**/*.js', 'Gruntfile.js'],
                 tasks: ['concat:xiangce'],
+            },
+
+            concat: {
+                files: ['src/**/*.js', 'Gruntfile.js'],
+                tasks: ['concat:music'],
             }
         },
 

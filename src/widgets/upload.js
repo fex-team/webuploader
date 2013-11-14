@@ -274,11 +274,11 @@ define( 'webuploader/widgets/upload', [
                         owner.request( 'after-send-file', [ file, ret, headers ], function() {
                             file.setStatus( Status.COMPLETE );
                             owner.trigger( 'uploadComplete', file );
-                            tr.destroy();
                         }).fail(function( reason ) {
                             tr.trigger( 'error', reason );
                         });
                     }
+                    tr.destroy();
                 }
             });
 
