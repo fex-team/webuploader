@@ -9,7 +9,7 @@ WebUploader 文件上传
 * 支持图片线下压缩。
 * 支持图片预览合EXIF信息识别。
 
-目前已应用在百度相册上传页。
+目前已应用在[百度相册上传页](http://xiangce.baidu.com/picture/page/upload)。
 
 ## 使用说明
 
