@@ -247,7 +247,7 @@ var upload = WebUploader.create( options );
     </tr>
 </table>
 
-### 时间说明
+### 事件说明
 <table>
     <tr>
         <th>名称</th><th>回调参数</th><th>触发时机</th>
