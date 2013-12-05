@@ -1,7 +1,15 @@
 # Webuploader文件上传
-Webuploader是一个以html5为主的现代多文件上传js库，比传统FLASH文件上传具有更高的上传效率、图片处理能力以及更低的内存消耗，同时结合HTML5 File API使得Webuploader具有了更加丰富的文件交互体验。目前已应用在百度相册上传页中，承载着海量的用户上传。以下是新老版本平均上传速度对比图。
+Webuploader是一个以html5为主的现代多文件上传js库，比传统FLASH文件上传具有更高的上传效率、图片处理能力以及更低的内存消耗，同时结合HTML5 File API使得Webuploader具有了更加丰富的文件交互体验。目前已应用在百度相册上传页中，承载着海量的用户上传。
+
+以下是云相册新老版本平均上传速度对比图。
 
 ![](picture.png)
+
+以下是与其他竞品的数据对比，更多对比请[点击这里](https://github.com/gmuteam/webuploader/tree/master/_docs/compare/lateral)。
+
+![](compare2.png)
+
+![](compare3.png)
 
 以下将详细介绍webuploader有哪些特性。
 
