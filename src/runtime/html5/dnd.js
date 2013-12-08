@@ -1,11 +1,11 @@
 /**
  * @fileOverview FilePaste
  */
-define( 'webuploader/runtime/html5/dnd', [
-        'webuploader/base',
-        'webuploader/runtime/html5/runtime',
-        'webuploader/lib/file'
-    ], function( Base, Html5Runtime, File ) {
+define([
+    '/base',
+    'runtime',
+    '/lib/file'
+], function( Base, Html5Runtime, File ) {
 
     var $ = Base.$;
 
@@ -24,24 +24,16 @@ define( 'webuploader/runtime/html5/dnd', [
         },
 
         _dragEnterHander: function( e ) {
-            this.elem.addClass( 'webuploader-dnd-over' );
+            this.elem.addClass('webuploader-dnd-over');
             e.stopPropagation();
             e.preventDefault();
         },
 
         _dragLeaveHander: function( e ) {
-            this.elem.removeClass( 'webuploader-dnd-over' );
+            this.elem.removeClass('webuploader-dnd-over');
             e.stopPropagation();
             e.preventDefault();
         },
-
-        // _dragOverHander: function( e ) {
-        //     var elem = this.elem[ 0 ],
-        //         target = e.target;
-
-        //     $.contains( elem, target ) || elem === target || e.preventDefault();
-        //     e.stopPropagation();
-        // },
 
         _dropHander: function( e ) {
             var results  = [],
@@ -65,17 +57,18 @@ define( 'webuploader/runtime/html5/dnd', [
                 if ( file.type ) {
                     results.push( file );
                 } else if ( !file.type && canAccessFolder ) {
-                    promises.push( this._traverseDirectoryTree( items[ i ].webkitGetAsEntry(), results ) )
+                    promises.push( this._traverseDirectoryTree(
+                            items[ i ].webkitGetAsEntry(), results ) );
                 }
             }
 
-            Base.when.apply( Base, promises ).done(function(){
+            Base.when.apply( Base, promises ).done(function() {
                 me.trigger( 'drop', $.map( results, function( file ) {
                     return new File( ruid, file );
-                }));
+                }) );
             });
 
-            this.elem.removeClass( 'webuploader-dnd-over' );
+            this.elem.removeClass('webuploader-dnd-over');
         },
 
         _traverseDirectoryTree: function( entry, results ) {
@@ -91,17 +84,18 @@ define( 'webuploader/runtime/html5/dnd', [
                 entry.createReader().readEntries(function( entries ) {
                     var len = entries.length,
                         promises = [],
-                        arr = [],  // 为了保证顺序。
+                        arr = [],    // 为了保证顺序。
                         i;
 
                     for ( i = 0; i < len; i++ ) {
-                        promises.push( me._traverseDirectoryTree( entries[ i ], arr ) );
+                        promises.push( me._traverseDirectoryTree(
+                                entries[ i ], arr ) );
                     }
 
                     Base.when.apply( Base, promises ).then(function() {
                         results.push.apply( results, arr );
                         deferred.resolve( true );
-                    }, deferred.reject);
+                    }, deferred.reject );
                 });
             }
 
@@ -116,5 +110,5 @@ define( 'webuploader/runtime/html5/dnd', [
             elem.on( 'dragleave', this.dragLeaveHander );
             elem.on( 'drop', this.dropHander );
         }
-    } );
-} );
+    });
+});
