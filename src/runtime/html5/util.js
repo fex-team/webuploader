@@ -4,19 +4,18 @@
  * Uint8Array, FileReader, BlobBuilder, atob, ArrayBuffer
  * @fileOverview Image控件
  */
-define( 'webuploader/runtime/html5/util', [ 'webuploader/base' ], function( Base ) {
+define(function() {
 
-    var $ = Base.$,
-        urlAPI = window.createObjectURL && window ||
+    var urlAPI = window.createObjectURL && window ||
             window.URL && URL.revokeObjectURL && URL ||
-            window.webkitURL
+            window.webkitURL;
 
     return {
         createObjectURL: urlAPI && urlAPI.createObjectURL,
         revokeObjectURL: urlAPI && urlAPI.revokeObjectURL,
 
         // 限制fileReader, 因为不能回收，所以只能共用。
-        getFileReader: (function(){
+        getFileReader: (function() {
             var throttle = 3,
                 pool = [],
                 wating = [];
@@ -52,14 +51,15 @@ define( 'webuploader/runtime/html5/util', [ 'webuploader/base' ], function( Base
 
                 wating.push( cb );
                 _tick();
-            }
+            };
         })(),
 
         dataURL2Blob: function( dataURI ) {
             var byteStr, intArray, ab, i, mimetype, parts;
 
-            parts = dataURI.split( ',' );
-            if ( ~parts[ 0 ].indexOf( 'base64' ) ) {
+            parts = dataURI.split(',');
+
+            if ( ~parts[ 0 ].indexOf('base64') ) {
                 byteStr = atob( parts[ 1 ] );
             } else {
                 byteStr = decodeURIComponent( parts[ 1 ] );
@@ -72,16 +72,19 @@ define( 'webuploader/runtime/html5/util', [ 'webuploader/base' ], function( Base
                 intArray[ i ] = byteStr.charCodeAt( i );
             }
 
-            mimetype = parts[ 0 ].split( ':' )[ 1 ].split( ';' )[ 0 ];
+            mimetype = parts[ 0 ].split(':')[ 1 ].split(';')[ 0 ];
 
-            return new Blob( [ ab ], { type: mimetype } );
+            return new Blob([ ab ], {
+                type: mimetype
+            });
         },
 
         dataURL2ArrayBuffer: function( dataURI ) {
             var byteStr, intArray, i, parts;
 
-            parts = dataURI.split( ',' );
-            if ( ~parts[ 0 ].indexOf( 'base64' ) ) {
+            parts = dataURI.split(',');
+
+            if ( ~parts[ 0 ].indexOf('base64') ) {
                 byteStr = atob( parts[ 1 ] );
             } else {
                 byteStr = decodeURIComponent( parts[ 1 ] );
@@ -97,11 +100,7 @@ define( 'webuploader/runtime/html5/util', [ 'webuploader/base' ], function( Base
         },
 
         arrayBufferToBlob: function( buffer, type ) {
-            return new Blob( [ buffer ], type ? { type: type } : {} );
-        },
-
-        binaryString2DataURL: function( bin ) {
-            // todo.
+            return new Blob([ buffer ], type ? { type: type } : {} );
         }
-    }
-} );
+    };
+});

@@ -1,197 +1,195 @@
 /**
  * @fileOverview 文件属性封装
- * @import base.js, core/mediator.js
  */
-define( 'webuploader/core/file', [
-        'webuploader/base',
-        'webuploader/core/mediator'
-    ], function( Base, Mediator ) {
+define([
+    '../base',
+    'mediator'
+], function( Base, Mediator ) {
 
-        var $ = Base.$,
-            idPrefix = 'WU_FILE_',
-            idSuffix = 0,
-            rExt = /\.([^.]+)$/,
-            statusMap = {};
+    var $ = Base.$,
+        idPrefix = 'WU_FILE_',
+        idSuffix = 0,
+        rExt = /\.([^.]+)$/,
+        statusMap = {};
 
-        function gid() {
-            return idPrefix + idSuffix++;
-        }
+    function gid() {
+        return idPrefix + idSuffix++;
+    }
+
+    /**
+     * 构造函数
+     * @class 文件
+     * @constructor File
+     * @param {DOMFile|Object} domfile     HTML5 File对象或者自定义对象
+     */
+    function WUFile( file ) {
+
+        // if ( !file || !('name' in file) ) {
+        //     throw new Error( 'File构造函数参数错误!' );
+        // }
 
         /**
-         * 构造函数
-         * @class 文件
-         * @constructor File
-         * @param {DOMFile|Object} domfile     HTML5 File对象或者自定义对象
+         * 文件名，包括扩展名
+         * @property name
+         * @type {string}
          */
-        function WUFile( file ) {
+        this.name = file.name || 'Untitled';
 
-            // if ( !file || !('name' in file) ) {
-            //     throw new Error( 'File构造函数参数错误!' );
-            // }
+        /**
+         * 文件体积（字节）
+         * @property size
+         * @type {int}
+         * @default 0
+         */
+        this.size = file.size || 0;
 
-            /**
-             * 文件名，包括扩展名
-             * @property name
-             * @type {string}
-             */
-            this.name = file.name || 'Untitled';
+        /**
+         * 文件MIMETYPE类型，与文件类型的对应关系请参考 http://t.cn/z8ZnFny
+         * @property type
+         * @type {string}
+         * @default ''
+         */
+        this.type = file.type || 'image/png';
 
-            /**
-             * 文件体积（字节）
-             * @property size
-             * @type {int}
-             * @default 0
-             */
-            this.size = file.size || 0;
+        /**
+         * 文件最后修改日期
+         * @property lastModifiedDate
+         * @type {int}
+         * @default 当前时间戳
+         */
+        this.lastModifiedDate = file.lastModifiedDate || (new Date() * 1);
 
-            /**
-             * 文件MIMETYPE类型，与文件类型的对应关系请参考 http://t.cn/z8ZnFny
-             * @property type
-             * @type {string}
-             * @default ''
-             */
-            this.type = file.type || 'image/png';
+        /**
+         * 文件ID，每个对象具有唯一ID，与文件名无关
+         * @property id
+         * @type {string}
+         */
+        this.id = gid();
 
-            /**
-             * 文件最后修改日期
-             * @property lastModifiedDate
-             * @type {int}
-             * @default 当前时间戳
-             */
-            this.lastModifiedDate = file.lastModifiedDate || (new Date() * 1);
-
-            /**
-             * 文件ID，每个对象具有唯一ID，与文件名无关
-             * @property id
-             * @type {string}
-             */
-            this.id = gid();
-
-            /**
-             * 文件扩展名，通过文件名获取，例如test.png的扩展名为png
-             * @property ext
-             * @type {string}
-             */
-            this.ext = rExt.exec( file.name ) ? RegExp.$1 : '';
+        /**
+         * 文件扩展名，通过文件名获取，例如test.png的扩展名为png
+         * @property ext
+         * @type {string}
+         */
+        this.ext = rExt.exec( file.name ) ? RegExp.$1 : '';
 
 
-            /**
-             * 状态文字说明。
-             * @property statusText
-             * @type {string}
-             */
-            this.statusText = '';
+        /**
+         * 状态文字说明。
+         * @property statusText
+         * @type {string}
+         */
+        this.statusText = '';
 
-            /**
-             * 文件上传成功后对应的服务器端URL
-             * @property url
-             * @type {string}
-             * @default ''
-             */
-            // this.url = '';
+        /**
+         * 文件上传成功后对应的服务器端URL
+         * @property url
+         * @type {string}
+         * @default ''
+         */
+        // this.url = '';
 
-            // 存储文件状态，防止通过属性直接修改
-            statusMap[ this.id ] = WUFile.Status.INITED;
+        // 存储文件状态，防止通过属性直接修改
+        statusMap[ this.id ] = WUFile.Status.INITED;
 
-            this.source = file;
-            this.loaded = 0;
+        this.source = file;
+        this.loaded = 0;
 
-            this.on( 'error', function( msg ) {
-                this.setStatus( WUFile.Status.ERROR, msg );
-            } );
-        }
-
-        $.extend( WUFile.prototype, {
-
-            /**
-             * 设置状态，状态变化时会触发`change`事件。
-             *
-             * @method setStatus
-             * @param  {File.Status} status 状态
-             * @example
-                     文件状态具体包括以下几种类型：
-                     {
-                         // 初始化
-                        INITED:     0,
-                        // 已入队列
-                        QUEUED:     1,
-                        // 正在上传
-                        PROGRESS:     2,
-                        // 上传出错
-                        ERROR:         3,
-                        // 上传成功
-                        COMPLETE:     4,
-                        // 上传取消
-                        CANCELLED:     5
-                    }
-             */
-            setStatus: function( status, text ) {
-
-                var prevStatus = statusMap[ this.id ];
-
-                typeof text !== 'undefined' && (this.statusText = text);
-
-                if ( status !== prevStatus ) {
-                    statusMap[ this.id ] = status;
-                    /**
-                     * 文件状态变化
-                     * @event statuschange
-                     */
-                    this.trigger( 'statuschange', status, prevStatus );
-                }
-
-            },
-
-            /**
-             * 获取文件状态
-             * @return {File.Status}
-             * @example
-                     文件状态具体包括以下几种类型：
-                     {
-                         // 初始化
-                        INITED:     0,
-                        // 已入队列
-                        QUEUED:     1,
-                        // 正在上传
-                        PROGRESS:     2,
-                        // 上传出错
-                        ERROR:         3,
-                        // 上传成功
-                        COMPLETE:     4,
-                        // 上传取消
-                        CANCELLED:     5
-                    }
-             */
-            getStatus: function() {
-                return statusMap[ this.id ];
-            },
-
-            /**
-             * 获取文件原始信息。
-             * @return {*}
-             */
-            getSource: function() {
-                return this.source;
-            },
-
-            destory: function() {
-                delete statusMap[ this.id ];
-            }
-        } );
-
-        Mediator.installTo( WUFile.prototype );
-
-        WUFile.Status = {
-            INITED:     'inited',   // 初始状态
-            QUEUED:     'queued',    // 已经进入队列, 等待上传
-            PROGRESS:   'progress',    // 上传中
-            ERROR:      'error',    // 上传出错，可重试
-            COMPLETE:   'complete',    // 上传完成。
-            CANCELLED:  'cancelled',    // 上传取消。
-            INTERRUPT:  'interrupt',    // 上传中断，可续传。
-            INVALID:    'invalid'    // 文件不合格，不能重试上传。
-        };
-
-        return WUFile;
+        this.on( 'error', function( msg ) {
+            this.setStatus( WUFile.Status.ERROR, msg );
+        });
     }
-);
+
+    $.extend( WUFile.prototype, {
+
+        /**
+         * 设置状态，状态变化时会触发`change`事件。
+         *
+         * @method setStatus
+         * @param  {File.Status} status 状态
+         * @example
+                 文件状态具体包括以下几种类型：
+                 {
+                     // 初始化
+                    INITED:     0,
+                    // 已入队列
+                    QUEUED:     1,
+                    // 正在上传
+                    PROGRESS:     2,
+                    // 上传出错
+                    ERROR:         3,
+                    // 上传成功
+                    COMPLETE:     4,
+                    // 上传取消
+                    CANCELLED:     5
+                }
+         */
+        setStatus: function( status, text ) {
+
+            var prevStatus = statusMap[ this.id ];
+
+            typeof text !== 'undefined' && (this.statusText = text);
+
+            if ( status !== prevStatus ) {
+                statusMap[ this.id ] = status;
+                /**
+                 * 文件状态变化
+                 * @event statuschange
+                 */
+                this.trigger( 'statuschange', status, prevStatus );
+            }
+
+        },
+
+        /**
+         * 获取文件状态
+         * @return {File.Status}
+         * @example
+                 文件状态具体包括以下几种类型：
+                 {
+                     // 初始化
+                    INITED:     0,
+                    // 已入队列
+                    QUEUED:     1,
+                    // 正在上传
+                    PROGRESS:     2,
+                    // 上传出错
+                    ERROR:         3,
+                    // 上传成功
+                    COMPLETE:     4,
+                    // 上传取消
+                    CANCELLED:     5
+                }
+         */
+        getStatus: function() {
+            return statusMap[ this.id ];
+        },
+
+        /**
+         * 获取文件原始信息。
+         * @return {*}
+         */
+        getSource: function() {
+            return this.source;
+        },
+
+        destory: function() {
+            delete statusMap[ this.id ];
+        }
+    });
+
+    Mediator.installTo( WUFile.prototype );
+
+    WUFile.Status = {
+        INITED:     'inited',    // 初始状态
+        QUEUED:     'queued',    // 已经进入队列, 等待上传
+        PROGRESS:   'progress',    // 上传中
+        ERROR:      'error',    // 上传出错，可重试
+        COMPLETE:   'complete',    // 上传完成。
+        CANCELLED:  'cancelled',    // 上传取消。
+        INTERRUPT:  'interrupt',    // 上传中断，可续传。
+        INVALID:    'invalid'    // 文件不合格，不能重试上传。
+    };
+
+    return WUFile;
+});

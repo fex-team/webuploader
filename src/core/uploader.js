@@ -1,10 +1,10 @@
 /**
  * @fileOverview Uploader上传类
- * @import base.js, core/mediator.js
  */
-define( 'webuploader/core/uploader', [ 'webuploader/base',
-        'webuploader/core/mediator'
-        ], function( Base, Mediator, Runtime ) {
+define([
+    '../base',
+    'mediator'
+], function( Base, Mediator ) {
 
     var $ = Base.$;
 
@@ -49,7 +49,7 @@ define( 'webuploader/core/uploader', [ 'webuploader/base',
 
             me.request( 'init', opts, function() {
                 me.state = 'ready';
-                me.trigger( 'ready' );
+                me.trigger('ready');
             });
         },
 
@@ -70,7 +70,7 @@ define( 'webuploader/core/uploader', [ 'webuploader/base',
 
         getStats: function() {
             // return this._mgr.getStats.apply( this._mgr, arguments );
-            var stats = this.request( 'get-stats' );
+            var stats = this.request('get-stats');
 
             return {
                 successNum: stats.numOfSuccess,
@@ -111,7 +111,7 @@ define( 'webuploader/core/uploader', [ 'webuploader/base',
         reset: function() {
             // @todo
         }
-    } );
+    });
 
     Base.create = function( opts ) {
         return new Uploader( opts );
@@ -121,4 +121,4 @@ define( 'webuploader/core/uploader', [ 'webuploader/base',
     Base.Uploader = Uploader;
 
     return Uploader;
-} );
+});
