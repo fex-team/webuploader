@@ -1,17 +1,17 @@
 /**
  * @fileOverview 基础类方法。
  */
+define([
+    'jQuery'
+], function( $ ) {
 
-// 如果生成依赖jquery版本，则用
-// define( 'webuploader/base', [ 'jQuery' ], function( $ ) {
-define( 'webuploader/base', [ 'webuploader/jq-bridge' ], function( $ ) {
     var noop = function() {},
         call = Function.call;
 
     // http://jsperf.com/uncurrythis
     // 反科里化
     function uncurryThis( fn ) {
-        return function () {
+        return function() {
             return call.apply( fn, arguments );
         };
     }
@@ -26,9 +26,9 @@ define( 'webuploader/base', [ 'webuploader/jq-bridge' ], function( $ ) {
         var f;
 
         if ( Object.create ) {
-            return Object.create( proto )
+            return Object.create( proto );
         } else {
-            f = function(){};
+            f = function() {};
             f.prototype = proto;
             return new f();
         }
@@ -49,14 +49,16 @@ define( 'webuploader/base', [ 'webuploader/jq-bridge' ], function( $ ) {
         when: $.when,
 
         // 简单的浏览器检测。
-        browser: (function( ua ){
+        browser: (function( ua ) {
             var ret = {},
-                webkit = ua.match(/WebKit\/([\d.]+)/),
-                chrome = ua.match(/Chrome\/([\d.]+)/) || ua.match(/CriOS\/([\d.]+)/),
-                ie = ua.match(/MSIE\s([\d.]+)/),
-                firefox = ua.match(/Firefox\/([\d.]+)/),
-                safari = ua.match(/Safari\/([\d.]+)/),
-                opera = ua.match(/OPR\/([\d.]+)/);
+                webkit = ua.match( /WebKit\/([\d.]+)/ ),
+                chrome = ua.match( /Chrome\/([\d.]+)/ ) ||
+                    ua.match( /CriOS\/([\d.]+)/ ),
+
+                ie = ua.match( /MSIE\s([\d.]+)/ ),
+                firefox = ua.match( /Firefox\/([\d.]+)/ ),
+                safari = ua.match( /Safari\/([\d.]+)/ ),
+                opera = ua.match( /OPR\/([\d.]+)/ );
 
             webkit && (ret.webkit = parseFloat( webkit[ 1 ] ));
             chrome && (ret.chrome = parseFloat( chrome[ 1 ] ));
@@ -65,7 +67,7 @@ define( 'webuploader/base', [ 'webuploader/jq-bridge' ], function( $ ) {
             safari && (ret.safari = parseFloat( safari[ 1 ] ));
             opera && (ret.opera = parseFloat( opera[ 1 ] ));
 
-            return ret
+            return ret;
         })( navigator.userAgent ),
 
         /**
@@ -105,7 +107,7 @@ define( 'webuploader/base', [ 'webuploader/jq-bridge' ], function( $ ) {
             if ( typeof protos === 'function' ) {
                 child = protos;
                 protos = null;
-            } else if ( protos && protos.hasOwnProperty( 'constructor' ) ) {
+            } else if ( protos && protos.hasOwnProperty('constructor') ) {
                 child = protos.constructor;
             } else {
                 child = function() {
@@ -142,10 +144,10 @@ define( 'webuploader/base', [ 'webuploader/jq-bridge' ], function( $ ) {
         })(),
 
         nextTick: (function() {
-            
+
             return function( cb ) {
                 setTimeout( cb, 1 );
-            }
+            };
 
             // @bug 当浏览器不在当前窗口时就停了。
             // var next = window.requestAnimationFrame ||
@@ -174,7 +176,7 @@ define( 'webuploader/base', [ 'webuploader/jq-bridge' ], function( $ ) {
 
                 return (prefix || 'o_') + guid + (counter++).toString( 32 );
             };
-        }()),
+        })(),
 
         formatSize: function( size, pointLength, units ) {
             var unit;
@@ -189,4 +191,4 @@ define( 'webuploader/base', [ 'webuploader/jq-bridge' ], function( $ ) {
                     unit;
         }
     };
-} );
+});
