@@ -1,25 +1,25 @@
 /**
  * @fileOverview 错误信息
- * @import base.js, runtime/client.js, lib/file.js
  */
-define( 'webuploader/lib/filepicker', [ 'webuploader/base',
-        'webuploader/runtime/client',
-        'webuploader/lib/file'
-        ], function( Base, RuntimeClent, File ) {
+define([
+    '../base',
+    '../runtime/client',
+    'file'
+], function( Base, RuntimeClent, File ) {
 
     var $ = Base.$;
 
     function FilePicker( opts ) {
 
-        opts = this.options = $.extend( {}, FilePicker.options, opts );
+        opts = this.options = $.extend({}, FilePicker.options, opts );
         opts.container = $( opts.id );
 
         if ( !opts.container.length ) {
-            throw new Error( '按钮指定错误' );
+            throw new Error('按钮指定错误');
         }
 
         opts.label = opts.label || opts.container.text();
-        opts.button = $( document.createElement('div') );
+        opts.button = $( opts.button || document.createElement('div') );
         opts.button.text( opts.label );
         opts.container.append( opts.button );
 
@@ -32,7 +32,7 @@ define( 'webuploader/lib/filepicker', [ 'webuploader/base',
         label: '选择文件',
         multiple: true,
         accept: null
-    }
+    };
 
     Base.inherits( RuntimeClent, {
         constructor: FilePicker,
@@ -42,25 +42,25 @@ define( 'webuploader/lib/filepicker', [ 'webuploader/base',
                 opts = me.options,
                 button = opts.button;
 
-            button.addClass( 'webuploader-pick' );
+            button.addClass('webuploader-pick');
 
             me.on( 'all', function( type ) {
                 var files;
 
                 switch ( type ) {
                     case 'mouseenter':
-                        button.addClass( 'webuploader-pick-hover');
+                        button.addClass('webuploader-pick-hover');
                         break;
 
                     case 'mouseleave':
-                        button.removeClass( 'webuploader-pick-hover' );
+                        button.removeClass('webuploader-pick-hover');
                         break;
 
                     case 'change':
-                        files = me.exec( 'getFiles' );
+                        files = me.exec('getFiles');
                         me.trigger( 'select', $.map( files, function( file ) {
                             return new File( me.getRuid(), file );
-                        } ));
+                        }) );
                         break;
                 }
             });
@@ -70,7 +70,7 @@ define( 'webuploader/lib/filepicker', [ 'webuploader/base',
                 me.exec( 'init', opts );
             });
 
-            $( window ).on( 'resize', function(){
+            $( window ).on( 'resize', function() {
                 me.refresh();
             });
         },
@@ -90,11 +90,11 @@ define( 'webuploader/lib/filepicker', [ 'webuploader/base',
 
         destroy: function() {
             if ( this.runtime ) {
-                this.exec( 'destroy' );
+                this.exec('destroy');
                 this.disconnectRuntime();
             }
         }
-    } );
+    });
 
     return FilePicker;
 });

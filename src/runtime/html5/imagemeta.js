@@ -3,14 +3,12 @@
  *
  * Uint8Array, FileReader, BlobBuilder, atob, ArrayBuffer
  * @fileOverview Image控件
- * @import base.js, runtime/html5/util.js
  */
-define( 'webuploader/runtime/html5/imagemeta', [ 'webuploader/base',
-    'webuploader/runtime/html5/util'
-        ], function( Base, Util ) {
+define([
+    'util'
+], function( Util ) {
 
-    var $ = Base.$,
-        api;
+    var api;
 
     api = {
         parsers: {
@@ -33,7 +31,8 @@ define( 'webuploader/runtime/html5/imagemeta', [ 'webuploader/base',
                     reader = reader.onload = reader.onerror = null;
                 };
 
-                reader.readAsArrayBuffer( blob.slice( 0, me.maxMetaDataSize ).getSource() );
+                reader.readAsArrayBuffer( blob.slice( 0,
+                        me.maxMetaDataSize ).getSource() );
             });
         },
 
@@ -96,7 +95,7 @@ define( 'webuploader/runtime/html5/imagemeta', [ 'webuploader/base',
 
         updateImageHead: function( buffer, head ) {
             var data = this._parse( buffer, true ),
-                buf1, buf2, head, bodyoffset ;
+                buf1, buf2, bodyoffset;
 
 
             bodyoffset = 2;
@@ -115,12 +114,9 @@ define( 'webuploader/runtime/html5/imagemeta', [ 'webuploader/base',
             buf1[ 0 ] = 0xFF;
             buf1[ 1 ] = 0xD8;
             buf1.set( new Uint8Array( head ), 2 );
-
-            buf1.set( new Uint8Array( buf2 ), head.byteLength + 2 )
+            buf1.set( new Uint8Array( buf2 ), head.byteLength + 2 );
 
             return buf1.buffer;
         }
     };
-
-    return api;
-} );
+});

@@ -1,15 +1,16 @@
 /**
  * @fileOverview Image帮助类，主要用来生成缩略图和压缩图片。
- * @import base.js, runtime/client.js
  */
-define( 'webuploader/lib/imagecompress', [ 'webuploader/base',
-        'webuploader/runtime/client',
-        'webuploader/lib/blob' ],
-        function( Base, RuntimeClient, Blob ) {
+define([
+    '../base',
+    '../runtime/client',
+    'blob'
+], function( Base, RuntimeClient, Blob ) {
+
     var $ = Base.$;
 
     function ImageCompress( opts ) {
-        this.options = $.extend( {}, ImageCompress.options, opts );
+        this.options = $.extend({}, ImageCompress.options, opts );
         RuntimeClient.call( this, 'ImageCompress' );
     }
 
@@ -33,7 +34,7 @@ define( 'webuploader/lib/imagecompress', [ 'webuploader/base',
         },
 
         getAsBlob: function() {
-            var blob = this.exec( 'getAsBlob' );
+            var blob = this.exec('getAsBlob');
             return new Blob( this.getRuid(), blob );
         },
 
@@ -45,11 +46,11 @@ define( 'webuploader/lib/imagecompress', [ 'webuploader/base',
         },
 
         destroy: function() {
-            this.trigger( 'destroy' );
+            this.trigger('destroy');
             this.off();
-            this.exec( 'destroy' );
+            this.exec('destroy');
         }
-    } );
+    });
 
     return ImageCompress;
-} );
+});

@@ -1,70 +1,69 @@
 /**
  * @fileOverview Html5Runtime
- * @import base.js, runtime/runtime.js, runtime/compbase.js
  */
-define( 'webuploader/runtime/html5/runtime', [
-        'webuploader/base',
-        'webuploader/runtime/runtime',
-        'webuploader/runtime/compbase'
-    ], function( Base, Runtime, CompBase ) {
+define([
+    '/base',
+    '../runtime',
+    '../compbase'
+], function( Base, Runtime, CompBase ) {
 
-        var $ = Base.$,
-            type = 'html5',
-            pool = {},
-            components = {};
+    var type = 'html5',
+        components = {};
 
-        function Html5Runtime() {
-            var pool = {},
-                me = this,
-                destory = this.destory;
+    function Html5Runtime() {
+        var pool = {},
+            me = this,
+            destory = this.destory;
 
-            Runtime.apply( me, arguments );
-            me.type = type;
+        Runtime.apply( me, arguments );
+        me.type = type;
 
 
-            // 这个方法的调用者，实际上是RuntimeClient
-            me.exec = function( comp, fn/*, args...*/) {
-                var client = this,
-                    uid = client.uid,
-                    args = Base.slice( arguments, 2 ),
-                    instance;
+        // 这个方法的调用者，实际上是RuntimeClient
+        me.exec = function( comp, fn/*, args...*/) {
+            var client = this,
+                uid = client.uid,
+                args = Base.slice( arguments, 2 ),
+                instance;
 
-                if ( components[ comp ] ) {
-                    instance = pool[ uid ] = pool[ uid ] || new components[ comp ]( client, me );
+            if ( components[ comp ] ) {
+                instance = pool[ uid ] = pool[ uid ] ||
+                        new components[ comp ]( client, me );
 
-                    if ( instance[ fn ] ) {
-                        return instance[ fn ].apply( instance, args );
-                    }
+                if ( instance[ fn ] ) {
+                    return instance[ fn ].apply( instance, args );
                 }
             }
-
-            me.destory = function() {
-                // @todo 删除池子中的所有实例
-                return destory && destory.apply( this, arguments );
-            };
-        }
-
-        Base.inherits( Runtime, {
-            constructor: Html5Runtime,
-
-            // 不需要连接其他程序，直接执行callback
-            init: function( cb ) {
-                var me = this;
-                setTimeout( function() {
-                    me.trigger('ready');
-                }, 1 );
-            }
-
-        } );
-
-        Html5Runtime.register = function( name, component ) {
-            return components[ name ] = Base.inherits( CompBase, component );
         };
 
-        // 注册html5运行时。
-        if ( window.Blob && window.FileReader && window.DataView ) {
-            Runtime.addRuntime( type, Html5Runtime );
+        me.destory = function() {
+            // @todo 删除池子中的所有实例
+            return destory && destory.apply( this, arguments );
+        };
+    }
+
+    Base.inherits( Runtime, {
+        constructor: Html5Runtime,
+
+        // 不需要连接其他程序，直接执行callback
+        init: function() {
+            var me = this;
+            setTimeout(function() {
+                me.trigger('ready');
+            }, 1 );
         }
 
-        return Html5Runtime;
-    } );
+    });
+
+    Html5Runtime.register = function( name, component ) {
+        var klass = components[ name ] = Base.inherits( CompBase, component );
+        return klass;
+    };
+
+    // 注册html5运行时。
+    if ( window.Blob && window.FileReader && window.DataView ) {
+        Runtime.addRuntime( type, Html5Runtime );
+    }
+
+    return Html5Runtime;
+});
