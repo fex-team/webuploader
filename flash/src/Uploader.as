@@ -30,7 +30,7 @@ package
         public static var compFactory:ComponentFactory;
 
         /**
-         * Main constructor for the Plupload class.
+         * Main constructor for the Uploader class.
          */
         public function Uploader()
         {

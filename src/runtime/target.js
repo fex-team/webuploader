@@ -1,10 +1,10 @@
 /**
- * @fileOverview
- * @import base.js, runtime/client.js
+ * @fileOverview 可能不需要此功能。
  */
-define( 'webuploader/runtime/target', [ 'webuploader/base',
-        'webuploader/runtime/client' ], function( Base, RuntimeClient ) {
-    var $ = Base.$;
+define([
+    '/base',
+    'client'
+], function( Base, RuntimeClient ) {
 
     function RuntimeTarget() {
         RuntimeClient.apply( this, arguments );
@@ -17,7 +17,7 @@ define( 'webuploader/runtime/target', [ 'webuploader/base',
             this.disconnectRuntime();
             this.off();
         }
-    } );
+    });
 
     return RuntimeTarget;
-} );
+});

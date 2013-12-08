@@ -1,17 +1,19 @@
 /**
  * @fileOverview 数据发送
- * @import base.js, core/uploader.js, core/file.js, lib/transport.js
  */
-define( 'webuploader/widgets/upload', [
-    'webuploader/base',
-    'webuploader/core/uploader',
-    'webuploader/core/file',
-    'webuploader/lib/transport' ], function( Base, Uploader, WUFile, Transport ) {
+define([
+    '/base',
+    '/core/uploader',
+    '/core/file',
+    '/lib/transport',
+    'widget'
+], function( Base, Uploader, WUFile, Transport ) {
 
     var $ = Base.$,
         Status = WUFile.Status;
 
-    $.extend(Uploader.options, {
+    $.extend( Uploader.options, {
+        prepareNextFile: false,
         chunked: false,
         chunkSize: 5 * 1024 * 1024,
         chunkRetry: 2,
@@ -22,33 +24,22 @@ define( 'webuploader/widgets/upload', [
         var pending = [],
             blob = file.source,
             end = blob.size,
-            start, chunks, index;
+            chunks = chunkSize ? Math.ceil( end / chunkSize ) : 1,
+            index = chunks,
+            start;
 
-        // 切割成小份
-        if ( chunkSize && end > chunkSize ) {
-            index = chunks = Math.ceil( end / chunkSize );
-            while ( end ) {
-                start = Math.max( 0, end - chunkSize );
-                pending.push({
-                    isChunk: true,
-                    file: file,
-                    start: start,
-                    end: end,
-                    total: blob.size,
-                    chunks: chunks,
-                    chunk: --index,
-                    blob: blob.slice( start, end )
-                });
-                end = start;
-            }
-        } else {
+        while ( index-- ) {
+            start = Math.max( 0, end - chunkSize );
             pending.push({
-                total: end,
-                start: 0,
+                file: file,
+                start: start,
                 end: end,
-                blob: blob,
-                file: file
+                total: blob.size,
+                chunks: chunks,
+                chunk: index,
+                blob: chunks === 1 ? blob : blob.slice( start, end )
             });
+            end = start;
         }
 
         file.blocks = pending.concat();
@@ -64,7 +55,7 @@ define( 'webuploader/widgets/upload', [
             fetch: function() {
                 return pending.shift();
             }
-        }
+        };
     }
 
     Uploader.register({
@@ -74,16 +65,18 @@ define( 'webuploader/widgets/upload', [
         'is-in-progress': 'isInProgress'
     }, {
 
-        init: function( opts ) {
+        init: function() {
             var owner = this.owner;
 
             this.runing = false;
             this.pool = [];
+            this.pending = [];
             this.remaning = 0;
             this.__tick = Base.bindFn( this._tick, this );
 
             owner.on( 'uploadComplete', function( file ) {
                 delete file.blocks;
+                delete file.remaning;
                 owner.trigger( 'uploadProgress', file, 1 );
             });
         },
@@ -110,7 +103,8 @@ define( 'webuploader/widgets/upload', [
                 }
             });
 
-            me.owner.trigger( 'startUpload' );
+            me.owner.trigger('startUpload');
+            me._trigged = false;
             Base.nextTick( me.__tick );
         },
 
@@ -122,7 +116,7 @@ define( 'webuploader/widgets/upload', [
             }
 
             me.runing = false;
-            
+
             if ( interrupt ) {
                 $.each( me.pool, function( _, v ) {
                     v.transport.abort();
@@ -130,7 +124,7 @@ define( 'webuploader/widgets/upload', [
                 });
             }
 
-            me.owner.trigger( 'stopUpload' );
+            me.owner.trigger('stopUpload');
         },
 
         isInProgress: function() {
@@ -138,7 +132,7 @@ define( 'webuploader/widgets/upload', [
         },
 
         getStats: function() {
-            return this.request( 'get-stats' );
+            return this.request('get-stats');
         },
 
         skipFile: function( file, status ) {
@@ -150,10 +144,14 @@ define( 'webuploader/widgets/upload', [
             file.blocks && $.each( file.blocks, function( _, v ) {
                 var _tr = v.transport;
 
-                _tr && (_tr.abort(), _tr.destroy());
+                if ( _tr ) {
+                    _tr.abort();
+                    _tr.destroy();
+                    delete v.transport;
+                }
             });
 
-            this.owner.trigger( 'uploadComplete', file );
+            this.owner.trigger( 'uploadSkip', file );
         },
 
         _tick: function() {
@@ -162,14 +160,17 @@ define( 'webuploader/widgets/upload', [
                 next;
 
             if ( me._tickPromise ) {
-                me._tickPromise.always( me.__tick );
-                return;
+                return me._tickPromise.always( me.__tick );
             }
 
-            if ( me.pool.length < opts.threads && (next = me._getNext()) ) {
+            // 是否还有位置。
+            if ( me.pool.length < opts.threads &&
+                    (next = me._getNextBlock()) ) {
+
+                me._trigged = false;
+
                 if ( next.promise ) {
-                    me._tickPromise = next;
-                    next.then(function( value ) {
+                    me._tickPromise = next.done(function( value ) {
                         me._tickPromise = null;
                         value && me._startSend( value );
                         Base.nextTick( me.__tick );
@@ -182,9 +183,94 @@ define( 'webuploader/widgets/upload', [
                 me.runing = false;
 
                 me._trigged || Base.nextTick(function() {
-                    me.owner.trigger( 'uploadFinished' );
+                    me.owner.trigger('uploadFinished');
                 });
                 me._trigged = true;
+            }
+        },
+
+        _getNextBlock: function() {
+            var me = this,
+                act = me._act,
+                opts = me.options,
+                next, done;
+
+            if ( act && act.has() &&
+                    act.file.getStatus() === Status.PROGRESS ) {
+
+                // 是否提前准备下一个文件
+                if ( opts.prepareNextFile && !me.pending.length ) {
+                    me._prepareNextFile();
+                }
+
+                return act.fetch();
+            } else if ( me.runing ) {
+
+                // 如果缓存中有，则直接在缓存中取，没有则去queue中取。
+                if ( !me.pending.length && me.getStats().numOfQueue ) {
+                    me._prepareNextFile();
+                }
+
+                next = me.pending.shift();
+
+                done = function( file ) {
+                    if ( !file ) {
+                        return null;
+                    }
+
+                    me._act = act = new Wrapper( file,
+                            opts.chunked ? opts.chunkSize : 0 );
+                    return act.fetch();
+                };
+
+                return next && next.promise ? next.then( done ) : done( next );
+            }
+
+            return null;
+        },
+
+        _prepareNextFile: function() {
+            var file = this.request('fetch-file'),
+                pending = this.pending,
+                owner = this.owner,
+                promise;
+
+            if ( file ) {
+                owner.trigger( 'uploadStart', file );
+                file.setStatus( Status.PROGRESS );
+
+                promise = this.request( 'before-send-file', file, function() {
+                    var idx = $.inArray( promise, pending );
+
+                    // 有可能已经移出去了。
+                    ~idx && pending.splice( idx, 1, file );    // 替换成文件
+
+                    if ( file.getStatus() === Status.PROGRESS ) {
+                        return file;
+                    }
+
+                    // @todo 优化这里
+                    // 在before-send-file有可能直接把文件的status改成了error或complete
+                    // 可以跳过文件上传。
+                    return owner
+                            .request( 'after-send-file', file, function() {
+                                file.setStatus( Status.COMPLETE );
+                                owner.trigger( 'uploadComplete', file );
+                            })
+                            .fail(function( reason ) {
+                                if ( file.getStatus() === Status.PROGRESS ) {
+                                    file.setStatus( Status.ERROR, reason );
+                                }
+                                owner.trigger( 'uploadError', file, reason );
+                            })
+                            .always(function() {
+                                // skip this.
+                                owner.request( 'skip-file', file );
+                                return null;
+                            });
+                });
+
+                pending.push( promise );
             }
         },
 
@@ -204,47 +290,24 @@ define( 'webuploader/widgets/upload', [
                         _tr && (_tr.abort(), _tr.destroy());
                     });
                     owner.trigger( 'uploadComplete', file );
-                },
-                handler = function( cur, prev ) {
-                    if ( cur === Status.INVALID ) {
-                        cancelAll();
-                        file.off( 'statuschange', handler );
-                    }
                 };
 
-            file.on( 'statuschange', handler );
             tr.on( 'destroy', function() {
                 var idx = $.inArray( tr, pool );
 
                 me.remaning--;
                 pool.splice( idx, 1 );
 
-                file.off( 'statuschange', handler );
                 block.transport =  null;
                 Base.nextTick( tick );
             });
-
-            tr.appendBlob( opts.fileVal, block.blob, file.name );
-            tr.append({
-                id: file.id,
-                name: file.name,
-                type: file.type,
-                lastModifiedDate: file.lastModifiedDate,
-                size: file.size
-            });
-
-            block.isChunk && tr.append({
-                chunks: block.chunks,
-                chunk: block.chunk
-            });
-
             tr.on( 'progress', function( percentage ) {
                 var totalPercent = 0,
                     uploaded = 0;
 
                 totalPercent = block.percentage = percentage;
 
-                if ( block.isChunk ) {    // 计算文件的整体速度。
+                if ( block.chunks > 1 ) {    // 计算文件的整体速度。
                     $.each( file.blocks, function( _, v ) {
                         uploaded += (v.percentage || 0) * (v.end - v.start);
                     });
@@ -257,17 +320,21 @@ define( 'webuploader/widgets/upload', [
 
             tr.on( 'error', function( type ) {
                 block.retried = block.retried || 0;
-                
+
                 // 自动重试
-                if ( block.isChunk && ~'http,abort'.indexOf( type ) && block.retried < opts.chunkRetry ) {
+                if ( block.chunks > 1 && ~'http,abort'.indexOf( type ) &&
+                        block.retried < opts.chunkRetry ) {
+
                     block.retried++;
                     tr.send();
+
                 } else {
-                    owner.trigger( 'uploadError', file, type );
-                    if ( file.getStats() === Status.PROGRESS ) {
+
+                    if ( file.getStatus() === Status.PROGRESS ) {
                         file.setStatus( Status.ERROR, type );
                     }
 
+                    owner.trigger( 'uploadError', file, type );
                     cancelAll();
                 }
             });
@@ -282,7 +349,9 @@ define( 'webuploader/widgets/upload', [
                     reject = value;
                 };
 
-                if ( !owner.trigger( 'uploadAccept', file, ret, headers, fn ) ) {
+                if ( !owner.trigger( 'uploadAccept', block, ret, headers,
+                        fn ) ) {
+
                     reject = reject || 'server';
                 }
 
@@ -291,18 +360,23 @@ define( 'webuploader/widgets/upload', [
                 } else {
                     owner.trigger( 'uploadSuccess', file, ret, headers );
                     file.remaning--;
-                    if ( !file.remaning ) {
-                        owner.request( 'after-send-file', [ file, ret, headers ], function() {
-                            file.setStatus( Status.COMPLETE );
-                            owner.trigger( 'uploadComplete', file );
-                        }).fail(function( reason ) {
-                            owner.trigger( 'uploadError', file, reason );
-                            if ( file.getStats() === Status.PROGRESS ) {
-                                file.setStatus( Status.ERROR, type );
-                            }
-                            cancelAll();
-                        });
-                    }
+
+                    file.remaning || owner
+                            .request( 'after-send-file', [ file, ret,
+                                    headers ], function() {
+
+                                file.setStatus( Status.COMPLETE );
+                                owner.trigger( 'uploadComplete', file );
+
+                            })
+                            .fail(function( reason ) {
+                                if ( file.getStatus() === Status.PROGRESS ) {
+                                    file.setStatus( Status.ERROR, reason );
+                                }
+                                owner.trigger( 'uploadError', file, reason );
+                                cancelAll();
+                            });
+
                     tr.destroy();
                 }
             });
@@ -315,40 +389,32 @@ define( 'webuploader/widgets/upload', [
 
             block.transport = tr;
             me.remaning++;
-            me._trigged = false;
-            tr.send();
-        },
 
-        _getNext: function() {
-            var me = this,
-                act = me._act,
-                opts = me.options,
-                file, deferred;
+            me.request( 'before-send', block, function() {
+                var data = {},
+                    headers = {};
 
-            if ( act && act.has() && act.file.getStatus() === Status.PROGRESS ) {
-                return act.fetch();
-            } else if ( me.runing && (file = me.request( 'fetch-file' )) ) {
-                me.owner.trigger( 'uploadStart', file );
-                file.setStatus( Status.PROGRESS );
-                deferred = Base.Deferred();
-                
-                // hook 可能会需要压缩图片。
-                me.request( 'before-send-file', file, function() {
-                    if ( file.getStatus() === Status.PROGRESS ) {
-                        me._act = act = new Wrapper( file, opts.chunked ? opts.chunkSize : 0 );
-                        deferred.resolve( act.fetch() );
-                    } else {
-
-                        // skip this.
-                        me.request( 'skip-file', file );
-                        deferred.resolve( null );
-                    }
+                data = $.extend( data, {
+                    id: file.id,
+                    name: file.name,
+                    type: file.type,
+                    lastModifiedDate: file.lastModifiedDate,
+                    size: file.size
                 });
 
-                return deferred.promise();
-            }
+                block.chunks > 1 && $.extend( data, {
+                    chunks: block.chunks,
+                    chunk: block.chunk
+                });
 
-            return null;
+                // 在发送之间可以添加字段什么的。。。
+                owner.trigger( 'uploadBeforeSend', block, data, headers );
+                tr.appendBlob( opts.fileVal, block.blob, file.name );
+                tr.append( data );
+                tr.setRequestHeader( headers );
+
+                tr.send();
+            });
         }
 
     });
