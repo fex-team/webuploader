@@ -1,8 +1,9 @@
 /**
  * @fileOverview Mediator
- * @import base.js
  */
-define( 'webuploader/core/mediator', [ 'webuploader/base' ], function( Base ) {
+define([
+    '../base'
+], function( Base ) {
     var $ = Base.$,
         slice = [].slice,
         protos;
@@ -11,10 +12,10 @@ define( 'webuploader/core/mediator', [ 'webuploader/base' ], function( Base ) {
     function findHandlers( arr, name, callback, context ) {
         return $.grep( arr, function( handler ) {
             return handler &&
-                (!name || handler.e === name) &&
-                (!callback || handler.cb === callback ||
-                handler.cb._cb === callback) &&
-                (!context || handler.ctx === context);
+                    (!name || handler.e === name) &&
+                    (!callback || handler.cb === callback ||
+                    handler.cb._cb === callback) &&
+                    (!context || handler.ctx === context);
         });
 
         // @todo IE8不支持filter，需要换种写法。
@@ -119,19 +120,19 @@ define( 'webuploader/core/mediator', [ 'webuploader/base' ], function( Base ) {
          * @return {self} 返回自身，方便链式
          * @chainable
          */
-        off: function( name, callback, context ) {
+        off: function( name, callback, ctx ) {
             var events = this._events;
 
             if ( !events ) {
                 return this;
             }
 
-            if ( !name && !callback && !context ) {
+            if ( !name && !callback && !ctx ) {
                 this._events = [];
                 return this;
             }
 
-            $.each( findHandlers( events, name, callback, context ), function() {
+            $.each( findHandlers( events, name, callback, ctx ), function() {
                 delete events[ this.id ];
             });
 
@@ -167,7 +168,7 @@ define( 'webuploader/core/mediator', [ 'webuploader/base' ], function( Base ) {
      * 主要目的是负责模块与模块之间的合作，降低耦合度。
      * @class Mediator
      */
-    return $.extend( {
+    return $.extend({
 
         /**
          * 可以通过这个接口，使任何对象具备事件功能。
@@ -180,4 +181,4 @@ define( 'webuploader/core/mediator', [ 'webuploader/base' ], function( Base ) {
         }
 
     }, protos );
-} );
+});

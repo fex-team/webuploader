@@ -1,16 +1,13 @@
 /**
  * @fileOverview Image
- * @import base.js, runtime/html5/runtime.js, runtime/html5/util.js, runtime/html5/imagemeta.js, lib/blob.js
  */
-define( 'webuploader/runtime/html5/imagepreview', [ 'webuploader/base',
-        'webuploader/runtime/html5/runtime',
-        'webuploader/runtime/html5/util',
-        'webuploader/runtime/html5/imagemeta',
-        'webuploader/lib/blob'
-        ], function( Base, Html5Runtime, Util, ImageMeta, Blob ) {
+define([
+    'runtime',
+    'util',
+    'imagemeta'
+], function( Html5Runtime, Util, ImageMeta ) {
 
-    var $ = Base.$,
-        BLANK_IMAGE = 'data:image/gif;base64,R0lGODlhAQABAAD/ACwAAAAAAQABAAACADs%3D',
+    var BLANK = 'data:image/gif;base64,R0lGODlhAQABAAD/ACwAAAAAAQABAAACADs%3D',
         throttle;
 
     // 根据要处理的文件大小来节流，一次不能处理太多，会卡。
@@ -20,7 +17,7 @@ define( 'webuploader/runtime/html5/imagepreview', [ 'webuploader/base',
             tick = function() {
                 var item;
 
-                while( waiting.length && occupied < max ) {
+                while ( waiting.length && occupied < max ) {
                     item = waiting.shift();
                     occupied += item[ 0 ];
                     item[ 1 ]();
@@ -28,13 +25,13 @@ define( 'webuploader/runtime/html5/imagepreview', [ 'webuploader/base',
             };
 
         return function( emiter, size, cb ) {
-            waiting.push( [ size, cb ] );
+            waiting.push([ size, cb ]);
             emiter.once( 'destroy', function() {
                 occupied -= size;
                 setTimeout( tick, 1 );
-            } );
+            });
             setTimeout( tick, 1 );
-        }
+        };
     })( 5 * 1024 * 1024 );
 
     return Html5Runtime.register( 'ImagePreview', {
@@ -42,26 +39,25 @@ define( 'webuploader/runtime/html5/imagepreview', [ 'webuploader/base',
         // flag: 标记是否被修改过。
         modified: false,
 
-        init: function( options ) {
+        init: function() {
             var me = this,
-                img = new Image(),
-                opts = this.options;
+                img = new Image();
 
             img.onload = function() {
                 // 读取meta信息。
                 if ( me.type === 'image/jpeg' ) {
-                    ImageMeta.parse( me._blob , function( error, ret ) {
+                    ImageMeta.parse( me._blob, function( error, ret ) {
                         me.metas = ret;
-                        me.owner.trigger( 'load' );
-                    } );
+                        me.owner.trigger('load');
+                    });
                 } else {
-                    me.owner.trigger( 'load' );
+                    me.owner.trigger('load');
                 }
             };
 
             img.onerror = function() {
-                me.owner.trigger( 'error' );
-            }
+                me.owner.trigger('error');
+            };
 
             me._img = img;
         },
@@ -77,20 +73,16 @@ define( 'webuploader/runtime/html5/imagepreview', [ 'webuploader/base',
                 me.owner.once( 'load', function() {
                     Util.revokeObjectURL( img.src );
                     me.resize( width, height );
-                    me.owner.trigger( 'complete' );
-                } );
+                    me.owner.trigger('complete');
+                });
             });
-        },
-
-        getMetas: function() {
-            return this.metas;
         },
 
         /**
          * 创建缩略图，但是不会修改原始图片大小。
          */
         resize: function( width, height ) {
-            var canvas = this.canvas = document.createElement( 'canvas' );
+            var canvas = this.canvas = document.createElement('canvas');
 
             // if ( this.metas && this.metas.exif && (result =
             //         this.metas.exif.get( 'Thumbnail' )) ) {
@@ -113,7 +105,7 @@ define( 'webuploader/runtime/html5/imagepreview', [ 'webuploader/base',
                 result = canvas.toDataURL( type );
             }
 
-            canvas.getContext( '2d' )
+            canvas.getContext('2d')
                     .clearRect( 0, 0, canvas.width, canvas.height );
             canvas.width = canvas.height = 0;
             canvas = null;
@@ -122,7 +114,7 @@ define( 'webuploader/runtime/html5/imagepreview', [ 'webuploader/base',
 
         getOrientation: function() {
             return this.metas && this.metas.exif &&
-                    this.metas.exif.get( 'Orientation' ) || 1;
+                    this.metas.exif.get('Orientation') || 1;
         },
 
         getMetas: function() {
@@ -137,7 +129,7 @@ define( 'webuploader/runtime/html5/imagepreview', [ 'webuploader/base',
             this._img.onload = null;
 
             // 释放内存。非常重要，否则释放不了image的内存。
-            this._img.src = BLANK_IMAGE;
+            this._img.src = BLANK;
             this._img = this._blob = null;
         },
 
@@ -185,7 +177,7 @@ define( 'webuploader/runtime/html5/imagepreview', [ 'webuploader/base',
         _rotateToOrientaion: function( canvas, orientation ) {
             var width = canvas.width,
                 height = canvas.height,
-                ctx = canvas.getContext( '2d' );
+                ctx = canvas.getContext('2d');
 
             switch ( orientation ) {
                 case 5:
@@ -237,7 +229,7 @@ define( 'webuploader/runtime/html5/imagepreview', [ 'webuploader/base',
         },
 
         _renderImageToCanvas: function( canvas, img, x, y, w, h ) {
-            canvas.getContext( '2d' ).drawImage( img, x, y, w, h );
+            canvas.getContext('2d').drawImage( img, x, y, w, h );
         }
-    } );
-} );
+    });
+});
