@@ -1,8 +1,10 @@
 /**
  * @file 暴露变量给外部使用。
- * @import base.js
  */
-require( [ 'webuploader/base' ], function( Base ) {
+require([
+    'base'
+], function( Base ) {
+
     var exportName, origin;
 
     if ( typeof module === 'object' && typeof module.exports === 'object' ) {
@@ -16,4 +18,4 @@ require( [ 'webuploader/base' ], function( Base ) {
             window[ exportName ] = origin;
         };
     }
-} );
+});

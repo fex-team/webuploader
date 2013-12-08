@@ -1,9 +1,10 @@
 /**
  * @fileOverview 组件基类。
- * @import base.js
  */
-define( 'webuploader/widgets/widget', [ 'webuploader/base',
-        'webuploader/core/uploader' ], function( Base, Uploader ) {
+define([
+    '/base',
+    '/core/uploader'
+], function( Base, Uploader ) {
 
     var $ = Base.$,
         _init = Uploader.prototype._init,
@@ -23,8 +24,8 @@ define( 'webuploader/widgets/widget', [ 'webuploader/base',
         }
 
         return type === 'array' || type !== 'function' && type !== 'string' &&
-            ( length === 0 ||
-            typeof length === 'number' && length > 0 && ( length - 1 ) in obj );
+                (length === 0 || typeof length === 'number' && length > 0 &&
+                (length - 1) in obj);
     }
 
     function Widget( uploader ) {
@@ -38,7 +39,6 @@ define( 'webuploader/widgets/widget', [ 'webuploader/base',
 
         // 类Backbone的事件监听声明，监听uploader实例上的事件
         // widget直接无法监听事件，事件只能通过uploader来传递
-
         invoke: function( apiName, args ) {
 
             /*
@@ -49,10 +49,9 @@ define( 'webuploader/widgets/widget', [ 'webuploader/base',
             var map = this.responseMap;
 
             // 如果无API响应声明则忽略
-            if ( !map
-                || !( apiName in map )
-                || !( map[ apiName ] in this )
-                || !$.isFunction( this[ map[ apiName ] ] ) ) {
+            if ( !map || !(apiName in map) || !(map[ apiName ] in this) ||
+                    !$.isFunction( this[ map[ apiName ] ] ) ) {
+
                 return IGNORE;
             }
 
@@ -60,10 +59,10 @@ define( 'webuploader/widgets/widget', [ 'webuploader/base',
 
         },
 
-        request: function( apiName, args, callback ) {
+        request: function() {
             return this.owner.request.apply( this.owner, arguments );
         }
-    } );
+    });
 
     // 扩展Uploader.
     $.extend( Uploader.prototype, {
@@ -75,7 +74,7 @@ define( 'webuploader/widgets/widget', [ 'webuploader/base',
 
             $.each( widgetClass, function( _, klass ) {
                 widgets.push( new klass( me ) );
-            } );
+            });
 
             return _init.apply( me, arguments );
         },
@@ -90,7 +89,7 @@ define( 'webuploader/widgets/widget', [ 'webuploader/base',
 
             args = isArrayLike( args ) ? args : [ args ];
 
-            for( ; i < len; i++ ) {
+            for ( ; i < len; i++ ) {
                 widget = widgets[ i ];
                 rlt = widget.invoke( apiName, args );
 
@@ -102,20 +101,31 @@ define( 'webuploader/widgets/widget', [ 'webuploader/base',
                     } else {
                         rlts.push( rlt );
                     }
-                };
+                }
             }
 
             // 如果有callback，则用异步方式。
             if ( callback || dfds.length ) {
                 return Base.when.apply( Base, dfds )
-                    .done( callback || Base.noop );
 
-                // @todo what if fail?
+                        // 很重要不能删除。删除了会死循环。
+                        // 保证执行顺序。让callback总是在下一个tick中执行。
+                        .then(function() {
+                            var deferred = Base.Deferred(),
+                                args = arguments;
+
+                            setTimeout(function() {
+                                deferred.resolve.apply( deferred, args );
+                            }, 1 );
+
+                            return deferred.promise();
+                        })
+                        .then( callback || Base.noop );
             } else {
                 return rlts[ 0 ];
             }
         }
-    } );
+    });
 
     /**
      * 添加组件
@@ -130,13 +140,14 @@ define( 'webuploader/widgets/widget', [ 'webuploader/base',
      *     } );
      */
     Uploader.register = function( responseMap, widgetProto ) {
-        var map = { init: 'init' }, klass;
+        var map = { init: 'init' },
+            klass;
 
         if ( arguments.length === 1 ) {
             widgetProto = responseMap;
             widgetProto.responseMap = map;
         } else {
-            widgetProto.responseMap = $.extend(map, responseMap);
+            widgetProto.responseMap = $.extend( map, responseMap );
         }
 
         klass = Base.inherits( Widget, widgetProto );
@@ -146,4 +157,4 @@ define( 'webuploader/widgets/widget', [ 'webuploader/base',
     };
 
     return Widget;
-} );
+});
