@@ -3,11 +3,11 @@
  * @todo 支持chunked传输，优势：
  * 可以将大文件分成小块，挨个传输，可以提高大文件成功率，当失败的时候，也只需要重传那小部分，
  * 而不需要重头再传一次。另外断点续传也需要用chunked方式。
- * @import base.js, runtime/html5/runtime.js
  */
-define( 'webuploader/runtime/html5/transport', [ 'webuploader/base',
-        'webuploader/runtime/html5/runtime'
-        ], function( Base, Html5Runtime ) {
+define([
+    '/base',
+    'runtime'
+], function( Base, Html5Runtime ) {
 
     var noop = Base.noop,
         $ = Base.$;
@@ -24,23 +24,34 @@ define( 'webuploader/runtime/html5/transport', [ 'webuploader/base',
                 opts = this.options,
                 xhr = this._initAjax(),
                 blob = owner._blob,
+                server = opts.server,
+                formData, binary;
+
+            if ( opts.sendAsBinary ) {
+                server += (/\?/.test( server ) ? '&' : '?') +
+                        $.param( owner._formData );
+
+                binary = blob.getSource();
+            } else {
                 formData = new FormData();
+                $.each( owner._formData, function( k, v ) {
+                    formData.append( k, v );
+                });
 
-            $.each( owner._formData, function( k, v ) {
-                formData.append( k, v );
-            });
-
-            formData.append( opts.fileVar, blob.getSource(), opts.filename || owner._formData.name || '' );
+                formData.append( opts.fileVar, blob.getSource(),
+                        opts.filename || owner._formData.name || '' );
+            }
 
             if ( opts.withCredentials && 'withCredentials' in xhr ) {
-                xhr.open( opts.method, opts.server, true );
+                xhr.open( opts.method, server, true );
                 xhr.withCredentials = true;
             } else {
-                xhr.open( opts.method, opts.server );
+                xhr.open( opts.method, server );
             }
 
             this._setRequestHeader( xhr, opts.headers );
-            return xhr.send( formData );
+            binary && xhr.overrideMimeType('application/octet-stream');
+            xhr.send( binary || formData );
         },
 
         getResponse: function() {
@@ -93,10 +104,9 @@ define( 'webuploader/runtime/html5/transport', [ 'webuploader/base',
                 }
 
                 return me.trigger( 'progress', percentage );
-            }
+            };
 
             xhr.onreadystatechange = function() {
-                var ret, rHeaders, reject;
 
                 if ( xhr.readyState !== 4 ) {
                     return;
@@ -110,7 +120,7 @@ define( 'webuploader/runtime/html5/transport', [ 'webuploader/base',
                 if ( xhr.status === 200 ) {
                     me._response = xhr.responseText;
                     me._responseHeader = me._parseXhrHeaders( xhr );
-                    return me.trigger( 'load' );
+                    return me.trigger('load');
                 }
 
                 me._status = xhr.status;
@@ -119,7 +129,8 @@ define( 'webuploader/runtime/html5/transport', [ 'webuploader/base',
                 return me.trigger( 'error', me._status ? 'http' : 'abort' );
             };
 
-            return me._xhr = xhr;
+            me._xhr = xhr;
+            return xhr;
         },
 
         _setRequestHeader: function( xhr, headers ) {

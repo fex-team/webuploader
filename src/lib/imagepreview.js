@@ -1,14 +1,15 @@
 /**
  * @fileOverview Image帮助类，主要用来生成缩略图和压缩图片。
- * @import base.js, runtime/client.js
  */
-define( 'webuploader/lib/imagepreview', [ 'webuploader/base',
-        'webuploader/runtime/client' ],
-        function( Base, RuntimeClient ) {
+define([
+    '../base',
+    '../runtime/client'
+], function( Base, RuntimeClient ) {
+
     var $ = Base.$;
 
     function ImagePreview( opts ) {
-        this.options = $.extend( {}, ImagePreview.options, opts );
+        this.options = $.extend({}, ImagePreview.options, opts );
         RuntimeClient.call( this, 'ImagePreview' );
     }
 
@@ -36,19 +37,19 @@ define( 'webuploader/lib/imagepreview', [ 'webuploader/base',
         },
 
         getOrientation: function() {
-            return this.exec( 'getOrientation' );
+            return this.exec('getOrientation');
         },
 
         getMetas: function() {
-            return this.exec( 'getMetas' );
+            return this.exec('getMetas');
         },
 
         destroy: function() {
-            this.trigger( 'destroy' );
+            this.trigger('destroy');
             this.off();
-            this.exec( 'destroy' );
+            this.exec('destroy');
         }
-    } );
+    });
 
     return ImagePreview;
-} );
+});

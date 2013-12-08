@@ -1,19 +1,20 @@
 /**
  * @fileOverview Runtime管理器，负责Runtime的选择, 连接
- * @import base.js, core/mediator.js
  */
-define( 'webuploader/runtime/runtime', [ 'webuploader/base',
-    'webuploader/core/mediator' ], function( Base, Mediator ) {
+define([
+    '/base',
+    '/core/mediator'
+], function( Base, Mediator ) {
 
     var $ = Base.$,
         factories = {};
 
     // 接口类。
     function Runtime( options ) {
-        this.options = $.extend( {
+        this.options = $.extend({
             container: document.body
         }, options );
-        this.uid = Base.guid( 'rt_' );
+        this.uid = Base.guid('rt_');
     }
 
     $.extend( Runtime.prototype, {
@@ -27,8 +28,7 @@ define( 'webuploader/runtime/runtime', [ 'webuploader/base',
             }
 
             parent = opts.container || $( document.body );
-
-            container = $(document.createElement( 'div' ));
+            container = $( document.createElement('div') );
 
             container.attr( 'id', 'rt_' + this.uid );
             container.css({
@@ -41,8 +41,9 @@ define( 'webuploader/runtime/runtime', [ 'webuploader/base',
             });
 
             parent.append( container );
+            this.container = container;
 
-            return this.container = container;
+            return container;
         },
 
         init: Base.noop,
@@ -75,22 +76,23 @@ define( 'webuploader/runtime/runtime', [ 'webuploader/base',
                 type = this;
                 return false;
             }
-        } );
+        });
 
         type = type || getFirstKey( factories );
 
         if ( !type ) {
-            throw new Error( 'Runtime Error' );
+            throw new Error('Runtime Error');
         }
 
-        return runtime = new factories[ type ]( opts );
+        runtime = new factories[ type ]( opts );
+        return runtime;
     };
 
     // 获取对象的第一个key
     function getFirstKey( obj ) {
         var key;
 
-        for( key in obj ) {
+        for ( key in obj ) {
             if ( obj.hasOwnProperty( key ) ) {
                 return key;
             }
@@ -101,4 +103,4 @@ define( 'webuploader/runtime/runtime', [ 'webuploader/base',
 
     Mediator.installTo( Runtime.prototype );
     return Runtime;
-} );
+});

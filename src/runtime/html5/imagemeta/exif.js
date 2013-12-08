@@ -4,8 +4,8 @@
  *
  * 去除了 Exif Sub IFD Pointer, GPS Info IFD Pointer, Exif Thumbnail.
  * @fileOverview EXIF解析
- * @import runtime/html5/imagemeta.js
  */
+
 // Sample
 // ====================================
 // Make : Apple
@@ -41,8 +41,10 @@
 // WhiteBalance : Auto white balance
 // FocalLengthIn35mmFilm : 35
 // SceneCaptureType : Standard
-define( 'webuploader/runtime/html5/imagemta/exif',
-        [ 'webuploader/runtime/html5/imagemeta' ], function( ImageMeta ) {
+define([
+    '/base',
+    '../imagemeta'
+], function( Base, ImageMeta ) {
 
     var EXIF = {};
 
@@ -92,7 +94,8 @@ define( 'webuploader/runtime/html5/imagemta/exif',
             size: 4
         },
 
-        // rational = two long values, first is numerator, second is denominator:
+        // rational = two long values,
+        // first is numerator, second is denominator:
         5: {
             getValue: function( dataView, dataOffset, littleEndian ) {
                 return dataView.getUint32( dataOffset, littleEndian ) /
@@ -129,7 +132,7 @@ define( 'webuploader/runtime/html5/imagemta/exif',
             tagSize, dataOffset, values, i, str, c;
 
         if ( !tagType ) {
-            console.log('Invalid Exif data: Invalid tag type.');
+            Base.log('Invalid Exif data: Invalid tag type.');
             return;
         }
 
@@ -141,11 +144,11 @@ define( 'webuploader/runtime/html5/imagemta/exif',
                 littleEndian ) : (offset + 8);
 
         if ( dataOffset + tagSize > dataView.byteLength ) {
-            console.log('Invalid Exif data: Invalid data offset.');
+            Base.log('Invalid Exif data: Invalid data offset.');
             return;
         }
 
-        if (length === 1) {
+        if ( length === 1 ) {
             return tagType.getValue( dataView, dataOffset, littleEndian );
         }
 
@@ -160,11 +163,11 @@ define( 'webuploader/runtime/html5/imagemta/exif',
             str = '';
 
             // Concatenate the chars:
-            for (i = 0; i < values.length; i += 1) {
-                c = values[i];
+            for ( i = 0; i < values.length; i += 1 ) {
+                c = values[ i ];
 
                 // Ignore the terminating NULL byte(s):
-                if (c === '\u0000') {
+                if ( c === '\u0000' ) {
                     break;
                 }
                 str += c;
@@ -180,8 +183,8 @@ define( 'webuploader/runtime/html5/imagemta/exif',
 
         var tag = dataView.getUint16( offset, littleEndian );
         data.exif[ tag ] = EXIF.getExifValue( dataView, tiffOffset, offset,
-                dataView.getUint16( offset + 2, littleEndian ), // tag type
-                dataView.getUint32( offset + 4, littleEndian ), // tag length
+                dataView.getUint16( offset + 2, littleEndian ),    // tag type
+                dataView.getUint32( offset + 4, littleEndian ),    // tag length
                 littleEndian );
     };
 
@@ -191,7 +194,7 @@ define( 'webuploader/runtime/html5/imagemta/exif',
         var tagsNumber, dirEndOffset, i;
 
         if ( dirOffset + 6 > dataView.byteLength ) {
-            console.log('Invalid Exif data: Invalid directory offset.');
+            Base.log('Invalid Exif data: Invalid directory offset.');
             return;
         }
 
@@ -199,13 +202,13 @@ define( 'webuploader/runtime/html5/imagemta/exif',
         dirEndOffset = dirOffset + 2 + 12 * tagsNumber;
 
         if ( dirEndOffset + 4 > dataView.byteLength ) {
-            console.log('Invalid Exif data: Invalid directory size.');
+            Base.log('Invalid Exif data: Invalid directory size.');
             return;
         }
 
         for ( i = 0; i < tagsNumber; i += 1 ) {
             this.parseExifTag( dataView, tiffOffset,
-                    dirOffset + 2 + 12 * i, // tag offset
+                    dirOffset + 2 + 12 * i,    // tag offset
                     littleEndian, data );
         }
 
@@ -218,7 +221,7 @@ define( 'webuploader/runtime/html5/imagemta/exif',
     //         i,
     //         b;
     //     if (!length || offset + length > dataView.byteLength) {
-    //         console.log('Invalid Exif data: Invalid thumbnail data.');
+    //         Base.log('Invalid Exif data: Invalid thumbnail data.');
     //         return;
     //     }
     //     hexData = [];
@@ -232,9 +235,7 @@ define( 'webuploader/runtime/html5/imagemta/exif',
     EXIF.parseExifData = function( dataView, offset, length, data ) {
 
         var tiffOffset = offset + 10,
-            littleEndian,
-            dirOffset,
-            thumbnailData;
+            littleEndian, dirOffset;
 
         // Check for the ASCII code for "Exif" (0x45786966):
         if ( dataView.getUint32( offset + 4 ) !== 0x45786966 ) {
@@ -242,13 +243,13 @@ define( 'webuploader/runtime/html5/imagemta/exif',
             return;
         }
         if ( tiffOffset + 8 > dataView.byteLength ) {
-            console.log( 'Invalid Exif data: Invalid segment size.' );
+            Base.log('Invalid Exif data: Invalid segment size.');
             return;
         }
 
         // Check for the two null bytes:
         if ( dataView.getUint16( offset + 8 ) !== 0x0000 ) {
-            console.log( 'Invalid Exif data: Missing byte alignment offset.' );
+            Base.log('Invalid Exif data: Missing byte alignment offset.');
             return;
         }
 
@@ -263,13 +264,13 @@ define( 'webuploader/runtime/html5/imagemta/exif',
                 break;
 
             default:
-                console.log( 'Invalid Exif data: Invalid byte alignment marker.' );
+                Base.log('Invalid Exif data: Invalid byte alignment marker.');
                 return;
         }
 
         // Check for the TIFF tag marker (0x002A):
         if ( dataView.getUint16( tiffOffset + 2, littleEndian ) !== 0x002A ) {
-            console.log( 'Invalid Exif data: Missing TIFF marker.' );
+            Base.log('Invalid Exif data: Missing TIFF marker.');
             return;
         }
 
@@ -306,4 +307,4 @@ define( 'webuploader/runtime/html5/imagemta/exif',
 
     ImageMeta.parsers[ 0xffe1 ].push( EXIF.parseExifData );
     return EXIF;
-} );
+});
