@@ -2,7 +2,7 @@
  * @fileOverview  jq-bridge 主要实现像jQuery一样的功能方法，可以替换成jQuery，
  * 这里只实现了此组件所需的部分。
  */
-define( 'webuploader/jq-bridge', [], function() {
+define(function() {
     var doc = window.document,
         emptyArray = [],
         slice = emptyArray.slice,
@@ -43,23 +43,17 @@ define( 'webuploader/jq-bridge', [], function() {
             } else {
                 target[ key ] = val;
             }
-        } );
+        });
     }
 
     each( ('Boolean Number String Function Array Date RegExp Object' +
-            ' Error').split( ' ' ), function( i, name ) {
+            ' Error').split(' '), function( i, name ) {
         class2type[ '[object ' + name + ']' ] = name.toLowerCase();
-    } );
+    });
 
     function setAttribute( node, name, value ) {
         value == null ? node.removeAttribute( name ) :
                 node.setAttribute( name, value );
-    }
-
-    function camelize( str ) {
-        return str.replace( /-+(.)?/g, function( match, chr ) {
-            return chr ? chr.toUpperCase() : ''
-        } );
     }
 
     /**
@@ -103,9 +97,9 @@ define( 'webuploader/jq-bridge', [], function() {
 
             attr: function( key, val ) {
                 if ( $.isObject( key ) ) {
-                    $.each( key , function( k, v ) {
+                    $.each( key, function( k, v ) {
                         setAttribute( elem, k, v );
-                    } );
+                    });
                 } else {
                     setAttribute( elem, key, val );
                 }
@@ -150,7 +144,7 @@ define( 'webuploader/jq-bridge', [], function() {
                 return this;
             }
 
-        } );
+        });
     }
 
     $.each = each;
@@ -200,7 +194,7 @@ define( 'webuploader/jq-bridge', [], function() {
 
     $.isObject = function( anything ) {
         return type( anything ) === 'object';
-    }
+    };
 
     $.trim = function( str ) {
         return str ? str.trim() : '';
@@ -213,4 +207,4 @@ define( 'webuploader/jq-bridge', [], function() {
     emptyArray = null;
 
     return $;
-} );
+});

@@ -1,8 +1,7 @@
 /**
  * @fileOverview Runtime管理器，负责Runtime的选择, 连接
- * @import base.js
  */
-define( 'webuploader/runtime/compbase', [ 'webuploader/base' ], function( Base ) {
+define(function() {
 
     function CompBase( owner, runtime ) {
 
@@ -23,4 +22,4 @@ define( 'webuploader/runtime/compbase', [ 'webuploader/base' ], function( Base )
     }
 
     return CompBase;
-} );
+});

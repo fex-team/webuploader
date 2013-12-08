@@ -1,11 +1,11 @@
 /**
  * @fileOverview Runtime管理器，负责Runtime的选择, 连接
- * @import base.js, core/mediator.js, runtime/runtime.js
  */
-define( 'webuploader/runtime/client', [ 'webuploader/base',
-        'webuploader/core/mediator',
-        'webuploader/runtime/runtime'
-        ], function( Base, Mediator, Runtime ) {
+define([
+    '/base',
+    '/core/mediator',
+    'runtime'
+], function( Base, Mediator, Runtime ) {
 
     var cache = (function() {
         var obj = {};
@@ -36,14 +36,14 @@ define( 'webuploader/runtime/client', [ 'webuploader/base',
             has: function() {
                 return !!this.get.apply( this, arguments );
             }
-        }
+        };
     })();
 
     function RuntimeClient( component, standalone ) {
         var deferred = Base.Deferred(),
             runtime;
 
-        this.uid = Base.guid( 'client_' );
+        this.uid = Base.guid('client_');
 
         this.runtimeReady = function( cb ) {
             return deferred.done( cb );
@@ -98,7 +98,7 @@ define( 'webuploader/runtime/client', [ 'webuploader/base',
 
         this.exec = function() {
             if ( !runtime ) {
-                Base.log( 'Runtime Error' );
+                Base.log('Runtime Error');
                 return;
             }
 
@@ -115,4 +115,4 @@ define( 'webuploader/runtime/client', [ 'webuploader/base',
 
     Mediator.installTo( RuntimeClient.prototype );
     return RuntimeClient;
-} );
+});
