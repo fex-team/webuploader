@@ -15,7 +15,7 @@ var amd = (function( global ) {
                 module = modules[ dep ] || global[ dep ];
 
                 if ( !module ) {
-                    throw new Error( '`' + dep '` is undefined' );
+                    throw new Error( '`' + dep + '` is undefined' );
                 }
 
                 args.push( module );
