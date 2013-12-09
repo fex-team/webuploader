@@ -1,5 +1,5 @@
 /**
- * @fileOverview 数据发送
+ * @fileOverview 负责文件上传相关。
  */
 define([
     '/base',
@@ -12,6 +12,7 @@ define([
     var $ = Base.$,
         Status = WUFile.Status;
 
+    // 添加默认配置项
     $.extend( Uploader.options, {
         prepareNextFile: false,
         chunked: false,
@@ -20,6 +21,7 @@ define([
         threads: 3
     });
 
+    // 负责将文件接片。
     function Wrapper( file, chunkSize ) {
         var pending = [],
             blob = file.source,
@@ -36,8 +38,7 @@ define([
                 end: end,
                 total: blob.size,
                 chunks: chunks,
-                chunk: index,
-                blob: chunks === 1 ? blob : blob.slice( start, end )
+                chunk: index
             });
             end = start;
         }
@@ -69,12 +70,23 @@ define([
             var owner = this.owner;
 
             this.runing = false;
+
+            // 记录当前正在传的数据，跟threads相关
             this.pool = [];
+
+            // 缓存即将上传的文件。
             this.pending = [];
+
+            // 跟踪还有多少分片没有完成上传。
             this.remaning = 0;
             this.__tick = Base.bindFn( this._tick, this );
 
             owner.on( 'uploadComplete', function( file ) {
+                // 把其他块取消了。
+                file.blocks && $.each( file.blocks, function( _, v ) {
+                    v.transport && v.transport.destroy();
+                });
+
                 delete file.blocks;
                 delete file.remaning;
                 owner.trigger( 'uploadProgress', file, 1 );
@@ -99,12 +111,12 @@ define([
             $.each( me.pool, function( _, v ) {
                 if ( v.file.getStatus() === Status.INTERRUPT ) {
                     v.file.setStatus( Status.PROGRESS );
+                    me._trigged = false;
                     v.transport.send();
                 }
             });
 
             me.owner.trigger('startUpload');
-            me._trigged = false;
             Base.nextTick( me.__tick );
         },
 
@@ -139,6 +151,7 @@ define([
             file = this.request( 'get-file', file );
 
             file.setStatus( status || Status.COMPLETE );
+            file.skipped = true;
 
             // 如果正在上传。
             file.blocks && $.each( file.blocks, function( _, v ) {
@@ -169,7 +182,7 @@ define([
 
                 me._trigged = false;
 
-                if ( next.promise ) {
+                if ( Base.isPromise( next ) ) {
                     me._tickPromise = next.done(function( value ) {
                         me._tickPromise = null;
                         value && me._startSend( value );
@@ -223,51 +236,38 @@ define([
                     return act.fetch();
                 };
 
-                return next && next.promise ? next.then( done ) : done( next );
+                return Base.isPromise( next ) ? next.then( done ) :
+                        done( next );
             }
 
             return null;
         },
 
         _prepareNextFile: function() {
-            var file = this.request('fetch-file'),
-                pending = this.pending,
-                owner = this.owner,
+            var me = this,
+                file = me.request('fetch-file'),
+                pending = me.pending,
                 promise;
 
             if ( file ) {
-                owner.trigger( 'uploadStart', file );
-                file.setStatus( Status.PROGRESS );
 
-                promise = this.request( 'before-send-file', file, function() {
-                    var idx = $.inArray( promise, pending );
+                promise = me.request( 'before-send-file', file, function() {
 
-                    // 有可能已经移出去了。
-                    ~idx && pending.splice( idx, 1, file );    // 替换成文件
-
-                    if ( file.getStatus() === Status.PROGRESS ) {
+                    // 有可能文件被skip掉了。文件被skip掉后，状态坑定不是Queued.
+                    if ( file.getStatus() === Status.QUEUED ) {
+                        me.owner.trigger( 'uploadStart', file );
+                        file.setStatus( Status.PROGRESS );
                         return file;
                     }
 
-                    // @todo 优化这里
-                    // 在before-send-file有可能直接把文件的status改成了error或complete
-                    // 可以跳过文件上传。
-                    return owner
-                            .request( 'after-send-file', file, function() {
-                                file.setStatus( Status.COMPLETE );
-                                owner.trigger( 'uploadComplete', file );
-                            })
-                            .fail(function( reason ) {
-                                if ( file.getStatus() === Status.PROGRESS ) {
-                                    file.setStatus( Status.ERROR, reason );
-                                }
-                                owner.trigger( 'uploadError', file, reason );
-                            })
-                            .always(function() {
-                                // skip this.
-                                owner.request( 'skip-file', file );
-                                return null;
-                            });
+                    return me._finishFile( file );
+                });
+
+                // 如果还在pending中，则替换成文件本身。
+                promise.done(function() {
+                    var idx = $.inArray( promise, pending );
+
+                    ~idx && pending.splice( idx, 1, file );
                 });
 
                 pending.push( promise );
@@ -281,26 +281,20 @@ define([
                 file = block.file,
                 tr = new Transport( opts ),
                 pool = me.pool,
-                tick = me.__tick,
-                cancelAll = function() {
-                    // 把其他块取消了。
-                    $.each( file.blocks, function( _, v ) {
-                        var _tr = v.transport;
+                tick = me.__tick;
 
-                        _tr && (_tr.abort(), _tr.destroy());
-                    });
-                    owner.trigger( 'uploadComplete', file );
-                };
-
+            // 从pool中移除，并调用tick，看后面还是否有要上传的。
             tr.on( 'destroy', function() {
                 var idx = $.inArray( tr, pool );
 
                 me.remaning--;
                 pool.splice( idx, 1 );
 
-                block.transport =  null;
+                delete block.transport;
                 Base.nextTick( tick );
             });
+
+            // 广播上传进度。以文件为单位。
             tr.on( 'progress', function( percentage ) {
                 var totalPercent = 0,
                     uploaded = 0;
@@ -318,6 +312,7 @@ define([
                 owner.trigger( 'uploadProgress', file, totalPercent || 0 );
             });
 
+            // 尝试重试，然后广播文件上传出错。
             tr.on( 'error', function( type ) {
                 block.retried = block.retried || 0;
 
@@ -329,19 +324,16 @@ define([
                     tr.send();
 
                 } else {
-
-                    if ( file.getStatus() === Status.PROGRESS ) {
-                        file.setStatus( Status.ERROR, type );
-                    }
-
+                    file.setStatus( Status.ERROR, type );
                     owner.trigger( 'uploadError', file, type );
-                    cancelAll();
+                    owner.trigger( 'uploadComplete', file );
                 }
             });
 
+            // 上传成功
             tr.on( 'load', function() {
                 var ret = tr.getResponseAsJson(),
-                    headers = tr.getResponseHeader(),
+                    hd = tr.getResponseHeader(),
                     reject, fn;
 
                 ret._raw = tr.getResponse();
@@ -349,35 +341,28 @@ define([
                     reject = value;
                 };
 
-                if ( !owner.trigger( 'uploadAccept', block, ret, headers,
-                        fn ) ) {
-
+                // 服务端响应了，不代表成功了，询问是否响应正确。
+                if ( !owner.trigger( 'uploadAccept', block, ret, hd, fn ) ) {
                     reject = reject || 'server';
                 }
 
+                // 如果非预期，转向上传出错。
                 if ( reject ) {
                     tr.trigger( 'error', reject );
+                    return;
+                }
+
+                owner.trigger( 'uploadSuccess', file, ret, hd );
+                file.remaning--;
+
+                if ( file.remaning ) {
+                    tr.destroy()
                 } else {
-                    owner.trigger( 'uploadSuccess', file, ret, headers );
-                    file.remaning--;
 
-                    file.remaning || owner
-                            .request( 'after-send-file', [ file, ret,
-                                    headers ], function() {
-
-                                file.setStatus( Status.COMPLETE );
-                                owner.trigger( 'uploadComplete', file );
-
-                            })
-                            .fail(function( reason ) {
-                                if ( file.getStatus() === Status.PROGRESS ) {
-                                    file.setStatus( Status.ERROR, reason );
-                                }
-                                owner.trigger( 'uploadError', file, reason );
-                                cancelAll();
-                            });
-
-                    tr.destroy();
+                    // 全部上传完成。
+                    me._finishFile( file, ret, hd ).always(function() {
+                        owner.trigger( 'uploadComplete', file );
+                    });
                 }
             });
 
@@ -390,10 +375,16 @@ define([
             block.transport = tr;
             me.remaning++;
 
+            // 如果没有分片，则直接使用原始的。
+            // 不会丢失content-type信息。
+            block.blob = block.chunks === 1 ? file.source :
+                    file.source.slice( block.start, block.end );
+
             me.request( 'before-send', block, function() {
                 var data = {},
                     headers = {};
 
+                // 配置默认的上传字段。
                 data = $.extend( data, {
                     id: file.id,
                     name: file.name,
@@ -408,13 +399,31 @@ define([
                 });
 
                 // 在发送之间可以添加字段什么的。。。
+                // 如果默认的字段不够使用，可以通过监听此事件来扩展
                 owner.trigger( 'uploadBeforeSend', block, data, headers );
+
+                // 开始发送。
                 tr.appendBlob( opts.fileVal, block.blob, file.name );
                 tr.append( data );
                 tr.setRequestHeader( headers );
-
                 tr.send();
             });
+        },
+
+        _finishFile: function( file, ret, headers ) {
+            var owner = this.owner;
+
+            return owner
+                    .request( 'after-send-file', arguments, function() {
+                        file.setStatus( Status.COMPLETE );
+                        owner.trigger( 'uploadComplete', file );
+                    })
+                    .fail(function( reason ) {
+                        if ( file.getStatus() === Status.PROGRESS ) {
+                            file.setStatus( Status.ERROR, reason );
+                        }
+                        owner.trigger( 'uploadError', file, reason );
+                    });
         }
 
     });
