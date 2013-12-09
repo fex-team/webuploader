@@ -117,6 +117,14 @@ define([
                     this.metas.exif.get('Orientation') || 1;
         },
 
+        getDimension: function() {
+            var img = this._img;
+            return {
+                width: img.width,
+                height: img.height
+            };
+        },
+
         getMetas: function() {
             return this.metas;
         },
