@@ -6,6 +6,7 @@ define([
 ], function( Base ) {
     var $ = Base.$,
         slice = [].slice,
+        separator = /\s+/,
         protos;
 
     // 根据条件过滤出事件handlers.
@@ -26,6 +27,14 @@ define([
         //             handler.cb._cb === callback) &&
         //             (!context || handler.ctx === context);
         // });
+    }
+
+    function eachEvent( events, callback, iterator ) {
+
+        // 不支持对象，只支持多个event用空格隔开
+        (events || '').split( separator ).forEach(function( type ) {
+            iterator( type, callback );
+        });
     }
 
     function triggerHanders( events, args ) {
@@ -69,14 +78,16 @@ define([
 
             set = this._events || (this._events = []);
 
-            handler = { e: name };
+            eachEvent( name, callback, function( name, callback ) {
+                var handler = { e: name };
 
-            handler.cb = callback;
-            handler.ctx = context;
-            handler.ctx2 = context || me;
-            handler.id = set.length;
+                handler.cb = callback;
+                handler.ctx = context;
+                handler.ctx2 = context || me;
+                handler.id = set.length;
 
-            set.push( handler );
+                set.push( handler );
+            });
 
             return this;
         },
@@ -99,13 +110,15 @@ define([
                 return me;
             }
 
-            once = function() {
-                me.off( name, once );
-                return callback.apply( context || me, arguments );
-            };
+            eachEvent( name, callback, function( name, callback ) {
+                var once = function() {
+                        me.off( name, once );
+                        return callback.apply( context || me, arguments );
+                    };
 
-            once._cb = callback;
-            me.on( name, once, context );
+                once._cb = callback;
+                me.on( name, once, context );
+            });
 
             return me;
         },
@@ -120,20 +133,22 @@ define([
          * @return {self} 返回自身，方便链式
          * @chainable
          */
-        off: function( name, callback, ctx ) {
+        off: function( name, cb, ctx ) {
             var events = this._events;
 
             if ( !events ) {
                 return this;
             }
 
-            if ( !name && !callback && !ctx ) {
+            if ( !name && !cb && !ctx ) {
                 this._events = [];
                 return this;
             }
 
-            $.each( findHandlers( events, name, callback, ctx ), function() {
-                delete events[ this.id ];
+            eachEvent( name, cb, function( name, cb ) {
+                $.each( findHandlers( events, name, cb, ctx ), function() {
+                    delete events[ this.id ];
+                });
             });
 
             return this;
