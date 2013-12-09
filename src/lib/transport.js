@@ -10,6 +10,8 @@ define([
     var $ = Base.$;
 
     function Transport( opts ) {
+        var me = this;
+
         this.options = $.extend( true, {}, Transport.options, opts || {} );
         RuntimeClient.call( this, 'Transport' );
 
@@ -18,6 +20,9 @@ define([
         this._headers = opts.headers || {};
 
         this.on( 'progress', this._timeout );
+        this.on( 'load error', function() {
+            clearTimeout( me._timer );
+        });
     }
 
     Transport.options = {
