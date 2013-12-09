@@ -119,4 +119,6 @@ define([
             return buf1.buffer;
         }
     };
+
+    return api;
 });
