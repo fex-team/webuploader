@@ -22,7 +22,8 @@ define([
     }
 
     DragAndDrop.options = {
-        accept: null
+        accept: null,
+        disableGlobalDnd: true
     };
 
     Base.inherits( RuntimeClent, {
