@@ -36,6 +36,8 @@ module.exports = function(grunt) {
                     'widgets/filepicker.js',
                     '**/*.js',
 
+                    '!runtime/html5/**/*.js',
+
 
                     '!exports.js',
                     'exports.js'
@@ -45,87 +47,87 @@ module.exports = function(grunt) {
                 dest: 'dist/webuploader.js'
             },
 
-            xiangce: {
-                options: {
-                    banner: '/* WebUploader <%= pkg.version %> */\n(function( window, undefined ) {\n',
-                    footer: '\n})( this );\nexports = this.WebUploader;',
-                },
+            // xiangce: {
+            //     options: {
+            //         banner: '/* WebUploader <%= pkg.version %> */\n(function( window, undefined ) {\n',
+            //         footer: '\n})( this );\nexports = this.WebUploader;',
+            //     },
 
-                cwd: 'src',
+            //     cwd: 'src',
 
-                src: [
-                    // 把剩余的打包进来。
-                    'widgets/filepicker.js',
-                    '**/*.js',
+            //     src: [
+            //         // 把剩余的打包进来。
+            //         'widgets/filepicker.js',
+            //         '**/*.js',
 
-                    '!exports.js',
-                    'exports.js'
-                ],
-
-
-                dest: '/Users/liaoxuezhi/www/xiangcefis/xiangce/static/picture/ui/webuploader/webuploader.js'
-            },
-
-            music: {
-                cwd: 'src',
-
-                src: [
-                    'amd.js',
-                    'base.js',
-
-                    // 把剩余的打包进来。
-                    'widgets/filepicker.js',
-                    'widgets/filednd.js',
-                    'widgets/queue.js',
-                    'widgets/runtime.js',
-                    'widgets/upload.js',
-
-                    'runtime/html5/blob.js',
-                    'runtime/html5/transport.js',
-                    'runtime/html5/filepicker.js',
-                    'runtime/html5/dnd.js',
-
-                    '!exports.js',
-                    'exports.js'
-                ],
-
-                dest: 'examples/music/webuploader.js'
-            },
-
-            wenku: {
-                options: {
-                    banner: '/* WebUploader <%= pkg.version %> */\n(function( window, undefined ) {\n',
-                    footer: '\n})( this );exports = WebUploader;'
-                },
-
-                cwd: 'src',
-
-                src: [
-                    'amd.js',
-                    // 'jq-bridge.js',
-                    'base.js',
-                    // 'promise.js',
-
-                    // 把剩余的打包进来。
-                    'widgets/filepicker.js',
-                    'widgets/filednd.js',
-                    'widgets/queue.js',
-                    'widgets/runtime.js',
-                    'widgets/upload.js',
-
-                    'runtime/html5/blob.js',
-                    'runtime/html5/transport.js',
-                    'runtime/html5/filepicker.js',
-                    'runtime/html5/dnd.js',
+            //         '!exports.js',
+            //         'exports.js'
+            //     ],
 
 
-                    '!exports.js',
-                    'exports.js'
-                ],
+            //     dest: 'dist/webuploader.js'
+            // },
+
+            // music: {
+            //     cwd: 'src',
+
+            //     src: [
+            //         'amd.js',
+            //         'base.js',
+
+            //         // 把剩余的打包进来。
+            //         'widgets/filepicker.js',
+            //         'widgets/filednd.js',
+            //         'widgets/queue.js',
+            //         'widgets/runtime.js',
+            //         'widgets/upload.js',
+
+            //         'runtime/html5/blob.js',
+            //         'runtime/html5/transport.js',
+            //         'runtime/html5/filepicker.js',
+            //         'runtime/html5/dnd.js',
+
+            //         '!exports.js',
+            //         'exports.js'
+            //     ],
+
+            //     dest: 'examples/music/webuploader.js'
+            // },
+
+            // wenku: {
+            //     options: {
+            //         banner: '/* WebUploader <%= pkg.version %> */\n(function( window, undefined ) {\n',
+            //         footer: '\n})( this );exports = WebUploader;'
+            //     },
+
+            //     cwd: 'src',
+
+            //     src: [
+            //         'amd.js',
+            //         // 'jq-bridge.js',
+            //         'base.js',
+            //         // 'promise.js',
+
+            //         // 把剩余的打包进来。
+            //         'widgets/filepicker.js',
+            //         'widgets/filednd.js',
+            //         'widgets/queue.js',
+            //         'widgets/runtime.js',
+            //         'widgets/upload.js',
+
+            //         'runtime/html5/blob.js',
+            //         'runtime/html5/transport.js',
+            //         'runtime/html5/filepicker.js',
+            //         'runtime/html5/dnd.js',
 
 
-                dest: '/Users/liaoxuezhi/www/wenku/common/static/common/ui/js_core/upload/webuploader.js'
-            }
+            //         '!exports.js',
+            //         'exports.js'
+            //     ],
+
+
+            //     dest: '/Users/liaoxuezhi/www/wenku/common/static/common/ui/js_core/upload/webuploader.js'
+            // }
 
 
         },
@@ -142,7 +144,7 @@ module.exports = function(grunt) {
 
             debug: {
                 files: ['src/**/*.js', 'Gruntfile.js'],
-                tasks: ['concat:all'],
+                tasks: [ 'concat:all'],
             },
 
             dev: {
