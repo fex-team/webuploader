@@ -30,6 +30,7 @@ define([
         retry: 'retry',
         isInProgress: 'is-in-progress',
         makeThumb: 'make-thumb',
+        getDimension: 'get-dimension',
         addButton: 'add-btn',
         getRuntimeType: 'get-runtime-type',
         refresh: 'refresh',

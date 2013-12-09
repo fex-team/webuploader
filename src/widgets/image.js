@@ -20,9 +20,14 @@ define([
     });
 
     return Uploader.register({
+        'get-dimension': 'getDimension',
         'make-thumb': 'makeThumb',
         'before-send-file': 'resizeImage'
     }, {
+
+        getDimension: function( file ) {
+            return file.info || {};
+        },
 
         makeThumb: function( file, cb, width, height ) {
             var previewer;
@@ -38,6 +43,11 @@ define([
             previewer = new ImagePreivew({
                 allowMagnify: true,
                 crop: true
+            });
+
+            previewer.once( 'load', function() {
+                var dimension = this.getDimension();
+                file.info = dimension;
             });
 
             previewer.once( 'complete', function() {
