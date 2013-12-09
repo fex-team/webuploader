@@ -32,6 +32,10 @@ define([
             });
         },
 
+        getDimension: function() {
+            return this.exec('getDimension');
+        },
+
         getAsDataURL: function( type ) {
             return this.exec( 'getAsDataURL', type );
         },
