@@ -2,7 +2,7 @@
  * @fileOverview Uploader上传类
  */
 define([
-    '../base',
+    '/base',
     'mediator'
 ], function( Base, Mediator ) {
 
@@ -24,9 +24,10 @@ define([
         stop: 'stop-upload',
         getFile: 'get-file',
         getFiles: 'get-files',
-        addFile: 'add-file',
-        addFiles: 'add-file',
+        // addFile: 'add-file',
+        // addFiles: 'add-file',
         removeFile: 'remove-file',
+        skipFile: 'skip-file',
         retry: 'retry',
         isInProgress: 'is-in-progress',
         makeThumb: 'make-thumb',
@@ -57,13 +58,17 @@ define([
         // @todo trigger change event.
         option: function( key, val ) {
             var opts = this.options;
-            if ( arguments.length > 1 ) {    // setter
+
+            // setter
+            if ( arguments.length > 1 ) {
+
                 if ( $.isPlainObject( val ) &&
                         $.isPlainObject( opts[ key ] ) ) {
                     $.extend( opts[ key ], val );
                 } else {
                     opts[ key ] = val;
                 }
+
             } else {    // getter
                 return key ? opts[ key ] : opts;
             }
