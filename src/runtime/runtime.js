@@ -64,7 +64,7 @@ define([
     };
 
     Runtime.hasRuntime = function( type ) {
-        return !!factories[ type ];
+        return !!(type ? factories[ type ] : getFirstKey( factories ));
     };
 
     Runtime.create = function( opts, orders ) {
