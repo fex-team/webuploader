@@ -125,7 +125,7 @@ module.exports = function(grunt) {
                 ],
 
 
-                dest: '/Users/liaoxuezhi/www/wenku/common/static/common/ui/js_core/upload/webuploader.js'
+                dest: '/Users/liaoxuezhi/www/wenku/core/widget/core/upload/js/html5uploader/webuploader.js'
             }
 
 
