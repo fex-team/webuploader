@@ -49,7 +49,7 @@ define([
             return false;
         },
 
-        _dragLeaveHandler: function( e ) {
+        _dragLeaveHandler: function() {
             this.elem.removeClass('webuploader-dnd-over');
             return false;
         },
