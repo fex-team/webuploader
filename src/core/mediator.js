@@ -70,7 +70,7 @@ define([
          */
         on: function( name, callback, context ) {
             var me = this,
-                handler, set;
+                set;
 
             if ( !callback ) {
                 return this;
@@ -103,8 +103,7 @@ define([
          * @chainable
          */
         once: function( name, callback, context ) {
-            var me = this,
-                once;
+            var me = this;
 
             if ( !callback ) {
                 return me;

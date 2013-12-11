@@ -15,7 +15,7 @@ define([
         opts.container = $( opts.container );
 
         if ( !opts.container.length ) {
-            throw new Error('容器没有找到');
+            return;
         }
 
         RuntimeClent.call( this, 'DragAndDrop' );
