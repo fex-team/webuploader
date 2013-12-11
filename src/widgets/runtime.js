@@ -7,6 +7,10 @@ define([
     'widget'
 ], function( Uploader, Runtime ) {
 
+    Uploader.support = function() {
+        return Runtime.hasRuntime.apply( Runtime, arguments );
+    };
+
     return Uploader.register({
         'get-runtime-type': 'getRuntmeType'
     }, {

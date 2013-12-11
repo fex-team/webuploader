@@ -82,6 +82,7 @@ define([
         },
 
         abort: function() {
+            clearTimeout( this._timer );
             return this.exec('abort');
         },
 
