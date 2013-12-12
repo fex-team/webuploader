@@ -145,12 +145,10 @@ define([
 
             me.runing = false;
 
-            if ( interrupt ) {
-                $.each( me.pool, function( _, v ) {
-                    v.transport && v.transport.abort();
-                    v.file.setStatus( Status.INTERRUPT );
-                });
-            }
+            interrupt && $.each( me.pool, function( _, v ) {
+                v.transport && v.transport.abort();
+                v.file.setStatus( Status.INTERRUPT );
+            });
 
             me.owner.trigger('stopUpload');
         },
@@ -197,9 +195,11 @@ define([
             if ( me.pool.length < opts.threads && (val = me._nextBlock()) ) {
                 me._trigged = false;
 
-                fn = function( value ) {
+                fn = function( val ) {
                     me._promise = null;
-                    value && me._startSend( value );
+
+                    // 有可能是reject过来的，所以要检测val的类型。
+                    val && val.file && me._startSend( val );
                     Base.nextTick( me.__tick );
                 };
 
@@ -282,6 +282,13 @@ define([
                     var idx = $.inArray( promise, pending );
 
                     ~idx && pending.splice( idx, 1, file );
+                });
+
+                // befeore-send-file的钩子就有错误发生。
+                promise.fail( function( reason ) {
+                    file.setStatus( Status.ERROR, reason );
+                    me.owner.trigger( 'uploadError', file, type );
+                    me.owner.trigger( 'uploadComplete', file );
                 });
 
                 pending.push( promise );
