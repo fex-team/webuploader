@@ -49,7 +49,7 @@ define([
         _addFile: function( file ) {
             var me = this;
 
-            if ( !file || file.size < 6 || !me.accept.test( file.type ) ) {
+            if ( !file || file.size < 6 || !me.accept.test( file.name ) ) {
                 return;
             }
 

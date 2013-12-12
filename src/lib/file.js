@@ -22,6 +22,7 @@ define([
             }
         }
 
+        this.ext = ext;
         this.lastModifiedDate = file.lastModifiedDate ||
                 (new Date()).toLocaleString();
     }
