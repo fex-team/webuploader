@@ -2,8 +2,8 @@
  * @fileOverview Blob Html实现
  */
 define([
-    'runtime',
-    '/lib/blob'
+    './runtime',
+    'lib/blob'
 ], function( Html5Runtime, Blob ) {
 
     return Html5Runtime.register( 'Blob', {

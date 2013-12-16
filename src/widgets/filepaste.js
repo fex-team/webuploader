@@ -2,10 +2,10 @@
  * @fileOverview 组件基类。
  */
 define([
-    '/base',
-    '/core/uploader',
-    '/lib/filepaste',
-    'widget'
+    'base',
+    'core/uploader',
+    'lib/filepaste',
+    './widget'
 ], function( Base, Uploader, FilePaste ) {
 
     return Uploader.register({

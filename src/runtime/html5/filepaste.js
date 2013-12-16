@@ -2,8 +2,8 @@
  * @fileOverview FilePaste
  */
 define([
-    '/base',
-    'runtime'
+    'base',
+    './runtime'
 ], function( Base, Html5Runtime ) {
 
     return Html5Runtime.register( 'FilePaste', {

@@ -2,9 +2,9 @@
  * @fileOverview Image
  */
 define([
-    'runtime',
-    'util',
-    'imagemeta'
+    './runtime',
+    './util',
+    './imagemeta'
 ], function( Html5Runtime, Util, ImageMeta ) {
 
     var BLANK = 'data:image/gif;base64,R0lGODlhAQABAAD/ACwAAAAAAQABAAACADs%3D';
