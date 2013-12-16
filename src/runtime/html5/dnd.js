@@ -2,9 +2,9 @@
  * @fileOverview FilePaste
  */
 define([
-    '/base',
-    'runtime',
-    '/lib/file'
+    'base',
+    './runtime',
+    'lib/file'
 ], function( Base, Html5Runtime, File ) {
 
     var $ = Base.$;

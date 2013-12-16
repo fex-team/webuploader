@@ -19,6 +19,7 @@
     "grunt": "~0.4.1",
     "grunt-size": "~0.1.0",
     "grunt-jsbint": "~0.0.4",
-    "grunt-contrib-watch": "~0.4.4"
+    "grunt-contrib-watch": "~0.4.4",
+    "gmudoc": "~0.0.2"
   }
 }
