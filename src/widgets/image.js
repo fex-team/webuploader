@@ -2,11 +2,11 @@
  * @fileOverview 图片操作, 负责预览图片和上传前压缩图片
  */
 define([
-    '/base',
-    '/core/uploader',
-    '/lib/imagecompress',
-    '/lib/imagepreview',
-    'widget'
+    'base',
+    'core/uploader',
+    'lib/imagecompress',
+    'lib/imagepreview',
+    './widget'
 ], function( Base, Uploader, ImageCompress, ImagePreivew ) {
 
     var $ = Base.$;

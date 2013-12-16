@@ -31,7 +31,8 @@ module.exports = function(grunt) {
         return src.replace(re, '');
     }
 
-    var amdefinejs = path.join(__dirname, '../amdefine.js');
+    var intro = path.join(__dirname, '../intro.js');
+    var outro = path.join(__dirname, '../outro.js');
 
     // 排序，把依赖的文件移动到最上面。
     function filesFilter( f, files ) {
@@ -39,7 +40,9 @@ module.exports = function(grunt) {
             ret = [],
             process = function( file ) {
                 var fileinfo = path.join( cwd, file ),
-                    str, matches, depends, idx;
+                    dirpath = path.dirname( fileinfo ),
+                    depends = [],
+                    str, matches, idx;
 
                 if ( !grunt.file.exists( fileinfo ) ) {
                     return;
@@ -49,18 +52,37 @@ module.exports = function(grunt) {
 
                 str = grunt.file.read( fileinfo );
 
-                matches = str.match(/(define|require)\(\[([^\]]+)\],/);
-                if ( matches ) {
-                    matches = matches[ 2 ].replace(/\s/g, '').split(',');
-                    depends = matches.map(function( item ) {
+                // 从require( dps )中找
+                // 从defind( id?, dps, factory )中找
+                str = str.replace( /(?:define|require)\s*\(\s*\[([^\]]+?)\],/g, function( _, m1 ) {
+                    m1 = m1.replace(/\s/g, '').split(',');
+                    depends = depends.concat( m1.map(function( item ) {
                         item = item.substring( 1, item.length - 1 );
-                        item = item.substring(0, 1) === '/' ?
-                            path.join( cwd, item.substring( 1 ) ) :
-                            path.join( path.dirname( fileinfo ), item );
+                        item = item.substring(0, 1) === '.' ?
+                                path.join( dirpath, item ):
+                                path.join( cwd, item );
 
                         return path.relative( cwd, item ) + '.js';
-                    }).filter(function( item ) {
-                        return grunt.file.exists( path.join( cwd, item ) );
+                    }) );
+
+                    return _;
+                });
+
+                str = str.replace( /require\s*\(\s*('|")(.+?)\1/g, function( _, m1, item ) {
+
+
+                    item = item.substring(0, 1) === '.' ?
+                            path.join( dirpath, item ):
+                            path.join( cwd, item );
+
+                    depends.push( path.relative( cwd, item ) + '.js' );
+
+                    return _;
+                });
+
+                if ( depends.length ) {
+                    depends = depends.filter(function( item, idx, array ) {
+                        return array.indexOf( item ) === idx && grunt.file.exists( path.join( cwd, item ) );
                     });
 
                     idx = ret.indexOf( file );
@@ -75,7 +97,8 @@ module.exports = function(grunt) {
         });
 
 
-        ret.unshift( path.relative( cwd, amdefinejs ) );
+        ret.unshift( path.relative( cwd, intro ) );
+        ret.push( path.relative( cwd, outro ) );
         return ret;
     }
 
@@ -90,14 +113,16 @@ module.exports = function(grunt) {
         src = src.replace( /@version@/g, version );
         // console.log( filepath, cwd );
 
-        src = src.replace( /(define|require)\((?:\[([^\]]+)\],)?/, function( _, m1, m2 ) {
+        // 处理 define( dps ?, factory );
+        // 处理 require( dps );
+        src = src.replace( /(define|require)\s*\((?:\s*\[([^\]]+)\],)?/g, function( _, m1, m2 ) {
             var str = m1 + '(',
                 item;
 
             if ( m1 === 'define' ) {
                 item = path.relative( cwd, filepath );
                 item = item.substring( 0, item.length - 3 );
-                str += ' \'' + item.replace(/\\/g, '/').toLowerCase() + '\', ';
+                str += ' \'' + item.replace(/\\/g, '/') + '\', ';
             }
 
             if ( m2 ) {
@@ -106,9 +131,9 @@ module.exports = function(grunt) {
                 m2 = m2.map(function( item ) {
                     var _file = item;
                     _file = _file.substring( 1, _file.length - 1 );
-                    _file = _file.substring(0, 1) === '/' ?
-                        path.join( cwd, _file.substring( 1 ) ) :
-                        path.join( dirpath, _file );
+                    _file = _file.substring(0, 1) === '.' ?
+                        path.join( dirpath, _file ) :
+                        path.join( cwd, _file.substring( 1 ) );
 
                     if ( !grunt.file.exists( _file + '.js' ) ) {
                         return item;
@@ -127,6 +152,22 @@ module.exports = function(grunt) {
 
             // console.log( str );
             return str;
+        });
+
+        // 处理 require( id );
+        src = src.replace( /require\s*\(\s*('|")(.+?)\1\s*\)/g, function( _, m1, m2 ) {
+            var _file = m2;
+
+            _file = _file.substring(0, 1) === '.' ?
+                path.join( dirpath, _file ) :
+                path.join( cwd, _file.substring( 1 ) );
+
+            if ( !grunt.file.exists( _file + '.js' ) ) {
+                return _;
+            }
+
+            _file = path.relative( cwd, _file );
+            return 'require(\'' + _file + '\')';
         });
 
         return src;
