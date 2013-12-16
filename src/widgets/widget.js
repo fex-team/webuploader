@@ -2,8 +2,8 @@
  * @fileOverview 组件基类。
  */
 define([
-    '/base',
-    '/core/uploader'
+    'base',
+    'core/uploader'
 ], function( Base, Uploader ) {
 
     var $ = Base.$,

@@ -2,9 +2,9 @@
  * @fileOverview Runtime管理器，负责Runtime的选择, 连接
  */
 define([
-    '/base',
-    '/core/mediator',
-    'runtime'
+    'base',
+    'core/mediator',
+    './runtime'
 ], function( Base, Mediator, Runtime ) {
 
     var cache = (function() {
