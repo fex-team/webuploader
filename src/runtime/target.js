@@ -2,8 +2,8 @@
  * @fileOverview 可能不需要此功能。
  */
 define([
-    '/base',
-    'client'
+    'base',
+    './client'
 ], function( Base, RuntimeClient ) {
 
     function RuntimeTarget() {

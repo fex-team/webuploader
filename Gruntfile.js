@@ -36,11 +36,8 @@ module.exports = function(grunt) {
                     'widgets/filepicker.js',
                     '**/*.js',
 
-                    '!runtime/flash/**/*.js',
+                    '!runtime/flash/**/*.js'
 
-
-                    '!exports.js',
-                    'exports.js'
                 ],
 
 
@@ -154,6 +151,11 @@ module.exports = function(grunt) {
             concat: {
                 files: ['src/**/*.js', 'Gruntfile.js'],
                 tasks: ['concat:wenku'],
+            },
+
+            doc: {
+                files: ['src/**/*.js', 'Gruntfile.js'],
+                tasks: ['doc'],
             }
         },
 
@@ -173,6 +175,16 @@ module.exports = function(grunt) {
 
             src: {
                 src: 'src/**/*.js'
+            }
+        },
+
+        doc: {
+            options: {
+                cwd: './src/',
+                files: [ '**/*.js'],
+                theme: 'gmu',
+                outputDir: './doc',
+                title: 'WebUploader API文档'
             }
         }
     });
