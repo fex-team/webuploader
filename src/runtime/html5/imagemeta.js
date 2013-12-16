@@ -5,7 +5,7 @@
  * @fileOverview Image控件
  */
 define([
-    'util'
+    './util'
 ], function( Util ) {
 
     var api;

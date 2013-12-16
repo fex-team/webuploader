@@ -4,7 +4,7 @@
 define([
     '../base',
     '../runtime/client',
-    'blob'
+    './blob'
 ], function( Base, RuntimeClient, Blob ) {
 
     var $ = Base.$;

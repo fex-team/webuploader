@@ -3,8 +3,8 @@
  */
 define([
     '../base',
-    'mediator',
-    'file'
+    './mediator',
+    './file'
 ], function( Base, Mediator, WUFile ) {
 
     var $ = Base.$,

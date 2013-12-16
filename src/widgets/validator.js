@@ -3,10 +3,10 @@
  */
 
 define([
-    '/base',
-    '/core/uploader',
-    '/core/file',
-    'widget'
+    'base',
+    'core/uploader',
+    'core/file',
+    './widget'
 ], function( Base, Uploader, WUFile ) {
 
     var $ = Base.$,

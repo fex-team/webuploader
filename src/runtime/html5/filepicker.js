@@ -2,8 +2,8 @@
  * @fileOverview FilePicker
  */
 define([
-    '/base',
-    'runtime'
+    'base',
+    './runtime'
 ], function( Base, Html5Runtime ) {
 
     var $ = Base.$;
