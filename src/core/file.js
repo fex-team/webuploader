@@ -3,7 +3,7 @@
  */
 define([
     '../base',
-    'mediator'
+    './mediator'
 ], function( Base, Mediator ) {
 
     var $ = Base.$,

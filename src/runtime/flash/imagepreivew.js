@@ -2,7 +2,7 @@
  * @fileOverview 图片预览，输入为Blob, 输出为Base64
  */
 define([
-    'runtime'
+    './runtime'
 ], function( FlashRuntime ) {
 
     return FlashRuntime.register( 'ImagePreview', {

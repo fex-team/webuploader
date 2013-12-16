@@ -2,7 +2,7 @@
  * @fileOverview FlashRuntime
  */
 define([
-    '/base',
+    'base',
     '../runtime',
     '../compbase'
 ], function( Base, Runtime, CompBase ) {

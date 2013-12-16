@@ -3,7 +3,7 @@
  */
 define([
     '/base',
-    'runtime',
+    './runtime',
     '../target'
 ], function( Base, FlashRuntime, RuntimeTarget, Encode ) {
 

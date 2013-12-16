@@ -2,10 +2,10 @@
  * @fileOverview 文件选择相关
  */
 define([
-    '/base',
-    '/core/uploader',
-    '/lib/filepicker',
-    'widget'
+    'base',
+    'core/uploader',
+    'lib/filepicker',
+    './widget'
 ], function( Base, Uploader, FilePicker ) {
 
     Base.$.extend( Uploader.options, {
