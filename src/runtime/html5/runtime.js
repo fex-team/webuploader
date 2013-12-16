@@ -2,7 +2,7 @@
  * @fileOverview Html5Runtime
  */
 define([
-    '/base',
+    'base',
     '../runtime',
     '../compbase'
 ], function( Base, Runtime, CompBase ) {

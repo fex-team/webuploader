@@ -2,7 +2,7 @@
  * @fileOverview 图片压缩
  */
 define([
-    'runtime'
+    './runtime'
 ], function( FlashRuntime ) {
 
     return FlashRuntime.register( 'ImageCompress', {

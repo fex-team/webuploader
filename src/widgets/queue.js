@@ -2,11 +2,11 @@
  * @fileOverview 队列
  */
 define([
-    '/base',
-    '/core/uploader',
-    '/core/queue',
-    '/core/file',
-    'widget'
+    'base',
+    'core/uploader',
+    'core/queue',
+    'core/file',
+    './widget'
 ], function( Base, Uploader, Queue, WUFile ) {
 
     var $ = Base.$,
