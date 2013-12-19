@@ -2,7 +2,7 @@
  * @fileOverview 添加获取Runtime相关信息的方法。
  */
 define([
-    'core/uploader',
+    'uploader',
     'runtime/runtime',
     './widget'
 ], function( Uploader, Runtime ) {

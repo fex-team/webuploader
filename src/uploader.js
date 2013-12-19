@@ -2,7 +2,7 @@
  * @fileOverview Uploader上传类
  */
 define([
-    '../base',
+    './base',
     './mediator'
 ], function( Base, Mediator ) {
 

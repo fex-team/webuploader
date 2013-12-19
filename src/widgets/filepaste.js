@@ -3,7 +3,7 @@
  */
 define([
     'base',
-    'core/uploader',
+    'uploader',
     'lib/filepaste',
     './widget'
 ], function( Base, Uploader, FilePaste ) {
