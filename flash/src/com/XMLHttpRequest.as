@@ -1,9 +1,11 @@
 package com
 {
+	import com.adobe.serialization.json.JSON;
 	import com.errors.RuntimeError;
 	import com.events.OErrorEvent;
 	import com.events.OProgressEvent;
 	import com.utils.URLStreamProgress;
+	import com.utils.Utils;
 	
 	import flash.events.DataEvent;
 	import flash.events.Event;
@@ -20,7 +22,6 @@ package com
 	import flash.utils.ByteArray;
 	import flash.utils.clearTimeout;
 	import flash.utils.setTimeout;
-	import com.utils.Utils;
 
 	
 	public class XMLHttpRequest extends EventDispatcher
@@ -126,7 +127,7 @@ package com
 			}
 						
 			if (blob && _options.method == 'POST') {
-				if (_options.transport == 'client' && _multipart && blob.isFileRef() && Utils.isEmptyObj(_headers)) {
+				if (_multipart && blob.isFileRef() && Utils.isEmptyObj(_headers)) {
 					_uploadFileRef(blob);
 				} else {
 					_preloadBlob(blob, _doURLStreamRequest);
@@ -157,6 +158,12 @@ package com
 			return _response.readUTFBytes(_response.length);
 		}
 		
+		public function getResponseAsJson() : Object
+		{
+			
+			return com.adobe.serialization.json.JSON.decode( getResponse() );
+		}
+		
 		
 		public function getStatus() : int
 		{		
@@ -172,7 +179,7 @@ package com
 			if (_conn is FileReference) {
 				_conn.cancel();
 			} else if (_conn is URLStream && _conn.connected) {
-				_conn.close();			
+				_conn.close();
 			}
 			
 			removeEventListeners(_conn);	
@@ -288,7 +295,7 @@ package com
 		
 		
 		private function _preloadBlob(blob:*, callback:Function) : void
-		{					
+		{
 			var fr:FileReader = new FileReader;
 			
 			fr.addEventListener(Event.OPEN, function(e:Event) : void {
@@ -367,7 +374,14 @@ package com
 			if (ba) { 
 				progress = new URLStreamProgress({ url: _options.url });
 				
-				progress.addEventListener(ProgressEvent.PROGRESS, onUploadProgress);
+				progress.addEventListener(ProgressEvent.PROGRESS, function( e:ProgressEvent ):void{
+					if ( _readyState == XMLHttpRequest.ABORTED ) {
+						progress.stop();
+						progress.removeAllEventsListeners();
+					} else {
+						onUploadProgress(e);
+					}
+				});
 				
 				progress.addEventListener(Event.OPEN, function() : void {
 					start = new Date;
@@ -383,7 +397,8 @@ package com
 					URLStreamProgress.calculateSpeed(request.data.length, end.time - start.time);
 										
 					onComplete(e);
-				});		
+				});
+				
 				
 				progress.start(request.data.length);
 			}	

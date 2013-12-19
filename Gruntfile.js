@@ -36,7 +36,7 @@ module.exports = function(grunt) {
                     'widgets/filepicker.js',
                     '**/*.js',
 
-                    '!runtime/flash/**/*.js'
+                    // '!runtime/flash/**/*.js'
 
                 ],
 
