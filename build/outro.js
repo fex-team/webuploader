@@ -1,28 +1,37 @@
 /**
  * @file 暴露变量给外部使用。
  * 此文件也只有在把webupload合并成一个文件使用的时候才会引入。
+ *
+ * 将所有modules，将路径ids装换成对象。
  */
 (function( modules ) {
-    var exportName = 'WebUploader',
+    var
+        // 让首写字母大写。
+        ucFirst = function( str ) {
+            return str && (str.charAt( 0 ).toUpperCase() + str.substr( 1 ));
+        },
+
+        // 暴露出去的key
+        exportName = 'WebUploader',
         exports = modules.base,
-        key, ns, parts, part, last, origin;
+        key, host, parts, part, last, origin;
 
     for ( key in modules ) {
-        ns = exports;
+        host = exports;
 
         if ( !modules.hasOwnProperty( key ) ) {
             continue;
         }
 
         parts = key.split('/');
-        last = parts.pop();
+        last = ucFirst( parts.pop() );
 
-        while( (part = parts.shift()) ) {
-            ns[ part ] = ns[ part ] || {};
-            ns = ns[ part ];
+        while( (part = ucFirst( parts.shift() )) ) {
+            host[ part ] = host[ part ] || {};
+            host = host[ part ];
         }
 
-        ns[ last ] = modules[ key ];
+        host[ last ] = modules[ key ];
     }
 
     if ( typeof module === 'object' && typeof module.exports === 'object' ) {

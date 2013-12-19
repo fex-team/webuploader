@@ -3,7 +3,7 @@
  */
 define([
     'base',
-    'core/uploader',
+    'uploader',
     'lib/dnd',
     './widget'
 ], function( Base, Uploader, Dnd ) {

@@ -3,7 +3,7 @@
  */
 define([
     'base',
-    'core/uploader'
+    'uploader'
 ], function( Base, Uploader ) {
 
     var $ = Base.$,
@@ -139,7 +139,7 @@ define([
      *         'make-thumb': 'makeThumb'
      *     } );
      */
-    Uploader.register = function( responseMap, widgetProto ) {
+    Uploader.register = Widget.register = function( responseMap, widgetProto ) {
         var map = { init: 'init' },
             klass;
 

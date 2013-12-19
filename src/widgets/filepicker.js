@@ -3,7 +3,7 @@
  */
 define([
     'base',
-    'core/uploader',
+    'uploader',
     'lib/filepicker',
     './widget'
 ], function( Base, Uploader, FilePicker ) {
