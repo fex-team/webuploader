@@ -3,9 +3,9 @@
  */
 define([
     'base',
-    'core/uploader',
-    'core/queue',
-    'core/file',
+    'uploader',
+    'queue',
+    'file',
     './widget'
 ], function( Base, Uploader, Queue, WUFile ) {
 

@@ -2,7 +2,7 @@
  * @fileOverview Promise/A+
  */
 define([
-    'base'
+    './base'
 ], function( Base ) {
 
     var $ = Base.$,
