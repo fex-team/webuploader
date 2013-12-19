@@ -18,22 +18,21 @@ define([
         maxMetaDataSize: 262144,
 
         parse: function( blob, cb ) {
-            var me = this;
+            var me = this,
+                fr = new FileReader();
 
-            Util.getFileReader(function( reader ) {
-                reader.onload = function() {
-                    cb( false, me._parse( this.result ) );
-                    reader = reader.onload = reader.onerror = null;
-                };
+            fr.onload = function() {
+                cb( false, me._parse( this.result ) );
+                fr = fr.onload = fr.onerror = null;
+            };
 
-                reader.onerror = function( e ) {
-                    cb( e.message );
-                    reader = reader.onload = reader.onerror = null;
-                };
+            fr.onerror = function( e ) {
+                cb( e.message );
+                fr = fr.onload = fr.onerror = null;
+            };
 
-                reader.readAsArrayBuffer( blob.slice( 0,
-                        me.maxMetaDataSize ).getSource() );
-            });
+            fr.readAsArrayBuffer( blob.slice( 0,
+                    me.maxMetaDataSize ).getSource() );
         },
 
         _parse: function( buffer, noParse ) {

@@ -4,7 +4,7 @@
 define([
     '../base',
     '../runtime/client',
-    '../core/mediator'
+    '../mediator'
 ], function( Base, RuntimeClient, Mediator ) {
 
     var $ = Base.$;
@@ -12,7 +12,7 @@ define([
     function Transport( opts ) {
         var me = this;
 
-        this.options = $.extend( true, {}, Transport.options, opts || {} );
+        opts = me.options = $.extend( true, {}, Transport.options, opts || {} );
         RuntimeClient.call( this, 'Transport' );
 
         this._blob = null;
@@ -56,7 +56,7 @@ define([
 
             me._blob = blob;
             opts.fileVar = key || opts.fileVar;
-            opts.filename = filename;
+            opts.filename = filename || opts.filename;
         },
 
         // 添加其他字段
@@ -101,8 +101,8 @@ define([
             return this.exec('getResponseAsJson');
         },
 
-        getResponseHeader: function() {
-            return this.exec('getResponseHeader');
+        getStatus: function() {
+            return this.exec('getStatus');
         },
 
         _timeout: function() {
@@ -122,6 +122,7 @@ define([
 
     });
 
+    // 让Transport具备事件功能。
     Mediator.installTo( Transport.prototype );
 
     return Transport;

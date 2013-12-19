@@ -9,6 +9,7 @@ package com.utils
 	import flash.events.ProgressEvent;
 	import flash.events.SecurityErrorEvent;
 	import flash.events.TimerEvent;
+	import flash.external.ExternalInterface;
 	import flash.net.URLRequest;
 	import flash.net.URLRequestHeader;
 	import flash.net.URLRequestMethod;
@@ -35,7 +36,7 @@ package com.utils
 		public function URLStreamProgress(options:Object = null) 
 		{
 			_options = Utils.extend({
-				url: 'moxie' + new Date().getTime(),
+				url: 'webuploader' + new Date().getTime(),
 				size: 307200
 			}, options);	
 		}
@@ -50,7 +51,7 @@ package com.utils
 		public function start(bytesTotal:uint) : void
 		{			
 			var onProgress:Function;
-						
+			
 			if (!URLStreamProgress.speed) {
 				addEventListener(URLStreamProgressEvent.PROBE_COMPLETE, function() : void { 
 					start(bytesTotal); 
@@ -73,7 +74,6 @@ package com.utils
 					dispatchEvent(new Event(Event.COMPLETE));
 				}
 			};
-			
 			_progressTimer = new Timer(URLStreamProgress.rate);
 			_progressTimer.addEventListener(TimerEvent.TIMER, onProgress, false, 0, true);
 			_progressTimer.start();
