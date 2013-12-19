@@ -16,7 +16,6 @@ define([
         init: function() {
             this._status = 0;
             this._response = null;
-            this._responseHeader = null;
         },
 
         send: function() {
@@ -64,10 +63,6 @@ define([
 
         getStatus: function() {
             return this._status;
-        },
-
-        getResponseHeader: function() {
-            return this._responseHeader;
         },
 
         abort: function() {
@@ -119,7 +114,6 @@ define([
                 // 只考虑200的情况
                 if ( xhr.status === 200 ) {
                     me._response = xhr.responseText;
-                    me._responseHeader = me._parseXhrHeaders( xhr );
                     return me.trigger('load');
                 }
 
@@ -137,22 +131,6 @@ define([
             $.each( headers, function( key, val ) {
                 xhr.setRequestHeader( key, val );
             });
-        },
-
-        _parseXhrHeaders: function( xhr ) {
-            var str = xhr.getAllResponseHeaders(),
-                ret = {};
-
-
-            $.each( str.split( /\n/ ), function( i, str ) {
-                var match = /^(.*?): (.*)$/.exec( str );
-
-                if ( match ) {
-                    ret[ match[ 1 ] ] = match[ 2 ];
-                }
-            });
-
-            return ret;
         },
 
         _parseJson: function( str ) {

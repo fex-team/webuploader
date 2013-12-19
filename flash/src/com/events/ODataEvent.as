@@ -4,7 +4,7 @@ package com.events
 	
 	public class ODataEvent extends Event
 	{
-		public static const DATA:String = 'moxiedata';
+		public static const DATA:String = 'webuploaderdata';
 		
 		public var data:*;
 		

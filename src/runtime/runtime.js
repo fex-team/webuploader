@@ -3,11 +3,21 @@
  */
 define([
     'base',
-    'core/mediator'
+    '../mediator'
 ], function( Base, Mediator ) {
 
     var $ = Base.$,
-        factories = {};
+        factories = {},
+
+        // 获取对象的第一个key
+        getFirstKey = function( obj ) {
+            for ( var key in obj ) {
+                if ( obj.hasOwnProperty( key ) ) {
+                    return key;
+                }
+            }
+            return null;
+        };
 
     // 接口类。
     function Runtime( options ) {
@@ -23,8 +33,8 @@ define([
             var opts = this.options,
                 parent, container;
 
-            if ( this.container ) {
-                return this.container;
+            if ( this._container ) {
+                return this._container;
             }
 
             parent = opts.container || $( document.body );
@@ -41,13 +51,20 @@ define([
             });
 
             parent.append( container );
-            this.container = container;
-
+            this._container = container;
             return container;
         },
 
         init: Base.noop,
-        exec: Base.noop
+        exec: Base.noop,
+
+        destroy: function() {
+            if ( this._container ) {
+                this._container.parentNode.removeChild( this.__container );
+            }
+
+            this.off();
+        }
     });
 
     Runtime.orders = 'html5,flash';
@@ -87,19 +104,6 @@ define([
         runtime = new factories[ type ]( opts );
         return runtime;
     };
-
-    // 获取对象的第一个key
-    function getFirstKey( obj ) {
-        var key;
-
-        for ( key in obj ) {
-            if ( obj.hasOwnProperty( key ) ) {
-                return key;
-            }
-        }
-
-        return '';
-    }
 
     Mediator.installTo( Runtime.prototype );
     return Runtime;

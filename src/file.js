@@ -2,7 +2,7 @@
  * @fileOverview 文件属性封装
  */
 define([
-    '../base',
+    './base',
     './mediator'
 ], function( Base, Mediator ) {
 

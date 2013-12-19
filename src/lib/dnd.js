@@ -3,7 +3,7 @@
  */
 define([
     '../base',
-    '../core/mediator',
+    '../mediator',
     '../runtime/client'
 ], function( Base, Mediator, RuntimeClent ) {
 

@@ -2,7 +2,7 @@
  * @fileOverview Mediator
  */
 define([
-    '../base'
+    './base'
 ], function( Base ) {
     var $ = Base.$,
         slice = [].slice,
