@@ -2,7 +2,7 @@
  * @fileOverview 文件队列
  */
 define([
-    '../base',
+    './base',
     './mediator',
     './file'
 ], function( Base, Mediator, WUFile ) {
