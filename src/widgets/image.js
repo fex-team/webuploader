@@ -8,7 +8,32 @@ define([
     './widget'
 ], function( Base, Uploader, Image ) {
 
-    var $ = Base.$;
+    var $ = Base.$,
+        throttle;
+
+    // 根据要处理的文件大小来节流，一次不能处理太多，会卡。
+    throttle = (function( max ) {
+        var occupied = 0,
+            waiting = [],
+            tick = function() {
+                var item;
+
+                while( waiting.length && occupied < max ) {
+                    item = waiting.shift();
+                    occupied += item[ 0 ];
+                    item[ 1 ]();
+                }
+            };
+
+        return function( emiter, size, cb ) {
+            waiting.push( [ size, cb ] );
+            emiter.once( 'destroy', function() {
+                occupied -= size;
+                setTimeout( tick, 1 );
+            } );
+            setTimeout( tick, 1 );
+        }
+    })( 5 * 1024 * 1024 );
 
     $.extend( Uploader.options, {
 
@@ -82,9 +107,11 @@ define([
                 image.destroy();
             });
 
-            file._info && image.info( file._info );
-            file._meta && image.meta( file._meta );
-            image.loadFromBlob( file.source );
+            throttle( image, file.source.size, function() {
+                file._info && image.info( file._info );
+                file._meta && image.meta( file._meta );
+                image.loadFromBlob( file.source );
+            });
         },
 
         compressImage: function( file ) {
