@@ -9,20 +9,27 @@ define([
 
     var BLANK = 'data:image/gif;base64,R0lGODlhAQABAAD/ACwAAAAAAQABAAACADs%3D';
 
-    return Html5Runtime.register( 'ImageCompress', {
+    return Html5Runtime.register( 'Image', {
 
         // flag: 标记是否被修改过。
         modified: false,
 
-        init: function() {
+        init: function( opts ) {
             var me = this,
                 img = new Image();
 
             img.onload = function() {
+
+                me._info = {
+                    type: me.type,
+                    width: this.width,
+                    height: this.height
+                };
+
                 // 读取meta信息。
-                if ( !me.metas && me.type === 'image/jpeg' ) {
+                if ( !me._metas && ~'image/jpegimage/jpg'.indexOf( me.type ) ) {
                     ImageMeta.parse( me._blob, function( error, ret ) {
-                        me.metas = ret;
+                        me._metas = ret;
                         me.owner.trigger('load');
                     });
                 } else {
@@ -37,16 +44,26 @@ define([
             me._img = img;
         },
 
-        downsize: function( width, height ) {
+        loadFromBlob: function( blob ) {
+            var me = this,
+                img = me._img;
+
+            me._blob = blob;
+            me.type = blob.type;
+            img.src = Util.createObjectURL( blob.getSource() );
+            me.owner.once( 'load', function() {
+                Util.revokeObjectURL( img.src );
+            });
+        },
+
+        resize: function( width, height ) {
             var canvas = this._canvas ||
                     (this._canvas = document.createElement('canvas'));
 
-            this._resize( this._img, canvas, width, height, false, true, true );
-            this.width = width;
-            this.height = height;
-
+            this._resize( this._img, canvas, width, height );
             this._blob = null;    // 没用了，可以删掉了。
             this.modified = true;
+            this.owner.trigger('complete');
         },
 
         getAsBlob: function( type ) {
@@ -63,12 +80,12 @@ define([
                 if ( type === 'image/jpeg' ) {
                     blob = canvas.toDataURL( 'image/jpeg', opts.quality / 100 );
 
-                    if ( opts.preserveHeader && this.metas &&
-                            this.metas.imageHead ) {
+                    if ( opts.preserveHeaders && this._metas &&
+                            this._metas.imageHead ) {
 
                         blob = Util.dataURL2ArrayBuffer( blob );
                         blob = ImageMeta.updateImageHead( blob,
-                                this.metas.imageHead );
+                                this._metas.imageHead );
                         blob = Util.arrayBufferToBlob( blob, type );
                         return blob;
                     }
@@ -82,13 +99,45 @@ define([
             return blob;
         },
 
-        setMetas: function( val ) {
-            this.metas = val;
+        getAsDataUrl: function( type ) {
+            var opts = this.options;
+
+            type = type || this.type;
+
+            if ( type === 'image/jpeg' ) {
+                return this._canvas.toDataURL( type, opts.quality / 100 );
+            } else {
+                return this._canvas.toDataURL( type );
+            }
         },
 
         getOrientation: function() {
-            return this.metas && this.metas.exif &&
-                    this.metas.exif.get('Orientation') || 1;
+            return this._metas && this._metas.exif &&
+                    this._metas.exif.get('Orientation') || 1;
+        },
+
+        info: function( val ) {
+
+            // setter
+            if ( val ) {
+                this._info = val;
+                return this;
+            }
+
+            // getter
+            return this._info;
+        },
+
+        meta: function( val ) {
+
+            // setter
+            if ( val ) {
+                this._meta = val;
+                return this;
+            }
+
+            // getter
+            return this._meta;
         },
 
         destroy: function() {
@@ -105,21 +154,6 @@ define([
             // 释放内存。非常重要，否则释放不了image的内存。
             this._img.src = BLANK;
             this._img = this._blob = null;
-        },
-
-        compress: function( blob, width, height ) {
-            var me = this,
-                img = me._img;
-
-            me._blob = blob;
-            me.type = blob.type;
-            img.src = Util.createObjectURL( blob.getSource() );
-            me.owner.once( 'load', function() {
-                Util.revokeObjectURL( img.src );
-
-                me.downsize( width, height );
-                me.owner.trigger('complete');
-            });
         },
 
         _resize: function( img, cvs, width, height ) {
@@ -142,7 +176,7 @@ define([
                     height / naturalHeight );
 
             // 不允许放大。
-            scale = Math.min( 1, scale );
+            opts.allowMagnify && (scale = Math.min( 1, scale ));
 
             w = naturalWidth * scale;
             h = naturalHeight * scale;
@@ -158,7 +192,7 @@ define([
             x = (cvs.width - w) / 2;
             y = (cvs.height - h) / 2;
 
-            opts.preserveHeader || this._rotateToOrientaion( cvs, orientation );
+            opts.preserveHeaders || this._rotateToOrientaion( cvs, orientation );
 
             this._renderImageToCanvas( cvs, img, x, y, w, h );
         },

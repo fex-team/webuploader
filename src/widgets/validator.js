@@ -4,8 +4,8 @@
 
 define([
     'base',
-    'core/uploader',
-    'core/file',
+    'uploader',
+    'file',
     './widget'
 ], function( Base, Uploader, WUFile ) {
 
