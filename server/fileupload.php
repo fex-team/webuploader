@@ -39,6 +39,9 @@ if ( !empty($_REQUEST[ 'debug' ]) ) {
     }
 }
 
+// header("HTTP/1.0 500 Internal Server Error");
+// exit;
+
 
 // 5 minutes execution time
 @set_time_limit(5 * 60);
@@ -167,7 +170,7 @@ if ( $done ) {
             @fclose($in);
             @unlink("{$filePath}_{$index}.part");
         }
-        
+
         flock($out, LOCK_UN);
     }
     @fclose($out);

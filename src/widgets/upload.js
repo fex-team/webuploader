@@ -3,8 +3,8 @@
  */
 define([
     'base',
-    'core/uploader',
-    'core/file',
+    'uploader',
+    'file',
     'lib/transport',
     './widget'
 ], function( Base, Uploader, WUFile, Transport ) {
@@ -409,7 +409,6 @@ define([
             // 上传成功
             tr.on( 'load', function() {
                 var ret = tr.getResponseAsJson(),
-                    hd = tr.getResponseHeader(),
                     reject, fn;
 
                 ret._raw = tr.getResponse();
@@ -418,7 +417,7 @@ define([
                 };
 
                 // 服务端响应了，不代表成功了，询问是否响应正确。
-                if ( !owner.trigger( 'uploadAccept', block, ret, hd, fn ) ) {
+                if ( !owner.trigger( 'uploadAccept', block, ret, fn ) ) {
                     reject = reject || 'server';
                 }
 
@@ -430,7 +429,7 @@ define([
 
                 // 全部上传完成。
                 if ( file.remaning === 1 ) {
-                    me._finishFile( file, ret, hd );
+                    me._finishFile( file, ret );
                 } else {
                     tr.destroy();
                 }
