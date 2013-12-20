@@ -159,6 +159,13 @@ define([
         }
     });
 
+    /**
+     * 创建Uploader实例，等同于new Uploader( opts );
+     * @method create
+     * @class Base
+     * @static
+     * @grammar Base.create( opts ) => Uploader
+     */
     Base.create = function( opts ) {
         return new Uploader( opts );
     };
