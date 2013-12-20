@@ -181,7 +181,12 @@ module.exports = function(grunt) {
         doc: {
             options: {
                 cwd: './src/',
-                files: [ '**/*.js'],
+                files: [
+                    'uploader.js',
+                    'base.js',
+                    'mediator.js',
+                    '**/*.js'
+                ],
                 theme: 'gmu',
                 outputDir: './doc',
                 title: 'WebUploader API文档'

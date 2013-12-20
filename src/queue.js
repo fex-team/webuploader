@@ -11,16 +11,24 @@ define([
         STATUS = WUFile.Status;
 
     /**
-     * 文件队列
-     *
-     * @class  Queue
-     * @constructor
+     * 文件队列, 用来存储各个状态中的文件。
+     * @class Queue
+     * @extends Mediator
      */
     function Queue() {
 
+        /**
+         * 统计文件数。
+         * * `numOfQueue` 队列中的文件数。
+         * * `numOfSuccess` 上传成功的文件数
+         * * `numOfCancel` 被移除的文件数
+         * * `numOfProgress` 正在上传中的文件数
+         * * `numOfUploadFailed` 上传错误的文件数。
+         * * `numOfInvalid` 无效的文件数。
+         * @property {Object} stats
+         */
         this.stats = {
             numOfQueue: 0,
-            numOfQueueFailed: 0,
             numOfSuccess: 0,
             numOfCancel: 0,
             numOfProgress: 0,
@@ -42,8 +50,6 @@ define([
          *
          * @method append
          * @param  {File} file   文件对象
-         * @param  {Mixed} [source] 文件内容源，例如DOM File/Blob/Base64 String
-         *                          文件首次加入队列时必须携带该参数
          */
         append: function( file ) {
             this._queue.push( file );
@@ -56,8 +62,6 @@ define([
          *
          * @method prepend
          * @param  {File} file   文件对象
-         * @param  {Mixed} [source] 文件内容源，例如DOM File/Blob/Base64 String
-         *                          文件首次加入队列时必须携带该参数
          */
         prepend: function( file ) {
             this._queue.unshift( file );
@@ -81,6 +85,10 @@ define([
 
         /**
          * 从队列中取出一个指定状态的文件。
+         * @grammar fetch( status ) => File
+         * @method fetch
+         * @param {String} status [文件状态值](#WebUploader:File:File.Status)
+         * @return {File} [File](#WebUploader:File)
          */
         fetch: function( status ) {
             var len = this._queue.length,
@@ -99,7 +107,12 @@ define([
             return null;
         },
 
-        // 获取指定类型的文件列表
+        /**
+         * 获取指定类型的文件列表, 列表中每一个成员为[File](#WebUploader:File)对象。
+         * @grammar getFiles( [status1[, status2 ...]] ) => Array
+         * @method getFiles
+         * @param {String} [status] [文件状态值](#WebUploader:File:File.Status)
+         */
         getFiles: function() {
             var sts = [].slice.call( arguments, 0 ),
                 ret = [],

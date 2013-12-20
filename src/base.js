@@ -7,7 +7,8 @@
  * 图片处理能力以及更低的内存消耗，同时结合HTML5 File API使得WebUploader具有了更加丰富的文件交互体验。
  * 目前已应用在百度相册上传页中，承载着海量的用户上传。
  *
- * Git: [https://github.com/gmuteam/webuploader](https://github.com/gmuteam/webuploader)
+ * * GitHub: [https://github.com/gmuteam/webuploader](https://github.com/gmuteam/webuploader)
+ * * OsChina: [http://git.oschina.net/2betop/webuploader](http://git.oschina.net/2betop/webuploader)
  *
  * @module WebUploader
  * @title WebUploader API文档
@@ -58,7 +59,7 @@ define([
         version: '@version@',
 
         /**
-         * @property {jQuery|Zepto} $ 依赖的jQuery或者Zepto对象。
+         * @property {jQuery|Zepto} $ 引用依赖的jQuery或者Zepto对象。
          */
         $: $,
 
@@ -160,7 +161,7 @@ define([
          * @param  {Class} super 父类
          * @param  {Object | Function} [protos] 子类或者对象。如果对象中包含constructor，子类将是用此属性值。
          * @param  {Function} [protos.constructor] 子类构造器，不指定的话将创建个临时的直接执行父类构造器的方法。
-         * @param  {Object} [staticProtos] 静态属性或方法。
+         * @param  {Object} [statics] 静态属性或方法。
          * @return {Class} 返回子类。
          * @example
          * function Person() {
@@ -223,11 +224,28 @@ define([
         noop: noop,
 
         /**
-         * 返回一个新的方法，此方法将已指定
-         * @mthod bindFn
+         * 返回一个新的方法，此方法将已指定的`context`来执行。
+         * @grammar Base.bindFn( fn, context ) => Function
+         * @method bindFn
+         * @example
+         * var doSomething = function() {
+         *         console.log( this.name );
+         *     },
+         *     obj = {
+         *         name: 'Object Name'
+         *     },
+         *     aliasFn = Base.bind( doSomething, obj );
+         *
+         *  aliasFn();    // => Object Name
+         *
          */
         bindFn: bindFn,
 
+        /**
+         * 引用Console.log如果存在的话，否则引用一个[空函数loop](#WebUploader:Base.log)。
+         * @grammar Base.log( args... ) => undefined
+         * @method log
+         */
         log: (function() {
             if ( window.console.log ) {
                 return bindFn( console.log, console );
@@ -253,8 +271,27 @@ define([
             // return bindFn( next, window );
         })(),
 
+        /**
+         * 被[uncurrythis](http://www.2ality.com/2011/11/uncurrying-this.html)的数组slice方法。
+         * 将用来将非数组对象转化成数组对象。
+         * @grammar Base.slice( target, start[, end] ) => Array
+         * @method slice
+         * @example
+         * function doSomthing() {
+         *     var args = Base.slice( arguments, 1 );
+         *     console.log( args );
+         * }
+         *
+         * doSomthing( 'ignored', 'arg2', 'arg3' );    // => Array ["arg2", "arg3"]
+         */
         slice: uncurryThis( [].slice ),
 
+        /**
+         * 生成唯一的ID
+         * @method guid
+         * @grammar Base.guid() => String
+         * @grammar Base.guid( prefx ) => String
+         */
         guid: (function() {
             var counter = 0;
 
@@ -266,10 +303,27 @@ define([
                     guid += Math.floor( Math.random() * 65535 ).toString( 32 );
                 }
 
-                return (prefix || 'o_') + guid + (counter++).toString( 32 );
+                return (prefix || 'wu_') + guid + (counter++).toString( 32 );
             };
         })(),
 
+        /**
+         * 格式化文件大小, 输出成带单位的字符串
+         * @method formatSize
+         * @grammar Base.formatSize( size ) => String
+         * @grammar Base.formatSize( size, pointLength ) => String
+         * @grammar Base.formatSize( size, pointLength, units ) => String
+         * @param {Number} size 文件大小
+         * @param {Number} [pointLength=2] 精确到的小数点数。
+         * @param {Array} [units=[ 'B', 'K', 'M', 'G', 'TB' ]] 单位数组。从字节，到千字节，一直往上指定。如果单位数组里面只指定了到了K(千字节)，同时文件大小大于M, 此方法的输出将还是显示成多少K.
+         * @example
+         * console.log( Base.formatSize( 100 ) );    // => 100B
+         * console.log( Base.formatSize( 1024 ) );    // => 1.00K
+         * console.log( Base.formatSize( 1024, 0 ) );    // => 1K
+         * console.log( Base.formatSize( 1024 * 1024 ) );    // => 1.00M
+         * console.log( Base.formatSize( 1024 * 1024 * 1024 ) );    // => 1.00G
+         * console.log( Base.formatSize( 1024 * 1024 * 1024, 0, ['B', 'KB', 'MB'] ) );    // => 1024MB
+         */
         formatSize: function( size, pointLength, units ) {
             var unit;
 
