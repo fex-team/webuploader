@@ -1,49 +1,49 @@
 /**
  * @fileOverview Runtime管理器，负责Runtime的选择, 连接
- * @import base.js, core/mediator.js, runtime/runtime.js
  */
-define( 'webuploader/runtime/client', [ 'webuploader/base',
-        'webuploader/core/mediator',
-        'webuploader/runtime/runtime'
-        ], function( Base, Mediator, Runtime ) {
+define([
+    '../base',
+    '../mediator',
+    './runtime'
+], function( Base, Mediator, Runtime ) {
 
     var cache = (function() {
-        var obj = {};
+            var obj = {};
 
-        return {
-            add: function( runtime ) {
-                obj[ runtime.uid ] = runtime;
-            },
+            return {
+                add: function( runtime ) {
+                    obj[ runtime.uid ] = runtime;
+                },
 
-            get: function( ruid ) {
-                var i;
+                get: function( ruid ) {
+                    var i;
 
-                if ( ruid ) {
-                    return obj[ ruid ];
+                    if ( ruid ) {
+                        return obj[ ruid ];
+                    }
+
+                    for ( i in obj ) {
+                        return obj[ i ];
+                    }
+
+                    return null;
+                },
+
+                remove: function( runtime ) {
+                    delete obj[ runtime.uid ];
+                },
+
+                has: function() {
+                    return !!this.get.apply( this, arguments );
                 }
-
-                for ( i in obj ) {
-                    return obj[ i ];
-                }
-
-                return null;
-            },
-
-            remove: function( runtime ) {
-                delete obj[ runtime.uid ];
-            },
-
-            has: function() {
-                return !!this.get.apply( this, arguments );
-            }
-        }
-    })();
+            };
+        })();
 
     function RuntimeClient( component, standalone ) {
         var deferred = Base.Deferred(),
             runtime;
 
-        this.uid = Base.guid( 'client_' );
+        this.uid = Base.guid('client_');
 
         this.runtimeReady = function( cb ) {
             return deferred.done( cb );
@@ -58,13 +58,14 @@ define( 'webuploader/runtime/client', [ 'webuploader/base',
 
             if ( typeof opts === 'string' && cache.get( opts ) ) {
                 runtime = cache.get( opts );
+
+            // 像filePicker只能独立存在，不能公用。
             } else if ( !standalone && cache.has() ) {
                 runtime = cache.get();
             }
 
             if ( !runtime ) {
                 runtime = Runtime.create( opts, opts.runtimeOrder );
-                runtime.standalone = standalone;
                 cache.add( runtime );
                 runtime.promise = deferred.promise();
                 runtime.once( 'ready', deferred.resolve );
@@ -93,13 +94,13 @@ define( 'webuploader/runtime/client', [ 'webuploader/base',
                 cache.remove( runtime );
                 delete runtime.promise;
                 runtime.destroy();
-                runtime = null;
             }
+
+            runtime = null;
         };
 
         this.exec = function() {
             if ( !runtime ) {
-                Base.log( 'Runtime Error' );
                 return;
             }
 
@@ -112,8 +113,18 @@ define( 'webuploader/runtime/client', [ 'webuploader/base',
         this.getRuid = function() {
             return runtime && runtime.uid;
         };
+
+        this.destroy = (function( destroy ) {
+            return function() {
+                destroy && destroy.apply( this, arguments );
+                this.trigger('destroy');
+                this.off();
+                this.exec( 'destroy' );
+                this.disconnectRuntime();
+            };
+        })( this.destroy );
     }
 
     Mediator.installTo( RuntimeClient.prototype );
     return RuntimeClient;
-} );
+});

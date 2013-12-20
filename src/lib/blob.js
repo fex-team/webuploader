@@ -1,10 +1,10 @@
 /**
  * @fileOverview Blob
- * @import base.js, runtime/client.js
  */
-define( 'webuploader/lib/blob', [ 'webuploader/base',
-        'webuploader/runtime/client' ], function( Base, RuntimeClient ) {
-    var $ = Base.$;
+define([
+    '../base',
+    '../runtime/client'
+], function( Base, RuntimeClient ) {
 
     function Blob( ruid, source ) {
         var me = this;
@@ -13,7 +13,6 @@ define( 'webuploader/lib/blob', [ 'webuploader/base',
         me.ruid = ruid;
 
         RuntimeClient.call( me, 'Blob' );
-
 
         this.uid = source.uid || this.uid;
         this.type = source.type || '';
@@ -34,7 +33,7 @@ define( 'webuploader/lib/blob', [ 'webuploader/base',
         getSource: function() {
             return this.source;
         }
-    } );
+    });
 
     return Blob;
-} );
+});

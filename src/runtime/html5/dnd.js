@@ -1,11 +1,11 @@
 /**
  * @fileOverview FilePaste
  */
-define( 'webuploader/runtime/html5/dnd', [
-        'webuploader/base',
-        'webuploader/runtime/html5/runtime',
-        'webuploader/lib/file'
-    ], function( Base, Html5Runtime, File ) {
+define([
+    'base',
+    './runtime',
+    'lib/file'
+], function( Base, Html5Runtime, File ) {
 
     var $ = Base.$;
 
@@ -13,45 +13,58 @@ define( 'webuploader/runtime/html5/dnd', [
         init: function() {
             var elem = this.elem = this.options.container;
 
-            this.dragEnterHander = Base.bindFn( this._dragEnterHander, this );
-            this.dragLeaveHander = Base.bindFn( this._dragLeaveHander, this );
-            this.dropHander = Base.bindFn( this._dropHander, this );
+            this.dragEnterHandler = Base.bindFn( this._dragEnterHandler, this );
+            this.dragOverHandler = Base.bindFn( this._dragOverHandler, this );
+            this.dragLeaveHandler = Base.bindFn( this._dragLeaveHandler, this );
+            this.dropHandler = Base.bindFn( this._dropHandler, this );
 
-            elem.on( 'dragenter', this.dragEnterHander );
-            elem.on( 'dragover', this.dragEnterHander );
-            elem.on( 'dragleave', this.dragLeaveHander );
-            elem.on( 'drop', this.dropHander );
+            elem.on( 'dragenter', this.dragEnterHandler );
+            elem.on( 'dragover', this.dragOverHandler );
+            elem.on( 'dragleave', this.dragLeaveHandler );
+            elem.on( 'drop', this.dropHandler );
+
+            if ( this.options.disableGlobalDnd ) {
+                $( document ).on( 'dragover', this.dragOverHandler );
+                $( document ).on( 'drop', this.dropHandler );
+            }
         },
 
-        _dragEnterHander: function( e ) {
-            this.elem.addClass( 'webuploader-dnd-over' );
-            e.stopPropagation();
-            e.preventDefault();
+        _dragEnterHandler: function( e ) {
+            this.elem.addClass('webuploader-dnd-over');
+
+            e = e.originalEvent || e;
+            e.dataTransfer.dropEffect = 'copy';
+
+            return false;
         },
 
-        _dragLeaveHander: function( e ) {
-            this.elem.removeClass( 'webuploader-dnd-over' );
-            e.stopPropagation();
-            e.preventDefault();
+        _dragOverHandler: function( e ) {
+            // 只处理框内的。
+            if ( !$.contains( this.elem.parent().get( 0 ), e.target ) ) {
+                return false;
+            }
+
+            this._dragEnterHandler.call( this, e );
+
+            return false;
         },
 
-        // _dragOverHander: function( e ) {
-        //     var elem = this.elem[ 0 ],
-        //         target = e.target;
+        _dragLeaveHandler: function() {
+            this.elem.removeClass('webuploader-dnd-over');
+            return false;
+        },
 
-        //     $.contains( elem, target ) || elem === target || e.preventDefault();
-        //     e.stopPropagation();
-        // },
-
-        _dropHander: function( e ) {
+        _dropHandler: function( e ) {
             var results  = [],
                 promises = [],
                 me = this,
                 ruid = me.getRuid(),
                 items, files, dataTransfer, file, i, len, canAccessFolder;
 
-            e.preventDefault();
-            e.stopPropagation();
+            // 只处理框内的。
+            if ( !$.contains( me.elem.parent().get( 0 ), e.target ) ) {
+                return false;
+            }
 
             e = e.originalEvent || e;
             dataTransfer = e.dataTransfer;
@@ -65,17 +78,19 @@ define( 'webuploader/runtime/html5/dnd', [
                 if ( file.type ) {
                     results.push( file );
                 } else if ( !file.type && canAccessFolder ) {
-                    promises.push( this._traverseDirectoryTree( items[ i ].webkitGetAsEntry(), results ) )
+                    promises.push( this._traverseDirectoryTree(
+                            items[ i ].webkitGetAsEntry(), results ) );
                 }
             }
 
-            Base.when.apply( Base, promises ).done(function(){
+            Base.when.apply( Base, promises ).done(function() {
                 me.trigger( 'drop', $.map( results, function( file ) {
                     return new File( ruid, file );
-                }));
+                }) );
             });
 
-            this.elem.removeClass( 'webuploader-dnd-over' );
+            this.elem.removeClass('webuploader-dnd-over');
+            return false;
         },
 
         _traverseDirectoryTree: function( entry, results ) {
@@ -91,17 +106,18 @@ define( 'webuploader/runtime/html5/dnd', [
                 entry.createReader().readEntries(function( entries ) {
                     var len = entries.length,
                         promises = [],
-                        arr = [],  // 为了保证顺序。
+                        arr = [],    // 为了保证顺序。
                         i;
 
                     for ( i = 0; i < len; i++ ) {
-                        promises.push( me._traverseDirectoryTree( entries[ i ], arr ) );
+                        promises.push( me._traverseDirectoryTree(
+                                entries[ i ], arr ) );
                     }
 
                     Base.when.apply( Base, promises ).then(function() {
                         results.push.apply( results, arr );
                         deferred.resolve( true );
-                    }, deferred.reject);
+                    }, deferred.reject );
                 });
             }
 
@@ -111,10 +127,15 @@ define( 'webuploader/runtime/html5/dnd', [
         destroy: function() {
             var elem = this.elem;
 
-            elem.on( 'dragenter', this.dragEnterHander );
-            elem.on( 'dragover', this.dragEnterHander );
-            elem.on( 'dragleave', this.dragLeaveHander );
-            elem.on( 'drop', this.dropHander );
+            elem.off( 'dragenter', this.dragEnterHandler );
+            elem.off( 'dragover', this.dragEnterHandler );
+            elem.off( 'dragleave', this.dragLeaveHandler );
+            elem.off( 'drop', this.dropHandler );
+
+            if ( this.options.disableGlobalDnd ) {
+                $( document ).off( 'dragover', this.dragOverHandler );
+                $( document ).off( 'drop', this.dropHandler );
+            }
         }
-    } );
-} );
+    });
+});
