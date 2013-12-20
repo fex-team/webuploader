@@ -8,6 +8,12 @@ define([
 
     var $ = Base.$;
 
+    /**
+     * 上传入口类。
+     * @class Uploader
+     * @constructor 构造器，用来初始化一个Uploader实例。
+     * @grammar new Uploader( opts ) => Uploader
+     */
     function Uploader( opts ) {
         this.options = $.extend( true, {}, Uploader.options, opts );
         this._init( this.options );
@@ -55,7 +61,24 @@ define([
             });
         },
 
-        // @todo trigger change event.
+        /**
+         * 获取或者设置Uploader配置项。
+         * @method option
+         * @grammar option( key ) => *
+         * @grammar option( key, val ) => self
+         * @example
+         *
+         * // 初始状态图片上传前不会压缩
+         * var uploader = new WebUploader.Uploader({
+         *     resize: null;
+         * });
+         *
+         * // 修改后图片上传前，尝试将图片压缩到1600 * 1600
+         * uploader.options( 'resize', {
+         *     width: 1600,
+         *     height: 1600
+         * });
+         */
         option: function( key, val ) {
             var opts = this.options;
 
@@ -74,13 +97,25 @@ define([
             }
         },
 
+        /**
+         * 获取文件统计信息。返回一个包含一下信息的对象。
+         * * `successNum` 上传成功的文件数
+         * * `uploadFailNum` 上传失败的文件数
+         * * `cancelNum` 被删除的文件数
+         * * `invalidNum` 无效的文件数
+         * * `queueNum` 还在队列中的文件数
+         * @method getStats
+         * @grammar getStats() => Object
+         */
         getStats: function() {
             // return this._mgr.getStats.apply( this._mgr, arguments );
             var stats = this.request('get-stats');
 
             return {
                 successNum: stats.numOfSuccess,
-                queueFailNum: 0,
+
+                // who care?
+                // queueFailNum: 0,
                 cancelNum: stats.numOfCancel,
                 invalidNum: stats.numOfInvalid,
                 uploadFailNum: stats.numOfUploadFailed,
@@ -112,6 +147,11 @@ define([
             return true;
         },
 
+        /**
+         * @method request
+         * @grammar request( command, args ) => * | Promise
+         * @grammar request( command, args, callback ) => Promise
+         */
         request: Base.noop,
 
         reset: function() {
