@@ -39,6 +39,9 @@ if ( !empty($_REQUEST[ 'debug' ]) ) {
     }
 }
 
+// header("HTTP/1.0 500 Internal Server Error");
+// exit;
+
 
 // 5 minutes execution time
 @set_time_limit(5 * 60);
@@ -86,7 +89,7 @@ $uploadPath = $uploadDir . DIRECTORY_SEPARATOR . $fileName;
 
 // Chunking might be enabled
 $chunk = isset($_REQUEST["chunk"]) ? intval($_REQUEST["chunk"]) : 0;
-$chunks = isset($_REQUEST["chunks"]) ? intval($_REQUEST["chunks"]) : 0;
+$chunks = isset($_REQUEST["chunks"]) ? intval($_REQUEST["chunks"]) : 1;
 
 
 // Remove old temp files
@@ -99,12 +102,12 @@ if ($cleanupTargetDir) {
         $tmpfilePath = $targetDir . DIRECTORY_SEPARATOR . $file;
 
         // If temp file is current file proceed to the next
-        if ($tmpfilePath == "{$filePath}.part") {
+        if ($tmpfilePath == "{$filePath}_{$chunk}.part" || $tmpfilePath == "{$filePath}_{$chunk}.parttmp") {
             continue;
         }
 
         // Remove temp file if it is older than the max age and is not the current file
-        if (preg_match('/\.part$/', $file) && (filemtime($tmpfilePath) < time() - $maxFileAge)) {
+        if (preg_match('/\.(part|parttmp)$/', $file) && (@filemtime($tmpfilePath) < time() - $maxFileAge)) {
             @unlink($tmpfilePath);
         }
     }
@@ -113,7 +116,7 @@ if ($cleanupTargetDir) {
 
 
 // Open temp file
-if (!$out = @fopen("{$filePath}.part", $chunks ? "ab" : "wb")) {
+if (!$out = @fopen("{$filePath}_{$chunk}.parttmp", "wb")) {
     die('{"jsonrpc" : "2.0", "error" : {"code": 102, "message": "Failed to open output stream."}, "id" : "id"}');
 }
 
@@ -139,15 +142,38 @@ while ($buff = fread($in, 4096)) {
 @fclose($out);
 @fclose($in);
 
-// Check if file has been uploaded
-if (!$chunks || $chunk == $chunks - 1) {
-    // Strip the temp .part suffix off
-    rename("{$filePath}.part", $filePath);
+rename("{$filePath}_{$chunk}.parttmp", "{$filePath}_{$chunk}.part");
 
-    rename($filePath, $uploadPath);
-    array_push($md5File, md5(file_get_contents($uploadPath)));
-    $md5File = array_unique($md5File);
-    file_put_contents('md5list.txt', join($md5File, "\n"));
+$index = 0;
+$done = true;
+for( $index = 0; $index < $chunks; $index++ ) {
+    if ( !file_exists("{$filePath}_{$index}.part") ) {
+        $done = false;
+        break;
+    }
+}
+if ( $done ) {
+    if (!$out = @fopen($uploadPath, "wb")) {
+        die('{"jsonrpc" : "2.0", "error" : {"code": 102, "message": "Failed to open output stream."}, "id" : "id"}');
+    }
+
+    if ( flock($out, LOCK_EX) ) {
+        for( $index = 0; $index < $chunks; $index++ ) {
+            if (!$in = @fopen("{$filePath}_{$index}.part", "rb")) {
+                break;
+            }
+
+            while ($buff = fread($in, 4096)) {
+                fwrite($out, $buff);
+            }
+
+            @fclose($in);
+            @unlink("{$filePath}_{$index}.part");
+        }
+
+        flock($out, LOCK_UN);
+    }
+    @fclose($out);
 }
 
 // Return Success JSON-RPC response

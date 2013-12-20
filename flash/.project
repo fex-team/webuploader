@@ -16,9 +16,19 @@
 	</natures>
 	<linkedResources>
 		<link>
+			<name>bin-debug</name>
+			<type>2</type>
+			<location>/Users/liaoxuezhi/www/webuploader/dist</location>
+		</link>
+		<link>
 			<name>bin-release</name>
 			<type>2</type>
 			<location>/Library/WebServer/www/webuploader/dist</location>
+		</link>
+		<link>
+			<name>bin-release1</name>
+			<type>2</type>
+			<location>/Users/liaoxuezhi/www/webuploader/dist</location>
 		</link>
 	</linkedResources>
 </projectDescription>

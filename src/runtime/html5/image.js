@@ -1,63 +1,75 @@
 /**
  * @fileOverview Image
- * @import base.js, runtime/html5/runtime.js, runtime/html5/util.js, runtime/html5/imagemeta.js, lib/blob.js
  */
-define( 'webuploader/runtime/html5/imagecompress', [ 'webuploader/base',
-        'webuploader/runtime/html5/runtime',
-        'webuploader/runtime/html5/util',
-        'webuploader/runtime/html5/imagemeta',
-        'webuploader/lib/blob'
-        ], function( Base, Html5Runtime, Util, ImageMeta, Blob ) {
+define([
+    './runtime',
+    './util',
+    './imagemeta'
+], function( Html5Runtime, Util, ImageMeta ) {
 
-    var $ = Base.$,
-        BLANK_IMAGE = 'data:image/gif;base64,R0lGODlhAQABAAD/ACwAAAAAAQABAAACADs%3D'
+    var BLANK = 'data:image/gif;base64,R0lGODlhAQABAAD/ACwAAAAAAQABAAACADs%3D';
 
-    return Html5Runtime.register( 'ImageCompress', {
+    return Html5Runtime.register( 'Image', {
 
         // flag: 标记是否被修改过。
         modified: false,
 
-        init: function() {
+        init: function( opts ) {
             var me = this,
-                img = new Image(),
-                opts = this.options;
+                img = new Image();
 
             img.onload = function() {
+
+                me._info = {
+                    type: me.type,
+                    width: this.width,
+                    height: this.height
+                };
+
                 // 读取meta信息。
-                if ( !me.metas && me.type === 'image/jpeg' ) {
-                    ImageMeta.parse( me._blob , function( error, ret ) {
-                        me.metas = ret;
-                        me.owner.trigger( 'load' );
-                    } );
+                if ( !me._metas && ~'image/jpegimage/jpg'.indexOf( me.type ) ) {
+                    ImageMeta.parse( me._blob, function( error, ret ) {
+                        me._metas = ret;
+                        me.owner.trigger('load');
+                    });
                 } else {
-                    me.owner.trigger( 'load' );
+                    me.owner.trigger('load');
                 }
             };
 
             img.onerror = function() {
-                me.owner.trigger( 'error' );
-            }
+                me.owner.trigger('error');
+            };
 
             me._img = img;
         },
 
-        downsize: function( width, height ) {
-            var opts = this.options,
-                canvas = this._canvas ||
-                    (this._canvas = document.createElement( 'canvas' ));
+        loadFromBlob: function( blob ) {
+            var me = this,
+                img = me._img;
 
-            this._resize( this._img, canvas, width, height, false, true, true );
-            this.width = width;
-            this.height = height;
+            me._blob = blob;
+            me.type = blob.type;
+            img.src = Util.createObjectURL( blob.getSource() );
+            me.owner.once( 'load', function() {
+                Util.revokeObjectURL( img.src );
+            });
+        },
 
+        resize: function( width, height ) {
+            var canvas = this._canvas ||
+                    (this._canvas = document.createElement('canvas'));
+
+            this._resize( this._img, canvas, width, height );
             this._blob = null;    // 没用了，可以删掉了。
             this.modified = true;
+            this.owner.trigger('complete');
         },
 
         getAsBlob: function( type ) {
             var blob = this._blob,
                 opts = this.options,
-                ruid, canvas;
+                canvas;
 
             type = type || this.type;
 
@@ -68,10 +80,12 @@ define( 'webuploader/runtime/html5/imagecompress', [ 'webuploader/base',
                 if ( type === 'image/jpeg' ) {
                     blob = canvas.toDataURL( 'image/jpeg', opts.quality / 100 );
 
-                    if ( opts.preserveHeader && this.metas && this.metas.imageHead ) {
+                    if ( opts.preserveHeaders && this._metas &&
+                            this._metas.imageHead ) {
+
                         blob = Util.dataURL2ArrayBuffer( blob );
                         blob = ImageMeta.updateImageHead( blob,
-                                this.metas.imageHead );
+                                this._metas.imageHead );
                         blob = Util.arrayBufferToBlob( blob, type );
                         return blob;
                     }
@@ -85,13 +99,45 @@ define( 'webuploader/runtime/html5/imagecompress', [ 'webuploader/base',
             return blob;
         },
 
-        setMetas: function( val ) {
-            this.metas = val;
+        getAsDataUrl: function( type ) {
+            var opts = this.options;
+
+            type = type || this.type;
+
+            if ( type === 'image/jpeg' ) {
+                return this._canvas.toDataURL( type, opts.quality / 100 );
+            } else {
+                return this._canvas.toDataURL( type );
+            }
         },
 
         getOrientation: function() {
-            return this.metas && this.metas.exif &&
-                    this.metas.exif.get( 'Orientation' ) || 1;
+            return this._metas && this._metas.exif &&
+                    this._metas.exif.get('Orientation') || 1;
+        },
+
+        info: function( val ) {
+
+            // setter
+            if ( val ) {
+                this._info = val;
+                return this;
+            }
+
+            // getter
+            return this._info;
+        },
+
+        meta: function( val ) {
+
+            // setter
+            if ( val ) {
+                this._meta = val;
+                return this;
+            }
+
+            // getter
+            return this._meta;
         },
 
         destroy: function() {
@@ -99,30 +145,15 @@ define( 'webuploader/runtime/html5/imagecompress', [ 'webuploader/base',
             this._img.onload = null;
 
             if ( canvas ) {
-                canvas.getContext( '2d' )
+                canvas.getContext('2d')
                         .clearRect( 0, 0, canvas.width, canvas.height );
                 canvas.width = canvas.height = 0;
                 this._canvas = null;
             }
 
             // 释放内存。非常重要，否则释放不了image的内存。
-            this._img.src = BLANK_IMAGE;
+            this._img.src = BLANK;
             this._img = this._blob = null;
-        },
-
-        compress: function( blob, width, height ) {
-            var me = this,
-                img = me._img;
-
-            me._blob = blob;
-            me.type = blob.type;
-            img.src = Util.createObjectURL( blob.getSource() );
-            me.owner.once( 'load', function() {
-                Util.revokeObjectURL( img.src );
-
-                me.downsize( width, height );
-                me.owner.trigger( 'complete' );
-            } );
         },
 
         _resize: function( img, cvs, width, height ) {
@@ -145,7 +176,7 @@ define( 'webuploader/runtime/html5/imagecompress', [ 'webuploader/base',
                     height / naturalHeight );
 
             // 不允许放大。
-            scale = Math.min( 1, scale );
+            opts.allowMagnify && (scale = Math.min( 1, scale ));
 
             w = naturalWidth * scale;
             h = naturalHeight * scale;
@@ -161,7 +192,7 @@ define( 'webuploader/runtime/html5/imagecompress', [ 'webuploader/base',
             x = (cvs.width - w) / 2;
             y = (cvs.height - h) / 2;
 
-            opts.preserveHeader || this._rotateToOrientaion( cvs, orientation );
+            opts.preserveHeaders || this._rotateToOrientaion( cvs, orientation );
 
             this._renderImageToCanvas( cvs, img, x, y, w, h );
         },
@@ -169,7 +200,7 @@ define( 'webuploader/runtime/html5/imagecompress', [ 'webuploader/base',
         _rotateToOrientaion: function( canvas, orientation ) {
             var width = canvas.width,
                 height = canvas.height,
-                ctx = canvas.getContext( '2d' );
+                ctx = canvas.getContext('2d');
 
             switch ( orientation ) {
                 case 5:
@@ -221,10 +252,9 @@ define( 'webuploader/runtime/html5/imagecompress', [ 'webuploader/base',
         },
 
         _renderImageToCanvas: function( canvas, img, x, y, w, h ) {
-            canvas.getContext( '2d' ).drawImage( img, x, y, w, h );
+            canvas.getContext('2d').drawImage( img, x, y, w, h );
         }
 
-        //
         /*_renderImageToCanvas: (function() {
             var subsampled, vertSquashRatio;
 
@@ -317,5 +347,5 @@ define( 'webuploader/runtime/html5/imagecompress', [ 'webuploader/base',
                 tmpCanvas = tmpCtx = null;
             };
         })()*/
-    } );
-} );
+    });
+});

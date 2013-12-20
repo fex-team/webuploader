@@ -1,7 +1,6 @@
 package com
 {
 	import com.errors.ImageError;
-	import com.events.ImageEvent;
 	import com.events.ODataEvent;
 	import com.events.OErrorEvent;
 	import com.events.OProgressEvent;
@@ -21,41 +20,40 @@ package com
 	import flash.display.IBitmapDrawable;
 	import flash.display.Loader;
 	import flash.display.PNGEncoderOptions;
-	import flash.errors.IOError;
 	import flash.events.Event;
 	import flash.events.IOErrorEvent;
-	import flash.external.ExternalInterface;
 	import flash.geom.Matrix;
-	import flash.geom.Rectangle;
-	import flash.net.URLLoaderDataFormat;
 	import flash.system.System;
 	import flash.utils.ByteArray;
-
-	public class ImagePreview extends OEventDispatcher
+	
+	public class Image extends OEventDispatcher
 	{
 		// events dispatched by this class
 		public static var dispatches:Object = { 
 			"Progress": OProgressEvent.PROGRESS,
 			"Complete": ODataEvent.DATA,
+			"Load": Event.COMPLETE,
 			"Error": OErrorEvent.ERROR
 		};
 		
-		private var _w:uint;
-		private var _h:uint;
 		private var _orientation:uint = 1;
+		private var _bd:BitmapData;
 		private var _ba:ByteArray;
 		private var _meta:Object;
+		private var _info:Object;
+		private var _img:*;
 		
 		public var type:String = 'image/jpeg';
 		public var quality:uint = 70;
 		public var crop:Boolean = true;
 		public var allowMagnify:Boolean = true;
+		public var preserveHeaders:Boolean = false;
 		
 		public function init( options:Object = null ):void {
-			Utils.extend(this, options);
+			Utils.extend(this, options, true);
 		}
 		
-		public function preview( blob:* = null, width:uint = 110, height:uint = 110 ):void {
+		public function loadFromBlob( blob:* = null ):void {
 			var fr:FileReader; 
 			
 			if (typeof blob === 'string') {
@@ -67,9 +65,6 @@ package com
 				return;
 			}
 			
-			_w = width;
-			_h = height;
-			
 			fr = new FileReader;
 			
 			fr.addEventListener(OProgressEvent.PROGRESS, function(e:OProgressEvent) : void {
@@ -79,39 +74,60 @@ package com
 			fr.addEventListener(Event.COMPLETE, function(e:Event) : void {
 				fr.removeAllEventsListeners();
 				_loadFromByteArray(fr.result);
-				blob.purge();
+				dispatchEvent( new Event(Event.COMPLETE) );
 			});
 			
 			fr.readAsByteArray(blob);
 		}
 		
-		private function _loadFromByteArray(ba:ByteArray) : void
-		{
-			var img:*, info:Object, scale:Number, output:BitmapData, selector:Function;
-			
-			
-			if (JPEG.test(ba)) {
-				img = new JPEG(ba);		
-				img.extractHeaders(); // preserve headers for later
-				_meta = img.metaInfo();
-			} else if (PNG.test(ba)) {
-				img = new PNG(ba);
-			} else if ( GIF.test(ba) ) {
-				img = new GIF( ba );
-			} else if ( BMP.test(ba) ) {
-				img = new BMP( ba );
-			} else {
-				dispatchEvent(new OErrorEvent(OErrorEvent.ERROR, ImageError.WRONG_FORMAT));
-				return;
+		public function info( val:Object = null):Object {
+			if ( val ) {
+				_info = val;
 			}
 			
-			var width:uint = _w, height:uint = _h;
-			var naturalWidth:uint, naturalHeight:uint;
-			info = img.info();
-			type = info.type;
-			naturalWidth = info.width;
-			naturalHeight = info.height;
+			return _info;
+		}
+		
+		public function meta( val:Object = null):Object {
+			if ( val ) {
+				_meta = val;
+			}
 			
+			return _meta;
+		}
+		
+		private function _loadFromByteArray( ba:ByteArray ):void {
+			if ( !_info ) {
+				if (JPEG.test(ba)) {
+					_img = new JPEG(ba);		
+					_meta = _img.metaInfo();
+					_img.extractHeaders();
+				} else if (PNG.test(ba)) {
+					_img = new PNG(ba);
+				} else if ( GIF.test(ba) ) {
+					_img = new GIF( ba );
+				} else if ( BMP.test(ba) ) {
+					_img = new BMP( ba );
+				} else {
+					dispatchEvent(new OErrorEvent(OErrorEvent.ERROR, ImageError.WRONG_FORMAT));
+					return;
+				}
+				
+				_info = _img.info();
+			} else if ( _info.type === 'image/jpeg' ) {
+				_img = new JPEG( ba );
+				_img.extractHeaders();
+			}
+			type = _info.type;
+			_ba = ba;
+		}
+		
+		public function resize( width:Number = 110, height:Number = 110 ):void {
+			var naturalWidth:uint, naturalHeight:uint;
+			
+			type = _info.type;
+			naturalWidth = _info.width;
+			naturalHeight = _info.height;
 			
 			// take into account Orientation tag
 			if (type == 'image/jpeg' && _meta.hasOwnProperty('tiff') && _meta.tiff.hasOwnProperty('Orientation')) {
@@ -125,24 +141,19 @@ package com
 				width ^= height;
 			}
 			
+			var selector:Function, scale:Number;
 			selector = crop ? Math.max : Math.min;
 			scale = selector(  width / naturalWidth, height / naturalHeight );
 			
 			if ( !allowMagnify && scale > 1 ) {
 				scale = 1;
-			} 
+			}
 			
 			var destWidth:uint, destHeight:uint;
 			destWidth = naturalWidth * scale;
 			destHeight = naturalHeight * scale;
 			
-//			if ( type === 'image/jpeg' ) {
-//				_ba = Uploader.encodeJpeg( ba , width, height, quality);
-//				dispatchEvent(new ODataEvent(ODataEvent.DATA));
-//				return;
-//			}
 			
-			var bd:BitmapData = new BitmapData( width, height );
 			var matrix:Matrix = new Matrix;
 			
 			matrix.scale( scale, scale );
@@ -154,18 +165,17 @@ package com
 				matrix.translate( 0, -Math.round(( destHeight - height) / 2));
 			}
 			
+			_bd = new BitmapData( Math.min( width, destWidth), Math.min( height, destHeight) );
+			
+			
 			if ( type == 'image/bmp' ) {
 				var decoder:BMPDecoder = new BMPDecoder();
-				var bmp:Bitmap = new Bitmap( decoder.decode( ba ) );
-				
-				
+				var bmp:Bitmap = new Bitmap( decoder.decode( _ba ) );
 				
 				// draw preloaded data onto the prepared BitmapData
-				bd.draw(bmp, matrix, null, null, null, true);
+				_bd.draw(bmp, matrix, null, null, null, true);
 				
-				_ba =  encodeBitmapData( bd );
 				dispatchEvent(new ODataEvent(ODataEvent.DATA));
-				
 				return;
 			}
 			
@@ -174,17 +184,12 @@ package com
 			loader.contentLoaderInfo.addEventListener(Event.COMPLETE, function(e:Event) : void {
 				
 				loader.contentLoaderInfo.removeEventListener(Event.COMPLETE, arguments.callee);
-				img.purge(); // free some resources
 				
 				// draw preloaded data onto the prepared BitmapData
-				bd.draw(e.target.content as IBitmapDrawable, matrix, null, null, null, true);
-				
-				
+				_bd.draw(e.target.content as IBitmapDrawable, matrix, null, null, null, true);
 				
 				loader.unload();
-				ba.clear();
-				
-				_ba =  encodeBitmapData( bd );
+				_ba.clear();
 				
 				dispatchEvent(new ODataEvent(ODataEvent.DATA));
 			});
@@ -192,42 +197,75 @@ package com
 			loader.contentLoaderInfo.addEventListener(IOErrorEvent.IO_ERROR, function(e:*) : void {
 				dispatchEvent(new OErrorEvent(OErrorEvent.ERROR, 2));
 				
-				ba.clear();
-				bd.dispose();
+				_ba.clear();
+				_bd.dispose();
 				loader.unload();
-				img.purge();
 			});
 			
 			try {
-				loader.loadBytes(ba);
+				loader.loadBytes(_ba);
 			} catch (ex:*) {
-				Uploader.log(ex);
+				Uploader.log([ex]);
 			}
-			
 		}
 		
-		private function encodeBitmapData( bd:BitmapData ):ByteArray {
+		public function getAsDataUrl( _type:String = null):String {
+			_type = _type || type;
+			
+			var ba:ByteArray =  _encodeBitmapData( _bd, _type );
+			
+			return 'data:' + _type + ';base64,' + Base64.encode( ba );
+		}
+		
+		public function getAsBlob( _type:String = null):Object {
+			_type = _type || type;
+			
+			var blob:Blob = new Blob([_encodeBitmapData( _bd, _type )], { type: _type });
+			Uploader.compFactory.add(blob.uid, blob);
+			return blob.toObject();
+		}
+		
+		
+		public function destroy():void {
+			if (_bd) {
+				_bd.dispose();
+				_bd = null;
+			}
+			
+			// one call to mark any dereferenced objects and sweep away old marks, 			
+			flash.system.System.gc();
+			// ...and the second to now sweep away marks from the first call.
+			flash.system.System.gc();
+		}
+		
+		private function _encodeBitmapData( bd:BitmapData, type:String ):ByteArray {
 			var encoder:JPEGEncoder, ba:ByteArray;
 			if ( type === 'image/png' ) {
 				ba = bd.encode(bd.rect, new PNGEncoderOptions());
 			} else {
-				if (type == 'image/jpeg') {
+				if (type == 'image/jpeg' && !preserveHeaders ) {
 					bd = _rotateToOrientation(_orientation, bd);
 				}
-				//ExternalInterface.call("console.time", "new compress");
 				
 				encoder = new JPEGEncoder( quality );
 				ba = encoder.encode(bd);
 				
-				//var baSource: ByteArray = bd.clone().getPixels( new Rectangle( 0, 0, bd.width, bd.height) );
-				//ba = Uploader.encodeJpeg(baSource, bd.width, bd.height, quality);
+				if (_img) {
+					// strip off any headers that might be left by encoder, etc
+					_img.stripHeaders(ba);
+					// restore the original headers if requested
+					if (preserveHeaders) {
+						_img.insertHeaders(ba);
+						_img.updateDimensions(bd.width, bd.height);
+					}
+				}
 				
-				//ExternalInterface.call("console.timeEnd", "new compress");
 				type = 'image/jpeg';
 			}
 			
 			return ba;
 		}
+		
 		
 		private function _rotateToOrientation(orientation:uint, bd:BitmapData) : BitmapData
 		{
@@ -272,23 +310,6 @@ package com
 			bd = imageEditor.bitmapData;
 			imageEditor.purge();
 			return bd;
-		}
-		
-		public function getOrientation():uint {
-			return _orientation;
-		}
-		
-		public function getAsDataURL():String {
-			return 'data:' + type + ';base64,' + Base64.encode( _ba );
-		}
-		
-		public function destroy():void {
-			_ba.clear();
-			
-			// one call to mark any dereferenced objects and sweep away old marks, 			
-			flash.system.System.gc();
-			// ...and the second to now sweep away marks from the first call.
-			flash.system.System.gc();
 		}
 	}
 }

@@ -1,20 +1,28 @@
 /**
  * @fileOverview Transport
- * @todo 支持chunked传输，优势：
- * 可以将大文件分成小块，挨个传输，可以提高大文件成功率，当失败的时候，也只需要重传那小部分，
- * 而不需要重头再传一次。另外断点续传也需要用chunked方式。
- * @import base.js, runtime/client.js, core/mediator.js
  */
-define( 'webuploader/lib/transport', [ 'webuploader/base',
-        'webuploader/runtime/client',
-        'webuploader/core/mediator'
-        ], function( Base, RuntimeClient, Mediator ) {
+define([
+    '../base',
+    '../runtime/client',
+    '../mediator'
+], function( Base, RuntimeClient, Mediator ) {
 
     var $ = Base.$;
 
     function Transport( opts ) {
-        this.options = $.extend( true, {}, Transport.options, opts || {} );
+        var me = this;
+
+        opts = me.options = $.extend( true, {}, Transport.options, opts || {} );
         RuntimeClient.call( this, 'Transport' );
+
+        this._blob = null;
+        this._formData = opts.formData || {};
+        this._headers = opts.headers || {};
+
+        this.on( 'progress', this._timeout );
+        this.on( 'load error', function() {
+            clearTimeout( me._timer );
+        });
     }
 
     Transport.options = {
@@ -24,53 +32,98 @@ define( 'webuploader/lib/transport', [ 'webuploader/base',
         // 跨域时，是否允许携带cookie, 只有html5 runtime才有效
         withCredentials: false,
         fileVar: 'file',
-        chunked: true,
-        chunkSize: 1024 * 512,    // 0.5M.
-        chunkRetryCount: 3,    // 当chunk传输时出错，可以重试3次。
         timeout: 2 * 60 * 1000,    // 2分钟
         formData: {},
-        headers: {}
-    }
+        headers: {},
+        sendAsBinary: false
+    };
 
     $.extend( Transport.prototype, {
 
-        setFile: function( file ) {
+        // 添加Blob, 只能添加一次，最后一次有效。
+        appendBlob: function( key, blob, filename ) {
             var me = this,
-                ruid;
+                opts = me.options;
 
             if ( me.getRuid() ) {
                 me.disconnectRuntime();
             }
 
-            ruid = file.source.getRuid();
-            this.connectRuntime( ruid, function() {
-                me.exec( 'init', me.options );
-                me.exec( 'setFile', file );
-            } );
+            // 连接到blob归属的同一个runtime.
+            me.connectRuntime( blob.ruid, function() {
+                me.exec('init');
+            });
+
+            me._blob = blob;
+            opts.fileVar = key || opts.fileVar;
+            opts.filename = filename || opts.filename;
         },
 
-        start: function() {
-            this.exec( 'start' );
+        // 添加其他字段
+        append: function( key, value ) {
+            if ( typeof key === 'object' ) {
+                $.extend( this._formData, key );
+            } else {
+                this._formData[ key ] = value;
+            }
+        },
+
+        setRequestHeader: function( key, value ) {
+            if ( typeof key === 'object' ) {
+                $.extend( this._headers, key );
+            } else {
+                this._headers[ key ] = value;
+            }
+        },
+
+        send: function( method ) {
+            this.exec( 'send', method );
+            this._timeout();
         },
 
         abort: function() {
-            this.exec( 'abort' );
-        },
-
-        pause: function() {
-            this.exec( 'pause' );
+            clearTimeout( this._timer );
+            return this.exec('abort');
         },
 
         destroy: function() {
-            this.trigger( 'destroy' );
+            this.trigger('destroy');
             this.off();
+            this.exec('destroy');
             this.disconnectRuntime();
-            this.exec( 'destroy' );
+        },
+
+        getResponse: function() {
+            return this.exec('getResponse');
+        },
+
+        getResponseAsJson: function() {
+            return this.exec('getResponseAsJson');
+        },
+
+        getStatus: function() {
+            return this.exec('getStatus');
+        },
+
+        _timeout: function() {
+            var me = this,
+                duration = me.options.timeout;
+
+            if ( !duration ) {
+                return;
+            }
+
+            clearTimeout( me._timer );
+            me._timer = setTimeout(function() {
+                me.abort();
+                me.trigger( 'error', 'timeout' );
+            }, duration );
         }
 
-    } );
+    });
 
+    // 让Transport具备事件功能。
     Mediator.installTo( Transport.prototype );
 
     return Transport;
-} );
+});

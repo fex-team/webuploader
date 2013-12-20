@@ -1,13 +1,19 @@
 /**
  * @fileOverview Uploader上传类
- * @import base.js, core/mediator.js
  */
-define( 'webuploader/core/uploader', [ 'webuploader/base',
-        'webuploader/core/mediator'
-        ], function( Base, Mediator, Runtime ) {
+define([
+    './base',
+    './mediator'
+], function( Base, Mediator ) {
 
     var $ = Base.$;
 
+    /**
+     * 上传入口类。
+     * @class Uploader
+     * @constructor 构造器，用来初始化一个Uploader实例。
+     * @grammar new Uploader( opts ) => Uploader
+     */
     function Uploader( opts ) {
         this.options = $.extend( true, {}, Uploader.options, opts );
         this._init( this.options );
@@ -24,12 +30,14 @@ define( 'webuploader/core/uploader', [ 'webuploader/base',
         stop: 'stop-upload',
         getFile: 'get-file',
         getFiles: 'get-files',
-        addFile: 'add-file',
-        addFiles: 'add-file',
+        // addFile: 'add-file',
+        // addFiles: 'add-file',
         removeFile: 'remove-file',
+        skipFile: 'skip-file',
         retry: 'retry',
         isInProgress: 'is-in-progress',
         makeThumb: 'make-thumb',
+        getDimension: 'get-dimension',
         addButton: 'add-btn',
         getRuntimeType: 'get-runtime-type',
         refresh: 'refresh',
@@ -49,32 +57,65 @@ define( 'webuploader/core/uploader', [ 'webuploader/base',
 
             me.request( 'init', opts, function() {
                 me.state = 'ready';
-                me.trigger( 'ready' );
+                me.trigger('ready');
             });
         },
 
-        // @todo trigger change event.
+        /**
+         * 获取或者设置Uploader配置项。
+         * @method option
+         * @grammar option( key ) => *
+         * @grammar option( key, val ) => self
+         * @example
+         *
+         * // 初始状态图片上传前不会压缩
+         * var uploader = new WebUploader.Uploader({
+         *     resize: null;
+         * });
+         *
+         * // 修改后图片上传前，尝试将图片压缩到1600 * 1600
+         * uploader.options( 'resize', {
+         *     width: 1600,
+         *     height: 1600
+         * });
+         */
         option: function( key, val ) {
             var opts = this.options;
-            if ( arguments.length > 1 ) {    // setter
+
+            // setter
+            if ( arguments.length > 1 ) {
+
                 if ( $.isPlainObject( val ) &&
                         $.isPlainObject( opts[ key ] ) ) {
                     $.extend( opts[ key ], val );
                 } else {
                     opts[ key ] = val;
                 }
+
             } else {    // getter
                 return key ? opts[ key ] : opts;
             }
         },
 
+        /**
+         * 获取文件统计信息。返回一个包含一下信息的对象。
+         * * `successNum` 上传成功的文件数
+         * * `uploadFailNum` 上传失败的文件数
+         * * `cancelNum` 被删除的文件数
+         * * `invalidNum` 无效的文件数
+         * * `queueNum` 还在队列中的文件数
+         * @method getStats
+         * @grammar getStats() => Object
+         */
         getStats: function() {
             // return this._mgr.getStats.apply( this._mgr, arguments );
-            var stats = this.request( 'get-stats' );
+            var stats = this.request('get-stats');
 
             return {
                 successNum: stats.numOfSuccess,
-                queueFailNum: 0,
+
+                // who care?
+                // queueFailNum: 0,
                 cancelNum: stats.numOfCancel,
                 invalidNum: stats.numOfInvalid,
                 uploadFailNum: stats.numOfUploadFailed,
@@ -106,29 +147,31 @@ define( 'webuploader/core/uploader', [ 'webuploader/base',
             return true;
         },
 
+        /**
+         * @method request
+         * @grammar request( command, args ) => * | Promise
+         * @grammar request( command, args, callback ) => Promise
+         */
         request: Base.noop,
 
         reset: function() {
             // @todo
-        },
-
-        formatSize: function( size, pointLength ) {
-            var units = [ 'B', 'K', 'M', 'G', 'TB' ],
-                unit = units.shift();
-
-            while ( size > 1024 && units.length ) {
-                unit = units.shift();
-                size = size / 1024;
-            }
-
-            return (unit === 'B' ? size : size.toFixed( pointLength || 2 )) +
-                    unit;
         }
-    } );
+    });
 
+    /**
+     * 创建Uploader实例，等同于new Uploader( opts );
+     * @method create
+     * @class Base
+     * @static
+     * @grammar Base.create( opts ) => Uploader
+     */
     Base.create = function( opts ) {
         return new Uploader( opts );
     };
 
+    // 暴露Uploader，可以通过它来扩展业务逻辑。
+    Base.Uploader = Uploader;
+
     return Uploader;
-} );
+});

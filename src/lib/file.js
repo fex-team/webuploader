@@ -1,11 +1,12 @@
 /**
  * @fileOverview File
- * @import base.js, runtime/client.js, lib/blob.js
  */
-define( 'webuploader/lib/file', [ 'webuploader/base',
-        'webuploader/lib/blob' ], function( Base, Blob ) {
-    var $ = Base.$,
-        uid = 0,
+define([
+    '../base',
+    './blob'
+], function( Base, Blob ) {
+
+    var uid = 0,
         rExt = /\.([^.]+)$/;
 
     function File( ruid, file ) {
@@ -16,14 +17,15 @@ define( 'webuploader/lib/file', [ 'webuploader/base',
 
         if ( !this.type ) {
             ext = rExt.exec( file.name ) ? RegExp.$1.toLowerCase() : '';
-            if ( ~[ 'jpg', 'jpeg', 'png', 'gif', 'bmp' ] ) {
-                this.type = 'image/'+ext;
+            if ( ~'jpg,jpeg,png,gif,bmp'.indexOf( ext ) ) {
+                this.type = 'image/' + ext;
             }
         }
 
-        this.lastModifiedDate = file.lastModifiedDate || (new Date()).toLocaleString();
-
+        this.ext = ext;
+        this.lastModifiedDate = file.lastModifiedDate ||
+                (new Date()).toLocaleString();
     }
 
     return Base.inherits( Blob, File );
-} );
+});
