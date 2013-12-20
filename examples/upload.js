@@ -64,9 +64,10 @@
             paste: '#uploader',
             swf: '../dist/Uploader.swf',
             chunked: true,
-            resize: false,
-            // server: '../server/fileupload.php?debug=5',
-            server: 'http://liaoxuezhi.fe.baidu.com/webupload/fileupload.php',
+            // runtimeOrder: 'flash',
+            sendAsBinary: true,
+            server: '../server/fileupload.php',
+            // server: 'http://liaoxuezhi.fe.baidu.com/webupload/fileupload.php',
             // server: 'http://www.2betop.net/fileupload.php',
             fileNumLimit: 300,
             fileSizeLimit: 200 * 1024 * 1024,    // 200 M
@@ -142,6 +143,7 @@
 
                 // 成功
                 if ( cur === 'error' || cur === 'invalid' ) {
+                    console.log( file.statusText );
                     showError( file.statusText );
                     percentages[ file.id ][ 1 ] = 1;
                 } else if ( cur === 'interrupt' ) {

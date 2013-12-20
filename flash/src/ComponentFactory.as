@@ -5,8 +5,7 @@ package
     import com.FilePicker;
     import com.FileReader;
     import com.FileReaderSync;
-    import com.ImageCompress;
-    import com.ImagePreview;
+    import com.Image;
     import com.XMLHttpRequest;
     import com.errors.RuntimeError;
     
@@ -16,7 +15,7 @@ package
 
     public class ComponentFactory
     {
-        FilePicker, Blob, File, FileReader, FileReaderSync, ImageCompress, ImagePreview, XMLHttpRequest;
+        FilePicker, Blob, File, FileReader, FileReaderSync, Image, XMLHttpRequest;
 
         private var _registry:Object = {};
 

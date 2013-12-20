@@ -1,100 +1,93 @@
 /**
  * @fileOverview FilePicker
- * @import base.js, runtime/html5/runtime.js, lib/file.js
  */
-define( 'webuploader/runtime/html5/filepicker', [
-        'webuploader/base',
-        'webuploader/runtime/html5/runtime',
-        'webuploader/lib/file'
-    ], function( Base, Html5Runtime, File ) {
+define([
+    'base',
+    './runtime'
+], function( Base, Html5Runtime ) {
 
-        var $ = Base.$;
+    var $ = Base.$;
 
-        function getMineTypeByExtensions( extensition ) {
+    return Html5Runtime.register( 'FilePicker', {
+        init: function() {
+            var container = this.getRuntime().getContainer(),
+                me = this,
+                owner = me.owner,
+                opts = me.options,
+                lable = $( document.createElement('label') ),
+                input = $( document.createElement('input') ),
+                arr, i, len, mouseHandler;
 
-        }
+            input.attr( 'type', 'file' );
 
-        return Html5Runtime.register( 'FilePicker', {
-            init: function() {
-                var container = this.getRuntime().getContainer(),
-                    me = this,
-                    owner = me.owner,
-                    opts = me.options,
-                    lable = $( document.createElement( 'label' ) ),
-                    input = $( document.createElement( 'input' ) ),
-                    browser = Base.browser,
-                    arr, i, len, mouseHandler;
+            input.css({
+                position: 'absolute',
+                clip: 'rect(1px,1px,1px,1px)'
+            });
 
-                input.attr( 'type', 'file' );
+            lable.on( 'click', function() {
+                input.trigger('click');
+            });
 
-                input.css({
-                    position: 'absolute',
-                    clip: 'rect(1px,1px,1px,1px)'
-                });
+            lable.css({
+                opacity: 0,
+                width: '100%',
+                height: '100%',
+                display: 'block',
+                cursor: 'pointer',
+                background: '#ffffff'
+            });
 
-                lable.on( 'click', function() {
-                    input.trigger( 'click' );
-                });
-
-                lable.css({
-                    opacity: 0,
-                    width: '100%',
-                    height: '100%',
-                    display: 'block',
-                    cursor: 'pointer',
-                    background: '#ffffff'
-                });
-
-                if ( opts.multiple ) {
-                    input.attr( 'multiple', 'multiple' );
-                }
-
-                // @todo Firefox不支持单独指定后缀
-                if ( opts.accept && opts.accept.length > 0 ) {
-                    arr = [];
-
-                    for (i = 0, len = opts.accept.length; i < len; i++) {
-                        arr.push( opts.accept[i].mimeTypes );
-                    };
-
-                    input.attr( 'accept', arr.join( ',' ) );
-                }
-
-                container.append( input );
-                container.append( lable );
-
-                mouseHandler = function( e ) {
-                    owner.trigger( e.type );
-                };
-
-                input.on( 'change', function( e ) {
-                    var fn = arguments.callee,
-                        ruid = owner.getRuid(),
-                        clone;
-
-                    me.files = e.target.files;
-
-                    // reset input
-                    clone = this.cloneNode( true );
-                    this.parentNode.replaceChild( clone, this );
-
-                    input.off();
-                    input = $( clone ).on( 'change', fn ).on( 'mouseenter mouseleave', mouseHandler);
-
-                    owner.trigger( 'change' );
-                } );
-
-                lable.on( 'mouseenter mouseleave', mouseHandler );
-
-            },
-
-
-            getFiles: function() {
-                return this.files;
-            },
-
-            destroy: function() {
-                // todo
+            if ( opts.multiple ) {
+                input.attr( 'multiple', 'multiple' );
             }
-        } );
-    } );
+
+            // @todo Firefox不支持单独指定后缀
+            if ( opts.accept && opts.accept.length > 0 ) {
+                arr = [];
+
+                for ( i = 0, len = opts.accept.length; i < len; i++ ) {
+                    arr.push( opts.accept[ i ].mimeTypes );
+                }
+
+                input.attr( 'accept', arr.join(',') );
+            }
+
+            container.append( input );
+            container.append( lable );
+
+            mouseHandler = function( e ) {
+                owner.trigger( e.type );
+            };
+
+            input.on( 'change', function( e ) {
+                var fn = arguments.callee,
+                    clone;
+
+                me.files = e.target.files;
+
+                // reset input
+                clone = this.cloneNode( true );
+                this.parentNode.replaceChild( clone, this );
+
+                input.off();
+                input = $( clone ).on( 'change', fn )
+                        .on( 'mouseenter mouseleave', mouseHandler );
+
+                owner.trigger('change');
+            });
+
+            lable.on( 'mouseenter mouseleave', mouseHandler );
+
+        },
+
+
+        getFiles: function() {
+            return this.files;
+        },
+
+        destroy: function() {
+            // todo
+        }
+    });
+});

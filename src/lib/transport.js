@@ -1,16 +1,18 @@
 /**
  * @fileOverview Transport
- * @import base.js, runtime/client.js, core/mediator.js
  */
-define( 'webuploader/lib/transport', [ 'webuploader/base',
-        'webuploader/runtime/client',
-        'webuploader/core/mediator'
-        ], function( Base, RuntimeClient, Mediator ) {
+define([
+    '../base',
+    '../runtime/client',
+    '../mediator'
+], function( Base, RuntimeClient, Mediator ) {
 
     var $ = Base.$;
 
     function Transport( opts ) {
-        this.options = $.extend( true, {}, Transport.options, opts || {} );
+        var me = this;
+
+        opts = me.options = $.extend( true, {}, Transport.options, opts || {} );
         RuntimeClient.call( this, 'Transport' );
 
         this._blob = null;
@@ -18,6 +20,9 @@ define( 'webuploader/lib/transport', [ 'webuploader/base',
         this._headers = opts.headers || {};
 
         this.on( 'progress', this._timeout );
+        this.on( 'load error', function() {
+            clearTimeout( me._timer );
+        });
     }
 
     Transport.options = {
@@ -29,8 +34,9 @@ define( 'webuploader/lib/transport', [ 'webuploader/base',
         fileVar: 'file',
         timeout: 2 * 60 * 1000,    // 2分钟
         formData: {},
-        headers: {}
-    }
+        headers: {},
+        sendAsBinary: false
+    };
 
     $.extend( Transport.prototype, {
 
@@ -45,12 +51,12 @@ define( 'webuploader/lib/transport', [ 'webuploader/base',
 
             // 连接到blob归属的同一个runtime.
             me.connectRuntime( blob.ruid, function() {
-                me.exec( 'init' );
-            } );
+                me.exec('init');
+            });
 
             me._blob = blob;
             opts.fileVar = key || opts.fileVar;
-            opts.filename = filename;
+            opts.filename = filename || opts.filename;
         },
 
         // 添加其他字段
@@ -71,34 +77,32 @@ define( 'webuploader/lib/transport', [ 'webuploader/base',
         },
 
         send: function( method ) {
-
-            // 在发送之间可以添加字段什么的。。。
-            this.trigger( 'beforeSend', this._formData, this._headers );
-            this.exec( 'send' );
+            this.exec( 'send', method );
             this._timeout();
         },
 
         abort: function() {
-            return this.exec( 'abort' );
+            clearTimeout( this._timer );
+            return this.exec('abort');
         },
 
         destroy: function() {
-            this.trigger( 'destroy' );
+            this.trigger('destroy');
             this.off();
-            this.exec( 'destroy' );
+            this.exec('destroy');
             this.disconnectRuntime();
         },
 
         getResponse: function() {
-            return this.exec( 'getResponse' );
+            return this.exec('getResponse');
         },
 
         getResponseAsJson: function() {
-            return this.exec( 'getResponseAsJson' );
+            return this.exec('getResponseAsJson');
         },
 
-        getResponseHeader: function() {
-            return this.exec( 'getResponseHeader' );
+        getStatus: function() {
+            return this.exec('getStatus');
         },
 
         _timeout: function() {
@@ -116,9 +120,10 @@ define( 'webuploader/lib/transport', [ 'webuploader/base',
             }, duration );
         }
 
-    } );
+    });
 
+    // 让Transport具备事件功能。
     Mediator.installTo( Transport.prototype );
 
     return Transport;
-} );
+});
