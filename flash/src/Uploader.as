@@ -30,7 +30,7 @@ package
         public static var compFactory:ComponentFactory;
 
         /**
-         * Main constructor for the Plupload class.
+         * Main constructor for the Uploader class.
          */
         public function Uploader()
         {
@@ -91,29 +91,38 @@ package
 
         public function exec(uid:String, compName:String, action:String, args:* = null) : *
         {
-            // Uploader.log([uid, compName, action, args]);
+            // Uploader.log(arguments);
 
             uid = Utils.sanitize(uid); // make it safe
 
-            var comp:* = Uploader.compFactory.get(uid);
+            var comp:* = Uploader.compFactory.get(uid),
+				ret:*;
 
             // WebUploader.log([compName, action]);
 
             try {
-                // initialize corresponding com
-                if (!comp) {
+				if ( action == 'destroy' ) {
+					
+					if ( comp.hasOwnProperty(action) ) {
+						ret = comp[action].apply(comp, args as Array);
+					}
+					
+					Uploader.compFactory.remove(uid);
+					// Uploader.log(['destory', compName, uid]);
+					
+					return ret;
+					
+				} else if (!comp) {
                     comp = Uploader.compFactory.create(this, uid, compName);
                 }
 
                 // execute the action if available
                 if (comp.hasOwnProperty(action)) {
 					// Uploader.log([uid, compName, action, args]);
-					var ret:* = comp[action].apply(comp, args as Array);
+					ret = comp[action].apply(comp, args as Array);
 					
 					// Uploader.log([uid, compName, action, args, ret]);
                     return ret;
-                } else {
-                    _fireEvent(uid + "::Exception", { name: "RuntimeError", code: RuntimeError.NOT_SUPPORTED_ERR });
                 }
 
             } catch(err:*) { // re-route exceptions thrown by components (TODO: check marshallExceptions feature)
@@ -174,7 +183,7 @@ package
 
 
         public static function log(obj:*) : void {
-            ExternalInterface.call('console.log', obj);
+			ExternalInterface.call('console.log', obj);
         }
 
     }

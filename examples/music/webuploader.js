@@ -1,26 +1,23 @@
 /* WebUploader 0.1.0 */
 (function( window, undefined ) {
     /**
-     * @fileOverview 实现amd js功能，大部分的代码都是通过amd规范组织起来的，
-     * 此文件主要当代码不在AMD环境下时使用。也就是说如果你的应用已经是用了RequireJS的话
-     * 此文件完全没有必要打包进来。
+     * @fileOverview 让内部各个部件的代码可以用amdefine组织起来。
      */
-    var amd = (function( exports, undefined ) {
+    var amd = (function( global ) {
             var modules = {};
     
             function require( deps, callback ) {
                 var args = [],
                     len = deps.length,
                     i = -1,
-                    dep,
-                    module;
+                    dep, module;
     
                 while ( ++i < len ) {
                     dep = deps[ i ];
-                    module = modules[ dep ] || exports[ dep ];
+                    module = modules[ dep ] || global[ dep ];
     
                     if ( !module ) {
-                        throw new Error( '模块没有定义' + dep );
+                        throw new Error( '`' + dep '` is undefined' );
                     }
     
                     args.push( module );
@@ -30,21 +27,19 @@
             }
     
             function define( id, deps, definition ) {
-                if ( typeof id !== 'string' ) {
-                    throw new Error( '模块定义必须以字符串形式指定' );
+                if ( arguments.length === 2 ) {
+                    definition = deps;
+                    deps = null;
                 }
     
-                if ( deps === undefined ) {
-                    throw new Error( '依赖格式不正确' );
+                if ( typeof id !== 'string' || !definition ) {
+                    throw new Error('Define Error');
                 }
     
-                if ( definition === undefined ) {
-                    throw new Error( '模块定义工厂方法格式不正确' );
-                }
-    
-                require( deps, function() {
-                    modules[ id ] = definition.apply( null, arguments );
-                } );
+                require( deps || [], function() {
+                    modules[ id ] = typeof definition === 'function' ?
+                            definition.apply( null, arguments ) : definition;
+                });
             }
     
             return {
@@ -60,17 +55,17 @@
     /**
      * @fileOverview 基础类方法。
      */
+    define( 'base', [
+        'jQuery'
+    ], function( $ ) {
     
-    // 如果生成依赖jquery版本，则用
-    // define( 'webuploader/base', [ 'jQuery' ], function( $ ) {
-    define( 'webuploader/base', [ 'jQuery' ], function( $ ) {
         var noop = function() {},
             call = Function.call;
     
         // http://jsperf.com/uncurrythis
         // 反科里化
         function uncurryThis( fn ) {
-            return function () {
+            return function() {
                 return call.apply( fn, arguments );
             };
         }
@@ -85,7 +80,7 @@
             var f;
     
             if ( Object.create ) {
-                return Object.create( proto )
+                return Object.create( proto );
             } else {
                 f = function(){};
                 f.prototype = proto;
@@ -108,14 +103,16 @@
             when: $.when,
     
             // 简单的浏览器检测。
-            browser: (function( ua ){
+            browser: (function( ua ) {
                 var ret = {},
-                    webkit = ua.match(/WebKit\/([\d.]+)/),
-                    chrome = ua.match(/Chrome\/([\d.]+)/) || ua.match(/CriOS\/([\d.]+)/),
-                    ie = ua.match(/MSIE\s([\d.]+)/),
-                    firefox = ua.match(/Firefox\/([\d.]+)/),
-                    safari = ua.match(/Safari\/([\d.]+)/),
-                    opera = ua.match(/OPR\/([\d.]+)/);
+                    webkit = ua.match( /WebKit\/([\d.]+)/ ),
+                    chrome = ua.match( /Chrome\/([\d.]+)/ ) ||
+                        ua.match( /CriOS\/([\d.]+)/ ),
+    
+                    ie = ua.match( /MSIE\s([\d.]+)/ ),
+                    firefox = ua.match( /Firefox\/([\d.]+)/ ),
+                    safari = ua.match( /Safari\/([\d.]+)/ ),
+                    opera = ua.match( /OPR\/([\d.]+)/ );
     
                 webkit && (ret.webkit = parseFloat( webkit[ 1 ] ));
                 chrome && (ret.chrome = parseFloat( chrome[ 1 ] ));
@@ -124,7 +121,7 @@
                 safari && (ret.safari = parseFloat( safari[ 1 ] ));
                 opera && (ret.opera = parseFloat( opera[ 1 ] ));
     
-                return ret
+                return ret;
             })( navigator.userAgent ),
     
             /**
@@ -164,7 +161,7 @@
                 if ( typeof protos === 'function' ) {
                     child = protos;
                     protos = null;
-                } else if ( protos && protos.hasOwnProperty( 'constructor' ) ) {
+                } else if ( protos && protos.hasOwnProperty('constructor') ) {
                     child = protos.constructor;
                 } else {
                     child = function() {
@@ -201,10 +198,10 @@
             })(),
     
             nextTick: (function() {
-                
+    
                 return function( cb ) {
                     setTimeout( cb, 1 );
-                }
+                };
     
                 // @bug 当浏览器不在当前窗口时就停了。
                 // var next = window.requestAnimationFrame ||
@@ -233,7 +230,7 @@
     
                     return (prefix || 'o_') + guid + (counter++).toString( 32 );
                 };
-            }()),
+            })(),
     
             formatSize: function( size, pointLength, units ) {
                 var unit;
@@ -248,13 +245,14 @@
                         unit;
             }
         };
-    } );
+    });
 
     /**
      * @fileOverview Mediator
-     * @import base.js
      */
-    define( 'webuploader/core/mediator', [ 'webuploader/base' ], function( Base ) {
+    define( 'core/mediator', [
+        'base'
+    ], function( Base ) {
         var $ = Base.$,
             slice = [].slice,
             protos;
@@ -432,15 +430,15 @@
             }
     
         }, protos );
-    } );
+    });
 
     /**
      * @fileOverview Uploader上传类
-     * @import base.js, core/mediator.js
      */
-    define( 'webuploader/core/uploader', [ 'webuploader/base',
-            'webuploader/core/mediator'
-            ], function( Base, Mediator, Runtime ) {
+    define( 'core/uploader', [
+        'base',
+        'core/mediator'
+    ], function( Base, Mediator, Runtime ) {
     
         var $ = Base.$;
     
@@ -557,164 +555,15 @@
         Base.Uploader = Uploader;
     
         return Uploader;
-    } );
-
-    /**
-     * @fileOverview 组件基类。
-     * @import base.js
-     */
-    define( 'webuploader/widgets/widget', [ 'webuploader/base',
-            'webuploader/core/uploader' ], function( Base, Uploader ) {
-    
-        var $ = Base.$,
-            _init = Uploader.prototype._init,
-            IGNORE = {},
-            widgetClass = [];
-    
-        function isArrayLike( obj ) {
-            if ( !obj ) {
-                return false;
-            }
-    
-            var length = obj.length,
-                type = $.type( obj );
-    
-            if ( obj.nodeType === 1 && length ) {
-                return true;
-            }
-    
-            return type === 'array' || type !== 'function' && type !== 'string' &&
-                ( length === 0 ||
-                typeof length === 'number' && length > 0 && ( length - 1 ) in obj );
-        }
-    
-        function Widget( uploader ) {
-            this.owner = uploader;
-            this.options = uploader.options;
-        }
-    
-        $.extend( Widget.prototype, {
-    
-            init: Base.noop,
-    
-            // 类Backbone的事件监听声明，监听uploader实例上的事件
-            // widget直接无法监听事件，事件只能通过uploader来传递
-    
-            invoke: function( apiName, args ) {
-    
-                /*
-                    {
-                        'make-thumb': 'makeThumb'
-                    }
-                 */
-                var map = this.responseMap;
-    
-                // 如果无API响应声明则忽略
-                if ( !map
-                    || !( apiName in map )
-                    || !( map[ apiName ] in this )
-                    || !$.isFunction( this[ map[ apiName ] ] ) ) {
-                    return IGNORE;
-                }
-    
-                return this[ map[ apiName ] ].apply( this, args );
-    
-            },
-    
-            request: function( apiName, args, callback ) {
-                return this.owner.request.apply( this.owner, arguments );
-            }
-        } );
-    
-        // 扩展Uploader.
-        $.extend( Uploader.prototype, {
-    
-            // 覆写_init用来初始化widgets
-            _init: function() {
-                var me = this,
-                    widgets = me._widgets = [];
-    
-                $.each( widgetClass, function( _, klass ) {
-                    widgets.push( new klass( me ) );
-                } );
-    
-                return _init.apply( me, arguments );
-            },
-    
-            request: function( apiName, args, callback ) {
-                var i = 0,
-                    widgets = this._widgets,
-                    len = widgets.length,
-                    rlts = [],
-                    dfds = [],
-                    widget, rlt;
-    
-                args = isArrayLike( args ) ? args : [ args ];
-    
-                for( ; i < len; i++ ) {
-                    widget = widgets[ i ];
-                    rlt = widget.invoke( apiName, args );
-    
-                    if ( rlt !== IGNORE ) {
-    
-                        // Deferred对象
-                        if ( Base.isPromise( rlt ) ) {
-                            dfds.push( rlt );
-                        } else {
-                            rlts.push( rlt );
-                        }
-                    };
-                }
-    
-                // 如果有callback，则用异步方式。
-                if ( callback || dfds.length ) {
-                    return Base.when.apply( Base, dfds )
-                        .done( callback || Base.noop );
-    
-                    // @todo what if fail?
-                } else {
-                    return rlts[ 0 ];
-                }
-            }
-        } );
-    
-        /**
-         * 添加组件
-         * @param  {object} widgetProto 组件原型，构造函数通过constructor属性定义
-         * @param  {object} responseMap API名称与函数实现的映射
-         * @example
-         *     Uploader.register( {
-         *         init: function( options ) {},
-         *         makeThumb: function() {}
-         *     }, {
-         *         'make-thumb': 'makeThumb'
-         *     } );
-         */
-        Uploader.register = function( responseMap, widgetProto ) {
-            var map = { init: 'init' }, klass;
-    
-            if ( arguments.length === 1 ) {
-                widgetProto = responseMap;
-                widgetProto.responseMap = map;
-            } else {
-                widgetProto.responseMap = $.extend(map, responseMap);
-            }
-    
-            klass = Base.inherits( Widget, widgetProto );
-            widgetClass.push( klass );
-    
-            return klass;
-        };
-    
-        return Widget;
-    } );
+    });
 
     /**
      * @fileOverview Runtime管理器，负责Runtime的选择, 连接
-     * @import base.js, core/mediator.js
      */
-    define( 'webuploader/runtime/runtime', [ 'webuploader/base',
-        'webuploader/core/mediator' ], function( Base, Mediator ) {
+    define( 'runtime/runtime', [
+        'base',
+        'core/mediator'
+    ], function( Base, Mediator ) {
     
         var $ = Base.$,
             factories = {};
@@ -812,16 +661,16 @@
     
         Mediator.installTo( Runtime.prototype );
         return Runtime;
-    } );
+    });
 
     /**
      * @fileOverview Runtime管理器，负责Runtime的选择, 连接
-     * @import base.js, core/mediator.js, runtime/runtime.js
      */
-    define( 'webuploader/runtime/client', [ 'webuploader/base',
-            'webuploader/core/mediator',
-            'webuploader/runtime/runtime'
-            ], function( Base, Mediator, Runtime ) {
+    define( 'runtime/client', [
+        'base',
+        'core/mediator',
+        'runtime/runtime'
+    ], function( Base, Mediator, Runtime ) {
     
         var cache = (function() {
             var obj = {};
@@ -931,14 +780,16 @@
     
         Mediator.installTo( RuntimeClient.prototype );
         return RuntimeClient;
-    } );
+    });
 
     /**
      * @fileOverview Blob
-     * @import base.js, runtime/client.js
      */
-    define( 'webuploader/lib/blob', [ 'webuploader/base',
-            'webuploader/runtime/client' ], function( Base, RuntimeClient ) {
+    define( 'lib/blob', [
+        'base',
+        'runtime/client'
+    ], function( Base, RuntimeClient ) {
+    
         var $ = Base.$;
     
         function Blob( ruid, source ) {
@@ -971,14 +822,16 @@
         } );
     
         return Blob;
-    } );
+    });
 
     /**
      * @fileOverview File
-     * @import base.js, runtime/client.js, lib/blob.js
      */
-    define( 'webuploader/lib/file', [ 'webuploader/base',
-            'webuploader/lib/blob' ], function( Base, Blob ) {
+    define( 'lib/file', [
+        'base',
+        'lib/blob'
+    ], function( Base, Blob ) {
+    
         var $ = Base.$,
             uid = 0,
             rExt = /\.([^.]+)$/;
@@ -1000,16 +853,16 @@
         }
     
         return Base.inherits( Blob, File );
-    } );
+    });
 
     /**
      * @fileOverview 错误信息
-     * @import base.js, runtime/client.js, lib/file.js
      */
-    define( 'webuploader/lib/filepicker', [ 'webuploader/base',
-            'webuploader/runtime/client',
-            'webuploader/lib/file'
-            ], function( Base, RuntimeClent, File ) {
+    define( 'lib/filepicker', [
+        'base',
+        'runtime/client',
+        'lib/file'
+    ], function( Base, RuntimeClent, File ) {
     
         var $ = Base.$;
     
@@ -1023,7 +876,7 @@
             }
     
             opts.label = opts.label || opts.container.text();
-            opts.button = $( document.createElement('div') );
+            opts.button = $( opts.button || document.createElement('div') );
             opts.button.text( opts.label );
             opts.container.append( opts.button );
     
@@ -1105,17 +958,179 @@
 
     /**
      * @fileOverview 组件基类。
-     * @import base.js, core/uploader.js, widgets/widget.js, lib/filepicker.js
      */
-    define('webuploader/widgets/filepicker', ['webuploader/base',
-        'webuploader/core/uploader',
-        'webuploader/lib/filepicker'
+    define( 'widgets/widget', [
+        'base',
+        'core/uploader'
+    ], function( Base, Uploader ) {
+    
+        var $ = Base.$,
+            _init = Uploader.prototype._init,
+            IGNORE = {},
+            widgetClass = [];
+    
+        function isArrayLike( obj ) {
+            if ( !obj ) {
+                return false;
+            }
+    
+            var length = obj.length,
+                type = $.type( obj );
+    
+            if ( obj.nodeType === 1 && length ) {
+                return true;
+            }
+    
+            return type === 'array' || type !== 'function' && type !== 'string' &&
+                    (length === 0 || typeof length === 'number' && length > 0 &&
+                    (length - 1) in obj);
+        }
+    
+        function Widget( uploader ) {
+            this.owner = uploader;
+            this.options = uploader.options;
+        }
+    
+        $.extend( Widget.prototype, {
+    
+            init: Base.noop,
+    
+            // 类Backbone的事件监听声明，监听uploader实例上的事件
+            // widget直接无法监听事件，事件只能通过uploader来传递
+            invoke: function( apiName, args ) {
+    
+                /*
+                    {
+                        'make-thumb': 'makeThumb'
+                    }
+                 */
+                var map = this.responseMap;
+    
+                // 如果无API响应声明则忽略
+                if ( !map || !(apiName in map) || !(map[ apiName ] in this) ||
+                        !$.isFunction( this[ map[ apiName ] ] ) ) {
+    
+                    return IGNORE;
+                }
+    
+                return this[ map[ apiName ] ].apply( this, args );
+    
+            },
+    
+            request: function() {
+                return this.owner.request.apply( this.owner, arguments );
+            }
+        });
+    
+        // 扩展Uploader.
+        $.extend( Uploader.prototype, {
+    
+            // 覆写_init用来初始化widgets
+            _init: function() {
+                var me = this,
+                    widgets = me._widgets = [];
+    
+                $.each( widgetClass, function( _, klass ) {
+                    widgets.push( new klass( me ) );
+                });
+    
+                return _init.apply( me, arguments );
+            },
+    
+            request: function( apiName, args, callback ) {
+                var i = 0,
+                    widgets = this._widgets,
+                    len = widgets.length,
+                    rlts = [],
+                    dfds = [],
+                    widget, rlt;
+    
+                args = isArrayLike( args ) ? args : [ args ];
+    
+                for ( ; i < len; i++ ) {
+                    widget = widgets[ i ];
+                    rlt = widget.invoke( apiName, args );
+    
+                    if ( rlt !== IGNORE ) {
+    
+                        // Deferred对象
+                        if ( Base.isPromise( rlt ) ) {
+                            dfds.push( rlt );
+                        } else {
+                            rlts.push( rlt );
+                        }
+                    }
+                }
+    
+                // 如果有callback，则用异步方式。
+                if ( callback || dfds.length ) {
+                    return Base.when.apply( Base, dfds )
+    
+                            // 很重要不能删除。删除了会死循环。
+                            // 保证执行顺序。让callback总是在下一个tick中执行。
+                            .then(function() {
+                                var deferred = Base.Deferred(),
+                                    args = arguments;
+    
+                                setTimeout(function() {
+                                    deferred.resolve.apply( deferred, args );
+                                }, 1 );
+    
+                                return deferred.promise();
+                            })
+                            .then( callback || Base.noop );
+                } else {
+                    return rlts[ 0 ];
+                }
+            }
+        });
+    
+        /**
+         * 添加组件
+         * @param  {object} widgetProto 组件原型，构造函数通过constructor属性定义
+         * @param  {object} responseMap API名称与函数实现的映射
+         * @example
+         *     Uploader.register( {
+         *         init: function( options ) {},
+         *         makeThumb: function() {}
+         *     }, {
+         *         'make-thumb': 'makeThumb'
+         *     } );
+         */
+        Uploader.register = function( responseMap, widgetProto ) {
+            var map = { init: 'init' },
+                klass;
+    
+            if ( arguments.length === 1 ) {
+                widgetProto = responseMap;
+                widgetProto.responseMap = map;
+            } else {
+                widgetProto.responseMap = $.extend( map, responseMap );
+            }
+    
+            klass = Base.inherits( Widget, widgetProto );
+            widgetClass.push( klass );
+    
+            return klass;
+        };
+    
+        return Widget;
+    });
+
+    /**
+     * @fileOverview 组件基类。
+     */
+    define( 'widgets/filepicker', [
+        'base',
+        'core/uploader',
+        'lib/filepicker',
+        'widgets/widget'
     ], function(Base, Uploader, FilePicker) {
     
         var $ = Base.$,
             browser = Base.browser;
     
-        $.extend(Uploader.options, {
+        $.extend( Uploader.options, {
             pick: {
                 multiple: true,
                 id: '#uploaderBtn'
@@ -1129,68 +1144,68 @@
         });
     
         return Uploader.register({
-                'add-btn': 'addButton',
-                'refresh': 'refresh'
+            'add-btn': 'addButton',
+            'refresh': 'refresh'
+        },
+    
+        {
+            init: function( opts ) {
+                this.pickers = [];
+                return opts.pick && this.addButton( opts.pick );
             },
     
-            {
-                init: function( opts ) {
-                    this.pickers = [];
-                    return opts.pick && this.addButton( opts.pick );
-                },
+            refresh: function() {
+                $.each( this.pickers, function() {
+                    this.refresh();
+                });
+            },
     
-                refresh: function() {
-                    $.each( this.pickers, function() {
-                        this.refresh();
-                    });
-                },
+            addButton: function( pick ) {
+                var me = this,
+                    opts = me.options,
+                    options, picker, deferred;
     
-                addButton: function( pick ) {
-                    var me = this,
-                        opts = me.options,
-                        options, picker, deferred;
-    
-                    if ( !pick ) {
-                        return;
-                    }
-    
-                    deferred = Base.Deferred();
-                    if (typeof pick === 'string') {
-                        pick = {
-                            id: pick
-                        };
-                    }
-    
-                    options = $.extend({}, pick, {
-                        accept: opts.accept,
-                        swf: opts.swf,
-                        runtimeOrder: opts.runtimeOrder
-                    });
-    
-                    picker = new FilePicker(options);
-    
-                    picker.once('ready', deferred.resolve);
-                    picker.on('select', function(files) {
-                        me.owner.request('add-file', [files]);
-                    });
-                    picker.init();
-    
-                    this.pickers.push( picker );
-    
-                    return deferred.promise();
+                if ( !pick ) {
+                    return;
                 }
-            });
+    
+                deferred = Base.Deferred();
+                if (typeof pick === 'string') {
+                    pick = {
+                        id: pick
+                    };
+                }
+    
+                options = $.extend({}, pick, {
+                    accept: opts.accept,
+                    swf: opts.swf,
+                    runtimeOrder: opts.runtimeOrder
+                });
+    
+                picker = new FilePicker(options);
+    
+                picker.once('ready', deferred.resolve);
+                picker.on('select', function(files) {
+                    me.owner.request('add-file', [files]);
+                });
+                picker.init();
+    
+                this.pickers.push( picker );
+    
+                return deferred.promise();
+            }
+        });
     });
 
     /**
      * @fileOverview 错误信息
-     * @import base.js, core/mediator.js, runtime/client.js, runtime/runtime.js
      */
-    define( 'webuploader/lib/dnd', [ 'webuploader/base',
-            'webuploader/core/mediator',
-            'webuploader/runtime/client',
-            'webuploader/runtime/runtime'
-            ], function( Base, Mediator, RuntimeClent, Runtime ) {
+    define( 'lib/dnd', [
+        'base',
+        'core/mediator',
+        'runtime/client',
+        'runtime/runtime'
+    ], function( Base, Mediator, RuntimeClent, Runtime ) {
     
         var $ = Base.$;
     
@@ -1233,13 +1248,13 @@
 
     /**
      * @fileOverview DragAndDrop Widget。
-     * @import base.js, widgets/widget.js, core/uploader.js, lib/dnd.js
      */
-    define( 'webuploader/widgets/filednd', [
-        'webuploader/base',
-        'webuploader/core/uploader',
-        'webuploader/lib/dnd' ], function(
-            Base, Uploader, Dnd ) {
+    define( 'widgets/filednd', [
+        'base',
+        'core/uploader',
+        'lib/dnd',
+        'widgets/widget'
+    ], function( Base, Uploader, Dnd ) {
     
         var $ = Base.$;
     
@@ -1271,539 +1286,535 @@
                 return deferred.promise();
             }
         });
-    
-    } );
+    });
 
     /**
      * @fileOverview 文件属性封装
-     * @import base.js, core/mediator.js
      */
-    define( 'webuploader/core/file', [
-            'webuploader/base',
-            'webuploader/core/mediator'
-        ], function( Base, Mediator ) {
+    define( 'core/file', [
+        'base',
+        'core/mediator'
+    ], function( Base, Mediator ) {
     
-            var $ = Base.$,
-                idPrefix = 'WU_FILE_',
-                idSuffix = 0,
-                rExt = /\.([^.]+)$/,
-                statusMap = {};
+        var $ = Base.$,
+            idPrefix = 'WU_FILE_',
+            idSuffix = 0,
+            rExt = /\.([^.]+)$/,
+            statusMap = {};
     
-            function gid() {
-                return idPrefix + idSuffix++;
-            }
+        function gid() {
+            return idPrefix + idSuffix++;
+        }
+    
+        /**
+         * 构造函数
+         * @class 文件
+         * @constructor File
+         * @param {DOMFile|Object} domfile     HTML5 File对象或者自定义对象
+         */
+        function WUFile( file ) {
+    
+            // if ( !file || !('name' in file) ) {
+            //     throw new Error( 'File构造函数参数错误!' );
+            // }
     
             /**
-             * 构造函数
-             * @class 文件
-             * @constructor File
-             * @param {DOMFile|Object} domfile     HTML5 File对象或者自定义对象
+             * 文件名，包括扩展名
+             * @property name
+             * @type {string}
              */
-            function WUFile( file ) {
+            this.name = file.name || 'Untitled';
     
-                // if ( !file || !('name' in file) ) {
-                //     throw new Error( 'File构造函数参数错误!' );
-                // }
+            /**
+             * 文件体积（字节）
+             * @property size
+             * @type {int}
+             * @default 0
+             */
+            this.size = file.size || 0;
     
-                /**
-                 * 文件名，包括扩展名
-                 * @property name
-                 * @type {string}
-                 */
-                this.name = file.name || 'Untitled';
+            /**
+             * 文件MIMETYPE类型，与文件类型的对应关系请参考 http://t.cn/z8ZnFny
+             * @property type
+             * @type {string}
+             * @default ''
+             */
+            this.type = file.type || 'image/png';
     
-                /**
-                 * 文件体积（字节）
-                 * @property size
-                 * @type {int}
-                 * @default 0
-                 */
-                this.size = file.size || 0;
+            /**
+             * 文件最后修改日期
+             * @property lastModifiedDate
+             * @type {int}
+             * @default 当前时间戳
+             */
+            this.lastModifiedDate = file.lastModifiedDate || (new Date() * 1);
     
-                /**
-                 * 文件MIMETYPE类型，与文件类型的对应关系请参考 http://t.cn/z8ZnFny
-                 * @property type
-                 * @type {string}
-                 * @default ''
-                 */
-                this.type = file.type || 'image/png';
+            /**
+             * 文件ID，每个对象具有唯一ID，与文件名无关
+             * @property id
+             * @type {string}
+             */
+            this.id = gid();
     
-                /**
-                 * 文件最后修改日期
-                 * @property lastModifiedDate
-                 * @type {int}
-                 * @default 当前时间戳
-                 */
-                this.lastModifiedDate = file.lastModifiedDate || (new Date() * 1);
-    
-                /**
-                 * 文件ID，每个对象具有唯一ID，与文件名无关
-                 * @property id
-                 * @type {string}
-                 */
-                this.id = gid();
-    
-                /**
-                 * 文件扩展名，通过文件名获取，例如test.png的扩展名为png
-                 * @property ext
-                 * @type {string}
-                 */
-                this.ext = rExt.exec( file.name ) ? RegExp.$1 : '';
+            /**
+             * 文件扩展名，通过文件名获取，例如test.png的扩展名为png
+             * @property ext
+             * @type {string}
+             */
+            this.ext = rExt.exec( file.name ) ? RegExp.$1 : '';
     
     
-                /**
-                 * 状态文字说明。
-                 * @property statusText
-                 * @type {string}
-                 */
-                this.statusText = '';
+            /**
+             * 状态文字说明。
+             * @property statusText
+             * @type {string}
+             */
+            this.statusText = '';
     
-                /**
-                 * 文件上传成功后对应的服务器端URL
-                 * @property url
-                 * @type {string}
-                 * @default ''
-                 */
-                // this.url = '';
+            /**
+             * 文件上传成功后对应的服务器端URL
+             * @property url
+             * @type {string}
+             * @default ''
+             */
+            // this.url = '';
     
-                // 存储文件状态，防止通过属性直接修改
-                statusMap[ this.id ] = WUFile.Status.INITED;
+            // 存储文件状态，防止通过属性直接修改
+            statusMap[ this.id ] = WUFile.Status.INITED;
     
-                this.source = file;
-                this.loaded = 0;
+            this.source = file;
+            this.loaded = 0;
     
-                this.on( 'error', function( msg ) {
-                    this.setStatus( WUFile.Status.ERROR, msg );
-                } );
-            }
-    
-            $.extend( WUFile.prototype, {
-    
-                /**
-                 * 设置状态，状态变化时会触发`change`事件。
-                 *
-                 * @method setStatus
-                 * @param  {File.Status} status 状态
-                 * @example
-                         文件状态具体包括以下几种类型：
-                         {
-                             // 初始化
-                            INITED:     0,
-                            // 已入队列
-                            QUEUED:     1,
-                            // 正在上传
-                            PROGRESS:     2,
-                            // 上传出错
-                            ERROR:         3,
-                            // 上传成功
-                            COMPLETE:     4,
-                            // 上传取消
-                            CANCELLED:     5
-                        }
-                 */
-                setStatus: function( status, text ) {
-    
-                    var prevStatus = statusMap[ this.id ];
-    
-                    typeof text !== 'undefined' && (this.statusText = text);
-    
-                    if ( status !== prevStatus ) {
-                        statusMap[ this.id ] = status;
-                        /**
-                         * 文件状态变化
-                         * @event statuschange
-                         */
-                        this.trigger( 'statuschange', status, prevStatus );
-                    }
-    
-                },
-    
-                /**
-                 * 获取文件状态
-                 * @return {File.Status}
-                 * @example
-                         文件状态具体包括以下几种类型：
-                         {
-                             // 初始化
-                            INITED:     0,
-                            // 已入队列
-                            QUEUED:     1,
-                            // 正在上传
-                            PROGRESS:     2,
-                            // 上传出错
-                            ERROR:         3,
-                            // 上传成功
-                            COMPLETE:     4,
-                            // 上传取消
-                            CANCELLED:     5
-                        }
-                 */
-                getStatus: function() {
-                    return statusMap[ this.id ];
-                },
-    
-                /**
-                 * 获取文件原始信息。
-                 * @return {*}
-                 */
-                getSource: function() {
-                    return this.source;
-                },
-    
-                destory: function() {
-                    delete statusMap[ this.id ];
-                }
-            } );
-    
-            Mediator.installTo( WUFile.prototype );
-    
-            WUFile.Status = {
-                INITED:     'inited',   // 初始状态
-                QUEUED:     'queued',    // 已经进入队列, 等待上传
-                PROGRESS:   'progress',    // 上传中
-                ERROR:      'error',    // 上传出错，可重试
-                COMPLETE:   'complete',    // 上传完成。
-                CANCELLED:  'cancelled',    // 上传取消。
-                INTERRUPT:  'interrupt',    // 上传中断，可续传。
-                INVALID:    'invalid'    // 文件不合格，不能重试上传。
-            };
-    
-            return WUFile;
+            this.on( 'error', function( msg ) {
+                this.setStatus( WUFile.Status.ERROR, msg );
+            });
         }
-    );
+    
+        $.extend( WUFile.prototype, {
+    
+            /**
+             * 设置状态，状态变化时会触发`change`事件。
+             *
+             * @method setStatus
+             * @param  {File.Status} status 状态
+             * @example
+                     文件状态具体包括以下几种类型：
+                     {
+                         // 初始化
+                        INITED:     0,
+                        // 已入队列
+                        QUEUED:     1,
+                        // 正在上传
+                        PROGRESS:     2,
+                        // 上传出错
+                        ERROR:         3,
+                        // 上传成功
+                        COMPLETE:     4,
+                        // 上传取消
+                        CANCELLED:     5
+                    }
+             */
+            setStatus: function( status, text ) {
+    
+                var prevStatus = statusMap[ this.id ];
+    
+                typeof text !== 'undefined' && (this.statusText = text);
+    
+                if ( status !== prevStatus ) {
+                    statusMap[ this.id ] = status;
+                    /**
+                     * 文件状态变化
+                     * @event statuschange
+                     */
+                    this.trigger( 'statuschange', status, prevStatus );
+                }
+    
+            },
+    
+            /**
+             * 获取文件状态
+             * @return {File.Status}
+             * @example
+                     文件状态具体包括以下几种类型：
+                     {
+                         // 初始化
+                        INITED:     0,
+                        // 已入队列
+                        QUEUED:     1,
+                        // 正在上传
+                        PROGRESS:     2,
+                        // 上传出错
+                        ERROR:         3,
+                        // 上传成功
+                        COMPLETE:     4,
+                        // 上传取消
+                        CANCELLED:     5
+                    }
+             */
+            getStatus: function() {
+                return statusMap[ this.id ];
+            },
+    
+            /**
+             * 获取文件原始信息。
+             * @return {*}
+             */
+            getSource: function() {
+                return this.source;
+            },
+    
+            destory: function() {
+                delete statusMap[ this.id ];
+            }
+        });
+    
+        Mediator.installTo( WUFile.prototype );
+    
+        WUFile.Status = {
+            INITED:     'inited',    // 初始状态
+            QUEUED:     'queued',    // 已经进入队列, 等待上传
+            PROGRESS:   'progress',    // 上传中
+            ERROR:      'error',    // 上传出错，可重试
+            COMPLETE:   'complete',    // 上传完成。
+            CANCELLED:  'cancelled',    // 上传取消。
+            INTERRUPT:  'interrupt',    // 上传中断，可续传。
+            INVALID:    'invalid'    // 文件不合格，不能重试上传。
+        };
+    
+        return WUFile;
+    });
 
     /**
      * @fileOverview 文件队列
-     * @import base.js, core/mediator.js, core/file.js
      */
-    define( 'webuploader/core/queue', [
-            'webuploader/base',
-            'webuploader/core/mediator',
-            'webuploader/core/file'
-    	], function( Base, Mediator, WUFile ) {
+    define( 'core/queue', [
+        'base',
+        'core/mediator',
+        'core/file'
+    ], function( Base, Mediator, WUFile ) {
     
-            var $ = Base.$,
-                STATUS = WUFile.Status;
+        var $ = Base.$,
+            STATUS = WUFile.Status;
+    
+        /**
+         * 文件队列
+         *
+         * @class  Queue
+         * @constructor
+         */
+        function Queue() {
+    
+            this.stats = {
+                numOfQueue: 0,
+                numOfQueueFailed: 0,
+                numOfSuccess: 0,
+                numOfCancel: 0,
+                numOfProgress: 0,
+                numOfUploadFailed: 0,
+                numOfInvalid: 0
+            };
+    
+            // 上传队列，仅包括等待上传的文件
+            this._queue = [];
+    
+            // 存储所有文件
+            this._map = {};
+        }
+    
+        $.extend( Queue.prototype, {
     
             /**
-             * 文件队列
+             * 将新文件加入对队列尾部
              *
-             * @class  Queue
-             * @constructor
+             * @method append
+             * @param  {File} file   文件对象
+             * @param  {Mixed} [source] 文件内容源，例如DOM File/Blob/Base64 String
+             *                          文件首次加入队列时必须携带该参数
              */
-            function Queue() {
+            append: function( file ) {
+                this._queue.push( file );
+                this._fileAdded( file );
+                return this;
+            },
     
-                this.stats = {
-                    numOfQueue: 0,
-                    numOfQueueFailed: 0,
-                    numOfSuccess: 0,
-                    numOfCancel: 0,
-                    numOfProgress: 0,
-                    numOfUploadFailed: 0,
-                    numOfInvalid: 0
-                };
+            /**
+             * 将新文件加入对队列头部
+             *
+             * @method prepend
+             * @param  {File} file   文件对象
+             * @param  {Mixed} [source] 文件内容源，例如DOM File/Blob/Base64 String
+             *                          文件首次加入队列时必须携带该参数
+             */
+            prepend: function( file ) {
+                this._queue.unshift( file );
+                this._fileAdded( file );
+                return this;
+            },
     
-                // 上传队列，仅包括等待上传的文件
-                this._queue = [];
+            /**
+             * 获取文件对象
+             *
+             * @method getFile
+             * @param  {String} fileId   文件ID
+             * @return {File}
+             */
+            getFile: function( fileId ) {
+                if ( typeof fileId !== 'string' ) {
+                    return fileId;
+                }
+                return this._map[ fileId ];
+            },
     
-                // 存储所有文件
-                this._map = {};
-            }
+            /**
+             * 从队列中取出一个指定状态的文件。
+             */
+            fetch: function() {
+                var len = this._queue.length,
+                    i, file;
     
-            $.extend( Queue.prototype, {
+                status = STATUS.QUEUED;
     
-                /**
-                 * 将新文件加入对队列尾部
-                 *
-                 * @method append
-                 * @param  {File} file   文件对象
-                 * @param  {Mixed} [source] 文件内容源，例如DOM File/Blob/Base64 String
-                 *                          文件首次加入队列时必须携带该参数
-                 */
-                append: function( file ) {
-                    this._queue.push( file );
-                    this._fileAdded( file );
-                    return this;
-                },
+                for( i = 0; i < len; i++ ) {
+                    file = this._queue[ i ];
     
-                /**
-                 * 将新文件加入对队列头部
-                 *
-                 * @method prepend
-                 * @param  {File} file   文件对象
-                 * @param  {Mixed} [source] 文件内容源，例如DOM File/Blob/Base64 String
-                 *                          文件首次加入队列时必须携带该参数
-                 */
-                prepend: function( file ) {
-                    this._queue.unshift( file );
-                    this._fileAdded( file );
-                    return this;
-                },
-    
-                /**
-                 * 获取文件对象
-                 *
-                 * @method getFile
-                 * @param  {String} fileId   文件ID
-                 * @return {File}
-                 */
-                getFile: function( fileId ) {
-                    if ( typeof fileId !== 'string' ) {
-                        return fileId;
-                    }
-                    return this._map[ fileId ];
-                },
-    
-                /**
-                 * 从队列中取出一个指定状态的文件。
-                 */
-                fetch: function() {
-                    var len = this._queue.length,
-                        i, file;
-    
-                    status = STATUS.QUEUED;
-    
-                    for( i = 0; i < len; i++ ) {
-                        file = this._queue[ i ];
-    
-                        if ( status === file.getStatus() ) {
-                            return file;
-                        }
-                    }
-    
-                    return null;
-                },
-    
-                // 获取指定类型的文件列表
-                getFiles: function(/*status1, status2...*/) {
-                    var sts = [].slice.call( arguments, 0 ),
-                        ret = [],
-                        i = 0,
-                        len = this._queue.length,
-                        file;
-    
-                    for( ; i < len; i++ ) {
-                        file = this._queue[ i ];
-    
-                        if ( sts.length && !~$.inArray( file.getStatus(), sts ) ) {
-                            continue;
-                        }
-    
-                        ret.push( file );
-                    }
-    
-                    return ret;
-                },
-    
-                _fileAdded: function( file ) {
-                    var me = this,
-                        existing = this._map[ file.id ];
-    
-                    if ( !existing ) {
-                        this._map[ file.id ] = file;
-    
-                        file.on( 'statuschange', function( cur, pre ) {
-                            me._onFileStatusChange( cur, pre );
-                        } );
-                    }
-    
-                    file.setStatus( STATUS.QUEUED );
-                },
-    
-                _onFileStatusChange: function( curStatus, preStatus ) {
-                    var stats = this.stats;
-    
-                    switch ( preStatus ) {
-                        case STATUS.PROGRESS:
-                            stats.numOfProgress--;
-                            break;
-    
-                        case STATUS.QUEUED:
-                            stats.numOfQueue --;
-                            break;
-    
-                        case STATUS.ERROR:
-                            stats.numOfUploadFailed--;
-                            break;
-    
-                        case STATUS.INVALID:
-                            stats.numOfInvalid--;
-                            break;
-                    }
-    
-                    switch ( curStatus ) {
-                        case STATUS.QUEUED:
-                            stats.numOfQueue++;
-                            break;
-    
-                        case STATUS.PROGRESS:
-                            stats.numOfProgress++;
-                            break;
-    
-                        case STATUS.ERROR:
-                            stats.numOfUploadFailed++;
-                            break;
-    
-                        case STATUS.COMPLETE:
-                            stats.numOfSuccess++;
-                            break;
-    
-                        case STATUS.CANCELLED:
-                            stats.numOfCancel++;
-                            break;
-    
-                        case STATUS.INVALID:
-                            stats.numOfInvalid++;
-                            break;
+                    if ( status === file.getStatus() ) {
+                        return file;
                     }
                 }
     
-            } );
+                return null;
+            },
     
-            Mediator.installTo( Queue.prototype );
+            // 获取指定类型的文件列表
+            getFiles: function(/*status1, status2...*/) {
+                var sts = [].slice.call( arguments, 0 ),
+                    ret = [],
+                    i = 0,
+                    len = this._queue.length,
+                    file;
     
-            return Queue;
-        }
-    );
+                for( ; i < len; i++ ) {
+                    file = this._queue[ i ];
+    
+                    if ( sts.length && !~$.inArray( file.getStatus(), sts ) ) {
+                        continue;
+                    }
+    
+                    ret.push( file );
+                }
+    
+                return ret;
+            },
+    
+            _fileAdded: function( file ) {
+                var me = this,
+                    existing = this._map[ file.id ];
+    
+                if ( !existing ) {
+                    this._map[ file.id ] = file;
+    
+                    file.on( 'statuschange', function( cur, pre ) {
+                        me._onFileStatusChange( cur, pre );
+                    } );
+                }
+    
+                file.setStatus( STATUS.QUEUED );
+            },
+    
+            _onFileStatusChange: function( curStatus, preStatus ) {
+                var stats = this.stats;
+    
+                switch ( preStatus ) {
+                    case STATUS.PROGRESS:
+                        stats.numOfProgress--;
+                        break;
+    
+                    case STATUS.QUEUED:
+                        stats.numOfQueue --;
+                        break;
+    
+                    case STATUS.ERROR:
+                        stats.numOfUploadFailed--;
+                        break;
+    
+                    case STATUS.INVALID:
+                        stats.numOfInvalid--;
+                        break;
+                }
+    
+                switch ( curStatus ) {
+                    case STATUS.QUEUED:
+                        stats.numOfQueue++;
+                        break;
+    
+                    case STATUS.PROGRESS:
+                        stats.numOfProgress++;
+                        break;
+    
+                    case STATUS.ERROR:
+                        stats.numOfUploadFailed++;
+                        break;
+    
+                    case STATUS.COMPLETE:
+                        stats.numOfSuccess++;
+                        break;
+    
+                    case STATUS.CANCELLED:
+                        stats.numOfCancel++;
+                        break;
+    
+                    case STATUS.INVALID:
+                        stats.numOfInvalid++;
+                        break;
+                }
+            }
+    
+        });
+    
+        Mediator.installTo( Queue.prototype );
+    
+        return Queue;
+    });
 
     /**
      * @fileOverview 队列
-     * @import base.js, widgets/widget.js, core/uploader.js, core/queue.js, core/file.js
      */
-    define( 'webuploader/widgets/queue', [
-        'webuploader/base',
-        'webuploader/core/uploader',
-        'webuploader/core/queue',
-        'webuploader/core/file' ], function(
-            Base, Uploader, Queue, WUFile ) {
+    define( 'widgets/queue', [
+        'base',
+        'core/uploader',
+        'core/queue',
+        'core/file'
+    ], function( Base, Uploader, Queue, WUFile ) {
     
         var $ = Base.$,
             Status = WUFile.Status;
     
-        return Uploader.register(
-            {
-                'add-file': 'addFiles',
-                'get-file': 'getFile',
-                'fetch-file': 'fetchFile',
-                'get-stats': 'getStats',
-                'get-files': 'getFiles',
-                'remove-file': 'removeFile',
-                'retry': 'retry'
+        return Uploader.register({
+            'add-file': 'addFiles',
+            'get-file': 'getFile',
+            'fetch-file': 'fetchFile',
+            'get-stats': 'getStats',
+            'get-files': 'getFiles',
+            'remove-file': 'removeFile',
+            'retry': 'retry'
+        },
+    
+        {
+            init: function( opts ) {
+                var len, i, item, arr, accept;
+    
+                // accept中的中生成匹配正则。
+                if ( opts.accept ) {
+                    arr = [];
+    
+                    for ( i = 0, len = opts.accept.length; i < len; i++ ) {
+                        item = opts.accept[ i ].extensions;
+                        item && arr.push( item );
+                    }
+    
+                    if ( arr.length ) {
+                        accept = arr.join( ',' );
+                        accept = accept.replace(/,/g, '$|').replace(/\*/g, '.*');
+                    }
+                }
+                this.accept = accept = new RegExp(accept, 'i');
+    
+                this.queue = new Queue();
+                this.stats = this.queue.stats;
             },
     
-            {
-                init: function( opts ) {
-                    var len, i, item, arr, accept;
+            _addFile: function( file ) {
+                var me = this;
     
-                    // accept中的中生成匹配正则。
-                    if ( opts.accept ) {
-                        arr = [];
-    
-                        for ( i = 0, len = opts.accept.length; i < len; i++ ) {
-                            item = opts.accept[ i ].extensions;
-                            item && arr.push( item );
-                        }
-    
-                        if ( arr.length ) {
-                            accept = arr.join( ',' );
-                            accept = accept.replace(/,/g, '$|').replace(/\*/g, '.*');
-                        }
-                    }
-                    this.accept = accept = new RegExp(accept, 'i');
-    
-                    this.queue = new Queue();
-                    this.stats = this.queue.stats;
-                },
-    
-                addFile: function( file ) {
-                    var me = this;
-    
-                    if ( !file || file.size < 6 || !me.accept.test( file.type ) ) {
-                        return;
-                    }
-    
-                    if ( !(file instanceof WUFile) ) {
-                        file = new WUFile( file );
-                    }
-    
-                    if ( !me.owner.trigger( 'beforeFileQueued', file ) ) {
-                        return;
-                    }
-    
-                    me.queue.append( file );
-                    me.owner.trigger( 'fileQueued', file );
-                },
-    
-                getFile: function( fileId ) {
-                    return this.queue.getFile( fileId );
-                },
-    
-                addFiles: function( files ) {
-                    var me = this;
-    
-                    if ( !files.length ) {
-                        files = [ files ];
-                    }
-    
-                    $.each( files, function() {
-                        me.addFile( this );
-                    });
-                },
-    
-                getStats: function() {
-                    return this.stats;
-                },
-    
-                removeFile: function( file ) {
-                    var me = this;
-    
-                    file = file.id ? file : me.queue.getFile( file );
-    
-                    file.setStatus( Status.CANCELLED );
-                    me.owner.trigger( 'fileDequeued', file );
-                },
-    
-                getFiles: function() {
-                    return this.queue.getFiles.apply( this.queue, arguments );
-                },
-    
-                fetchFile: function() {
-                    return this.queue.fetch.apply( this.queue, arguments );
-                },
-    
-                retry: function( file, noForceStart ) {
-                    var me = this;
-    
-                    if ( file ) {
-                        file = file.id ? file : me.queue.getFile( file );
-                        file.setStatus( Status.QUEUED );
-                        noForceStart || me.request( 'start-upload' );
-                        return;
-                    }
-    
-                    var files = me.queue.getFiles( Status.ERROR ),
-                        i = 0,
-                        len = files.length;
-    
-                    for( ; i < len; i++ ) {
-                        file = files[ i ];
-                        file.setStatus( Status.QUEUED );
-                    }
-    
-                    me.request( 'start-upload' );
+                if ( !file || file.size < 6 || !me.accept.test( file.type ) ) {
+                    return;
                 }
+    
+                if ( !(file instanceof WUFile) ) {
+                    file = new WUFile( file );
+                }
+    
+                if ( !me.owner.trigger( 'beforeFileQueued', file ) ) {
+                    return;
+                }
+    
+                me.queue.append( file );
+                me.owner.trigger( 'fileQueued', file );
+                return file;
+            },
+    
+            getFile: function( fileId ) {
+                return this.queue.getFile( fileId );
+            },
+    
+            addFiles: function( files ) {
+                var me = this;
+    
+                if ( !files.length ) {
+                    files = [ files ];
+                }
+    
+                files = $.map( files, function( file ) {
+                    return me._addFile( file );
+                });
+    
+                me.owner.trigger( 'filesQueued', files );
+            },
+    
+            getStats: function() {
+                return this.stats;
+            },
+    
+            removeFile: function( file ) {
+                var me = this;
+    
+                file = file.id ? file : me.queue.getFile( file );
+    
+                file.setStatus( Status.CANCELLED );
+                me.owner.trigger( 'fileDequeued', file );
+            },
+    
+            getFiles: function() {
+                return this.queue.getFiles.apply( this.queue, arguments );
+            },
+    
+            fetchFile: function() {
+                return this.queue.fetch.apply( this.queue, arguments );
+            },
+    
+            retry: function( file, noForceStart ) {
+                var me = this;
+    
+                if ( file ) {
+                    file = file.id ? file : me.queue.getFile( file );
+                    file.setStatus( Status.QUEUED );
+                    noForceStart || me.request( 'start-upload' );
+                    return;
+                }
+    
+                var files = me.queue.getFiles( Status.ERROR ),
+                    i = 0,
+                    len = files.length;
+    
+                for( ; i < len; i++ ) {
+                    file = files[ i ];
+                    file.setStatus( Status.QUEUED );
+                }
+    
+                me.request( 'start-upload' );
+            }
         });
     
-    } );
+    });
 
     /**
      * @fileOverview DragAndDrop Widget。
-     * @import base.js, core/uploader.js, widgets/widget.js, runtime/runtime.js
      */
-    define( 'webuploader/widgets/runtime', [
-        'webuploader/base',
-        'webuploader/core/uploader',
-        'webuploader/runtime/runtime' ], function( Base, Uploader, Runtime ) {
+    define( 'widgets/runtime', [
+        'base',
+        'core/uploader',
+        'runtime/runtime'
+    ], function( Base, Uploader, Runtime ) {
     
         var $ = Base.$;
     
@@ -1835,17 +1846,16 @@
                 return type;
             }
         });
-    
-    } );
+    });
 
     /**
      * @fileOverview Transport
-     * @import base.js, runtime/client.js, core/mediator.js
      */
-    define( 'webuploader/lib/transport', [ 'webuploader/base',
-            'webuploader/runtime/client',
-            'webuploader/core/mediator'
-            ], function( Base, RuntimeClient, Mediator ) {
+    define( 'lib/transport', [
+        'base',
+        'runtime/client',
+        'core/mediator'
+    ], function( Base, RuntimeClient, Mediator ) {
     
         var $ = Base.$;
     
@@ -1869,8 +1879,9 @@
             fileVar: 'file',
             timeout: 2 * 60 * 1000,    // 2分钟
             formData: {},
-            headers: {}
-        }
+            headers: {},
+            sendAsBinary: false
+        };
     
         $.extend( Transport.prototype, {
     
@@ -1911,9 +1922,6 @@
             },
     
             send: function( method ) {
-    
-                // 在发送之间可以添加字段什么的。。。
-                this.trigger( 'beforeSend', this._formData, this._headers );
                 this.exec( 'send' );
                 this._timeout();
             },
@@ -1961,22 +1969,23 @@
         Mediator.installTo( Transport.prototype );
     
         return Transport;
-    } );
+    });
 
     /**
      * @fileOverview 数据发送
-     * @import base.js, core/uploader.js, core/file.js, lib/transport.js
      */
-    define( 'webuploader/widgets/upload', [
-        'webuploader/base',
-        'webuploader/core/uploader',
-        'webuploader/core/file',
-        'webuploader/lib/transport' ], function( Base, Uploader, WUFile, Transport ) {
+    define( 'widgets/upload', [
+        'base',
+        'core/uploader',
+        'core/file',
+        'lib/transport'
+    ], function( Base, Uploader, WUFile, Transport ) {
     
         var $ = Base.$,
             Status = WUFile.Status;
     
-        $.extend(Uploader.options, {
+        $.extend( Uploader.options, {
+            prepareNextFile: false,
             chunked: false,
             chunkSize: 5 * 1024 * 1024,
             chunkRetry: 2,
@@ -1987,33 +1996,22 @@
             var pending = [],
                 blob = file.source,
                 end = blob.size,
-                start, chunks, index;
+                chunks = chunkSize ? Math.ceil( end / chunkSize ) : 1,
+                index = chunks,
+                start;
     
-            // 切割成小份
-            if ( chunkSize && end > chunkSize ) {
-                index = chunks = Math.ceil( end / chunkSize );
-                while ( end ) {
-                    start = Math.max( 0, end - chunkSize );
-                    pending.push({
-                        isChunk: true,
-                        file: file,
-                        start: start,
-                        end: end,
-                        total: blob.size,
-                        chunks: chunks,
-                        chunk: --index,
-                        blob: blob.slice( start, end )
-                    });
-                    end = start;
-                }
-            } else {
+            while ( index-- ) {
+                start = Math.max( 0, end - chunkSize );
                 pending.push({
-                    total: end,
-                    start: 0,
+                    file: file,
+                    start: start,
                     end: end,
-                    blob: blob,
-                    file: file
+                    total: blob.size,
+                    chunks: chunks,
+                    chunk: index,
+                    blob: chunks === 1 ? blob : blob.slice( start, end )
                 });
+                end = start;
             }
     
             file.blocks = pending.concat();
@@ -2044,11 +2042,13 @@
     
                 this.runing = false;
                 this.pool = [];
+                this.pending = [];
                 this.remaning = 0;
                 this.__tick = Base.bindFn( this._tick, this );
     
                 owner.on( 'uploadComplete', function( file ) {
                     delete file.blocks;
+                    delete file.remaning;
                     owner.trigger( 'uploadProgress', file, 1 );
                 });
             },
@@ -2076,6 +2076,7 @@
                 });
     
                 me.owner.trigger( 'startUpload' );
+                me._trigged = false;
                 Base.nextTick( me.__tick );
             },
     
@@ -2087,7 +2088,7 @@
                 }
     
                 me.runing = false;
-                
+    
                 if ( interrupt ) {
                     $.each( me.pool, function( _, v ) {
                         v.transport.abort();
@@ -2115,10 +2116,14 @@
                 file.blocks && $.each( file.blocks, function( _, v ) {
                     var _tr = v.transport;
     
-                    _tr && (_tr.abort(), _tr.destroy());
+                    if ( _tr ) {
+                        _tr.abort();
+                        _tr.destroy();
+                        delete v.transport;
+                    }
                 });
     
-                this.owner.trigger( 'uploadComplete', file );
+                this.owner.trigger( 'uploadSkip', file );
             },
     
             _tick: function() {
@@ -2127,14 +2132,17 @@
                     next;
     
                 if ( me._tickPromise ) {
-                    me._tickPromise.always( me.__tick );
-                    return;
+                    return me._tickPromise.always( me.__tick );
                 }
     
-                if ( me.pool.length < opts.threads && (next = me._getNext()) ) {
+                // 是否还有位置。
+                if ( me.pool.length < opts.threads &&
+                        (next = me._getNextBlock()) ) {
+    
+                    me._trigged = false;
+    
                     if ( next.promise ) {
-                        me._tickPromise = next;
-                        next.then(function( value ) {
+                        me._tickPromise = next.done(function( value ) {
                             me._tickPromise = null;
                             value && me._startSend( value );
                             Base.nextTick( me.__tick );
@@ -2150,6 +2158,89 @@
                         me.owner.trigger( 'uploadFinished' );
                     });
                     me._trigged = true;
+                }
+            },
+    
+            _getNextBlock: function() {
+                var me = this,
+                    owner = me.owner,
+                    act = me._act,
+                    opts = me.options,
+                    file, deferred, next, done;
+    
+                if ( act && act.has() && act.file.getStatus() === Status.PROGRESS ) {
+    
+                    // 是否提前准备下一个文件
+                    if ( opts.prepareNextFile && !me.pending.length ) {
+                        me._prepareNextFile();
+                    }
+    
+                    return act.fetch();
+                } else if ( me.runing ) {
+    
+                    // 如果缓存中有，则直接在缓存中取，没有则去queue中取。
+                    if ( !me.pending.length && me.getStats().numOfQueue ) {
+                        me._prepareNextFile();
+                    }
+    
+                    next = me.pending.shift();
+    
+                    done = function( file ) {
+                        if ( !file ) {
+                            return null;
+                        }
+    
+                        me._act = act = new Wrapper( file, opts.chunked ? opts.chunkSize : 0 );
+                        return act.fetch();
+                    };
+    
+                    return next && next.promise ? next.then( done ) : done( next );
+                }
+    
+                return null;
+            },
+    
+            _prepareNextFile: function() {
+                var file = this.request( 'fetch-file' ),
+                    pending = this.pending,
+                    owner = this.owner,
+                    promise;
+    
+                if ( file ) {
+                    owner.trigger( 'uploadStart', file );
+                    file.setStatus( Status.PROGRESS );
+    
+                    promise = this.request( 'before-send-file', file, function() {
+                        var idx = $.inArray( promise, pending );
+    
+                        // 有可能已经移出去了。
+                        ~idx && pending.splice( idx, 1, file );    // 替换成文件
+    
+                        if ( file.getStatus() === Status.PROGRESS ) {
+                            return file;
+                        }
+    
+                        // @todo 优化这里
+                        // 在before-send-file有可能直接把文件的status改成了error或complete
+                        // 可以跳过文件上传。
+                        return owner.request( 'after-send-file', file, function() {
+                                file.setStatus( Status.COMPLETE );
+                                owner.trigger( 'uploadComplete', file );
+                            })
+                            .fail(function( reason ) {
+                                if ( file.getStatus() === Status.PROGRESS ) {
+                                    file.setStatus( Status.ERROR, type );
+                                }
+                                owner.trigger( 'uploadError', file, reason );
+                            })
+                            .always(function() {
+                                // skip this.
+                                owner.request( 'skip-file', file );
+                                return null;
+                            });
+                    });
+    
+                    pending.push( promise );
                 }
             },
     
@@ -2169,47 +2260,24 @@
                             _tr && (_tr.abort(), _tr.destroy());
                         });
                         owner.trigger( 'uploadComplete', file );
-                    },
-                    handler = function( cur, prev ) {
-                        if ( cur === Status.INVALID ) {
-                            cancelAll();
-                            file.off( 'statuschange', handler );
-                        }
                     };
     
-                file.on( 'statuschange', handler );
                 tr.on( 'destroy', function() {
                     var idx = $.inArray( tr, pool );
     
                     me.remaning--;
                     pool.splice( idx, 1 );
     
-                    file.off( 'statuschange', handler );
                     block.transport =  null;
                     Base.nextTick( tick );
                 });
-    
-                tr.appendBlob( opts.fileVal, block.blob, file.name );
-                tr.append({
-                    id: file.id,
-                    name: file.name,
-                    type: file.type,
-                    lastModifiedDate: file.lastModifiedDate,
-                    size: file.size
-                });
-    
-                block.isChunk && tr.append({
-                    chunks: block.chunks,
-                    chunk: block.chunk
-                });
-    
                 tr.on( 'progress', function( percentage ) {
                     var totalPercent = 0,
                         uploaded = 0;
     
                     totalPercent = block.percentage = percentage;
     
-                    if ( block.isChunk ) {    // 计算文件的整体速度。
+                    if ( block.chunks > 1 ) {    // 计算文件的整体速度。
                         $.each( file.blocks, function( _, v ) {
                             uploaded += (v.percentage || 0) * (v.end - v.start);
                         });
@@ -2222,17 +2290,16 @@
     
                 tr.on( 'error', function( type ) {
                     block.retried = block.retried || 0;
-                    
+    
                     // 自动重试
-                    if ( block.isChunk && ~'http,abort'.indexOf( type ) && block.retried < opts.chunkRetry ) {
+                    if ( block.chunks > 1 && ~'http,abort'.indexOf( type ) && block.retried < opts.chunkRetry ) {
                         block.retried++;
                         tr.send();
                     } else {
-                        owner.trigger( 'uploadError', file, type );
-                        if ( file.getStats() === Status.PROGRESS ) {
+                        if ( file.getStatus() === Status.PROGRESS ) {
                             file.setStatus( Status.ERROR, type );
                         }
-    
+                        owner.trigger( 'uploadError', file, type );
                         cancelAll();
                     }
                 });
@@ -2247,7 +2314,7 @@
                         reject = value;
                     };
     
-                    if ( !owner.trigger( 'uploadAccept', file, ret, headers, fn ) ) {
+                    if ( !owner.trigger( 'uploadAccept', block, ret, headers, fn ) ) {
                         reject = reject || 'server';
                     }
     
@@ -2261,10 +2328,10 @@
                                 file.setStatus( Status.COMPLETE );
                                 owner.trigger( 'uploadComplete', file );
                             }).fail(function( reason ) {
-                                owner.trigger( 'uploadError', file, reason );
-                                if ( file.getStats() === Status.PROGRESS ) {
+                                if ( file.getStatus() === Status.PROGRESS ) {
                                     file.setStatus( Status.ERROR, type );
                                 }
+                                owner.trigger( 'uploadError', file, reason );
                                 cancelAll();
                             });
                         }
@@ -2280,40 +2347,32 @@
     
                 block.transport = tr;
                 me.remaning++;
-                me._trigged = false;
-                tr.send();
-            },
     
-            _getNext: function() {
-                var me = this,
-                    act = me._act,
-                    opts = me.options,
-                    file, deferred;
+                me.request( 'before-send', block, function() {
+                    var data = {},
+                        headers = {};
     
-                if ( act && act.has() && act.file.getStatus() === Status.PROGRESS ) {
-                    return act.fetch();
-                } else if ( me.runing && (file = me.request( 'fetch-file' )) ) {
-                    me.owner.trigger( 'uploadStart', file );
-                    file.setStatus( Status.PROGRESS );
-                    deferred = Base.Deferred();
-                    
-                    // hook 可能会需要压缩图片。
-                    me.request( 'before-send-file', file, function() {
-                        if ( file.getStatus() === Status.PROGRESS ) {
-                            me._act = act = new Wrapper( file, opts.chunked ? opts.chunkSize : 0 );
-                            deferred.resolve( act.fetch() );
-                        } else {
-    
-                            // skip this.
-                            me.request( 'skip-file', file );
-                            deferred.resolve( null );
-                        }
+                    data = $.extend( data, {
+                        id: file.id,
+                        name: file.name,
+                        type: file.type,
+                        lastModifiedDate: file.lastModifiedDate,
+                        size: file.size
                     });
     
-                    return deferred.promise();
-                }
+                    block.chunks > 1 && $.extend( data, {
+                        chunks: block.chunks,
+                        chunk: block.chunk
+                    });
     
-                return null;
+                    // 在发送之间可以添加字段什么的。。。
+                    owner.trigger( 'uploadBeforeSend', block, data, headers );
+                    tr.appendBlob( opts.fileVal, block.blob, file.name );
+                    tr.append(data);
+                    tr.setRequestHeader( headers );
+    
+                    tr.send();
+                })
             }
     
         });
@@ -2321,9 +2380,10 @@
 
     /**
      * @fileOverview Runtime管理器，负责Runtime的选择, 连接
-     * @import base.js
      */
-    define( 'webuploader/runtime/compbase', [ 'webuploader/base' ], function( Base ) {
+    define( 'runtime/compbase', [
+        'base'
+    ], function( Base ) {
     
         function CompBase( owner, runtime ) {
     
@@ -2344,85 +2404,86 @@
         }
     
         return CompBase;
-    } );
+    });
 
     /**
      * @fileOverview Html5Runtime
-     * @import base.js, runtime/runtime.js, runtime/compbase.js
      */
-    define( 'webuploader/runtime/html5/runtime', [
-            'webuploader/base',
-            'webuploader/runtime/runtime',
-            'webuploader/runtime/compbase'
-        ], function( Base, Runtime, CompBase ) {
+    define( 'runtime/html5/runtime', [
+        'base',
+        'runtime/runtime',
+        'runtime/compbase'
+    ], function( Base, Runtime, CompBase ) {
     
-            var $ = Base.$,
-                type = 'html5',
-                pool = {},
-                components = {};
+        var $ = Base.$,
+            type = 'html5',
+            pool = {},
+            components = {};
     
-            function Html5Runtime() {
-                var pool = {},
-                    me = this,
-                    destory = this.destory;
+        function Html5Runtime() {
+            var pool = {},
+                me = this,
+                destory = this.destory;
     
-                Runtime.apply( me, arguments );
-                me.type = type;
+            Runtime.apply( me, arguments );
+            me.type = type;
     
     
-                // 这个方法的调用者，实际上是RuntimeClient
-                me.exec = function( comp, fn/*, args...*/) {
-                    var client = this,
-                        uid = client.uid,
-                        args = Base.slice( arguments, 2 ),
-                        instance;
+            // 这个方法的调用者，实际上是RuntimeClient
+            me.exec = function( comp, fn/*, args...*/) {
+                var client = this,
+                    uid = client.uid,
+                    args = Base.slice( arguments, 2 ),
+                    instance;
     
-                    if ( components[ comp ] ) {
-                        instance = pool[ uid ] = pool[ uid ] || new components[ comp ]( client, me );
+                if ( components[ comp ] ) {
+                    instance = pool[ uid ] = pool[ uid ] || new components[ comp ]( client, me );
     
-                        if ( instance[ fn ] ) {
-                            return instance[ fn ].apply( instance, args );
-                        }
+                    if ( instance[ fn ] ) {
+                        return instance[ fn ].apply( instance, args );
                     }
                 }
-    
-                me.destory = function() {
-                    // @todo 删除池子中的所有实例
-                    return destory && destory.apply( this, arguments );
-                };
             }
     
-            Base.inherits( Runtime, {
-                constructor: Html5Runtime,
-    
-                // 不需要连接其他程序，直接执行callback
-                init: function( cb ) {
-                    var me = this;
-                    setTimeout( function() {
-                        me.trigger('ready');
-                    }, 1 );
-                }
-    
-            } );
-    
-            Html5Runtime.register = function( name, component ) {
-                return components[ name ] = Base.inherits( CompBase, component );
+            me.destory = function() {
+                // @todo 删除池子中的所有实例
+                return destory && destory.apply( this, arguments );
             };
+        }
     
-            // 注册html5运行时。
-            if ( window.Blob && window.FileReader && window.DataView ) {
-                Runtime.addRuntime( type, Html5Runtime );
+        Base.inherits( Runtime, {
+            constructor: Html5Runtime,
+    
+            // 不需要连接其他程序，直接执行callback
+            init: function( cb ) {
+                var me = this;
+                setTimeout( function() {
+                    me.trigger('ready');
+                }, 1 );
             }
     
-            return Html5Runtime;
         } );
+    
+        Html5Runtime.register = function( name, component ) {
+            return components[ name ] = Base.inherits( CompBase, component );
+        };
+    
+        // 注册html5运行时。
+        if ( window.Blob && window.FileReader && window.DataView ) {
+            Runtime.addRuntime( type, Html5Runtime );
+        }
+    
+        return Html5Runtime;
+    });
 
     /**
      * @fileOverview Blob Html实现
-     * @import base.js, runtime/html5/runtime.js
      */
-    define('runtime/html5/blob', ['webuploader/runtime/html5/runtime',
-        'webuploader/lib/blob' ], function( Html5Runtime, Blob ) {
+    define( 'runtime/html5/blob', [
+        'runtime/html5/runtime',
+        'lib/blob'
+    ], function( Html5Runtime, Blob ) {
+    
         return Html5Runtime.register( 'Blob', {
             slice: function( start, end ) {
                 var blob = this.owner.source,
@@ -2440,11 +2501,11 @@
      * @todo 支持chunked传输，优势：
      * 可以将大文件分成小块，挨个传输，可以提高大文件成功率，当失败的时候，也只需要重传那小部分，
      * 而不需要重头再传一次。另外断点续传也需要用chunked方式。
-     * @import base.js, runtime/html5/runtime.js
      */
-    define( 'webuploader/runtime/html5/transport', [ 'webuploader/base',
-            'webuploader/runtime/html5/runtime'
-            ], function( Base, Html5Runtime ) {
+    define( 'runtime/html5/transport', [
+        'base',
+        'runtime/html5/runtime'
+    ], function( Base, Html5Runtime ) {
     
         var noop = Base.noop,
             $ = Base.$;
@@ -2461,23 +2522,31 @@
                     opts = this.options,
                     xhr = this._initAjax(),
                     blob = owner._blob,
+                    server = opts.server,
+                    formData, binary;
+    
+                if ( opts.sendAsBinary ) {
+                    server += (/\?/.test(server) ? '&' : '?') + $.param( owner._formData );
+                    binary = blob.getSource();
+                } else {
                     formData = new FormData();
+                    $.each( owner._formData, function( k, v ) {
+                        formData.append( k, v );
+                    });
     
-                $.each( owner._formData, function( k, v ) {
-                    formData.append( k, v );
-                });
-    
-                formData.append( opts.fileVar, blob.getSource(), opts.filename || owner._formData.name || '' );
+                    formData.append( opts.fileVar, blob.getSource(), opts.filename || owner._formData.name || '' );
+                }
     
                 if ( opts.withCredentials && 'withCredentials' in xhr ) {
-                    xhr.open( opts.method, opts.server, true );
+                    xhr.open( opts.method, server, true );
                     xhr.withCredentials = true;
                 } else {
-                    xhr.open( opts.method, opts.server );
+                    xhr.open( opts.method, server );
                 }
     
                 this._setRequestHeader( xhr, opts.headers );
-                return xhr.send( formData );
+                binary && xhr.overrideMimeType('application/octet-stream');
+                xhr.send( binary || formData );
             },
     
             getResponse: function() {
@@ -2597,113 +2666,112 @@
 
     /**
      * @fileOverview FilePicker
-     * @import base.js, runtime/html5/runtime.js, lib/file.js
      */
-    define( 'webuploader/runtime/html5/filepicker', [
-            'webuploader/base',
-            'webuploader/runtime/html5/runtime',
-            'webuploader/lib/file'
-        ], function( Base, Html5Runtime, File ) {
+    define( 'runtime/html5/filepicker', [
+        'base',
+        'runtime/html5/runtime',
+        'lib/file'
+    ], function( Base, Html5Runtime, File ) {
     
-            var $ = Base.$;
+        var $ = Base.$;
     
-            function getMineTypeByExtensions( extensition ) {
+        function getMineTypeByExtensions( extensition ) {
     
-            }
+        }
     
-            return Html5Runtime.register( 'FilePicker', {
-                init: function() {
-                    var container = this.getRuntime().getContainer(),
-                        me = this,
-                        owner = me.owner,
-                        opts = me.options,
-                        lable = $( document.createElement( 'label' ) ),
-                        input = $( document.createElement( 'input' ) ),
-                        browser = Base.browser,
-                        arr, i, len, mouseHandler;
+        return Html5Runtime.register( 'FilePicker', {
+            init: function() {
+                var container = this.getRuntime().getContainer(),
+                    me = this,
+                    owner = me.owner,
+                    opts = me.options,
+                    lable = $( document.createElement( 'label' ) ),
+                    input = $( document.createElement( 'input' ) ),
+                    browser = Base.browser,
+                    arr, i, len, mouseHandler;
     
-                    input.attr( 'type', 'file' );
+                input.attr( 'type', 'file' );
     
-                    input.css({
-                        position: 'absolute',
-                        clip: 'rect(1px,1px,1px,1px)'
-                    });
+                input.css({
+                    position: 'absolute',
+                    clip: 'rect(1px,1px,1px,1px)'
+                });
     
-                    lable.on( 'click', function() {
-                        input.trigger( 'click' );
-                    });
+                lable.on( 'click', function() {
+                    input.trigger( 'click' );
+                });
     
-                    lable.css({
-                        opacity: 0,
-                        width: '100%',
-                        height: '100%',
-                        display: 'block',
-                        cursor: 'pointer',
-                        background: '#ffffff'
-                    });
+                lable.css({
+                    opacity: 0,
+                    width: '100%',
+                    height: '100%',
+                    display: 'block',
+                    cursor: 'pointer',
+                    background: '#ffffff'
+                });
     
-                    if ( opts.multiple ) {
-                        input.attr( 'multiple', 'multiple' );
-                    }
+                if ( opts.multiple ) {
+                    input.attr( 'multiple', 'multiple' );
+                }
     
-                    // @todo Firefox不支持单独指定后缀
-                    if ( opts.accept && opts.accept.length > 0 ) {
-                        arr = [];
+                // @todo Firefox不支持单独指定后缀
+                if ( opts.accept && opts.accept.length > 0 ) {
+                    arr = [];
     
-                        for (i = 0, len = opts.accept.length; i < len; i++) {
-                            arr.push( opts.accept[i].mimeTypes );
-                        };
-    
-                        input.attr( 'accept', arr.join( ',' ) );
-                    }
-    
-                    container.append( input );
-                    container.append( lable );
-    
-                    mouseHandler = function( e ) {
-                        owner.trigger( e.type );
+                    for (i = 0, len = opts.accept.length; i < len; i++) {
+                        arr.push( opts.accept[i].mimeTypes );
                     };
     
-                    input.on( 'change', function( e ) {
-                        var fn = arguments.callee,
-                            ruid = owner.getRuid(),
-                            clone;
-    
-                        me.files = e.target.files;
-    
-                        // reset input
-                        clone = this.cloneNode( true );
-                        this.parentNode.replaceChild( clone, this );
-    
-                        input.off();
-                        input = $( clone ).on( 'change', fn ).on( 'mouseenter mouseleave', mouseHandler);
-    
-                        owner.trigger( 'change' );
-                    } );
-    
-                    lable.on( 'mouseenter mouseleave', mouseHandler );
-    
-                },
-    
-    
-                getFiles: function() {
-                    return this.files;
-                },
-    
-                destroy: function() {
-                    // todo
+                    input.attr( 'accept', arr.join( ',' ) );
                 }
-            } );
+    
+                container.append( input );
+                container.append( lable );
+    
+                mouseHandler = function( e ) {
+                    owner.trigger( e.type );
+                };
+    
+                input.on( 'change', function( e ) {
+                    var fn = arguments.callee,
+                        ruid = owner.getRuid(),
+                        clone;
+    
+                    me.files = e.target.files;
+    
+                    // reset input
+                    clone = this.cloneNode( true );
+                    this.parentNode.replaceChild( clone, this );
+    
+                    input.off();
+                    input = $( clone ).on( 'change', fn ).on( 'mouseenter mouseleave', mouseHandler);
+    
+                    owner.trigger( 'change' );
+                } );
+    
+                lable.on( 'mouseenter mouseleave', mouseHandler );
+    
+            },
+    
+    
+            getFiles: function() {
+                return this.files;
+            },
+    
+            destroy: function() {
+                // todo
+            }
         } );
+    });
 
     /**
      * @fileOverview FilePaste
      */
-    define( 'webuploader/runtime/html5/dnd', [
-            'webuploader/base',
-            'webuploader/runtime/html5/runtime',
-            'webuploader/lib/file'
-        ], function( Base, Html5Runtime, File ) {
+    define( 'runtime/html5/dnd', [
+        'base',
+        'runtime/html5/runtime',
+        'lib/file'
+    ], function( Base, Html5Runtime, File ) {
     
         var $ = Base.$;
     
@@ -2814,14 +2882,16 @@
                 elem.on( 'dragleave', this.dragLeaveHander );
                 elem.on( 'drop', this.dropHander );
             }
-        } );
-    } );
+        });
+    });
 
     /**
      * @file 暴露变量给外部使用。
-     * @import base.js
      */
-    require( [ 'webuploader/base' ], function( Base ) {
+    require([
+        'base'
+    ], function( Base ) {
+    
         var exportName, origin;
     
         if ( typeof module === 'object' && typeof module.exports === 'object' ) {
@@ -2835,5 +2905,5 @@
                 window[ exportName ] = origin;
             };
         }
-    } );
+    });
 })( this );

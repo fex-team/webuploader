@@ -5,7 +5,7 @@ package com.events
 
 	public class OProgressEvent extends ProgressEvent
 	{
-		public static const PROGRESS:String = 'moxieprogress';
+		public static const PROGRESS:String = 'webuploaderprogress';
 		
 		public var data:*;
 		

@@ -1,8 +1,10 @@
 /**
  * @fileOverview Promise/A+
- * @import base.js
  */
-define( 'webuploader/promise', [ 'webuploader/base'  ], function( Base ) {
+define([
+    './base'
+], function( Base ) {
+
     var $ = Base.$,
         api;
 
@@ -17,10 +19,12 @@ define( 'webuploader/promise', [ 'webuploader/base'  ], function( Base ) {
                 firingStart = 0;
                 firingLength = list.length;
                 firing = true;
+
                 for ( ; list && firingIndex < firingLength; firingIndex++ ) {
                     list[ firingIndex ].apply( data[ 0 ], data[ 1 ] );
                 }
                 firing = false;
+
                 if ( list ) {
                     if ( stack ) {
                         stack.length && fire( stack.shift() );
@@ -33,12 +37,14 @@ define( 'webuploader/promise', [ 'webuploader/base'  ], function( Base ) {
                 add: function() {
                     if ( list ) {
                         var start = list.length;
-                        (function add( args ) {
+                        (function add ( args ) {
                             $.each( args, function( _, arg ) {
                                 var type = $.type( arg );
-                                if ( type === "function" ) {
+                                if ( type === 'function' ) {
                                     list.push( arg );
-                                } else if ( arg && arg.length && type !== "string" ) {
+                                } else if ( arg && arg.length &&
+                                        type !== 'string' ) {
+
                                     add( arg );
                                 }
                             });
@@ -69,7 +75,7 @@ define( 'webuploader/promise', [ 'webuploader/base'  ], function( Base ) {
                 },
 
                 fireWith: function( context, args ) {
-                    if ( list && ( !fired || stack ) ) {
+                    if ( list && (!fired || stack) ) {
                         args = args || [];
                         args = [ context, args.slice ? args.slice() : args ];
                         if ( firing ) {
@@ -87,7 +93,6 @@ define( 'webuploader/promise', [ 'webuploader/base'  ], function( Base ) {
                 }
             },
 
-            //
             fired, firing, firingStart, firingLength, firingIndex, memory;
 
         return self;
@@ -96,11 +101,11 @@ define( 'webuploader/promise', [ 'webuploader/base'  ], function( Base ) {
     function Deferred( func ) {
         var tuples = [
                 // action, add listener, listener list, final state
-                [ "resolve", "done", Callbacks( true ), "resolved" ],
-                [ "reject", "fail", Callbacks( true ), "rejected" ],
-                [ "notify", "progress", Callbacks() ]
+                [ 'resolve', 'done', Callbacks( true ), 'resolved' ],
+                [ 'reject', 'fail', Callbacks( true ), 'rejected' ],
+                [ 'notify', 'progress', Callbacks() ]
             ],
-            state = "pending",
+            state = 'pending',
             promise = {
                 state: function() {
                     return state;
@@ -115,25 +120,38 @@ define( 'webuploader/promise', [ 'webuploader/base'  ], function( Base ) {
                         $.each( tuples, function( i, tuple ) {
                             var action = tuple[ 0 ],
                                 fn = $.isFunction( fns[ i ] ) && fns[ i ];
-                            // deferred[ done | fail | progress ] for forwarding actions to newDefer
-                            deferred[ tuple[1] ](function() {
-                                var returned = fn && fn.apply( this, arguments );
-                                if ( returned && $.isFunction( returned.promise ) ) {
+
+                            // deferred[ done | fail | progress ] for
+                            // forwarding actions to newDefer
+                            deferred[ tuple[ 1 ] ](function() {
+                                var returned;
+
+                                returned = fn && fn.apply( this, arguments );
+
+                                if ( returned &&
+                                        $.isFunction( returned.promise ) ) {
+
                                     returned.promise()
-                                        .done( newDefer.resolve )
-                                        .fail( newDefer.reject )
-                                        .progress( newDefer.notify );
+                                            .done( newDefer.resolve )
+                                            .fail( newDefer.reject )
+                                            .progress( newDefer.notify );
                                 } else {
-                                    newDefer[ action + "With" ]( this === promise ? newDefer.promise() : this, fn ? [ returned ] : arguments );
+                                    newDefer[ action + 'With' ](
+                                            this === promise ?
+                                            newDefer.promise() :
+                                            this,
+                                            fn ? [ returned ] : arguments );
                                 }
                             });
                         });
                         fns = null;
                     }).promise();
                 },
+
                 // Get a promise for this deferred
                 // If obj is provided, the promise aspect is added to the object
                 promise: function( obj ) {
+
                     return obj != null ? $.extend( obj, promise ) : promise;
                 }
             },
@@ -148,7 +166,7 @@ define( 'webuploader/promise', [ 'webuploader/base'  ], function( Base ) {
                 stateString = tuple[ 3 ];
 
             // promise[ done | fail | progress ] = list.add
-            promise[ tuple[1] ] = list.add;
+            promise[ tuple[ 1 ] ] = list.add;
 
             // Handle state
             if ( stateString ) {
@@ -161,11 +179,12 @@ define( 'webuploader/promise', [ 'webuploader/base'  ], function( Base ) {
             }
 
             // deferred[ resolve | reject | notify ]
-            deferred[ tuple[0] ] = function() {
-                deferred[ tuple[0] + "With" ]( this === deferred ? promise : this, arguments );
+            deferred[ tuple[ 0 ] ] = function() {
+                deferred[ tuple[ 0 ] + 'With' ]( this === deferred ? promise :
+                        this, arguments );
                 return this;
             };
-            deferred[ tuple[0] + "With" ] = list.fireWith;
+            deferred[ tuple[ 0 ] + 'With' ] = list.fireWith;
         });
 
         // Make the deferred a promise
@@ -189,19 +208,23 @@ define( 'webuploader/promise', [ 'webuploader/base'  ], function( Base ) {
                 length = resolveValues.length,
 
                 // the count of uncompleted subordinates
-                remaining = length !== 1 || ( subordinate && $.isFunction( subordinate.promise ) ) ? length : 0,
+                remaining = length !== 1 || (subordinate &&
+                    $.isFunction( subordinate.promise )) ? length : 0,
 
-                // the master Deferred. If resolveValues consist of only a single Deferred, just use that.
+                // the master Deferred. If resolveValues consist of
+                // only a single Deferred, just use that.
                 deferred = remaining === 1 ? subordinate : Deferred(),
 
                 // Update function for both resolve and progress values
                 updateFunc = function( i, contexts, values ) {
                     return function( value ) {
                         contexts[ i ] = this;
-                        values[ i ] = arguments.length > 1 ? Base.slice( arguments ) : value;
-                        if( values === progressValues ) {
+                        values[ i ] = arguments.length > 1 ?
+                                Base.slice( arguments ) : value;
+
+                        if ( values === progressValues ) {
                             deferred.notifyWith( contexts, values );
-                        } else if ( !( --remaining ) ) {
+                        } else if ( !(--remaining) ) {
                             deferred.resolveWith( contexts, values );
                         }
                     };
@@ -215,11 +238,15 @@ define( 'webuploader/promise', [ 'webuploader/base'  ], function( Base ) {
                 progressContexts = new Array( length );
                 resolveContexts = new Array( length );
                 for ( ; i < length; i++ ) {
-                    if ( resolveValues[ i ] && $.isFunction( resolveValues[ i ].promise ) ) {
+                    if ( resolveValues[ i ] &&
+                            $.isFunction( resolveValues[ i ].promise ) ) {
+
                         resolveValues[ i ].promise()
-                            .done( updateFunc( i, resolveContexts, resolveValues ) )
-                            .fail( deferred.reject )
-                            .progress( updateFunc( i, progressContexts, progressValues ) );
+                                .done( updateFunc( i, resolveContexts,
+                                        resolveValues ) )
+                                .fail( deferred.reject )
+                                .progress( updateFunc( i, progressContexts,
+                                        progressValues ) );
                     } else {
                         --remaining;
                     }
@@ -233,9 +260,9 @@ define( 'webuploader/promise', [ 'webuploader/base'  ], function( Base ) {
 
             return deferred.promise();
         }
-    }
+    };
 
     $.extend( Base, api );
 
     return api;
-} );
+});

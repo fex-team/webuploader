@@ -1,19 +1,30 @@
 /**
  * @fileOverview Runtime管理器，负责Runtime的选择, 连接
- * @import base.js, core/mediator.js
  */
-define( 'webuploader/runtime/runtime', [ 'webuploader/base',
-    'webuploader/core/mediator' ], function( Base, Mediator ) {
+define([
+    'base',
+    '../mediator'
+], function( Base, Mediator ) {
 
     var $ = Base.$,
-        factories = {};
+        factories = {},
+
+        // 获取对象的第一个key
+        getFirstKey = function( obj ) {
+            for ( var key in obj ) {
+                if ( obj.hasOwnProperty( key ) ) {
+                    return key;
+                }
+            }
+            return null;
+        };
 
     // 接口类。
     function Runtime( options ) {
-        this.options = $.extend( {
+        this.options = $.extend({
             container: document.body
         }, options );
-        this.uid = Base.guid( 'rt_' );
+        this.uid = Base.guid('rt_');
     }
 
     $.extend( Runtime.prototype, {
@@ -22,13 +33,12 @@ define( 'webuploader/runtime/runtime', [ 'webuploader/base',
             var opts = this.options,
                 parent, container;
 
-            if ( this.container ) {
-                return this.container;
+            if ( this._container ) {
+                return this._container;
             }
 
             parent = opts.container || $( document.body );
-
-            container = $(document.createElement( 'div' ));
+            container = $( document.createElement('div') );
 
             container.attr( 'id', 'rt_' + this.uid );
             container.css({
@@ -41,12 +51,20 @@ define( 'webuploader/runtime/runtime', [ 'webuploader/base',
             });
 
             parent.append( container );
-
-            return this.container = container;
+            this._container = container;
+            return container;
         },
 
         init: Base.noop,
-        exec: Base.noop
+        exec: Base.noop,
+
+        destroy: function() {
+            if ( this._container ) {
+                this._container.parentNode.removeChild( this.__container );
+            }
+
+            this.off();
+        }
     });
 
     Runtime.orders = 'html5,flash';
@@ -63,7 +81,7 @@ define( 'webuploader/runtime/runtime', [ 'webuploader/base',
     };
 
     Runtime.hasRuntime = function( type ) {
-        return !!factories[ type ];
+        return !!(type ? factories[ type ] : getFirstKey( factories ));
     };
 
     Runtime.create = function( opts, orders ) {
@@ -75,30 +93,18 @@ define( 'webuploader/runtime/runtime', [ 'webuploader/base',
                 type = this;
                 return false;
             }
-        } );
+        });
 
         type = type || getFirstKey( factories );
 
         if ( !type ) {
-            throw new Error( 'Runtime Error' );
+            throw new Error('Runtime Error');
         }
 
-        return runtime = new factories[ type ]( opts );
+        runtime = new factories[ type ]( opts );
+        return runtime;
     };
-
-    // 获取对象的第一个key
-    function getFirstKey( obj ) {
-        var key;
-
-        for( key in obj ) {
-            if ( obj.hasOwnProperty( key ) ) {
-                return key;
-            }
-        }
-
-        return '';
-    }
 
     Mediator.installTo( Runtime.prototype );
     return Runtime;
-} );
+});

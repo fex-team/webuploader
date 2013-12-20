@@ -1,12 +1,10 @@
 /**
  * @fileOverview FilePaste
- * @import base.js, runtime/html5/runtime.js, lib/file.js
  */
-define( 'webuploader/runtime/html5/filepaste', [
-        'webuploader/base',
-        'webuploader/runtime/html5/runtime',
-        'webuploader/lib/file'
-    ], function( Base, Html5Runtime, File ) {
+define([
+    'base',
+    './runtime'
+], function( Base, Html5Runtime ) {
 
     return Html5Runtime.register( 'FilePaste', {
         init: function() {
@@ -25,18 +23,17 @@ define( 'webuploader/runtime/html5/filepaste', [
                 }
 
                 if ( arr.length ) {
-                    accept = arr.join( ',' );
-                    accept = accept.replace(/,/g, '|').replace(/\*/g, '.*');
+                    accept = arr.join(',');
+                    accept = accept.replace( /,/g, '|' ).replace( /\*/g, '.*' );
                 }
             }
-            this.accept = accept = new RegExp(accept, 'i');
+            this.accept = accept = new RegExp( accept, 'i' );
             this.hander = Base.bindFn( this._pasteHander, this );
             elem.on( 'paste', this.hander );
         },
 
         _pasteHander: function( e ) {
             var allowed = [],
-                ruid = this.getRuid(),
                 files, file, blob, i, len;
 
             e = e.originalEvent || e;
@@ -62,5 +59,5 @@ define( 'webuploader/runtime/html5/filepaste', [
         destroy: function() {
             this.elem.off( 'paste', this.hander );
         }
-    } );
-} );
+    });
+});
