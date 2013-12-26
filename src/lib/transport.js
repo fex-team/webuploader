@@ -21,6 +21,7 @@ define([
 
         this.on( 'progress', this._timeout );
         this.on( 'load error', function() {
+            me.trigger( 'progress', 1 );
             clearTimeout( me._timer );
         });
     }

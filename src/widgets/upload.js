@@ -408,7 +408,7 @@ define([
 
             // 上传成功
             tr.on( 'load', function() {
-                var ret = tr.getResponseAsJson(),
+                var ret = tr.getResponseAsJson() || {},
                     reject, fn;
 
                 ret._raw = tr.getResponse();
