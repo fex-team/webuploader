@@ -192,6 +192,27 @@ module.exports = function(grunt) {
                 outputDir: './doc',
                 title: 'WebUploader API文档'
             }
+        },
+
+        jekyll: {
+            options: { // Universal options
+                src: 'jekyll'
+            },
+            dist: { // Target
+                options: { // Target options
+                    dest: 'pages',
+                    config: 'jekyll/_config.yml'
+                }
+            }
+        },
+
+        'gh-pages': {
+            options: {
+                message: '程序自动提交，源码请查看tree/master/jekyll目录',
+                base: 'pages',
+                repo: 'https://github.com/gmuteam/webuploader.git'
+            },
+            src: ['**/*']
         }
     });
 
@@ -205,6 +226,10 @@ module.exports = function(grunt) {
     grunt.loadNpmTasks( 'grunt-contrib-watch' );
 
     grunt.loadNpmTasks( 'grunt-contrib-uglify' );
+
+    grunt.loadNpmTasks('grunt-jekyll');
+
+    grunt.loadNpmTasks('grunt-gh-pages');
 
     // 加载build目录下的所有task
     grunt.loadTasks( 'build/tasks' );
