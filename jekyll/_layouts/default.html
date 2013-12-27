@@ -1,0 +1,39 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
+<html lang="en">
+
+<head>
+    <meta http-equiv="Content-Type" content="text/html;charset=UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% if page.url == '/index.html' %}
+            {{ page.title }}
+        {% else %}
+            {{ page.title }} - {{ site.name }}
+        {% endif %}</title>
+    <link rel="shortcut icon" href="{{ site.baseurl }}/images/favicon.ico">
+    <link rel="stylesheet" type="text/css" href="{{ site.baseurl }}/css/bootstrap.min.css">
+    <link rel="stylesheet" type="text/css" href="{{ site.baseurl }}/css/bootstrap-theme.min.css">
+    <link rel="stylesheet" type="text/css" href="{{ site.baseurl }}/css/font-awesome.min.css">
+    <link rel="stylesheet" type="text/css" href="{{ site.baseurl }}/css/syntax.css">
+    <link rel="stylesheet" type="text/css" href="{{ site.baseurl }}/css/style.css">
+    {% for link in page.styles %}
+    <link rel="stylesheet" type="text/css" href="{{ site.baseurl }}{{link}}">
+    {% endfor %}
+</head>
+
+<body>
+    <div id="wrapper">
+        {% include header.html %} <div class="page-body">{{ content }}</div> {% include footer.html %}
+    </div>
+    <script type="text/javascript">
+    // 添加全局站点信息
+    var BASE_URL = '{{site.baseurl}}';
+    </script>
+    <script type="text/javascript" src="{{ site.baseurl }}/js/jquery-1.10.2.min.js"></script>
+    <script type="text/javascript" src="{{ site.baseurl }}/js/bootstrap.min.js"></script>
+    <script type="text/javascript" src="{{ site.baseurl }}/js/footer.js"></script>
+    {% for script in page.scripts %}
+        <script type="text/javascript" src="{{ site.baseurl }}{{script}}"></script>
+    {% endfor %}
+</body>
+</html>
