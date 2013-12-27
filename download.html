@@ -1,0 +1,120 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
+<html lang="en">
+
+<head>
+    <meta http-equiv="Content-Type" content="text/html;charset=UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>
+            下载 - Web Uploader
+        </title>
+    <link rel="shortcut icon" href="/webuploader/images/favicon.ico">
+    <link rel="stylesheet" type="text/css" href="/webuploader/css/bootstrap.min.css">
+    <link rel="stylesheet" type="text/css" href="/webuploader/css/bootstrap-theme.min.css">
+    <link rel="stylesheet" type="text/css" href="/webuploader/css/font-awesome.min.css">
+    <link rel="stylesheet" type="text/css" href="/webuploader/css/syntax.css">
+    <link rel="stylesheet" type="text/css" href="/webuploader/css/style.css">
+    
+</head>
+
+<body>
+    <div id="wrapper">
+        <div class="navbar navbar-fixed-top navbar-inverse" role="navigation">
+    <div class="container">
+        <div class="navbar-header">
+            <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-collapse">
+                <span class="sr-only">Toggle navigation</span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+            </button>
+            <a class="navbar-brand logo" href="/webuploader/">
+                <span class="fa fa-cloud-upload"></span>WebUploader</a>
+        </div>
+        <div class="collapse navbar-collapse">
+            <ul class="nav navbar-nav">     <li><a href="/webuploader/getting-started.html">Getting started</a></li>    <li><a href="/webuploader/demo.html">Demo</a></li>       <li class="active"><a href="/webuploader/download.html" class="active">Download</a></li>                                     <li><a target="_blank" href="https://github.com/gmuteam/webuploader">Github</a></li></ul>
+        </div>
+        <!-- /.nav-collapse -->
+    </div>
+    <!-- /.container -->
+</div>
+<!-- /.navbar --> <div class="page-body"><div id="post-container" class="container">
+    <div class="page-header">
+      <h1>下载</h1>
+    </div>
+    <div class="page-container">
+        <p>直接下载本站默认打包版本。</p>
+
+<p><a class="btn btn-success" href="/webuploader/webuploader_0.1.0.zip">下载1.0版本</a></p>
+
+<p>或者直接使用cdn版本</p>
+<div class="highlight"><pre><code class="html language-html" data-lang="html"><span class="c">&lt;!-- 最新压缩版样式文件 --&gt;</span>
+<span class="nt">&lt;link</span> <span class="na">rel=</span><span class="s">&quot;stylesheet&quot;</span> <span class="na">href=</span><span class="s">&quot;//netdna.bootstrapcdn.com/bootstrap/3.0.3/css/bootstrap.min.css&quot;</span><span class="nt">&gt;</span>
+
+<span class="c">&lt;!-- 最新压缩版JS文件 --&gt;</span>
+<span class="nt">&lt;script </span><span class="na">src=</span><span class="s">&quot;//netdna.bootstrapcdn.com/bootstrap/3.0.3/js/bootstrap.min.js&quot;</span><span class="nt">&gt;&lt;/script&gt;</span>
+</code></pre></div>
+<h3>DIY打包</h3>
+
+<p>如果想更大力度的搭配JS组合，实现满足你需求的最小组合，请按如下步骤进行操作。</p>
+
+<h4>环境依赖</h4>
+
+<ol>
+<li>git命令行工具</li>
+<li>node &amp; npm命令工具</li>
+<li>grunt (<code>npm install grunt-cli -g</code>)</li>
+</ol>
+
+<h4>编译代码</h4>
+
+<ol>
+<li>克隆 <a href="https://github.com/gmuteam/webuploader">webuploader git仓库</a>，<code>git clone https://github.com/gmuteam/webuploader.git</code>。</li>
+<li>安装node依赖，<code>npm install</code>。</li>
+<li>执行<code>grunt dist</code>，此动作会在dist目录下面创建合并版本的js, 包括通过<code>uglify</code>压缩的min版本。</li>
+</ol>
+
+<h4>配置<a href="http://gruntjs.com/getting-started">Grunt</a></h4>
+
+<p>打开webuploader仓库根目录下面的<code>Gruntfile.js</code>文件, 代码合并有<code>concat</code>task来完成。找到<code>concat</code>配置项。</p>
+
+<p>如下面的例子演示了如何去掉html5部分的代码。<strong>配置时不用考虑js依赖，gmuteam优化了concat工具，可以自动添加js依赖</strong></p>
+<div class="highlight"><pre><code class="javascript language-javascript" data-lang="javascript"><span class="nx">flashonly</span><span class="o">:</span> <span class="p">{</span>
+    <span class="nx">cwd</span><span class="o">:</span> <span class="s1">&#39;src&#39;</span><span class="p">,</span>
+
+    <span class="nx">src</span><span class="o">:</span> <span class="p">[</span>
+
+        <span class="c1">// 在这里配置文件组合，</span>
+        <span class="s1">&#39;widgets/filepicker.js&#39;</span><span class="p">,</span>
+        <span class="s1">&#39;**/*.js&#39;</span><span class="p">,</span>
+
+        <span class="c1">// 去掉html5的实现代码</span>
+        <span class="s1">&#39;!runtime/html5/**/*.js&#39;</span><span class="p">,</span>
+
+        <span class="s1">&#39;!jq-bridge.js&#39;</span><span class="p">,</span>
+        <span class="s1">&#39;!promise.js&#39;</span>
+    <span class="p">],</span>
+
+
+    <span class="nx">dest</span><span class="o">:</span> <span class="s1">&#39;dist/webuploader.flashonly.js&#39;</span>
+<span class="p">}</span>
+</code></pre></div>
+    </div>
+</div></div> <div id="footer" class="footer">
+    <div class="footer-inner container">
+        <p class="copyright">Webuploader由<a href="https://github.com/gmuteam">gmuteam</a>团队负责维护
+        </p>
+        <p>&copy;2013-2018 Baidu Fex Team</p>
+    </div>
+</div>
+    </div>
+    <script type="text/javascript">
+    // 添加全局站点信息
+    var BASE_URL = '/webuploader';
+    </script>
+    <script type="text/javascript" src="/webuploader/js/jquery-1.10.2.min.js"></script>
+    <script type="text/javascript" src="/webuploader/js/bootstrap.min.js"></script>
+    <script type="text/javascript" src="/webuploader/js/footer.js"></script>
+    
+</body>
+</html>
