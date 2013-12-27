@@ -31,8 +31,8 @@ define([
                 fr = fr.onload = fr.onerror = null;
             };
 
-            fr.readAsArrayBuffer( blob.slice( 0,
-                    me.maxMetaDataSize ).getSource() );
+            blob = blob.slice( 0, me.maxMetaDataSize );
+            fr.readAsArrayBuffer( blob.getSource() );
         },
 
         _parse: function( buffer, noParse ) {

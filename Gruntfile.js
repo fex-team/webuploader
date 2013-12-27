@@ -44,66 +44,41 @@ module.exports = function(grunt) {
                 dest: 'dist/webuploader.js'
             },
 
-            // xiangce: {
-            //     options: {
-            //         banner: '/* WebUploader <%= pkg.version %> */\n(function( window, undefined ) {\n',
-            //         footer: '\n})( this );\nexports = this.WebUploader;',
-            //     },
-
-            //     cwd: 'src',
-
-            //     src: [
-            //         // 把剩余的打包进来。
-            //         'widgets/filepicker.js',
-            //         '**/*.js',
-
-            //         '!exports.js',
-            //         'exports.js'
-            //     ],
-
-
-            //     dest: 'dist/webuploader.js'
-            // },
-
-            // music: {
-            //     cwd: 'src',
-
-            //     src: [
-            //         'amd.js',
-            //         'base.js',
-
-            //         // 把剩余的打包进来。
-            //         'widgets/filepicker.js',
-            //         'widgets/filednd.js',
-            //         'widgets/queue.js',
-            //         'widgets/runtime.js',
-            //         'widgets/upload.js',
-
-            //         'runtime/html5/blob.js',
-            //         'runtime/html5/transport.js',
-            //         'runtime/html5/filepicker.js',
-            //         'runtime/html5/dnd.js',
-
-            //         '!exports.js',
-            //         'exports.js'
-            //     ],
-
-            //     dest: 'examples/music/webuploader.js'
-            // },
-
-            wenku: {
-                options: {
-                    banner: '/* WebUploader <%= pkg.version %> */\n(function( window, undefined ) {\n',
-                    footer: '\n})( this );exports = WebUploader;'
-                },
-
+            html5only: {
                 cwd: 'src',
 
                 src: [
-                    // 'jq-bridge.js',
-                    'base.js',
-                    // 'promise.js',
+                    'widgets/filepicker.js',
+                    '**/*.js',
 
+                    '!runtime/flash/**/*.js'
+
+                ],
+
+
+                dest: 'dist/webuploader.html5only.js'
+            },
+
+            flashonly: {
+                cwd: 'src',
+
+                src: [
+                    'widgets/filepicker.js',
+                    '**/*.js',
+
+                    '!runtime/html5/**/*.js'
+
+                ],
+
+
+                dest: 'dist/webuploader.flashonly.js'
+            },
+
+            // 如果没有图片处理功能，则只需要一下配置一下文件。
+            ignoreimages: {
+                cwd: 'src',
+
+                src: [
                     // 把剩余的打包进来。
                     'widgets/filepicker.js',
                     'widgets/filednd.js',
@@ -111,20 +86,22 @@ module.exports = function(grunt) {
                     'widgets/runtime.js',
                     'widgets/upload.js',
 
+                    // html5运行时
                     'runtime/html5/blob.js',
                     'runtime/html5/transport.js',
                     'runtime/html5/filepicker.js',
                     'runtime/html5/dnd.js',
 
 
-                    '!exports.js',
-                    'exports.js'
+                    'runtime/flash/blob.js',
+                    'runtime/flash/transport.js',
+                    'runtime/flash/filepicker.js'
+
                 ],
 
 
-                dest: '/Users/liaoxuezhi/www/wenku/core/widget/core/upload/js/html5uploader/webuploader.js'
+                dest: 'dist/webuploader.withoutimage.js'
             }
-
 
         },
 
@@ -138,19 +115,9 @@ module.exports = function(grunt) {
                 tasks: ['default'],
             },
 
-            debug: {
+            dist: {
                 files: ['src/**/*.js', 'Gruntfile.js'],
-                tasks: [ 'concat:all'],
-            },
-
-            dev: {
-                files: ['src/**/*.js', 'Gruntfile.js'],
-                tasks: ['concat:xiangce'],
-            },
-
-            concat: {
-                files: ['src/**/*.js', 'Gruntfile.js'],
-                tasks: ['concat:wenku'],
+                tasks: [ 'dist'],
             },
 
             doc: {
@@ -208,6 +175,5 @@ module.exports = function(grunt) {
 
     // Default task(s).
     grunt.registerTask( 'default', [ 'jsbint:all', 'concat:all' ] );
-    grunt.registerTask( 'debug', [ 'watch:debug' ] );
-    grunt.registerTask( 'dev', [ 'watch:dev' ] );
+    grunt.registerTask( 'dist', [ 'concat' ] );
 };

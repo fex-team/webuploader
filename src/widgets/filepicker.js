@@ -9,16 +9,13 @@ define([
 ], function( Base, Uploader, FilePicker ) {
 
     Base.$.extend( Uploader.options, {
-        pick: {
-            multiple: true,
-            id: '#uploaderBtn'
-        },
+        pick: null,
 
-        accept: [ {
+        accept: null/*{
             title: 'Images',
             extensions: 'gif,jpg,jpeg,bmp,png',
             mimeTypes: 'image/*'
-        } ]
+        }*/
     });
 
     return Uploader.register({
@@ -40,6 +37,7 @@ define([
         addButton: function( pick ) {
             var me = this,
                 opts = me.options,
+                accept = opts.accept,
                 options, picker, deferred;
 
             if ( !pick ) {
@@ -55,7 +53,7 @@ define([
             }
 
             options = $.extend({}, pick, {
-                accept: opts.accept,
+                accept: $.isPlainObject( accept ) ? [ accept ] : accept,
                 swf: opts.swf,
                 runtimeOrder: opts.runtimeOrder
             });

@@ -18,10 +18,10 @@ define([
             throw new Error('按钮指定错误');
         }
 
-        opts.label = opts.label || opts.container.text();
+        opts.label = opts.label || opts.container.text() || '选择文件';
         opts.button = $( opts.button || document.createElement('div') );
         opts.button.text( opts.label );
-        opts.container.append( opts.button );
+        opts.container.html( opts.button );
 
         RuntimeClent.call( this, 'FilePicker', true );
     }
@@ -29,7 +29,7 @@ define([
     FilePicker.options = {
         button: null,
         container: null,
-        label: '选择文件',
+        label: null,
         multiple: true,
         accept: null
     };

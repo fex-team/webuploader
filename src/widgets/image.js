@@ -152,7 +152,7 @@ define([
 
                 // 如果压缩后，比原来还大则不用压缩后的。
                 if ( blob.size < size ) {
-                    file.source.destroy && file.source.destroy();
+                    // file.source.destroy && file.source.destroy();
                     file.source = blob;
                     file.size = blob.size;
 
