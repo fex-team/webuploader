@@ -36,6 +36,9 @@ module.exports = function(grunt) {
                     'widgets/filepicker.js',
                     '**/*.js',
 
+                    '!jq-bridge.js',
+                    '!promise.js'
+
                     // '!runtime/flash/**/*.js'
 
                 ],
@@ -51,7 +54,10 @@ module.exports = function(grunt) {
                     'widgets/filepicker.js',
                     '**/*.js',
 
-                    '!runtime/flash/**/*.js'
+                    '!runtime/flash/**/*.js',
+
+                    '!jq-bridge.js',
+                    '!promise.js'
 
                 ],
 
@@ -66,8 +72,10 @@ module.exports = function(grunt) {
                     'widgets/filepicker.js',
                     '**/*.js',
 
-                    '!runtime/html5/**/*.js'
+                    '!runtime/html5/**/*.js',
 
+                    '!jq-bridge.js',
+                    '!promise.js'
                 ],
 
 
@@ -95,7 +103,10 @@ module.exports = function(grunt) {
 
                     'runtime/flash/blob.js',
                     'runtime/flash/transport.js',
-                    'runtime/flash/filepicker.js'
+                    'runtime/flash/filepicker.js',
+
+                    '!jq-bridge.js',
+                    '!promise.js'
 
                 ],
 
@@ -103,6 +114,29 @@ module.exports = function(grunt) {
                 dest: 'dist/webuploader.withoutimage.js'
             }
 
+        },
+
+        uglify: {
+            options: {
+                mangle: true,
+                banner: '/* WebUploader <%= pkg.version %> */'
+            },
+
+            static_mapping: {
+                files: [{
+                    src: 'dist/webuploader.js',
+                    dest: 'dist/webuploader.min.js'
+                }, {
+                    src: 'dist/webuploader.flashonly.js',
+                    dest: 'dist/webuploader.flashonly.min.js'
+                }, {
+                    src: 'dist/webuploader.html5only.js',
+                    dest: 'dist/webuploader.html5only.min.js'
+                }, {
+                    src: 'dist/webuploader.withoutimage.js',
+                    dest: 'dist/webuploader.withoutimage.min.js'
+                }, ]
+            }
         },
 
         watch: {
@@ -169,6 +203,8 @@ module.exports = function(grunt) {
 
     // 负责监听文件变化
     grunt.loadNpmTasks( 'grunt-contrib-watch' );
+
+    grunt.loadNpmTasks( 'grunt-contrib-uglify' );
 
     // 加载build目录下的所有task
     grunt.loadTasks( 'build/tasks' );
