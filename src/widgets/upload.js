@@ -38,22 +38,23 @@ define([
     function CuteFile( file, chunkSize ) {
         var pending = [],
             blob = file.source,
-            end = blob.size,
-            chunks = chunkSize ? Math.ceil( end / chunkSize ) : 1,
-            index = chunks,
-            start;
+            total = blob.size,
+            chunks = chunkSize ? Math.ceil( total / chunkSize ) : 1,
+            start = 0,
+            index = 0,
+            len;
 
-        while ( index-- ) {
-            start = Math.max( 0, end - chunkSize );
+        while ( index < chunks ) {
+            len = Math.min( chunkSize, total - start );
             pending.push({
                 file: file,
                 start: start,
-                end: end,
-                total: blob.size,
+                end: start + len,
+                total: total,
                 chunks: chunks,
-                chunk: index
+                chunk: index++
             });
-            end = start;
+            start += len;
         }
 
         file.blocks = pending.concat();
