@@ -25,6 +25,10 @@ define([
         init: function( opts ) {
             var len, i, item, arr, accept;
 
+            if ( $.isPlainObject( opts.accept ) ) {
+                opts.accept = [ opts.accept ];
+            }
+
             // accept中的中生成匹配正则。
             if ( opts.accept ) {
                 arr = [];
@@ -39,8 +43,9 @@ define([
                             .replace( /,/g, '$|' )
                             .replace( /\*/g, '.*' );
                 }
+
+                this.accept = new RegExp( accept, 'i' );
             }
-            this.accept = accept = new RegExp( accept, 'i' );
 
             this.queue = new Queue();
             this.stats = this.queue.stats;
@@ -49,7 +54,8 @@ define([
         _addFile: function( file ) {
             var me = this;
 
-            if ( !file || file.size < 6 || !me.accept.test( file.name ) ) {
+            if ( !file || file.size < 6 || me.accept &&
+                    !me.accept.test( file.name ) ) {
                 return;
             }
 
@@ -82,6 +88,10 @@ define([
             });
 
             me.owner.trigger( 'filesQueued', files );
+
+            if ( me.options.auto ) {
+                me.request('start-upload');
+            }
         },
 
         getStats: function() {
