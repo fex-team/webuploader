@@ -40,12 +40,61 @@
     </div>
     <!-- /.container -->
 </div>
-<!-- /.navbar --> <div class="page-body"><div id="post-container" class="container">
-    <div class="page-header">
-      <h1>快速开始</h1>
+<!-- /.navbar --> <div class="page-body">
+<!-- Main jumbotron for a primary marketing message or call to action -->
+<div class="jumbotron">
+    <div class="container">
+        <h1>Getting Started</h1>
+        
+        <p>结合简单例子，快速掌握使用方法。</p>
+        
     </div>
-    <div class="page-container">
-        <h2>引入资源</h2>
+</div>
+
+
+<div id="post-container" class="container">
+    
+
+    
+
+    <div class="row">
+        <div class="col-md-3">
+            <div class="post-toc"><ul class="nav">
+<li>
+<a href="#toc_0">引入资源</a>
+</li>
+<li>
+<a href="#toc_1">简单文件上传</a>
+<ul class="nav">
+<li>
+<a href="#toc_2">Html部分</a>
+</li>
+<li>
+<a href="#toc_3">初始化Web Uploader</a>
+</li>
+<li>
+<a href="#toc_4">显示用户选择</a>
+</li>
+<li>
+<a href="#toc_5">文件上传进度</a>
+</li>
+<li>
+<a href="#toc_6">文件成功、失败处理</a>
+</li>
+</ul>
+</li>
+<li>
+<a href="#toc_7">上传图片</a>
+</li>
+</ul>
+</div>
+        </div>
+        <div class="col-md-9">
+
+            
+
+            <div class="page-container">
+                <h2 id="toc_0">引入资源</h2>
 
 <p>使用Web Uploader文件上传需要引入三种资源：JS, Css, Swf。您可以选择<a href="/webuploader/download.html">下载</a>本站默认包，也可以直接使用由<a href="http://www.staticfile.org">staticfile.org</a>提供的在线文件。</p>
 <div class="highlight"><pre><code class="html language-html" data-lang="html"><span class="c">&lt;!-- 最新压缩版样式文件 --&gt;</span>
@@ -54,7 +103,7 @@
 <span class="c">&lt;!-- 最新压缩版JS文件 --&gt;</span>
 <span class="nt">&lt;script </span><span class="na">src=</span><span class="s">&quot;//netdna.bootstrapcdn.com/bootstrap/3.0.3/js/bootstrap.min.js&quot;</span><span class="nt">&gt;&lt;/script&gt;</span>
 </code></pre></div>
-<h2>简单文件上传</h2>
+<h2 id="toc_1">简单文件上传</h2>
 
 <p>WebUploader只包含文件上传的底层实现，不包括UI部分。所以交互方面可以自由发挥，以下将演示如何去实现一个简单的版本。</p>
 
@@ -66,7 +115,7 @@
     </div>
 </div>
 
-<h3>Html部分</h3>
+<h3 id="toc_2">Html部分</h3>
 
 <p>首先准备dom结构，包括存放信息的容器、选择按钮和控制按钮三个部分。</p>
 <div class="highlight"><pre><code class="html language-html" data-lang="html"><span class="nt">&lt;div</span> <span class="na">id=</span><span class="s">&quot;uploader&quot;</span> <span class="na">class=</span><span class="s">&quot;wu-example&quot;</span><span class="nt">&gt;</span>
@@ -77,7 +126,7 @@
     <span class="nt">&lt;/div&gt;</span>
 <span class="nt">&lt;/div&gt;</span>
 </code></pre></div>
-<h3>初始化Web Uploader</h3>
+<h3 id="toc_3">初始化Web Uploader</h3>
 
 <p>具体说明，请看一下代码中的注释部分。</p>
 <div class="highlight"><pre><code class="javascript language-javascript" data-lang="javascript"><span class="kd">var</span> <span class="nx">uploader</span> <span class="o">=</span> <span class="nx">WebUploader</span><span class="p">.</span><span class="nx">create</span><span class="p">({</span>
@@ -96,7 +145,7 @@
     <span class="nx">pick</span><span class="o">:</span> <span class="s1">&#39;#picker&#39;</span>
 <span class="p">});</span>
 </code></pre></div>
-<h3>显示用户选择</h3>
+<h3 id="toc_4">显示用户选择</h3>
 
 <p>由于webuploader不处理UI逻辑，所以需要自己去监听<code>fileQueued</code>事件来实现。</p>
 <div class="highlight"><pre><code class="javascript language-javascript" data-lang="javascript"><span class="c1">// 当有文件添加进来的时候</span>
@@ -107,7 +156,7 @@
     <span class="s1">&#39;&lt;/div&gt;&#39;</span> <span class="p">);</span>
 <span class="p">});</span>
 </code></pre></div>
-<h3>文件上传进度</h3>
+<h3 id="toc_5">文件上传进度</h3>
 
 <p>文件上传中，Web Uploader会对外派送<code>uploadProgress</code>事件，其中包含文件对象和该文件当前上传进度。</p>
 <div class="highlight"><pre><code class="javascript language-javascript" data-lang="javascript"><span class="c1">// 文件上传过程中创建进度条实时显示。</span>
@@ -128,7 +177,7 @@
     <span class="nx">$percent</span><span class="p">.</span><span class="nx">css</span><span class="p">(</span> <span class="s1">&#39;width&#39;</span><span class="p">,</span> <span class="nx">percentage</span> <span class="o">*</span> <span class="mi">100</span> <span class="o">+</span> <span class="s1">&#39;%&#39;</span> <span class="p">);</span>
 <span class="p">});</span>
 </code></pre></div>
-<h3>文件成功、失败处理</h3>
+<h3 id="toc_6">文件成功、失败处理</h3>
 <div class="highlight"><pre><code class="javascript language-javascript" data-lang="javascript"><span class="nx">uploader</span><span class="p">.</span><span class="nx">on</span><span class="p">(</span> <span class="s1">&#39;uploadSuccess&#39;</span><span class="p">,</span> <span class="kd">function</span><span class="p">(</span> <span class="nx">file</span> <span class="p">)</span> <span class="p">{</span>
     <span class="nx">$</span><span class="p">(</span> <span class="s1">&#39;#&#39;</span><span class="o">+</span><span class="nx">file</span><span class="p">.</span><span class="nx">id</span> <span class="p">).</span><span class="nx">find</span><span class="p">(</span><span class="s1">&#39;p.state&#39;</span><span class="p">).</span><span class="nx">text</span><span class="p">(</span><span class="s1">&#39;已上传&#39;</span><span class="p">);</span>
 <span class="p">});</span>
@@ -141,7 +190,7 @@
     <span class="nx">$</span><span class="p">(</span> <span class="s1">&#39;#&#39;</span><span class="o">+</span><span class="nx">file</span><span class="p">.</span><span class="nx">id</span> <span class="p">).</span><span class="nx">find</span><span class="p">(</span><span class="s1">&#39;.progress&#39;</span><span class="p">).</span><span class="nx">fadeOut</span><span class="p">();</span>
 <span class="p">});</span>
 </code></pre></div>
-<h2>上传图片</h2>
+<h2 id="toc_7">上传图片</h2>
 
 <p>与普通文件上传相比，此demo演示了，文件过滤，图片预览，图片压缩上传功能。</p>
 
@@ -255,7 +304,11 @@
 </code></pre></div>
 <p>更多细节，请查看<a href="/webuploader/js/getting-started.js">js源码</a>。</p>
 
+            </div>
+        </div>
     </div>
+
+    
 </div></div> <div id="footer" class="footer">
     <div class="footer-inner container">
         <p class="copyright">Webuploader由<a href="https://github.com/gmuteam">gmuteam</a>团队负责维护
@@ -270,7 +323,7 @@
     </script>
     <script type="text/javascript" src="/webuploader/js/jquery-1.10.2.min.js"></script>
     <script type="text/javascript" src="/webuploader/js/bootstrap.min.js"></script>
-    <script type="text/javascript" src="/webuploader/js/footer.js"></script>
+    <script type="text/javascript" src="/webuploader/js/global.js"></script>
     
         <script type="text/javascript" src="/webuploader/js/webuploader.js"></script>
     

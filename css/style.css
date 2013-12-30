@@ -1,5 +1,5 @@
 body {
-    padding-top: 40px;
+    margin-top: 50px;
     font-size: 16px;
     font-family:'Myriad Pro', Calibri, Helvetica, Arial, sans-serif;
     line-height: 1.5;
@@ -7,9 +7,32 @@ body {
     background: #212121;
 }
 
+.jumbotron {
+    background: transparent url(../images/banner.jpg) no-repeat 50% 0%;
+    color: #fff;
+    text-shadow: 1px 1px 1px #3b3262;
+    margin-bottom: 0;
+}
+
+.fetature {
+    margin-top: 30px;
+}
+
 .page-body {
     background: #fff;
     min-height: 450px;
+}
+
+.page-container {
+    margin-top: 10px;
+}
+
+.page-container h1,
+.page-container h2,
+.page-container h3,
+.page-container h4 {
+    padding-top: 70px;
+    margin-top: -50px;
 }
 
 .logo {
@@ -75,6 +98,53 @@ body {
         box-shadow: none;
     }
 }
+.post-toc {
+    margin-top: 30px;
+    margin-bottom: 30px;
+    padding-top: 10px;
+    padding-bottom: 10px;
+    text-shadow: 0 1px 0 #fff;
+    background-color: #f7f5fa;
+    border-radius: 5px;
+}
+
+.post-toc .nav > li > a {
+    display: block;
+    color: #716b7a;
+    padding: 5px 20px;
+}
+
+.post-toc .nav .nav > li > a {
+    padding-top: 3px;
+    padding-bottom: 3px;
+    padding-left: 30px;
+    font-size: 90%;
+}
+
+.post-toc.affix {
+    position: static;
+}
+
+@media (min-width: 992px) {
+    .post-toc.affix {
+        position: fixed;
+        width: 263px;
+        top: 50px;
+    }
+}
+
+.post-toc .nav > .active > a,
+.post-toc .nav > .active:hover > a,
+.post-toc .nav > .active:focus > a {
+    font-weight: bold;
+    color: #563d7c;
+    background-color: transparent;
+    border-right: 1px solid #563d7c;
+}
+
+
+
+/*demo样式*/
 #picker {
     display: inline-block;
     line-height: 1.428571429;
