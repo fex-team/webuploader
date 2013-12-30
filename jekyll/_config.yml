@@ -1,5 +1,9 @@
 name: Web Uploader
 markdown: redcarpet
+redcarpet:
+  extensions:
+    - with_toc_data
+    - html_toc
 pygments: true
 baseurl: /webuploader
 exclude:

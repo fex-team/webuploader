@@ -12,3 +12,4 @@ server/*
 /flash/bin-debug
 /flash/html-template
 /.grunt
+/jekyll/_site/

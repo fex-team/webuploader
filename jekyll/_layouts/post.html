@@ -1,11 +1,53 @@
 ---
 layout: default
 ---
+
+{% if page.bannerTitle %}
+<!-- Main jumbotron for a primary marketing message or call to action -->
+<div class="jumbotron">
+    <div class="container">
+        <h1>{{ page.bannerTitle }}</h1>
+        {% for paragraph in page.bannerContents %}
+        <p>{{ paragraph }}</p>
+        {% endfor %}
+    </div>
+</div>
+{% endif %}
+
 <div id="post-container" class="container">
+    {% capture toc %}{{ page.content | fancytoc }}{% endcapture %}
+
+    {% if page.noToc == nil and toc != '' %}
+
+    <div class="row">
+        <div class="col-md-3">
+            <div class="post-toc">{{ toc }}</div>
+        </div>
+        <div class="col-md-9">
+
+            {% if page.hideTitle == nil %}
+            <div class="page-header">
+              <h1>{{ page.title }}</h1>
+            </div>
+            {% endif %}
+
+            <div class="page-container">
+                {{ content }}
+            </div>
+        </div>
+    </div>
+
+    {% else %}
+
+    {% if page.hideTitle == nil %}
     <div class="page-header">
       <h1>{{ page.title }}</h1>
     </div>
+    {% endif %}
+
     <div class="page-container">
         {{ content }}
     </div>
+
+    {% endif %}
 </div>

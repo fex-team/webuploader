@@ -1,9 +1,10 @@
 ---
-layout: default
+layout: post
 title: 演示
 name: Demo
 group: 'nav'
 weight : 2
+hideTitle: true
 styles:
   - /css/webuploader.css
   - /css/demo.css

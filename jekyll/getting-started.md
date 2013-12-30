@@ -3,12 +3,17 @@ layout: post
 title: 快速开始
 name: Getting started
 group: 'nav'
-weight : 1
+weight : 1,
 styles:
   - /css/webuploader.css
 scripts:
   - /js/webuploader.js
   - /js/getting-started.js
+
+hideTitle: true
+bannerTitle: Getting Started
+bannerContents:
+  - 结合简单例子，快速掌握使用方法。
 ---
 
 ## 引入资源
