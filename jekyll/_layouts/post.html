@@ -34,6 +34,8 @@ layout: default
             <div class="page-container">
                 {{ content }}
             </div>
+
+            {% include comments.html %}
         </div>
     </div>
 
@@ -48,6 +50,8 @@ layout: default
     <div class="page-container">
         {{ content }}
     </div>
+
+    {% include comments.html %}
 
     {% endif %}
 </div>
