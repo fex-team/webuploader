@@ -9,7 +9,7 @@ styles:
 scripts:
   - /js/webuploader.js
   - /js/getting-started.js
-
+commentIssueId: 71
 hideTitle: true
 bannerTitle: Getting Started
 bannerContents:
