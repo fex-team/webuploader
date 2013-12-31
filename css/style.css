@@ -125,11 +125,21 @@ body {
     position: static;
 }
 
+.post-toc .nav .nav {
+  display: none;
+  margin-bottom: 8px;
+}
+
+
 @media (min-width: 992px) {
     .post-toc.affix {
         position: fixed;
         width: 263px;
         top: 50px;
+    }
+
+    .post-toc .nav > .active > ul {
+      display: block;
     }
 }
 
