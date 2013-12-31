@@ -1,0 +1,32 @@
+<div class="container">
+    <% if ( title ) { %>
+    <div class="page-header">
+      <h1 id="<%- gennerateID( name ) %>"><%= title %></h1>
+    </div>
+    <% } %>
+    <%- markdown( description ) %>
+</div>
+
+
+<div id="post-container" class="container">
+    <div class="row">
+        <div class="col-md-3">
+            <%- renderTpl('sidebar') %>
+        </div>
+        <div class="col-md-9">
+            <div class="page-container">
+
+                <% if ( items ) { %>
+                <a id="<%- gennerateID( name + ':' + name ) %>" ></a>
+                <%- renderTpl( 'items' ) %>
+                <% } %>
+
+                <% _.forEach( classes, function( clazz ) { %>
+                <%- clazz.isPlugin ? '' : renderTpl( 'class', clazz ) %>
+                <% }) %>
+
+            </div>
+        </div>
+    </div>
+</div>
+

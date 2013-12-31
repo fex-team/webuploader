@@ -1,0 +1,19 @@
+<div>
+    <h3 id="<%- gennerateID(module + ':' + name + ':options') %>">参数说明</h3>
+    <ul class="params-list">
+        <% _.sortBy( options, function( value ){ return value.uses ? value.uses.length : 0; } ).forEach(function( item ) { %>
+        <li>
+            <span class="meta">
+                <code><%= item.shortname || item.name %></code>
+                <% if ( item.type ) { %> {<%=: item.type | join:', ' %>} <% }%>
+                <% if ( item.optional ) { %> [可选] <% }%>
+                <% if ( item.defaultvalue ) { %> [默认值：<%= item.defaultvalue %>] <% }%>
+            </span>
+            <%- markdown(item.description) %>
+            <% if ( item.uses ) { %>
+            <%- renderUses( item.uses, '依赖: %s。' ) %>
+            <% } %>
+        </li>
+        <% }) %>
+    </ul>
+</div>

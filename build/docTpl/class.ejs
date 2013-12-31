@@ -1,0 +1,12 @@
+<div class="clearfix category">
+    <h2 id="<%- gennerateID( module + ':' + name ) %>"><%= title || name %></h2>
+    <% if ( description ) { %><%- markdown( description ) %><% } %>
+
+
+    <% if ( options.length ) { %> <%- renderTpl( 'options' ) %>  <% } %>
+    <% if ( events.length ) { %>  <%- renderTpl( 'events' ) %>      <% } %>
+    <% if ( items.length ) { %> <%- renderTpl( 'items' ) %>  <% } %>
+
+    <% if ( plugins.length ) { %> <%- renderTpl( 'plugins' ) %>  <% } %>
+</div>
+<hr />

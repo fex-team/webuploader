@@ -1,0 +1,22 @@
+<div>
+    <h3 id="<%- gennerateID(module + ':' + name + ':events') %>">事件说明</h3>
+    <table>
+        <tr>
+            <th>事件名</th>
+            <th>描述</th>
+            <th>参数说明</th>
+        </tr>
+
+        <% _.forEach( events, function( item ) { %>
+        <tr>
+            <td><%= item.name %></td>
+            <td><%- markdown(item.description) %></td>
+            <td>
+                <% if ( item.params ) { %>
+                <%- renderParams( item.params ) %>
+                <% } %>
+            </td>
+        </tr>
+        <% }) %>
+    </table>
+</div>

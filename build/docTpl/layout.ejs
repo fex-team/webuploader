@@ -1,0 +1,20 @@
+---
+layout: default
+title: <%= title %>
+name: API
+group: 'nav'
+weight : 3
+styles:
+  - /doc/css/doc.css
+---
+<%- renderTpl('content').replace(/<pre><code\sclass="lang-([^"]+)">([\s\S]*?)<\/code><\/pre>/igm, function( m0, m1, m2 ) {
+    return '\n' +
+        '{% highlight ' + m1 + ' %}\n' +
+
+        m2.replace(/&amp;/g, '&')
+        .replace(/&gt;/g, '>')
+        .replace(/&quot;/g, '"')
+        .replace(/&#39;/g, '\'') +
+
+        '\n{% endhighlight %}\n';
+}) %>
