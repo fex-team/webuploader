@@ -21,11 +21,7 @@ bannerContents:
 使用Web Uploader文件上传需要引入三种资源：JS, Css, Swf。您可以选择[下载]({{site.baseurl}}/download.html)本站默认包，也可以直接使用由[staticfile.org](http://www.staticfile.org)提供的在线文件。
 
 ```html
-<!-- 最新压缩版样式文件 -->
-<link rel="stylesheet" href="//netdna.bootstrapcdn.com/bootstrap/3.0.3/css/bootstrap.min.css">
-
-<!-- 最新压缩版JS文件 -->
-<script src="//netdna.bootstrapcdn.com/bootstrap/3.0.3/js/bootstrap.min.js"></script>
+<!-- cdn正在申请中... -->
 ```
 
 ## 简单文件上传
