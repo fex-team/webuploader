@@ -3,7 +3,7 @@ layout: post
 title: 下载
 name: Download
 group: 'nav'
-weight : 3
+weight : 5
 hideTitle: true
 ---
 ## 下载

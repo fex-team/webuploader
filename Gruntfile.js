@@ -188,8 +188,9 @@ module.exports = function(grunt) {
                     'mediator.js',
                     '**/*.js'
                 ],
+                tplDir: './build/docTpl',
                 theme: 'gmu',
-                outputDir: './doc',
+                outputDir: './jekyll/doc',
                 title: 'WebUploader API文档'
             }
         },
@@ -237,5 +238,5 @@ module.exports = function(grunt) {
     // Default task(s).
     grunt.registerTask( 'default', [ 'jsbint:all', 'concat:all' ] );
     grunt.registerTask( 'dist', [ 'concat' ] );
-    grunt.registerTask( 'deploy', [ 'jekyll', 'gh-pages' ] );
+    grunt.registerTask( 'deploy', [ 'doc', 'jekyll', 'gh-pages' ] );
 };

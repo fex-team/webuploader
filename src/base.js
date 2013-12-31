@@ -7,9 +7,6 @@
  * 图片处理能力以及更低的内存消耗，同时结合HTML5 File API使得WebUploader具有了更加丰富的文件交互体验。
  * 目前已应用在百度相册上传页中，承载着海量的用户上传。
  *
- * * GitHub: [https://github.com/gmuteam/webuploader](https://github.com/gmuteam/webuploader)
- * * OsChina: [http://git.oschina.net/2betop/webuploader](http://git.oschina.net/2betop/webuploader)
- *
  * @module WebUploader
  * @title WebUploader API文档
  */
