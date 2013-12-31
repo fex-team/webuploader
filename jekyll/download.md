@@ -15,11 +15,7 @@ hideTitle: true
 或者直接使用cdn版本
 
 ```html
-<!-- 最新压缩版样式文件 -->
-<link rel="stylesheet" href="//netdna.bootstrapcdn.com/bootstrap/3.0.3/css/bootstrap.min.css">
-
-<!-- 最新压缩版JS文件 -->
-<script src="//netdna.bootstrapcdn.com/bootstrap/3.0.3/js/bootstrap.min.js"></script>
+<!-- cdn正在申请中... -->
 ```
 
 ## DIY打包
