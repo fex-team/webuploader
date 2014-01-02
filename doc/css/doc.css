@@ -53,3 +53,12 @@ div.notice {
     color: black;
     margin: 1em 0;
 }
+
+ul.params-list li > span.meta + p, ol.plugin-list li > code + p {
+    display: inline;
+    padding-left: 10px;
+}
+
+table.table .events-tb-desc {
+    min-width: 250px;
+}
