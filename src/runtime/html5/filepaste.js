@@ -3,8 +3,9 @@
  */
 define([
     'base',
-    './runtime'
-], function( Base, Html5Runtime ) {
+    './runtime',
+    'lib/file'
+], function( Base, Html5Runtime, File ) {
 
     return Html5Runtime.register( 'FilePaste', {
         init: function() {
@@ -34,6 +35,7 @@ define([
 
         _pasteHander: function( e ) {
             var allowed = [],
+                ruid = this.getRuid(),
                 files, file, blob, i, len;
 
             e = e.originalEvent || e;
@@ -50,7 +52,7 @@ define([
                     continue;
                 }
 
-                allowed.push( blob );
+                allowed.push( new File( ruid, blob ) );
             }
 
             allowed.length && this.trigger( 'paste', allowed );

@@ -176,7 +176,7 @@ define([
                     height / naturalHeight );
 
             // 不允许放大。
-            opts.allowMagnify && (scale = Math.min( 1, scale ));
+            opts.allowMagnify || (scale = Math.min( 1, scale ));
 
             w = naturalWidth * scale;
             h = naturalHeight * scale;
