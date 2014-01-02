@@ -27,8 +27,7 @@ body {
 
 .page-container h1,
 .page-container h2,
-.page-container h3,
-.page-container h4 {
+.page-container h3 {
     padding-top: 70px;
     margin-top: -50px;
 }
@@ -134,8 +133,18 @@ body {
 @media (min-width: 992px) {
     .post-toc.affix {
         position: fixed;
-        width: 263px;
+        width: 213px;
         top: 50px;
+    }
+
+    .post-toc .nav > .active > ul {
+      display: block;
+    }
+}
+
+@media (min-width: 1200px) {
+    .post-toc.affix {
+        width: 263px;
     }
 
     .post-toc .nav > .active > ul {

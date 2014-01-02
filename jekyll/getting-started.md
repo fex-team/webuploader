@@ -18,15 +18,29 @@ bannerContents:
 
 ## 引入资源
 
-使用Web Uploader文件上传需要引入三种资源：JS, Css, Swf。您可以选择[下载]({{site.baseurl}}/download.html)本站默认包，也可以直接使用由[staticfile.org](http://www.staticfile.org)提供的在线文件。
+使用Web Uploader文件上传需要引入三种资源：JS, CSS, SWF。
+
+```html
+<!--引入CSS-->
+<link rel="stylesheet" type="text/css" href="webuploader文件夹/webuploader.css">
+
+<!--引入JS-->
+<script type="text/javascript" src="webuploader文件夹/webuploader.js"></script>
+
+<!--SWF在初始化的时候指定，在后面将展示-->
+```
+
+您可以[下载]({{site.baseurl}}/download.html)本站默认包，或者直接使用由[staticfile.org](http://www.staticfile.org)提供的在线文件。
 
 ```html
 <!-- cdn正在申请中... -->
 ```
 
-## 简单文件上传
+## 文件上传
 
 WebUploader只包含文件上传的底层实现，不包括UI部分。所以交互方面可以自由发挥，以下将演示如何去实现一个简单的版本。
+
+请点击下面的`选择文件`按钮，然后点击`开始上传`体验此Demo。
 
 <div id="uploader" class="wu-example">
     <div id="thelist" class="uploader-list"></div>
@@ -123,7 +137,7 @@ uploader.on( 'uploadComplete', function( file ) {
 ```
 
 
-## 上传图片
+## 图片上传
 与普通文件上传相比，此demo演示了，文件过滤，图片预览，图片压缩上传功能。
 
 <div id="uploader-demo" class="wu-example">
