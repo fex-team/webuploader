@@ -14,9 +14,16 @@ styles:
       <h1 id="WebUploader">WebUploader API文档</h1>
     </div>
     
-    <p>Webuploader是一个以html5为主的现代多文件上传js库，比传统FLASH文件上传具有更高的上传效率、
-图片处理能力以及更低的内存消耗，同时结合HTML5 File API使得WebUploader具有了更加丰富的文件交互体验。
-目前已应用在百度相册上传页中，承载着海量的用户上传。</p>
+    <p>Web Uploader内部类的详细说明，以下提及的功能类，都可以在<code>WebUploader</code>这个变量中访问到。</p>
+<p>As you know, Web Uploader的每个文件都是用过<a href="https://github.com/amdjs/amdjs-api/wiki/AMD">AMD</a>规范中的<code>define</code>组织起来的, 每个Module都会有个module id.
+默认module id该文件的路径，而此路径将会转化成名字空间存放在WebUploader中。如：</p>
+<ul>
+<li>module <code>base</code>：WebUploader.Base</li>
+<li>module <code>file</code>: WebUploader.File</li>
+<li>module <code>lib/dnd</code>: WebUploader.Lib.Dnd</li>
+<li>module <code>runtime/html5/dnd</code>: WebUploader.Runtime.Html5.Dnd</li>
+</ul>
+<p>以下文档将可能省略<code>WebUploader</code>前缀。</p>
 
 </div>
 
@@ -32,18 +39,39 @@ styles:
                 <a href="#WebUploader_Uploader">Uploader</a>
                 <ul class="nav">
                     
-                    <li class="constructor">
-                        <a class="" href="#WebUploader_Uploader_Uploader">Uploader</a>
+                    
+
+                    <li class="options">
+                        <a class="" href="#WebUploader_Uploader_options">options</a>
                     </li>
                     
+                    
+
+                    <li class="events">
+                        <a class="" href="#WebUploader_Uploader_events">events</a>
+                    </li>
+                    
+                    
+                    
+
                     <li class="method">
                         <a class="" href="#WebUploader_Uploader_option">option</a>
                     </li>
                     
+                    
+
                     <li class="method">
                         <a class="" href="#WebUploader_Uploader_getStats">getStats</a>
                     </li>
                     
+                    
+
+                    <li class="method">
+                        <a class="" href="#WebUploader_Uploader_addButton">addButton</a>
+                    </li>
+                    
+                    
+
                     <li class="method">
                         <a class="" href="#WebUploader_Uploader_request">request</a>
                     </li>
@@ -55,58 +83,86 @@ styles:
                 <a href="#WebUploader_Base">Base</a>
                 <ul class="nav">
                     
+                    
+
                     <li class="method">
                         <a class="" href="#WebUploader_Base_create">create</a>
                     </li>
                     
+                    
+
                     <li class="property">
                         <a class="" href="#WebUploader_Base_version">version</a>
                     </li>
                     
+                    
+
                     <li class="property">
                         <a class="" href="#WebUploader_Base_">$</a>
                     </li>
                     
+                    
+
                     <li class="method">
                         <a class="" href="#WebUploader_Base_Deferred">Deferred</a>
                     </li>
                     
+                    
+
                     <li class="method">
                         <a class="" href="#WebUploader_Base_isPromise">isPromise</a>
                     </li>
                     
+                    
+
                     <li class="method">
                         <a class="" href="#WebUploader_Base_when">when</a>
                     </li>
                     
+                    
+
                     <li class="property">
                         <a class="" href="#WebUploader_Base_browser">browser</a>
                     </li>
                     
+                    
+
                     <li class="method">
                         <a class="" href="#WebUploader_Base_inherits">inherits</a>
                     </li>
                     
+                    
+
                     <li class="method">
                         <a class="" href="#WebUploader_Base_noop">noop</a>
                     </li>
                     
+                    
+
                     <li class="method">
                         <a class="" href="#WebUploader_Base_bindFn">bindFn</a>
                     </li>
                     
+                    
+
                     <li class="method">
                         <a class="" href="#WebUploader_Base_log">log</a>
                     </li>
                     
+                    
+
                     <li class="method">
                         <a class="" href="#WebUploader_Base_slice">slice</a>
                     </li>
                     
+                    
+
                     <li class="method">
                         <a class="" href="#WebUploader_Base_guid">guid</a>
                     </li>
                     
+                    
+
                     <li class="method">
                         <a class="" href="#WebUploader_Base_formatSize">formatSize</a>
                     </li>
@@ -118,22 +174,32 @@ styles:
                 <a href="#WebUploader_Mediator">Mediator</a>
                 <ul class="nav">
                     
+                    
+
                     <li class="method">
                         <a class="" href="#WebUploader_Mediator_on">on</a>
                     </li>
                     
+                    
+
                     <li class="method">
                         <a class="" href="#WebUploader_Mediator_once">once</a>
                     </li>
                     
+                    
+
                     <li class="method">
                         <a class="" href="#WebUploader_Mediator_off">off</a>
                     </li>
                     
+                    
+
                     <li class="method">
                         <a class="" href="#WebUploader_Mediator_trigger">trigger</a>
                     </li>
                     
+                    
+
                     <li class="method">
                         <a class="" href="#WebUploader_Mediator_installTo">installTo</a>
                     </li>
@@ -145,46 +211,63 @@ styles:
                 <a href="#WebUploader_File">File</a>
                 <ul class="nav">
                     
+                    
+
                     <li class="events">
                         <a class="" href="#WebUploader_File_events">events</a>
                     </li>
                     
-                    <li class="constructor">
-                        <a class="" href="#WebUploader_File_File">File</a>
-                    </li>
                     
+                    
+
                     <li class="property">
                         <a class="" href="#WebUploader_File_name">name</a>
                     </li>
                     
+                    
+
                     <li class="property">
                         <a class="" href="#WebUploader_File_size">size</a>
                     </li>
                     
+                    
+
                     <li class="property">
                         <a class="" href="#WebUploader_File_type">type</a>
                     </li>
                     
+                    
+
                     <li class="property">
                         <a class="" href="#WebUploader_File_lastModifiedDate">lastModifiedDate</a>
                     </li>
                     
+                    
+
                     <li class="property">
                         <a class="" href="#WebUploader_File_id">id</a>
                     </li>
                     
+                    
+
                     <li class="property">
                         <a class="" href="#WebUploader_File_ext">ext</a>
                     </li>
                     
+                    
+
                     <li class="property">
                         <a class="" href="#WebUploader_File_statusText">statusText</a>
                     </li>
                     
+                    
+
                     <li class="method">
                         <a class="" href="#WebUploader_File_setStatus">setStatus</a>
                     </li>
                     
+                    
+
                     <li class="property">
                         <a class="" href="#WebUploader_File_File_Status">Status</a>
                     </li>
@@ -196,26 +279,38 @@ styles:
                 <a href="#WebUploader_Queue">Queue</a>
                 <ul class="nav">
                     
+                    
+
                     <li class="property">
                         <a class="" href="#WebUploader_Queue_stats">stats</a>
                     </li>
                     
+                    
+
                     <li class="method">
                         <a class="" href="#WebUploader_Queue_append">append</a>
                     </li>
                     
+                    
+
                     <li class="method">
                         <a class="" href="#WebUploader_Queue_prepend">prepend</a>
                     </li>
                     
+                    
+
                     <li class="method">
                         <a class="" href="#WebUploader_Queue_getFile">getFile</a>
                     </li>
                     
+                    
+
                     <li class="method">
                         <a class="" href="#WebUploader_Queue_fetch">fetch</a>
                     </li>
                     
+                    
+
                     <li class="method">
                         <a class="" href="#WebUploader_Queue_getFiles">getFiles</a>
                     </li>
@@ -233,42 +328,150 @@ styles:
                 
                 <a id="WebUploader_WebUploader" ></a>
                 
+
                 
 
                 
                 <div class="clearfix category">
-    <h2 id="WebUploader_Uploader">Uploader</h2>
-    <p>上传入口类。</p>
-
 
 
     
-    
-     
-<article class="clearfix constructor">
-    <h3 id="WebUploader_Uploader_Uploader"  >Uploader
+    <article class="clearfix constructor">
+        <h3 id="WebUploader_Uploader"  >Uploader
+            
+        </h3>
         
-    </h3>
-    
 
-    
-
-    
-    <ul class="signature">
         
-        <li>new Uploader( opts ) 
-            <span class="return">⇒  Uploader</span>
+
+        
+        <ul class="signature">
+            
+            <li>new Uploader( opts ) 
+                <span class="return">⇒  Uploader</span>
+                
+            </li>
+        </ul>
+        
+        
+        
+
+        <p>上传入口类。</p>
+
+        
+            
+{% highlight javascript %}
+var uploader = WebUploader.Uploader({
+    swf: 'path_of_swf/Uploader.swf',
+
+    // 开起分片上传。
+    chunked: true
+});
+{% endhighlight %}
+
+
+        
+    </article>
+
+    
+
+     <div>
+    <h3 id="WebUploader_Uploader_options">参数说明</h3>
+    <ul class="params-list">
+        
+        <li>
+            <span class="meta">
+                <code>dnd</code>
+                 {Selector} 
+                 [可选] 
+                 [默认值：undefined] 
+            </span>
+            <p>  指定Drag And Drop拖拽的容器，如果不指定，则不启动。</p>
+
             
         </li>
+        
+        <li>
+            <span class="meta">
+                <code>paste</code>
+                 {Selector} 
+                 [可选] 
+                 [默认值：undefined] 
+            </span>
+            <p>  指定监听paste事件的容器，如果不指定，不启用此功能。此功能粘贴添加截屏的图片。</p>
+
+            
+        </li>
+        
+        <li>
+            <span class="meta">
+                <code>pick</code>
+                 {Selector, Object} 
+                 [可选] 
+                 [默认值：undefined] 
+            </span>
+            <p>指定选择文件的按钮容器，不指定则不创建按钮。</p>
+<ul>
+<li><code>id</code> {Seletor} 指定选择文件的按钮容器，不指定则不创建按钮。</li>
+<li><code>label</code> {String} 指定按钮文字。不指定时优先从指定的容器中看是否自带文字。</li>
+<li><code>multiple</code> {Boolean} 是否开起同时选择多个文件能力。</li>
+</ul>
+
+            
+        </li>
+        
+        <li>
+            <span class="meta">
+                <code>accept</code>
+                 {Arroy} 
+                 [可选] 
+                 [默认值：null] 
+            </span>
+            <p>指定接受哪些类型的文件。 由于目前还有ext转mimeType表，所以这里需要分开指定。</p>
+<ul>
+<li><code>title</code> {String} 文字描述</li>
+<li><code>extensions</code> {String} 允许的文件后缀，不带点，多个用逗号分割。</li>
+<li><code>mimeTypes</code> {String} 多个用逗号分割。</li>
+</ul>
+<p>如：</p>
+<pre><code>{
+    title: &#39;Images&#39;,
+    extensions: &#39;gif,jpg,jpeg,bmp,png&#39;,
+    mimeTypes: &#39;image/*&#39;
+}</code></pre>
+
+            
+        </li>
+        
     </ul>
-    
-    
-    
+</div>  
+      <div>
+    <h3 id="WebUploader_Uploader_events">事件说明</h3>
+    <table class="table table-bordered">
+        <tr>
+            <th>事件名</th>
+            <th class="events-tb-desc">参数说明</th>
+            <th>描述</th>
+        </tr>
 
-    <p>构造器，用来初始化一个Uploader实例。</p>
+        
+        <tr>
+            <td><code>beforeFileQueued</code></td>
+            <td class="events-tb-desc">
+                
+                <ul class="params-list"><li><span class="meta"><code>file</code> {File}</span><p>File对象</p>
+</li></ul>
+                
+            </td>
+            <td><p>当文件被加入队列之前触发，此事件的handler返回值为<code>undefeined</code>，则此文件不会被添加进入队列。</p>
+</td>
+        </tr>
+        
+    </table>
+</div>      
+     
 
-    
-</article>
+
 
 <article class="clearfix method">
     <h3 id="WebUploader_Uploader_option"  >option
@@ -315,6 +518,9 @@ uploader.options( 'resize', {
     
 </article>
 
+
+
+
 <article class="clearfix method">
     <h3 id="WebUploader_Uploader_getStats"  >getStats
         
@@ -347,6 +553,47 @@ uploader.options( 'resize', {
     
 </article>
 
+
+
+
+<article class="clearfix method">
+    <h3 id="WebUploader_Uploader_addButton"  >addButton
+        
+    </h3>
+    
+
+    
+
+    
+    <ul class="signature">
+        
+        <li>addButton( pick ) 
+            <span class="return">⇒  Promise</span>
+            
+        </li>
+    </ul>
+    
+    
+    
+
+    <p>添加文件选择按钮，如果一个按钮不够，需要调用此方法来添加。参数跟<a href="#WebUploader_Uploader_options">options.pick</a>一致。</p>
+
+    
+        
+{% highlight javascript %}
+uploader.addButton({
+    id: '#btnContainer',
+    label: '选择文件'
+});
+{% endhighlight %}
+
+
+    
+</article>
+
+
+
+
 <article class="clearfix method">
     <h3 id="WebUploader_Uploader_request"  >request
         
@@ -374,6 +621,8 @@ uploader.options( 'resize', {
     
     
 </article>
+
+
   
 
     
@@ -381,14 +630,19 @@ uploader.options( 'resize', {
 <hr />
                 
                 <div class="clearfix category">
-    <h2 id="WebUploader_Base">Base</h2>
-    <p>基础类，提供一些简单常用的方法。</p>
 
 
+    
+        <h2 id="WebUploader_Base">Base</h2>
+        <p>基础类，提供一些简单常用的方法。</p>
+
+    
 
     
     
      
+
+
 <article class="clearfix method">
     <h3 id="WebUploader_Base_create"  >create
         
@@ -414,6 +668,9 @@ uploader.options( 'resize', {
     
 </article>
 
+
+
+
 <article class="clearfix property">
     <h3 id="WebUploader_Base_version"  >version
         
@@ -431,6 +688,9 @@ uploader.options( 'resize', {
     
 </article>
 
+
+
+
 <article class="clearfix property">
     <h3 id="WebUploader_Base_"  >$
         
@@ -447,6 +707,9 @@ uploader.options( 'resize', {
 
     
 </article>
+
+
+
 
 <article class="clearfix method">
     <h3 id="WebUploader_Base_Deferred"  >Deferred
@@ -496,6 +759,9 @@ Uploader.register({
     
 </article>
 
+
+
+
 <article class="clearfix method">
     <h3 id="WebUploader_Base_isPromise"  >isPromise
         
@@ -540,6 +806,9 @@ console.log( Base.isPromise( Base.Deferred() ) );    // => true
     
 </article>
 
+
+
+
 <article class="clearfix method">
     <h3 id="WebUploader_Base_when"  >when
         
@@ -566,6 +835,9 @@ console.log( Base.isPromise( Base.Deferred() ) );    // => true
     
 </article>
 
+
+
+
 <article class="clearfix property">
     <h3 id="WebUploader_Base_browser"  >browser
         
@@ -590,6 +862,9 @@ console.log( Base.isPromise( Base.Deferred() ) );    // => true
 
     
 </article>
+
+
+
 
 <article class="clearfix method">
     <h3 id="WebUploader_Base_inherits"  >inherits
@@ -663,6 +938,9 @@ console.log( Manager.__super__ === Person );    // => true
     
 </article>
 
+
+
+
 <article class="clearfix method">
     <h3 id="WebUploader_Base_noop"  >noop
         
@@ -679,6 +957,9 @@ console.log( Manager.__super__ === Person );    // => true
 
     
 </article>
+
+
+
 
 <article class="clearfix method">
     <h3 id="WebUploader_Base_bindFn"  >bindFn
@@ -720,6 +1001,9 @@ var doSomething = function() {
     
 </article>
 
+
+
+
 <article class="clearfix method">
     <h3 id="WebUploader_Base_log"  >log
         
@@ -744,6 +1028,9 @@ var doSomething = function() {
 
     
 </article>
+
+
+
 
 <article class="clearfix method">
     <h3 id="WebUploader_Base_slice"  >slice
@@ -783,6 +1070,9 @@ doSomthing( 'ignored', 'arg2', 'arg3' );    // => Array ["arg2", "arg3"]
     
 </article>
 
+
+
+
 <article class="clearfix method">
     <h3 id="WebUploader_Base_guid"  >guid
         
@@ -811,6 +1101,9 @@ doSomthing( 'ignored', 'arg2', 'arg3' );    // => Array ["arg2", "arg3"]
 
     
 </article>
+
+
+
 
 <article class="clearfix method">
     <h3 id="WebUploader_Base_formatSize"  >formatSize
@@ -862,6 +1155,8 @@ console.log( Base.formatSize( 1024 * 1024 * 1024, 0, ['B', 'KB', 'MB'] ) );    /
 
     
 </article>
+
+
   
 
     
@@ -869,15 +1164,20 @@ console.log( Base.formatSize( 1024 * 1024 * 1024, 0, ['B', 'KB', 'MB'] ) );    /
 <hr />
                 
                 <div class="clearfix category">
-    <h2 id="WebUploader_Mediator">Mediator</h2>
-    <p>中介者，它本身是个单例，但可以通过<a href="#WebUploader_Mediator_installTo">installTo</a>方法，使任何对象具备事件行为。
+
+
+    
+        <h2 id="WebUploader_Mediator">Mediator</h2>
+        <p>中介者，它本身是个单例，但可以通过<a href="#WebUploader_Mediator_installTo">installTo</a>方法，使任何对象具备事件行为。
 主要目的是负责模块与模块之间的合作，降低耦合度。</p>
 
-
+    
 
     
     
      
+
+
 <article class="clearfix method">
     <h3 id="WebUploader_Mediator_on"  >on
         
@@ -939,6 +1239,9 @@ obj.on( 'all', function( type, arg1, arg2 ) {
     
 </article>
 
+
+
+
 <article class="clearfix method">
     <h3 id="WebUploader_Mediator_once"  >once
         
@@ -973,6 +1276,9 @@ obj.on( 'all', function( type, arg1, arg2 ) {
 
     
 </article>
+
+
+
 
 <article class="clearfix method">
     <h3 id="WebUploader_Mediator_off"  >off
@@ -1009,6 +1315,9 @@ obj.on( 'all', function( type, arg1, arg2 ) {
     
 </article>
 
+
+
+
 <article class="clearfix method">
     <h3 id="WebUploader_Mediator_trigger"  >trigger
         
@@ -1043,6 +1352,9 @@ obj.on( 'all', function( type, arg1, arg2 ) {
     
 </article>
 
+
+
+
 <article class="clearfix method">
     <h3 id="WebUploader_Mediator_installTo"  >installTo
         
@@ -1067,6 +1379,8 @@ obj.on( 'all', function( type, arg1, arg2 ) {
 
     
 </article>
+
+
   
 
     
@@ -1074,62 +1388,65 @@ obj.on( 'all', function( type, arg1, arg2 ) {
 <hr />
                 
                 <div class="clearfix category">
-    <h2 id="WebUploader_File">File</h2>
-    <p>文件类</p>
 
 
+    
+    <article class="clearfix constructor">
+        <h3 id="WebUploader_File"  >File
+            
+        </h3>
+        
+
+        
+
+        
+        <ul class="signature">
+            
+            <li>new File( source ) 
+                <span class="return">⇒  File</span>
+                
+            </li>
+        </ul>
+        
+        
+            <p>参数: </p>
+            <ul class="params-list"><li><span class="meta"><code>source</code> {Lib.File}</span><p><a href="#Lib.File">lib.File</a>实例, 此source对象是带有Runtime信息的。</p>
+</li></ul>
+        
+        
+
+        <p>构造函数</p>
+
+        
+    </article>
+
+    
 
     
       <div>
     <h3 id="WebUploader_File_events">事件说明</h3>
-    <table>
+    <table class="table table-bordered">
         <tr>
             <th>事件名</th>
+            <th class="events-tb-desc">参数说明</th>
             <th>描述</th>
-            <th>参数说明</th>
         </tr>
 
         
         <tr>
-            <td>statuschange</td>
-            <td><p>文件状态变化</p>
-</td>
-            <td>
+            <td><code>statuschange</code></td>
+            <td class="events-tb-desc">
                 
             </td>
+            <td><p>文件状态变化</p>
+</td>
         </tr>
         
     </table>
 </div>      
      
-<article class="clearfix constructor">
-    <h3 id="WebUploader_File_File"  >File
-        
-    </h3>
-    
 
-    
 
-    
-    <ul class="signature">
-        
-        <li>new File( source ) 
-            <span class="return">⇒  File</span>
-            
-        </li>
-    </ul>
-    
-    
-        <p>参数: </p>
-        <ul class="params-list"><li><span class="meta"><code>source</code> {Lib.File}</span><p><a href="#Lib.File">lib.File</a>实例, 此source对象是带有Runtime信息的。</p>
-</li></ul>
-    
-    
-
-    <p>构造函数</p>
-
-    
-</article>
 
 <article class="clearfix property">
     <h3 id="WebUploader_File_name"  >name
@@ -1148,6 +1465,9 @@ obj.on( 'all', function( type, arg1, arg2 ) {
     
 </article>
 
+
+
+
 <article class="clearfix property">
     <h3 id="WebUploader_File_size"  >size
         
@@ -1164,6 +1484,9 @@ obj.on( 'all', function( type, arg1, arg2 ) {
 
     
 </article>
+
+
+
 
 <article class="clearfix property">
     <h3 id="WebUploader_File_type"  >type
@@ -1182,6 +1505,9 @@ obj.on( 'all', function( type, arg1, arg2 ) {
     
 </article>
 
+
+
+
 <article class="clearfix property">
     <h3 id="WebUploader_File_lastModifiedDate"  >lastModifiedDate
         
@@ -1198,6 +1524,9 @@ obj.on( 'all', function( type, arg1, arg2 ) {
 
     
 </article>
+
+
+
 
 <article class="clearfix property">
     <h3 id="WebUploader_File_id"  >id
@@ -1216,6 +1545,9 @@ obj.on( 'all', function( type, arg1, arg2 ) {
     
 </article>
 
+
+
+
 <article class="clearfix property">
     <h3 id="WebUploader_File_ext"  >ext
         
@@ -1233,6 +1565,9 @@ obj.on( 'all', function( type, arg1, arg2 ) {
     
 </article>
 
+
+
+
 <article class="clearfix property">
     <h3 id="WebUploader_File_statusText"  >statusText
         
@@ -1249,6 +1584,9 @@ obj.on( 'all', function( type, arg1, arg2 ) {
 
     
 </article>
+
+
+
 
 <article class="clearfix method">
     <h3 id="WebUploader_File_setStatus"  >setStatus
@@ -1280,6 +1618,9 @@ obj.on( 'all', function( type, arg1, arg2 ) {
     
 </article>
 
+
+
+
 <article class="clearfix property">
     <h3 id="WebUploader_File_File_Status"  >File.Status
         
@@ -1306,6 +1647,8 @@ obj.on( 'all', function( type, arg1, arg2 ) {
 
     
 </article>
+
+
   
 
     
@@ -1313,14 +1656,19 @@ obj.on( 'all', function( type, arg1, arg2 ) {
 <hr />
                 
                 <div class="clearfix category">
-    <h2 id="WebUploader_Queue">Queue</h2>
-    <p>文件队列, 用来存储各个状态中的文件。</p>
 
 
+    
+        <h2 id="WebUploader_Queue">Queue</h2>
+        <p>文件队列, 用来存储各个状态中的文件。</p>
+
+    
 
     
     
      
+
+
 <article class="clearfix property">
     <h3 id="WebUploader_Queue_stats"  >stats
         
@@ -1346,6 +1694,9 @@ obj.on( 'all', function( type, arg1, arg2 ) {
     
 </article>
 
+
+
+
 <article class="clearfix method">
     <h3 id="WebUploader_Queue_append"  >append
         
@@ -1367,6 +1718,9 @@ obj.on( 'all', function( type, arg1, arg2 ) {
     
 </article>
 
+
+
+
 <article class="clearfix method">
     <h3 id="WebUploader_Queue_prepend"  >prepend
         
@@ -1387,6 +1741,9 @@ obj.on( 'all', function( type, arg1, arg2 ) {
 
     
 </article>
+
+
+
 
 <article class="clearfix method">
     <h3 id="WebUploader_Queue_getFile"  >getFile
@@ -1411,6 +1768,9 @@ obj.on( 'all', function( type, arg1, arg2 ) {
 
     
 </article>
+
+
+
 
 <article class="clearfix method">
     <h3 id="WebUploader_Queue_fetch"  >fetch
@@ -1445,6 +1805,9 @@ obj.on( 'all', function( type, arg1, arg2 ) {
     
 </article>
 
+
+
+
 <article class="clearfix method">
     <h3 id="WebUploader_Queue_getFiles"  >getFiles
         
@@ -1473,6 +1836,8 @@ obj.on( 'all', function( type, arg1, arg2 ) {
 
     
 </article>
+
+
   
 
     

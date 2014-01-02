@@ -1,4 +1,6 @@
 <% _.sortBy( items, function( value ){ return value.uses ? value.uses.length : 0; } ).forEach(function( item ) { %>
+<% if( item.hasOwnProperty('constructor') ) { return; } %>
+
 <article class="clearfix <%= item.itemtype %>">
     <h3 id="<%- gennerateID( item[ 'class' ] ? (item.module + ':' + item[ 'class' ] + ':' + item.name) : (item.module + ':' + item.name)  ) %>" <% if ( item.hasOwnProperty( 'deprecated' ) ) { %>class="deprecated"<% } %> ><%= item.name %>
         <% if ( item.since ) { %><span
@@ -31,4 +33,5 @@
         <%- formatExample( example ) %>
     <% }) %>
 </article>
+
 <% }) %>

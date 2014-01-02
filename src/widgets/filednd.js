@@ -10,6 +10,11 @@ define([
 
     Uploader.options.dnd = '';
 
+    /**
+     * @property {Selector} [dnd=undefined]  指定Drag And Drop拖拽的容器，如果不指定，则不启动。
+     * @namespace options
+     * @for Uploader
+     */
     return Uploader.register({
         init: function( opts ) {
 

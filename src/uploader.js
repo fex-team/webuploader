@@ -11,8 +11,15 @@ define([
     /**
      * 上传入口类。
      * @class Uploader
-     * @constructor 构造器，用来初始化一个Uploader实例。
+     * @constructor
      * @grammar new Uploader( opts ) => Uploader
+     * @example
+     * var uploader = WebUploader.Uploader({
+     *     swf: 'path_of_swf/Uploader.swf',
+     *
+     *     // 开起分片上传。
+     *     chunked: true
+     * });
      */
     function Uploader( opts ) {
         this.options = $.extend( true, {}, Uploader.options, opts );
@@ -147,11 +154,7 @@ define([
             return true;
         },
 
-        /**
-         * @method request
-         * @grammar request( command, args ) => * | Promise
-         * @grammar request( command, args, callback ) => Promise
-         */
+        // widgets/widget.js将补充此方法的详细文档。
         request: Base.noop,
 
         reset: function() {
