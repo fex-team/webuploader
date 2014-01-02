@@ -59,6 +59,12 @@ define([
 
         },
 
+        /**
+         * @class Uploader
+         * @method request
+         * @grammar request( command, args ) => * | Promise
+         * @grammar request( command, args, callback ) => Promise
+         */
         request: function() {
             return this.owner.request.apply( this.owner, arguments );
         }

@@ -155,7 +155,7 @@ module.exports = function(grunt) {
             },
 
             doc: {
-                files: ['src/**/*.js', 'Gruntfile.js'],
+                files: ['src/**/*.js', 'Gruntfile.js', 'build/docTpl/**/*'],
                 tasks: ['doc'],
             }
         },

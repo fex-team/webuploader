@@ -6,6 +6,8 @@
                 <a href="<%- forUrl( modulename + ':' + classname ) %>"><%= classname %></a>
                 <ul class="nav">
                     <% _.forEach( items, function( item ) { %>
+                    <% if( item.text === classname ) { return; } %>
+
                     <li class="<%- item.skin || '' %>">
                         <a class="<%= item.classname || '' %>" href="<%- item.href %>"><%= item.text %></a>
                     </li>

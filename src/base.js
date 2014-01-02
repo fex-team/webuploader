@@ -3,10 +3,18 @@
  */
 
 /**
- * Webuploader是一个以html5为主的现代多文件上传js库，比传统FLASH文件上传具有更高的上传效率、
- * 图片处理能力以及更低的内存消耗，同时结合HTML5 File API使得WebUploader具有了更加丰富的文件交互体验。
- * 目前已应用在百度相册上传页中，承载着海量的用户上传。
+ * Web Uploader内部类的详细说明，以下提及的功能类，都可以在`WebUploader`这个变量中访问到。
  *
+ * As you know, Web Uploader的每个文件都是用过[AMD](https://github.com/amdjs/amdjs-api/wiki/AMD)规范中的`define`组织起来的, 每个Module都会有个module id.
+ * 默认module id该文件的路径，而此路径将会转化成名字空间存放在WebUploader中。如：
+ *
+ * * module `base`：WebUploader.Base
+ * * module `file`: WebUploader.File
+ * * module `lib/dnd`: WebUploader.Lib.Dnd
+ * * module `runtime/html5/dnd`: WebUploader.Runtime.Html5.Dnd
+ *
+ *
+ * 以下文档将可能省略`WebUploader`前缀。
  * @module WebUploader
  * @title WebUploader API文档
  */
