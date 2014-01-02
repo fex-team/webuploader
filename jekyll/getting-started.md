@@ -140,7 +140,7 @@ uploader.on( 'uploadComplete', function( file ) {
 
 
 ## 图片上传
-与普通文件上传相比，此demo演示了，文件过滤，图片预览，图片压缩上传等功能。
+与普通文件上传相比，此demo演示了：文件过滤，图片预览，图片压缩上传等功能。
 
 <div id="uploader-demo" class="wu-example">
     <div id="fileList" class="uploader-list">

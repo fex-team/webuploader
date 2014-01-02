@@ -7,9 +7,9 @@ title: Web Uploader
 <div class="jumbotron">
     <div class="container">
         <h1>Web Uploader</h1>
-        <p>WebUploader是一个简单的以HTML5为主，FLASH为辅的现代文件上传组件。在现代的浏览器里面能充分发挥HTML5的优势，同时又不摒弃主流IE浏览器，延用原来的FLASH运行时。两套运行时，同样的调用方式，可供用户任意选用。</p>
+        <p>WebUploader是一个简单的以HTML5为主，FLASH为辅的现代文件上传组件。在现代的浏览器里面能充分发挥HTML5的优势，同时又不摒弃主流IE浏览器，延用原来的FLASH运行时，兼容IE6+。两套运行时，同样的调用方式，可供用户任意选用。</p>
 
-        <p>WebUploader采用大文件分片并发上传，极大的提高了文件上传效率。</p>
+        <p>采用大文件分片并发上传，极大的提高了文件上传效率。</p>
         <p>
             <a class="btn btn-primary btn-lg" href="{{site.baseurl}}/getting-started.html" role="button">快速开始</a>
             &nbsp;&nbsp;
