@@ -52,16 +52,19 @@
 <a href="#toc_0">下载</a>
 </li>
 <li>
-<a href="#toc_1">DIY打包</a>
+<a href="#toc_1">包内容</a>
+</li>
+<li>
+<a href="#toc_2">DIY打包</a>
 <ul class="nav">
 <li>
-<a href="#toc_2">环境依赖</a>
+<a href="#toc_3">环境依赖</a>
 </li>
 <li>
-<a href="#toc_3">编译代码</a>
+<a href="#toc_4">编译代码</a>
 </li>
 <li>
-<a href="#toc_4">配置Grunt</a>
+<a href="#toc_5">配置</a>
 </li>
 </ul>
 </li>
@@ -79,14 +82,34 @@
 
 <p><a class="btn btn-success" href="/webuploader/webuploader_0.1.0.zip">下载1.0版本</a></p>
 
-<p>或者直接使用cdn版本</p>
+<p>或者直接使用cdn版本，</p>
 <div class="highlight"><pre><code class="html language-html" data-lang="html"><span class="c">&lt;!-- cdn正在申请中... --&gt;</span>
 </code></pre></div>
-<h2 id="toc_1">DIY打包</h2>
+<p>或者下载<a href="">Git项目包</a>。</p>
 
-<p>如果想更大力度的搭配JS，实现满足你需求的最小组合，请按如下步骤进行操作。</p>
+<h2 id="toc_1">包内容</h2>
 
-<h3 id="toc_2">环境依赖</h3>
+<p>下载包中包含以下文件</p>
+<div class="highlight"><pre><code class="text language-text" data-lang="text">├── Uploader.swf                      // SWF文件，当使用Flash运行时需要引入。
+
+├── webuploader.js                    // 完全版本。
+├── webuploader.min.js                // min版本
+
+├── webuploader.flashonly.js          // 只有Flash实现的版本。
+├── webuploader.flashonly.min.js      // min版本
+
+├── webuploader.html5only.js          // 只有Html5实现的版本。
+├── webuploader.html5only.min.js      // min版本
+
+├── webuploader.withoutimage.js       // 去除图片处理的版本，包括HTML5和FLASH.
+└── webuploader.withoutimage.min.js   // min版本
+</code></pre></div>
+<h2 id="toc_2">DIY打包</h2>
+
+<p>想更大力度的搭配JS，实现满足需求的最小组合，请按如下步骤进行操作。 文件打包借助了<a href="http://gruntjs.com/getting-started">Grunt</a>工具来实现。
+如果您还不知道什么是<a href="http://gruntjs.com/getting-started">Grunt</a>，赶紧去了解一下吧。</p>
+
+<h3 id="toc_3">环境依赖</h3>
 
 <ol>
 <li>git命令行工具</li>
@@ -94,7 +117,7 @@
 <li>grunt (<code>npm install grunt-cli -g</code>)</li>
 </ol>
 
-<h3 id="toc_3">编译代码</h3>
+<h3 id="toc_4">编译代码</h3>
 
 <ol>
 <li>克隆 <a href="https://github.com/gmuteam/webuploader">webuploader git仓库</a>，<code>git clone https://github.com/gmuteam/webuploader.git</code>。</li>
@@ -102,11 +125,11 @@
 <li>执行<code>grunt dist</code>，此动作会在dist目录下面创建合并版本的js, 包括通过<code>uglify</code>压缩的min版本。</li>
 </ol>
 
-<h3 id="toc_4">配置<a href="http://gruntjs.com/getting-started">Grunt</a></h3>
+<h3 id="toc_5">配置</h3>
 
 <p>打开webuploader仓库根目录下面的<code>Gruntfile.js</code>文件, 代码合并有<code>concat</code>task来完成。找到<code>concat</code>配置项。</p>
 
-<p>如下面的例子演示了如何去掉html5部分的代码。<strong>配置时不用考虑js依赖，gmuteam优化了concat工具，可以自动添加js依赖</strong></p>
+<p>如下面的例子演示了如何去掉html5部分的代码。<strong>配置时不用考虑js依赖，gmuteam优化了concat工具，依赖的js将自动被添加进来。</strong></p>
 <div class="highlight"><pre><code class="javascript language-javascript" data-lang="javascript"><span class="nx">flashonly</span><span class="o">:</span> <span class="p">{</span>
     <span class="nx">cwd</span><span class="o">:</span> <span class="s1">&#39;src&#39;</span><span class="p">,</span>
 
