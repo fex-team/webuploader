@@ -135,7 +135,7 @@ module.exports = function(grunt) {
                 }, {
                     src: 'dist/webuploader.withoutimage.js',
                     dest: 'dist/webuploader.withoutimage.min.js'
-                }, ]
+                }]
             }
         },
 
