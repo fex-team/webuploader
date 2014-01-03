@@ -62,7 +62,7 @@ jQuery(function() {
             label: '点击选择图片'
         },
         dnd: '#dndArea',
-        paste: '#uploader',
+        paste: document.body,
 
         // swf文件路径
         swf: BASE_URL + '/js/Uploader.swf',
