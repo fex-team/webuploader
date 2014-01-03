@@ -135,7 +135,7 @@ module.exports = function(grunt) {
                 }, {
                     src: 'dist/webuploader.withoutimage.js',
                     dest: 'dist/webuploader.withoutimage.min.js'
-                }, ]
+                }]
             }
         },
 
@@ -155,7 +155,7 @@ module.exports = function(grunt) {
             },
 
             doc: {
-                files: ['src/**/*.js', 'Gruntfile.js'],
+                files: ['src/**/*.js', 'Gruntfile.js', 'build/docTpl/**/*'],
                 tasks: ['doc'],
             }
         },
@@ -188,10 +188,32 @@ module.exports = function(grunt) {
                     'mediator.js',
                     '**/*.js'
                 ],
+                tplDir: './build/docTpl',
                 theme: 'gmu',
-                outputDir: './doc',
+                outputDir: './jekyll/doc',
                 title: 'WebUploader API文档'
             }
+        },
+
+        jekyll: {
+            options: { // Universal options
+                src: 'jekyll'
+            },
+            dist: { // Target
+                options: { // Target options
+                    dest: 'pages',
+                    config: 'jekyll/_config.yml'
+                }
+            }
+        },
+
+        'gh-pages': {
+            options: {
+                message: '程序自动提交，源码请查看tree/master/jekyll目录',
+                base: 'pages',
+                repo: 'https://github.com/gmuteam/webuploader.git'
+            },
+            src: ['**/*']
         }
     });
 
@@ -206,10 +228,15 @@ module.exports = function(grunt) {
 
     grunt.loadNpmTasks( 'grunt-contrib-uglify' );
 
+    grunt.loadNpmTasks('grunt-jekyll');
+
+    grunt.loadNpmTasks('grunt-gh-pages');
+
     // 加载build目录下的所有task
     grunt.loadTasks( 'build/tasks' );
 
     // Default task(s).
     grunt.registerTask( 'default', [ 'jsbint:all', 'concat:all' ] );
     grunt.registerTask( 'dist', [ 'concat' ] );
+    grunt.registerTask( 'deploy', [ 'doc', 'jekyll', 'gh-pages' ] );
 };

@@ -1,296 +1,41 @@
 WebUploader 文件上传
 ========
 
-## 特点
+WebUploader是一个简单的以HTML5为主，FLASH为辅的现代文件上传组件。在现代的浏览器里面能充分发挥HTML5的优势，同时又不摒弃主流IE浏览器，延用原来的FLASH运行时，兼容IE6+。两套运行时，同样的调用方式，可供用户任意选用。
 
-* 多线程上传
-* IE8+ 其他浏览器支持
-* 多运行时支持，HTML5，Flash。自动根据浏览能力选用。
-* 支持图片线下压缩。
-* 支持图片预览合EXIF信息识别。
+采用大文件分片并发上传，极大的提高了文件上传效率。
 
-目前已应用在[百度相册上传页](http://xiangce.baidu.com/picture/page/upload)。
+官网： http://gmuteam.github.io/webuploader
 
-## 使用说明
+## 特性
 
-```javascript
-var upload = WebUploader.create( options );
-```
+### 分片、并发
+分片与并发结合，将一个大文件分割成多块，并发上传，极大地提高大文件的上传速度。
 
-### Options说明
-<table>
-    <tr>
-        <th>名称</th><th>说明</th><th>必填项</th><th>默认值</th>
-    </tr>
-    <tr>
-        <td>server</td>
-        <td>上传地址</td>
-        <td>是</td>
-        <td>无</td>
-    </tr>
-    <tr>
-        <td>pick</td>
-        <td>
-            包括两种类型：<br>
-            如果是字符串则表示对话框式文件选择的触发按钮ID；<br>
-            如果是对象则包括两个字段：<br>
-                multiple：是否允许选择多个文件，默认为true<br>
-                id: 按钮ID
-        </td>
-        <td>否</td>
-        <td>无</td>
-    </tr>
-    <tr>
-        <td>dnd</td>
-        <td>拖拽式文件选择的目标元素ID</td>
-        <td>否</td>
-        <td>无</td>
-    </tr>
-    <tr>
-        <td>paste</td>
-        <td>粘贴式文件选择的目标元素ID</td>
-        <td>否</td>
-        <td>无</td>
-    </tr>
-    <tr>
-        <td>duplicate</td>
-        <td>是否允许添加重名文件</td>
-        <td>否</td>
-        <td>false</td>
-    </tr>
-    <tr>
-        <td>fileVar</td>
-        <td>发送HTTP请求时的变量名</td>
-        <td>否</td>
-        <td>file</td>
-    </tr>
-    <tr>
-        <td>formData</td>
-        <td>发送HTTP请求时携带的自定义数据</td>
-        <td>否</td>
-        <td>无</td>
-    </tr>
-    <tr>
-        <td>fileSizeLimit</td>
-        <td>文件大小限制总大小。传入int类型。</td>
-        <td>否</td>
-        <td>无</td>
-    </tr>
-    <tr>
-        <td>fileSingleSizeLimit</td>
-        <td>单个文件大小限制。传入int类型。</td>
-        <td>否</td>
-        <td>无</td>
-    </tr>
-    <tr>
-        <td>fileNumLimit</td>
-        <td>文件总数限制，包括成功上传的数量以及当前队列中的数量。</td>
-        <td>否</td>
-        <td>无</td>
-    </tr>
-    <tr>
-        <td>accept</td>
-        <td>允许上传的文件扩展名，例如'*.*','*.png'等。</td>
-        <td>否</td>
-        <td>'*.*'</td>
-    </tr>
-    <tr>
-        <td>isAuto</td>
-        <td>文件选择完成后自动上传文件。</td>
-        <td>否</td>
-        <td>false</td>
-    </tr>
-    <tr>
-        <td>resize</td>
-        <td>
-        是否启用图片压缩，参数为对象，包括：<br>
-        width: 目标最大宽度<br>
-        height: 目标最大高度<br>
-        quality: 图片压缩质量为0 - 100，默认为90
-        </td>
-        <td>否</td>
-        <td>无</td>
-    </tr>
-    <tr>
-        <td>swf</td>
-        <td>使用Flash Runtime时Flash的URL</td>
-        <td>否<sup>1</sup></td>
-        <td>无</td>
-    </tr>
-    <tr>
-        <td>threads</td>
-        <td>并发上传的最大文件数。</td>
-        <td>否</td>
-        <td>1</td>
-    </tr>
-    <tr>
-        <td>runtimeOrders</td>
-        <td>设置runtime优先级</td>
-        <td>否</td>
-        <td>html5,flash</td>
-    </tr>
-</table>
+当网络问题导致传输错误时，只需要重传出错分片，而不是整个文件。另外分片传输能够更加实时的跟踪上传进度。
 
-### 方法说明
-<table>
-    <tr>
-        <th>名称</th><th>参数</th><th>说明</th>
-    </tr>
-    <tr>
-        <td>Uploader</td>
-        <td>
-            <li><code>options</code> 配置项。</li>
-        </td>
-        <td>构造器</td>
-    </tr>
-    <tr>
-        <td>addFile</td>
-        <td>
-            <ul>
-                <li><code>file</code> File实例</li>
-            </ul>
-        </td>
-        <td>添加文件到队列</td>
-    </tr>
-    <tr>
-        <td>removeFile</td>
-        <td>
-            <ul>
-                <li><code>fileId</code> File实例中的Id</li>
-            </ul>
-        </td>
-        <td>删除文件</td>
-    </tr>
-    <tr>
-        <td>uploadFile</td>
-        <td>
-            <ul>
-                <li><code>fileId</code> File实例中的Id</li>
-            </ul>
-        </td>
-        <td>上传指定文件</td>
-    </tr>
-    <tr>
-        <td>cancelFile</td>
-        <td>
-            <ul>
-                <li><code>fileId</code> File实例中的Id</li>
-            </ul>
-        </td>
-        <td>取消上传指定文件</td>
-    </tr>
-    <tr>
-        <td>getFile</td>
-        <td>
-            <ul>
-                <li><code>fileId</code> File实例中的Id</li>
-            </ul>
-        </td>
-        <td>根据ID获取文件File实例</td>
-    </tr>
-    <tr>
-        <td>getFiles</td>
-        <td>
-            <ul>
-                <li><code>status</code> 文件状态</li>
-            </ul>
-        </td>
-        <td>获取所有文件列表，可以根据文件状态过滤</td>
-    </tr>
-    <tr>
-        <td>upload</td>
-        <td>
-            无
-        </td>
-        <td>根据并发数, 按顺序上传队列中的文件</td>
-    </tr>
-    <tr>
-        <td>stop</td>
-        <td>
-            无
-        </td>
-        <td>暂停上传。可以通过upload()方法继续上传。</td>
-    </tr>
-    <tr>
-        <td>getStatus</td>
-        <td>
+### 预览、压缩
 
-        </td>
-        <td>
-            返回状态信息。
+支持常用图片格式jpg,jpeg,gif,bmp,png预览与压缩，节省网络数据传输。
 
-            Object:
-            <ul>
-                <li><code>successNum</code>: 成功上传文件数</li>
-                <li><code>queueFailNum</code>: 未进入队列文件数</li>
-                <li><code>cancelNum</code>: 取消上传文件数</li>
-                <li><code>uploadFailNum</code>: 上传失败文件数</li>
-                <li><code>queueNum</code>: 当前队列中的文件数</li>
-            </ul>
-    </td>
-    </tr>
-    <tr>
-        <td>isInProgress</td>
-        <td>
+解析jpeg中的meta信息，对于各种orientation做了正确的处理，同时压缩后上传保留图片的所有原始meta数据。
 
-        </td>
-        <td>是否在上传中。</td>
-    </tr>
-    <tr>
-        <td>makeThumb</td>
-        <td>
-            <ul>
-                <li><code>fileId</code> File实例中的Id</li>
-            </ul>
-        </td>
-        <td>创造缩略图，返回缩略图BASE64 String</td>
-    </tr>
-</table>
+### 多途径添加文件
+支持文件多选，类型过滤，拖拽(文件&文件夹)，图片粘贴功能。
 
-### 事件说明
-<table>
-    <tr>
-        <th>名称</th><th>回调参数</th><th>触发时机</th>
-    </tr>
-    <tr>
-        <td>onReady</td><td>无</td><td>当组件可用时会触发，通常是在上传按钮初始化完成时</td>
-    </tr>
-    <tr>
-        <td>onBeforeFileQueue</td><td>file</td><td>当某个文件被加入队列前，如果回调返回false则file不会被加入到队列</td>
-    </tr>
-    <tr>
-        <td>onFileQueued</td><td>file</td><td>当组文件被加入队列后</td>
-    </tr>
-    <tr>
-        <td>onError</td><td>errorCode: 错误码，见后表</td><td>发生错误时</td>
-    </tr>
-    <tr>
-        <td>onUploadStart</td><td>file</td><td>文件开始上传</td>
-    </tr>
-    <tr>
-        <td>onUploadProgress</td>
-        <td>
-            file: 当前文件<br>
-            bytesComplete: 已上传字节数<br>
-            bytesTotal: 字节总数
-        </td>
-        <td>文件上传过程中</td>
-    </tr>
-    <tr>
-        <td>onUploadSuccess</td>
-        <td>
-            file: 当前文件<br>
-            serverData: 服务器端返回的数据
-        </td>
-        <td>文件上传完成</td>
-    </tr>
-    <tr>
-        <td>onUploadComplete</td><td>file</td><td>文件上传完成</td>
-    </tr>
-    <tr>
-        <td>onUploadBeforeSend</td><td>file, data, header</td><td>文件发送之前，允许附带上传参数和header</td>
-    </tr>
-    <tr>
-        <td>onUploadAccept</td><td>file, response</td><td>文件上传结束前，在此事件中可以根据reponse判断文件是否上传正确。</td>
-    </tr>
-</table>
+粘贴功能主要体现在当有图片数据在剪切板中时（截屏工具如QQ(Ctrl + ALT + A), 网页中右击图片点击复制），Ctrl + V便可添加此图片文件。
+
+### HTML5 & FLASH
+兼容主流浏览器，接口一致，实现了两套运行时支持，用户无需关心内部用了什么内核。
+
+同时Flash部分没有做任何UI相关的工作，方便不关心flash的用户扩展和自定义业务需求。
+
+### MD5秒传
+当文件体积大、量比较多时，支持上传前做文件md5值验证，一致则可直接跳过。
+
+如果服务端与前端统一修改算法，取段md5，可大大提升验证性能，耗时在20ms左右。
+
+### 易扩展、可拆分
+采用可拆分机制, 将各个功能独立成了小组件，可自由搭配。
+
+采用AMD规范组织代码，清晰明了，方便高级玩家扩展。

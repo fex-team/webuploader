@@ -8,6 +8,11 @@ define([
     './widget'
 ], function( Base, Uploader, FilePaste ) {
 
+    /**
+     * @property {Selector} [paste=undefined]  指定监听paste事件的容器，如果不指定，不启用此功能。此功能粘贴添加截屏的图片。
+     * @namespace options
+     * @for Uploader
+     */
     return Uploader.register({
         init: function( opts ) {
 

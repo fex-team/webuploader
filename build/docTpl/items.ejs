@@ -1,0 +1,37 @@
+<% _.sortBy( items, function( value ){ return value.uses ? value.uses.length : 0; } ).forEach(function( item ) { %>
+<% if( item.hasOwnProperty('constructor') ) { return; } %>
+
+<article class="clearfix <%= item.itemtype %>">
+    <h3 id="<%- gennerateID( item[ 'class' ] ? (item.module + ':' + item[ 'class' ] + ':' + item.name) : (item.module + ':' + item.name)  ) %>" <% if ( item.hasOwnProperty( 'deprecated' ) ) { %>class="deprecated"<% } %> ><%= item.name %>
+        <% if ( item.since ) { %><span
+        class="version"><%- item.since %></span><% } %>
+    </h3>
+    <% if ( item[ 'deprecated' ] ) { %><div class="warning"><%- markdown( item[ 'deprecated' ] ) %></div><% } %>
+
+    <% if( item.uses ) { %><%- renderUses( item.uses ) %><% }%>
+
+    <% if ( item.grammars ) { %>
+    <ul class="signature">
+        <% _.forEach( item.grammars, function( grammar ) { %>
+        <li><%= grammar.signature %>
+            <% if ( grammar.return ) { %><span class="return">⇒ <%= grammar.return %></span><% } %>
+            <% if ( grammar.since ) { %><span class="version"><%= grammar.since %></span><% } %>
+        </li><% });%>
+    </ul>
+    <% } %>
+    <% if ( item.params ) { %>
+        <p>参数: </p>
+        <%- renderParams( item.params ) %>
+    <% } %>
+    <% if ( item.returns ) { %>
+        <p>返回值: </p>
+        <%- renderParams( item.returns ) %>
+    <% } %>
+
+    <%- markdown( item.description || '' ) %>
+    <% _.forEach( item.examples || [], function( example ) { %>
+        <%- formatExample( example ) %>
+    <% }) %>
+</article>
+
+<% }) %>

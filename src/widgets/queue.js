@@ -12,6 +12,13 @@ define([
     var $ = Base.$,
         Status = WUFile.Status;
 
+    /**
+     * @event beforeFileQueued
+     * @param {File} file File对象
+     * @description 当文件被加入队列之前触发，此事件的handler返回值为`undefeined`，则此文件不会被添加进入队列。
+     * @for  Uploader
+     */
+
     return Uploader.register({
         'add-file': 'addFiles',
         'get-file': 'getFile',

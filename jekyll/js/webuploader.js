@@ -86,13 +86,18 @@
      */
     
     /**
-     * Webuploader是一个以html5为主的现代多文件上传js库，比传统FLASH文件上传具有更高的上传效率、
-     * 图片处理能力以及更低的内存消耗，同时结合HTML5 File API使得WebUploader具有了更加丰富的文件交互体验。
-     * 目前已应用在百度相册上传页中，承载着海量的用户上传。
+     * Web Uploader内部类的详细说明，以下提及的功能类，都可以在`WebUploader`这个变量中访问到。
      *
-     * * GitHub: [https://github.com/gmuteam/webuploader](https://github.com/gmuteam/webuploader)
-     * * OsChina: [http://git.oschina.net/2betop/webuploader](http://git.oschina.net/2betop/webuploader)
+     * As you know, Web Uploader的每个文件都是用过[AMD](https://github.com/amdjs/amdjs-api/wiki/AMD)规范中的`define`组织起来的, 每个Module都会有个module id.
+     * 默认module id该文件的路径，而此路径将会转化成名字空间存放在WebUploader中。如：
      *
+     * * module `base`：WebUploader.Base
+     * * module `file`: WebUploader.File
+     * * module `lib/dnd`: WebUploader.Lib.Dnd
+     * * module `runtime/html5/dnd`: WebUploader.Runtime.Html5.Dnd
+     *
+     *
+     * 以下文档将可能省略`WebUploader`前缀。
      * @module WebUploader
      * @title WebUploader API文档
      */
@@ -652,8 +657,15 @@
         /**
          * 上传入口类。
          * @class Uploader
-         * @constructor 构造器，用来初始化一个Uploader实例。
+         * @constructor
          * @grammar new Uploader( opts ) => Uploader
+         * @example
+         * var uploader = WebUploader.Uploader({
+         *     swf: 'path_of_swf/Uploader.swf',
+         *
+         *     // 开起分片上传。
+         *     chunked: true
+         * });
          */
         function Uploader( opts ) {
             this.options = $.extend( true, {}, Uploader.options, opts );
@@ -788,11 +800,7 @@
                 return true;
             },
     
-            /**
-             * @method request
-             * @grammar request( command, args ) => * | Promise
-             * @grammar request( command, args, callback ) => Promise
-             */
+            // widgets/widget.js将补充此方法的详细文档。
             request: Base.noop,
     
             reset: function() {
@@ -892,7 +900,6 @@
     
         /**
          * 添加Runtime实现。
-         * @method addRuntime
          * @param {String} type    类型
          * @param {Runtime} factory 具体Runtime实现。
          */
@@ -1294,6 +1301,12 @@
     
             },
     
+            /**
+             * @class Uploader
+             * @method request
+             * @grammar request( command, args ) => * | Promise
+             * @grammar request( command, args, callback ) => Promise
+             */
             request: function() {
                 return this.owner.request.apply( this.owner, arguments );
             }
@@ -1405,8 +1418,39 @@
     ], function( Base, Uploader, FilePicker ) {
     
         Base.$.extend( Uploader.options, {
+    
+            /**
+             * @property {Selector | Object} [pick=undefined]
+             * @namespace options
+             * @for Uploader
+             * @description 指定选择文件的按钮容器，不指定则不创建按钮。
+             *
+             * * `id` {Seletor} 指定选择文件的按钮容器，不指定则不创建按钮。
+             * * `label` {String} 指定按钮文字。不指定时优先从指定的容器中看是否自带文字。
+             * * `multiple` {Boolean} 是否开起同时选择多个文件能力。
+             */
             pick: null,
     
+            /**
+             * @property {Arroy} [accept=null]
+             * @namespace options
+             * @for Uploader
+             * @description 指定接受哪些类型的文件。 由于目前还有ext转mimeType表，所以这里需要分开指定。
+             *
+             * * `title` {String} 文字描述
+             * * `extensions` {String} 允许的文件后缀，不带点，多个用逗号分割。
+             * * `mimeTypes` {String} 多个用逗号分割。
+             *
+             * 如：
+             *
+             * ```
+             * {
+             *     title: 'Images',
+             *     extensions: 'gif,jpg,jpeg,bmp,png',
+             *     mimeTypes: 'image/*'
+             * }
+             * ```
+             */
             accept: null/*{
                 title: 'Images',
                 extensions: 'gif,jpg,jpeg,bmp,png',
@@ -1430,6 +1474,18 @@
                 });
             },
     
+            /**
+             * @method addButton
+             * @for Uploader
+             * @grammar addButton( pick ) => Promise
+             * @description
+             * 添加文件选择按钮，如果一个按钮不够，需要调用此方法来添加。参数跟[options.pick](#WebUploader:Uploader:options)一致。
+             * @example
+             * uploader.addButton({
+             *     id: '#btnContainer',
+             *     label: '选择文件'
+             * });
+             */
             addButton: function( pick ) {
                 var me = this,
                     opts = me.options,
@@ -1652,217 +1708,6 @@
         };
     
         return WUFile;
-    });
-
-    /**
-     * @fileOverview  jq-bridge 主要实现像jQuery一样的功能方法，可以替换成jQuery，
-     * 这里只实现了此组件所需的部分。
-     */
-    define( 'jq-bridge', function() {
-        var doc = window.document,
-            emptyArray = [],
-            slice = emptyArray.slice,
-            class2type = {},
-            hasOwn = class2type.hasOwnProperty,
-            toString = class2type.toString,
-            rId = /^#(.*)$/;
-    
-        function each( obj, iterator ) {
-            var i;
-    
-            // like array
-            if ( typeof obj !== 'function' && typeof obj.length === 'number' ) {
-                for ( i = 0; i < obj.length; i++ ) {
-                    if ( iterator.call( obj[ i ], i, obj[ i ] ) === false ) {
-                        return obj;
-                    }
-                }
-            } else {
-                for ( i in obj ) {
-                    if ( hasOwn.call( obj, i ) && iterator.call( obj[ i ], i,
-                            obj[ i ] ) === false ) {
-                        return obj;
-                    }
-                }
-            }
-    
-            return obj;
-        }
-    
-        function extend( target, source, deep ) {
-            each( source, function( key, val ) {
-                if ( deep && typeof val === 'object' ) {
-                    if ( typeof target[ key ] !== 'object' ) {
-                        target[ key ] = type( val ) === 'array' ? [] : {};
-                    }
-                    extend( target[ key ], val, deep );
-                } else {
-                    target[ key ] = val;
-                }
-            });
-        }
-    
-        each( ('Boolean Number String Function Array Date RegExp Object' +
-                ' Error').split(' '), function( i, name ) {
-            class2type[ '[object ' + name + ']' ] = name.toLowerCase();
-        });
-    
-        function setAttribute( node, name, value ) {
-            value == null ? node.removeAttribute( name ) :
-                    node.setAttribute( name, value );
-        }
-    
-        /**
-         * 只支持ID选择。
-         */
-        function $( elem ) {
-            var api = {};
-    
-            elem = typeof elem === 'string' && rId.test( elem ) ?
-                    doc.getElementById( RegExp.$1 ) : elem;
-    
-            if ( elem ) {
-                api[ 0 ] = elem;
-                api.length = 1;
-            }
-    
-            return $.extend( api, {
-                _wrap: true,
-    
-                get: function() {
-                    return elem;
-                },
-    
-                /**
-                 * 添加className
-                 */
-                addClass: function( classname ) {
-                    elem.classList.add( classname );
-                    return this;
-                },
-    
-                removeClass: function( classname ) {
-                    elem.classList.remove( classname );
-                    return this;
-                },
-    
-                html: function( html ) {
-                    elem.innerHTML = html;
-                    return this;
-                },
-    
-                attr: function( key, val ) {
-                    if ( $.isObject( key ) ) {
-                        $.each( key, function( k, v ) {
-                            setAttribute( elem, k, v );
-                        });
-                    } else {
-                        setAttribute( elem, key, val );
-                    }
-                },
-    
-                empty: function() {
-                    elem.innerHTML = '';
-                    return this;
-                },
-    
-                before: function( el ) {
-                    elem.parentNode.insertBefore( el, elem );
-                },
-    
-                append: function( el ) {
-                    el = el._wrap ? el.get() : el;
-                    elem.appendChild( el );
-                },
-    
-                text: function() {
-                    return elem.textContent;
-                },
-    
-                // on
-                on: function( type, fn ) {
-                    if ( elem.addEventListener ) {
-                        elem.addEventListener( type, fn, false );
-                    } else if ( elem.attachEvent ) {
-                        elem.attachEvent( 'on' + type, fn );
-                    }
-    
-                    return this;
-                },
-    
-                // off
-                off: function( type, fn ) {
-                    if ( elem.removeEventListener ) {
-                        elem.removeEventListener( type, fn, false );
-                    } else if ( elem.attachEvent ) {
-                        elem.detachEvent( 'on' + type, fn );
-                    }
-                    return this;
-                }
-    
-            });
-        }
-    
-        $.each = each;
-        $.extend = function( /*[deep, ]*/target/*, source...*/ ) {
-            var args = slice.call( arguments, 1 ),
-                deep;
-    
-            if ( typeof target === 'boolean' ) {
-                deep = target;
-                target = args.shift();
-            }
-    
-            args.forEach(function( arg ) {
-                arg && extend( target, arg, deep );
-            });
-    
-            return target;
-        };
-    
-        function type( obj ) {
-    
-            /*jshint eqnull:true*/
-            return obj == null ? String( obj ) :
-                    class2type[ toString.call( obj ) ] || 'object';
-        }
-        $.type = type;
-        $.isWindow = function( obj ) {
-            return obj && obj.window === obj;
-        };
-    
-        $.isPlainObject = function( obj ) {
-            if ( type( obj ) !== 'object' || obj.nodeType || $.isWindow( obj ) ) {
-                return false;
-            }
-    
-            try {
-                if ( obj.constructor && !hasOwn.call( obj.constructor.prototype,
-                        'isPrototypeOf' ) ) {
-                    return false;
-                }
-            } catch ( ex ) {
-                return false;
-            }
-    
-            return true;
-        };
-    
-        $.isObject = function( anything ) {
-            return type( anything ) === 'object';
-        };
-    
-        $.trim = function( str ) {
-            return str ? str.trim() : '';
-        };
-    
-        $.isFunction = function( obj ) {
-            return type( obj ) === 'function';
-        };
-    
-        emptyArray = null;
-    
-        return $;
     });
 
     /**
@@ -2177,275 +2022,6 @@
         Mediator.installTo( Transport.prototype );
     
         return Transport;
-    });
-
-    /**
-     * @fileOverview Promise/A+
-     */
-    define( 'promise', [
-        'base'
-    ], function( Base ) {
-    
-        var $ = Base.$,
-            api;
-    
-        // 简单版Callbacks, 默认memory，可选once.
-        function Callbacks( once ) {
-            var list = [],
-                stack = !once && [],
-                fire = function( data ) {
-                    memory = data;
-                    fired = true;
-                    firingIndex = firingStart || 0;
-                    firingStart = 0;
-                    firingLength = list.length;
-                    firing = true;
-    
-                    for ( ; list && firingIndex < firingLength; firingIndex++ ) {
-                        list[ firingIndex ].apply( data[ 0 ], data[ 1 ] );
-                    }
-                    firing = false;
-    
-                    if ( list ) {
-                        if ( stack ) {
-                            stack.length && fire( stack.shift() );
-                        }  else {
-                            list = [];
-                        }
-                    }
-                },
-                self = {
-                    add: function() {
-                        if ( list ) {
-                            var start = list.length;
-                            (function add ( args ) {
-                                $.each( args, function( _, arg ) {
-                                    var type = $.type( arg );
-                                    if ( type === 'function' ) {
-                                        list.push( arg );
-                                    } else if ( arg && arg.length &&
-                                            type !== 'string' ) {
-    
-                                        add( arg );
-                                    }
-                                });
-                            })( arguments );
-    
-                            if ( firing ) {
-                                firingLength = list.length;
-                            } else if ( memory ) {
-                                firingStart = start;
-                                fire( memory );
-                            }
-                        }
-                        return this;
-                    },
-    
-                    disable: function() {
-                        list = stack = memory = undefined;
-                        return this;
-                    },
-    
-                    // Lock the list in its current state
-                    lock: function() {
-                        stack = undefined;
-                        if ( !memory ) {
-                            self.disable();
-                        }
-                        return this;
-                    },
-    
-                    fireWith: function( context, args ) {
-                        if ( list && (!fired || stack) ) {
-                            args = args || [];
-                            args = [ context, args.slice ? args.slice() : args ];
-                            if ( firing ) {
-                                stack.push( args );
-                            } else {
-                                fire( args );
-                            }
-                        }
-                        return this;
-                    },
-    
-                    fire: function() {
-                        self.fireWith( this, arguments );
-                        return this;
-                    }
-                },
-    
-                fired, firing, firingStart, firingLength, firingIndex, memory;
-    
-            return self;
-        }
-    
-        function Deferred( func ) {
-            var tuples = [
-                    // action, add listener, listener list, final state
-                    [ 'resolve', 'done', Callbacks( true ), 'resolved' ],
-                    [ 'reject', 'fail', Callbacks( true ), 'rejected' ],
-                    [ 'notify', 'progress', Callbacks() ]
-                ],
-                state = 'pending',
-                promise = {
-                    state: function() {
-                        return state;
-                    },
-                    always: function() {
-                        deferred.done( arguments ).fail( arguments );
-                        return this;
-                    },
-                    then: function( /* fnDone, fnFail, fnProgress */ ) {
-                        var fns = arguments;
-                        return Deferred(function( newDefer ) {
-                            $.each( tuples, function( i, tuple ) {
-                                var action = tuple[ 0 ],
-                                    fn = $.isFunction( fns[ i ] ) && fns[ i ];
-    
-                                // deferred[ done | fail | progress ] for
-                                // forwarding actions to newDefer
-                                deferred[ tuple[ 1 ] ](function() {
-                                    var returned;
-    
-                                    returned = fn && fn.apply( this, arguments );
-    
-                                    if ( returned &&
-                                            $.isFunction( returned.promise ) ) {
-    
-                                        returned.promise()
-                                                .done( newDefer.resolve )
-                                                .fail( newDefer.reject )
-                                                .progress( newDefer.notify );
-                                    } else {
-                                        newDefer[ action + 'With' ](
-                                                this === promise ?
-                                                newDefer.promise() :
-                                                this,
-                                                fn ? [ returned ] : arguments );
-                                    }
-                                });
-                            });
-                            fns = null;
-                        }).promise();
-                    },
-    
-                    // Get a promise for this deferred
-                    // If obj is provided, the promise aspect is added to the object
-                    promise: function( obj ) {
-    
-                        return obj != null ? $.extend( obj, promise ) : promise;
-                    }
-                },
-                deferred = {};
-    
-            // Keep pipe for back-compat
-            promise.pipe = promise.then;
-    
-            // Add list-specific methods
-            $.each( tuples, function( i, tuple ) {
-                var list = tuple[ 2 ],
-                    stateString = tuple[ 3 ];
-    
-                // promise[ done | fail | progress ] = list.add
-                promise[ tuple[ 1 ] ] = list.add;
-    
-                // Handle state
-                if ( stateString ) {
-                    list.add(function() {
-                        // state = [ resolved | rejected ]
-                        state = stateString;
-    
-                    // [ reject_list | resolve_list ].disable; progress_list.lock
-                    }, tuples[ i ^ 1 ][ 2 ].disable, tuples[ 2 ][ 2 ].lock );
-                }
-    
-                // deferred[ resolve | reject | notify ]
-                deferred[ tuple[ 0 ] ] = function() {
-                    deferred[ tuple[ 0 ] + 'With' ]( this === deferred ? promise :
-                            this, arguments );
-                    return this;
-                };
-                deferred[ tuple[ 0 ] + 'With' ] = list.fireWith;
-            });
-    
-            // Make the deferred a promise
-            promise.promise( deferred );
-    
-            // Call given func if any
-            if ( func ) {
-                func.call( deferred, deferred );
-            }
-    
-            // All done!
-            return deferred;
-        }
-    
-        api = {
-            Deferred: Deferred,
-    
-            when: function( subordinate /* , ..., subordinateN */ ) {
-                var i = 0,
-                    resolveValues = Base.slice( arguments ),
-                    length = resolveValues.length,
-    
-                    // the count of uncompleted subordinates
-                    remaining = length !== 1 || (subordinate &&
-                        $.isFunction( subordinate.promise )) ? length : 0,
-    
-                    // the master Deferred. If resolveValues consist of
-                    // only a single Deferred, just use that.
-                    deferred = remaining === 1 ? subordinate : Deferred(),
-    
-                    // Update function for both resolve and progress values
-                    updateFunc = function( i, contexts, values ) {
-                        return function( value ) {
-                            contexts[ i ] = this;
-                            values[ i ] = arguments.length > 1 ?
-                                    Base.slice( arguments ) : value;
-    
-                            if ( values === progressValues ) {
-                                deferred.notifyWith( contexts, values );
-                            } else if ( !(--remaining) ) {
-                                deferred.resolveWith( contexts, values );
-                            }
-                        };
-                    },
-    
-                    progressValues, progressContexts, resolveContexts;
-    
-                // add listeners to Deferred subordinates; treat others as resolved
-                if ( length > 1 ) {
-                    progressValues = new Array( length );
-                    progressContexts = new Array( length );
-                    resolveContexts = new Array( length );
-                    for ( ; i < length; i++ ) {
-                        if ( resolveValues[ i ] &&
-                                $.isFunction( resolveValues[ i ].promise ) ) {
-    
-                            resolveValues[ i ].promise()
-                                    .done( updateFunc( i, resolveContexts,
-                                            resolveValues ) )
-                                    .fail( deferred.reject )
-                                    .progress( updateFunc( i, progressContexts,
-                                            progressValues ) );
-                        } else {
-                            --remaining;
-                        }
-                    }
-                }
-    
-                // if we're not waiting on anything, resolve the master
-                if ( !remaining ) {
-                    deferred.resolveWith( resolveContexts, resolveValues );
-                }
-    
-                return deferred.promise();
-            }
-        };
-    
-        $.extend( Base, api );
-    
-        return api;
     });
 
     /**
@@ -3272,8 +2848,9 @@
      */
     define( 'runtime/html5/filepaste', [
         'base',
-        'runtime/html5/runtime'
-    ], function( Base, Html5Runtime ) {
+        'runtime/html5/runtime',
+        'lib/file'
+    ], function( Base, Html5Runtime, File ) {
     
         return Html5Runtime.register( 'FilePaste', {
             init: function() {
@@ -3303,6 +2880,7 @@
     
             _pasteHander: function( e ) {
                 var allowed = [],
+                    ruid = this.getRuid(),
                     files, file, blob, i, len;
     
                 e = e.originalEvent || e;
@@ -3319,7 +2897,7 @@
                         continue;
                     }
     
-                    allowed.push( blob );
+                    allowed.push( new File( ruid, blob ) );
                 }
     
                 allowed.length && this.trigger( 'paste', allowed );
@@ -3794,7 +3372,7 @@
                         height / naturalHeight );
     
                 // 不允许放大。
-                opts.allowMagnify && (scale = Math.min( 1, scale ));
+                opts.allowMagnify || (scale = Math.min( 1, scale ));
     
                 w = naturalWidth * scale;
                 h = naturalHeight * scale;
@@ -4440,6 +4018,11 @@
     
         Uploader.options.dnd = '';
     
+        /**
+         * @property {Selector} [dnd=undefined]  指定Drag And Drop拖拽的容器，如果不指定，则不启动。
+         * @namespace options
+         * @for Uploader
+         */
         return Uploader.register({
             init: function( opts ) {
     
@@ -4478,6 +4061,11 @@
         'widgets/widget'
     ], function( Base, Uploader, FilePaste ) {
     
+        /**
+         * @property {Selector} [paste=undefined]  指定监听paste事件的容器，如果不指定，不启用此功能。此功能粘贴添加截屏的图片。
+         * @namespace options
+         * @for Uploader
+         */
         return Uploader.register({
             init: function( opts ) {
     
@@ -4695,6 +4283,13 @@
         var $ = Base.$,
             Status = WUFile.Status;
     
+        /**
+         * @event beforeFileQueued
+         * @param {File} file File对象
+         * @description 当文件被加入队列之前触发，此事件的handler返回值为`undefeined`，则此文件不会被添加进入队列。
+         * @for  Uploader
+         */
+    
         return Uploader.register({
             'add-file': 'addFiles',
             'get-file': 'getFile',
@@ -4908,22 +4503,23 @@
         function CuteFile( file, chunkSize ) {
             var pending = [],
                 blob = file.source,
-                end = blob.size,
-                chunks = chunkSize ? Math.ceil( end / chunkSize ) : 1,
-                index = chunks,
-                start;
+                total = blob.size,
+                chunks = chunkSize ? Math.ceil( total / chunkSize ) : 1,
+                start = 0,
+                index = 0,
+                len;
     
-            while ( index-- ) {
-                start = Math.max( 0, end - chunkSize );
+            while ( index < chunks ) {
+                len = Math.min( chunkSize, total - start );
                 pending.push({
                     file: file,
                     start: start,
-                    end: end,
-                    total: blob.size,
+                    end: start + len,
+                    total: total,
                     chunks: chunks,
-                    chunk: index
+                    chunk: index++
                 });
-                end = start;
+                start += len;
             }
     
             file.blocks = pending.concat();

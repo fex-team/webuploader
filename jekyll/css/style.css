@@ -1,15 +1,35 @@
 body {
-    padding-top: 40px;
+    margin-top: 50px;
     font-size: 16px;
     font-family:'Myriad Pro', Calibri, Helvetica, Arial, sans-serif;
     line-height: 1.5;
     -webkit-font-smoothing: antialiased;
-    background: #212121;
+}
+
+.jumbotron {
+    background: transparent url(../images/banner.jpg) no-repeat 50% 0%;
+    color: #fff;
+    text-shadow: 1px 1px 1px #3b3262;
+    margin-bottom: 0;
+}
+
+.fetature {
+    margin-top: 30px;
 }
 
 .page-body {
-    background: #fff;
     min-height: 450px;
+}
+
+.page-container {
+    margin-top: 10px;
+}
+
+.page-container h1,
+.page-container h2,
+.page-container h3 {
+    padding-top: 70px;
+    margin-top: -50px;
 }
 
 .logo {
@@ -32,6 +52,8 @@ body {
     width: 100%;
     overflow: hidden;
     color: #f2f2f2;
+    background: #212121;
+    margin-top: 50px;
 }
 .footer-fixed-bottom {
     position: fixed;
@@ -75,6 +97,252 @@ body {
         box-shadow: none;
     }
 }
+.post-toc {
+    margin-top: 30px;
+    margin-bottom: 30px;
+    padding-top: 10px;
+    padding-bottom: 10px;
+    text-shadow: 0 1px 0 #fff;
+    background-color: #f7f5fa;
+    border-radius: 5px;
+}
+
+.post-toc .nav > li > a {
+    display: block;
+    color: #716b7a;
+    padding: 5px 20px;
+}
+
+.post-toc .nav .nav > li > a {
+    padding-top: 3px;
+    padding-bottom: 3px;
+    padding-left: 30px;
+    font-size: 90%;
+}
+
+.post-toc.affix {
+    position: static;
+}
+
+.post-toc .nav .nav {
+  display: none;
+  margin-bottom: 8px;
+}
+
+
+@media (min-width: 992px) {
+    .post-toc.affix {
+        position: fixed;
+        width: 213px;
+        top: 50px;
+    }
+
+    .post-toc .nav > .active > ul {
+      display: block;
+    }
+}
+
+@media (min-width: 1200px) {
+    .post-toc.affix {
+        width: 263px;
+    }
+
+    .post-toc .nav > .active > ul {
+      display: block;
+    }
+}
+
+.post-toc .nav > .active > a,
+.post-toc .nav > .active:hover > a,
+.post-toc .nav > .active:focus > a {
+    font-weight: bold;
+    color: #563d7c;
+    background-color: transparent;
+    border-right: 1px solid #563d7c;
+}
+
+
+/********************************
+*
+*  COMMENTS
+*
+********************************/
+
+
+.comment {
+    background-color: transparent;
+    border-color: #CACACA;
+    border-style: solid;
+    border-width: 1px;
+    color: black;
+    display: block;
+    margin-bottom: 10px;
+    margin-top: 10px;
+    padding: 0px;
+    width: 100%;
+  }
+
+.comment .commentheader {
+  border-bottom-color: #CACACA;
+  border-bottom-style: solid;
+  border-bottom-width: 1px;
+  color: black;
+  background-image: -webkit-linear-gradient(#F8F8F8,#E1E1E1);
+  background-image: -moz-linear-gradient(#F8F8F8,#E1E1E1);
+  color: black;
+  display: block;
+  float: left;
+  font-family: helvetica, arial, freesans, clean, sans-serif;
+  font-size: 12px;
+  font-style: normal;
+  font-variant: normal;
+  font-weight: normal;
+  height: 33px;
+  line-height: 33px;
+  margin: 0px;
+  overflow-x: hidden;
+  overflow-y: hidden;
+  padding: 0px;
+  text-overflow: ellipsis;
+  text-shadow: rgba(255, 255, 255, 0.699219) 1px 1px 0px;
+  white-space: nowrap;
+  width: 100%;
+}
+
+.comment .commentheader .commentgravatar {
+  background-attachment: scroll;
+  background-clip: border-box;
+  background-color: white;
+  background-image: none;
+  background-origin: padding-box;
+  border-color: #C8C8C8;
+  border-style: solid;
+  border-width: 1px;
+  color: black;
+  display: inline-block;
+  float: none;
+  font-family: helvetica, arial, freesans, clean, sans-serif;
+  font-size: 1px;
+  font-style: normal;
+  font-variant: normal;
+  font-weight: normal;
+  height: 24px;
+  line-height: 1px;
+  margin-left: 5px;
+  margin-right: 3px;
+  margin-top: -2px;
+  overflow-x: visible;
+  overflow-y: visible;
+  padding: 1px;
+  text-overflow: clip;
+  text-shadow: rgba(255, 255, 255, 0.699219) 1px 1px 0px;
+  vertical-align: middle;
+  white-space: nowrap;
+  width: 24px;
+}
+
+.comment .commentheader a:link {
+  text-decoration: none;
+}
+
+.comment .commentheader a:hover {
+  border-bottom:1px solid;
+}
+
+
+.comment .commentheader .commentuser {
+  background-color: transparent;
+  color: black;
+  display: inline;
+  float: none;
+  font-family: helvetica, arial, freesans, clean, sans-serif;
+  font-size: 12px;
+  font-style: normal;
+  font-variant: normal;
+  font-weight: bold;
+  height: 0px;
+  line-height: 16px;
+  margin-left: 5px;
+  margin-right: 10px;
+  overflow-x: visible;
+  overflow-y: visible;
+  padding: 0px;
+  text-overflow: clip;
+  text-shadow: rgba(255, 255, 255, 0.699219) 1px 1px 0px;
+  white-space: nowrap;
+  width: 0px;
+}
+
+.comment .commentheader .commentdate {
+  background-color: transparent;
+  color: #777;
+  display: inline;
+  float: none;
+  font-family: helvetica, arial, freesans, clean, sans-serif;
+  font-size: 11px;
+  font-style: normal;
+  font-variant: normal;
+  font-weight: normal;
+  height: 0px;
+  line-height: 33px;
+  margin: 0px;
+  overflow-x: visible;
+  overflow-y: visible;
+  padding: 0px;
+  text-overflow: clip;
+  text-shadow: rgba(255, 255, 255, 0.699219) 1px 1px 0px;
+  white-space: nowrap;
+  width: 20em;
+}
+
+.comment .commentbody {
+  background-attachment: scroll;
+  background-clip: border-box;
+  background-color: transparent;
+  background-image: none;
+  background-origin: padding-box;
+  color: #333;
+  display: block;
+  margin-bottom: 1em;
+  margin-left: 1em;
+  margin-right: 1em;
+  margin-top: 40px;
+  overflow-x: visible;
+  overflow-y: visible;
+  padding: 0em;
+  position: static;
+  width: 96%;
+  word-wrap: break-word;
+}
+
+.comment .commentbody p {
+  margin-bottom: 0.5em;
+  margin-top: 0.5em;
+  margin-left: 0em;
+  margin-right: 0em;
+}
+
+.comment .commentbody pre {
+  border: 0px solid #ddd;
+  background-color: #eef;
+  padding: 0 .4em;
+}
+
+.comment .commentbody pre code {
+  border: 0px solid #ddd;
+}
+
+.comment .commentbody code {
+  border: 1px solid #ddd;
+  background-color: #eef;
+  font-size: 85%;
+  padding: 0 .2em;
+}
+
+
+
+
+/*demo样式*/
 #picker {
     display: inline-block;
     line-height: 1.428571429;

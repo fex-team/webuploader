@@ -73,7 +73,6 @@ define([
 
     /**
      * 添加Runtime实现。
-     * @method addRuntime
      * @param {String} type    类型
      * @param {Runtime} factory 具体Runtime实现。
      */

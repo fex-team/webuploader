@@ -1,0 +1,20 @@
+<div class="post-toc">
+    <ul class="nav">
+        <% _.forEach( navs, function( classes, modulename ) { %>
+        <% _.forEach( classes, function( items, classname ) { %>
+            <li>
+                <a href="<%- forUrl( modulename + ':' + classname ) %>"><%= classname %></a>
+                <ul class="nav">
+                    <% _.forEach( items, function( item ) { %>
+                    <% if( item.text === classname ) { return; } %>
+
+                    <li class="<%- item.skin || '' %>">
+                        <a class="<%= item.classname || '' %>" href="<%- item.href %>"><%= item.text %></a>
+                    </li>
+                    <% });%>
+                </ul>
+            </li>
+        <% }); %>
+        <% }); %>
+    </ul>
+</div>

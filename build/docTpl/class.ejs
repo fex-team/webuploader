@@ -1,0 +1,49 @@
+<div class="clearfix category">
+
+
+    <% var item; if( (item = items[ 0 ]) && item.hasOwnProperty('constructor') ) { %>
+    <article class="clearfix <%= item.itemtype %>">
+        <h3 id="<%- gennerateID( module + ':' + name ) %>" <% if ( item.hasOwnProperty( 'deprecated' ) ) { %>class="deprecated"<% } %> ><%= item.name %>
+            <% if ( item.since ) { %><span
+            class="version"><%- item.since %></span><% } %>
+        </h3>
+        <% if ( item[ 'deprecated' ] ) { %><div class="warning"><%- markdown( item[ 'deprecated' ] ) %></div><% } %>
+
+        <% if( item.uses ) { %><%- renderUses( item.uses ) %><% }%>
+
+        <% if ( item.grammars ) { %>
+        <ul class="signature">
+            <% _.forEach( item.grammars, function( grammar ) { %>
+            <li><%= grammar.signature %>
+                <% if ( grammar.return ) { %><span class="return">⇒ <%= grammar.return %></span><% } %>
+                <% if ( grammar.since ) { %><span class="version"><%= grammar.since %></span><% } %>
+            </li><% });%>
+        </ul>
+        <% } %>
+        <% if ( item.params ) { %>
+            <p>参数: </p>
+            <%- renderParams( item.params ) %>
+        <% } %>
+        <% if ( item.returns ) { %>
+            <p>返回值: </p>
+            <%- renderParams( item.returns ) %>
+        <% } %>
+
+        <%- markdown( item.description || description || '' ) %>
+        <% _.forEach( item.examples || [], function( example ) { %>
+            <%- formatExample( example ) %>
+        <% }) %>
+    </article>
+
+    <% } else { %>
+        <h2 id="<%- gennerateID( module + ':' + name ) %>"><%= title || name %></h2>
+        <% if ( description ) { %><%- markdown( description ) %><% } %>
+    <% } %>
+
+    <% if ( options.length ) { %> <%- renderTpl( 'options' ) %>  <% } %>
+    <% if ( events.length ) { %>  <%- renderTpl( 'events' ) %>      <% } %>
+    <% if ( items.length ) { %> <%- renderTpl( 'items' ) %>  <% } %>
+
+    <% if ( plugins.length ) { %> <%- renderTpl( 'plugins' ) %>  <% } %>
+</div>
+<hr />
