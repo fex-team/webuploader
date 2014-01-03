@@ -18,7 +18,7 @@ hideTitle: true
 <!-- cdn正在申请中... -->
 ```
 
-或者下载[Git项目包]()。
+或者下载[Git项目包](https://github.com/gmuteam/webuploader/zipball/master)。
 
 ## 包内容
 
