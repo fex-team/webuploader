@@ -14,12 +14,10 @@ define([
 
         Blob.apply( this, arguments );
         this.name = file.name || ('untitled' + uid++);
+        ext = rExt.exec( file.name ) ? RegExp.$1.toLowerCase() : '';
 
-        if ( !this.type ) {
-            ext = rExt.exec( file.name ) ? RegExp.$1.toLowerCase() : '';
-            if ( ~'jpg,jpeg,png,gif,bmp'.indexOf( ext ) ) {
-                this.type = 'image/' + ext;
-            }
+        if ( !this.type &&  ~'jpg,jpeg,png,gif,bmp'.indexOf( ext ) ) {
+            this.type = 'image/' + ext;
         }
 
         this.ext = ext;
