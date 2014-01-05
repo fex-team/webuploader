@@ -12,13 +12,6 @@ define([
     var $ = Base.$,
         Status = WUFile.Status;
 
-    /**
-     * @event beforeFileQueued
-     * @param {File} file File对象
-     * @description 当文件被加入队列之前触发，此事件的handler返回值为`undefeined`，则此文件不会被添加进入队列。
-     * @for  Uploader
-     */
-
     return Uploader.register({
         'add-file': 'addFiles',
         'get-file': 'getFile',
@@ -58,6 +51,21 @@ define([
             this.stats = this.queue.stats;
         },
 
+        /**
+         * @event beforeFileQueued
+         * @param {File} file File对象
+         * @description 当文件被加入队列之前触发，此事件的handler返回值为`false`，则此文件不会被添加进入队列。
+         * @for  Uploader
+         */
+
+        /**
+         * @event fileQueued
+         * @param {File} file File对象
+         * @description 当文件被加入队列以后触发。
+         * @for  Uploader
+         */
+
+
         _addFile: function( file ) {
             var me = this;
 
@@ -83,6 +91,12 @@ define([
             return this.queue.getFile( fileId );
         },
 
+        /**
+         * @event filesQueued
+         * @param {File} files 数组，内容为原始File(lib/File）对象。
+         * @description 当一批文件添加进队列以后触发。
+         * @for  Uploader
+         */
         addFiles: function( files ) {
             var me = this;
 
@@ -105,6 +119,26 @@ define([
             return this.stats;
         },
 
+        /**
+         * @event fileDequeued
+         * @param {File} file File对象
+         * @description 当文件被移除队列后触发。
+         * @for  Uploader
+         */
+
+        /**
+         * @method removeFile
+         * @grammar removeFile( file ) => undefined
+         * @grammar removeFile( id ) => undefined
+         * @param {File|id} file File对象或这File对象的id
+         * @description 移除某一文件。
+         * @for  Uploader
+         * @example
+         *
+         * $li.on('click', '.remove-this', function() {
+         *     uploader.removeFile( file );
+         * })
+         */
         removeFile: function( file ) {
             var me = this;
 
@@ -114,6 +148,16 @@ define([
             me.owner.trigger( 'fileDequeued', file );
         },
 
+        /**
+         * @method getFiles
+         * @grammar getFiles() => Array
+         * @grammar getFiles( status1, status2, status... ) => Array
+         * @description 返回指定状态的文件集合，不传参数将返回所有状态的文件。
+         * @for  Uploader
+         * @example
+         * console.log( uploader.getFiles() );    // => all files
+         * console.log( uploader.getFiles('error') )    // => all error files.
+         */
         getFiles: function() {
             return this.queue.getFiles.apply( this.queue, arguments );
         },
@@ -122,6 +166,17 @@ define([
             return this.queue.fetch.apply( this.queue, arguments );
         },
 
+        /**
+         * @method retry
+         * @grammar retry() => undefined
+         * @grammar retry( file ) => undefined
+         * @description 重试上传，重试指定文件，或者从出错的文件开始重新上传。
+         * @for  Uploader
+         * @example
+         * function retry() {
+         *     uploader.retry();
+         * }
+         */
         retry: function( file, noForceStart ) {
             var me = this,
                 files, i, len;

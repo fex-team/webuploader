@@ -16,21 +16,47 @@ define([
     // 添加默认配置项
     $.extend( Uploader.options, {
 
-        // 是否允许在文件传输时提前把下一个文件准备好。
-        // 对于一个文件的准备工作比较耗时，比如图片压缩，md5序列化。
-        // 如果能提前在当前文件传输期处理，可以节省总体耗时。
+
+        /**
+         * @property {Boolean} [prepareNextFile=false]
+         * @namespace options
+         * @for Uploader
+         * @description 是否允许在文件传输时提前把下一个文件准备好。
+         * 对于一个文件的准备工作比较耗时，比如图片压缩，md5序列化。
+         * 如果能提前在当前文件传输期处理，可以节省总体耗时。
+         */
         prepareNextFile: false,
 
-        // 是否要分片
+        /**
+         * @property {Boolean} [chunked=false]
+         * @namespace options
+         * @for Uploader
+         * @description 是否要分片处理大文件上传。
+         */
         chunked: false,
 
-        // 如果要分片，分多大一片？
+        /**
+         * @property {Boolean} [chunkSize=5242880]
+         * @namespace options
+         * @for Uploader
+         * @description 如果要分片，分多大一片？ 默认大小为5M.
+         */
         chunkSize: 5 * 1024 * 1024,
 
-        // 如果某个分片由于网络问题出错，允许自动重传多少次？
+        /**
+         * @property {Boolean} [chunkRetry=2]
+         * @namespace options
+         * @for Uploader
+         * @description 如果某个分片由于网络问题出错，允许自动重传多少次？
+         */
         chunkRetry: 2,
 
-        // 上传并发数。
+        /**
+         * @property {Boolean} [threads=3]
+         * @namespace options
+         * @for Uploader
+         * @description 上传并发数。允许同时最大上传进程数。
+         */
         threads: 3
     });
 
@@ -107,6 +133,18 @@ define([
             });
         },
 
+        /**
+         * @event startUpload
+         * @description 当开始上传流程时触发。
+         * @for  Uploader
+         */
+
+        /**
+         * 开始上传。此方法可以从初始状态调用开始上传流程，也可以从暂停状态调用，继续上传流程。
+         * @grammar upload() => undefined
+         * @method upload
+         * @for  Uploader
+         */
         start: function() {
             var me = this;
 
@@ -137,6 +175,19 @@ define([
             Base.nextTick( me.__tick );
         },
 
+        /**
+         * @event stopUpload
+         * @description 当开始上传流程暂停时触发。
+         * @for  Uploader
+         */
+
+        /**
+         * 暂停上传。第一个参数为是否中断上传当前正在上传的文件。
+         * @grammar stop() => undefined
+         * @grammar stop( true ) => undefined
+         * @method stop
+         * @for  Uploader
+         */
         stop: function( interrupt ) {
             var me = this;
 
@@ -154,6 +205,12 @@ define([
             me.owner.trigger('stopUpload');
         },
 
+        /**
+         * 判断`Uplaode`r是否正在上传中。
+         * @grammar isInProgress() => Boolean
+         * @method isInProgress
+         * @for  Uploader
+         */
         isInProgress: function() {
             return !!this.runing;
         },
@@ -162,6 +219,12 @@ define([
             return this.request('get-stats');
         },
 
+        /**
+         * 掉过一个文件上传，直接标记指定文件为已上传状态。
+         * @grammar skipFile( file ) => undefined
+         * @method skipFile
+         * @for  Uploader
+         */
         skipFile: function( file, status ) {
             file = this.request( 'get-file', file );
 
@@ -182,6 +245,11 @@ define([
             this.owner.trigger( 'uploadSkip', file );
         },
 
+        /**
+         * @event uploadFinished
+         * @description 当文件上传结束时触发。
+         * @for  Uploader
+         */
         _tick: function() {
             var me = this,
                 opts = me.options,
@@ -347,6 +415,36 @@ define([
                 }
             });
         },
+
+        /**
+         * @event uploadProgress
+         * @param {File} file File对象
+         * @param {Number} percentage 上传进度
+         * @description 上传过程中触发，携带上传进度。
+         * @for  Uploader
+         */
+
+        /**
+         * @event uploadError
+         * @param {File} file File对象
+         * @param {String} reason 出错的code
+         * @description 当文件上传出错时触发。
+         * @for  Uploader
+         */
+
+        /**
+         * @event uploadSuccess
+         * @param {File} file File对象
+         * @description 当文件上传成功时触发。
+         * @for  Uploader
+         */
+
+        /**
+         * @event uploadComplete
+         * @param {File} [file] File对象
+         * @description 不管成功或者失败，文件上传完成时触发。
+         * @for  Uploader
+         */
 
         // 做上传操作。
         _doSend: function( block ) {
