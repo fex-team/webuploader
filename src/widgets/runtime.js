@@ -12,7 +12,7 @@ define([
     };
 
     return Uploader.register({
-        'get-runtime-type': 'getRuntmeType'
+        'predict-runtime-type': 'predictRuntmeType'
     }, {
 
         init: function() {
@@ -21,7 +21,13 @@ define([
             }
         },
 
-        getRuntmeType: function() {
+        /**
+         * 预测Uploader将采用哪个`Runtime`
+         * @grammar predictRuntmeType() => String
+         * @method predictRuntmeType
+         * @for  Uploader
+         */
+        predictRuntmeType: function() {
             var orders = this.options.runtimeOrder || Runtime.orders,
                 type = this.type,
                 i, len;

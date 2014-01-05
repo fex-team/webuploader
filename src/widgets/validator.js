@@ -37,7 +37,12 @@ define([
         }
     });
 
-    // 验证文件总数量
+    /**
+     * @property {int} [fileNumLimit=undefined]
+     * @namespace options
+     * @for Uploader
+     * @description 验证文件总数量, 超出则不允许加入队列。
+     */
     api.addValidator( 'fileNumLimit', function() {
         var uploader = this,
             opts = uploader.options,
@@ -72,7 +77,12 @@ define([
     });
 
 
-    // 验证文件总大小是否超出限制
+    /**
+     * @property {int} [fileSizeLimit=undefined]
+     * @namespace options
+     * @for Uploader
+     * @description 验证文件总大小是否超出限制, 超出则不允许加入队列。
+     */
     api.addValidator( 'fileSizeLimit', function() {
         var uploader = this,
             opts = uploader.options,
@@ -107,7 +117,12 @@ define([
         });
     });
 
-    // 验证单个文件大小是否超出限制
+    /**
+     * @property {int} [fileSingleSizeLimit=undefined]
+     * @namespace options
+     * @for Uploader
+     * @description 验证单个文件大小是否超出限制, 超出则不允许加入队列。
+     */
     api.addValidator( 'fileSingleSizeLimit', function() {
         var uploader = this,
             opts = uploader.options,
@@ -124,7 +139,12 @@ define([
         });
     });
 
-    // 去重， 根据文件名字、文件大小和最后修改时间来生成hash Key.
+    /**
+     * @property {int} [duplicate=undefined]
+     * @namespace options
+     * @for Uploader
+     * @description 去重， 根据文件名字、文件大小和最后修改时间来生成hash Key.
+     */
     api.addValidator( 'duplicate', function() {
         var uploader = this,
             opts = uploader.options,

@@ -73,6 +73,60 @@ styles:
                     
 
                     <li class="method">
+                        <a class="" href="#WebUploader_Uploader_makeThumb">makeThumb</a>
+                    </li>
+                    
+                    
+
+                    <li class="method">
+                        <a class="" href="#WebUploader_Uploader_removeFile">removeFile</a>
+                    </li>
+                    
+                    
+
+                    <li class="method">
+                        <a class="" href="#WebUploader_Uploader_getFiles">getFiles</a>
+                    </li>
+                    
+                    
+
+                    <li class="method">
+                        <a class="" href="#WebUploader_Uploader_retry">retry</a>
+                    </li>
+                    
+                    
+
+                    <li class="method">
+                        <a class="" href="#WebUploader_Uploader_predictRuntmeType">predictRuntmeType</a>
+                    </li>
+                    
+                    
+
+                    <li class="method">
+                        <a class="" href="#WebUploader_Uploader_upload">upload</a>
+                    </li>
+                    
+                    
+
+                    <li class="method">
+                        <a class="" href="#WebUploader_Uploader_stop">stop</a>
+                    </li>
+                    
+                    
+
+                    <li class="method">
+                        <a class="" href="#WebUploader_Uploader_isInProgress">isInProgress</a>
+                    </li>
+                    
+                    
+
+                    <li class="method">
+                        <a class="" href="#WebUploader_Uploader_skipFile">skipFile</a>
+                    </li>
+                    
+                    
+
+                    <li class="method">
                         <a class="" href="#WebUploader_Uploader_request">request</a>
                     </li>
                     
@@ -398,7 +452,7 @@ var uploader = WebUploader.Uploader({
                  [可选] 
                  [默认值：undefined] 
             </span>
-            <p>  指定监听paste事件的容器，如果不指定，不启用此功能。此功能粘贴添加截屏的图片。</p>
+            <p>  指定监听paste事件的容器，如果不指定，不启用此功能。此功能为通过粘贴来添加截屏的图片。建议设置为<code>document.body</code>.</p>
 
             
         </li>
@@ -443,6 +497,186 @@ var uploader = WebUploader.Uploader({
             
         </li>
         
+        <li>
+            <span class="meta">
+                <code>thumb</code>
+                 {Object} 
+                 [可选] 
+                
+            </span>
+            <p>配置生成缩略图的选项。</p>
+<p>默认为：</p>
+
+{% highlight javascript %}
+{
+    width: 110,
+    height: 110,
+
+    // 图片质量，只有type为`image/jpeg`的时候才有效。
+    quality: 70,
+
+    // 是否允许放大，如果想要生成小图的时候不失真，此选项应该设置为false.
+    allowMagnify: true,
+
+    // 是否允许裁剪。
+    crop: true,
+
+    // 是否保留头部meta信息。
+    preserveHeaders: false,
+
+    // 为空的话则保留原有图片格式。
+    // 否则强制转换成指定的类型。
+    type: 'image/jpeg'
+}
+{% endhighlight %}
+
+
+            
+        </li>
+        
+        <li>
+            <span class="meta">
+                <code>compress</code>
+                 {Object} 
+                 [可选] 
+                
+            </span>
+            <p>配置压缩的图片的选项。如果此选项为<code>false</code>, 则图片在上传前不进行压缩。</p>
+<p>默认为：</p>
+
+{% highlight javascript %}
+{
+    width: 1600,
+    height: 1600,
+
+    // 图片质量，只有type为`image/jpeg`的时候才有效。
+    quality: 90,
+
+    // 是否允许放大，如果想要生成小图的时候不失真，此选项应该设置为false.
+    allowMagnify: false,
+
+    // 是否允许裁剪。
+    crop: false,
+
+    // 是否保留头部meta信息。
+    preserveHeaders: true
+}
+{% endhighlight %}
+
+
+            
+        </li>
+        
+        <li>
+            <span class="meta">
+                <code>prepareNextFile</code>
+                 {Boolean} 
+                 [可选] 
+                 [默认值：false] 
+            </span>
+            <p>是否允许在文件传输时提前把下一个文件准备好。
+对于一个文件的准备工作比较耗时，比如图片压缩，md5序列化。
+如果能提前在当前文件传输期处理，可以节省总体耗时。</p>
+
+            
+        </li>
+        
+        <li>
+            <span class="meta">
+                <code>chunked</code>
+                 {Boolean} 
+                 [可选] 
+                 [默认值：false] 
+            </span>
+            <p>是否要分片处理大文件上传。</p>
+
+            
+        </li>
+        
+        <li>
+            <span class="meta">
+                <code>chunkSize</code>
+                 {Boolean} 
+                 [可选] 
+                 [默认值：5242880] 
+            </span>
+            <p>如果要分片，分多大一片？ 默认大小为5M.</p>
+
+            
+        </li>
+        
+        <li>
+            <span class="meta">
+                <code>chunkRetry</code>
+                 {Boolean} 
+                 [可选] 
+                 [默认值：2] 
+            </span>
+            <p>如果某个分片由于网络问题出错，允许自动重传多少次？</p>
+
+            
+        </li>
+        
+        <li>
+            <span class="meta">
+                <code>threads</code>
+                 {Boolean} 
+                 [可选] 
+                 [默认值：3] 
+            </span>
+            <p>上传并发数。允许同时最大上传进程数。</p>
+
+            
+        </li>
+        
+        <li>
+            <span class="meta">
+                <code>fileNumLimit</code>
+                 {int} 
+                 [可选] 
+                 [默认值：undefined] 
+            </span>
+            <p>验证文件总数量, 超出则不允许加入队列。</p>
+
+            
+        </li>
+        
+        <li>
+            <span class="meta">
+                <code>fileSizeLimit</code>
+                 {int} 
+                 [可选] 
+                 [默认值：undefined] 
+            </span>
+            <p>验证文件总大小是否超出限制, 超出则不允许加入队列。</p>
+
+            
+        </li>
+        
+        <li>
+            <span class="meta">
+                <code>fileSingleSizeLimit</code>
+                 {int} 
+                 [可选] 
+                 [默认值：undefined] 
+            </span>
+            <p>验证单个文件大小是否超出限制, 超出则不允许加入队列。</p>
+
+            
+        </li>
+        
+        <li>
+            <span class="meta">
+                <code>duplicate</code>
+                 {int} 
+                 [可选] 
+                 [默认值：undefined] 
+            </span>
+            <p>去重， 根据文件名字、文件大小和最后修改时间来生成hash Key.</p>
+
+            
+        </li>
+        
     </ul>
 </div>  
       <div>
@@ -463,7 +697,120 @@ var uploader = WebUploader.Uploader({
 </li></ul>
                 
             </td>
-            <td><p>当文件被加入队列之前触发，此事件的handler返回值为<code>undefeined</code>，则此文件不会被添加进入队列。</p>
+            <td><p>当文件被加入队列之前触发，此事件的handler返回值为<code>false</code>，则此文件不会被添加进入队列。</p>
+</td>
+        </tr>
+        
+        <tr>
+            <td><code>fileQueued</code></td>
+            <td class="events-tb-desc">
+                
+                <ul class="params-list"><li><span class="meta"><code>file</code> {File}</span><p>File对象</p>
+</li></ul>
+                
+            </td>
+            <td><p>当文件被加入队列以后触发。</p>
+</td>
+        </tr>
+        
+        <tr>
+            <td><code>filesQueued</code></td>
+            <td class="events-tb-desc">
+                
+                <ul class="params-list"><li><span class="meta"><code>files</code> {File}</span><p>数组，内容为原始File(lib/File）对象。</p>
+</li></ul>
+                
+            </td>
+            <td><p>当一批文件添加进队列以后触发。</p>
+</td>
+        </tr>
+        
+        <tr>
+            <td><code>fileDequeued</code></td>
+            <td class="events-tb-desc">
+                
+                <ul class="params-list"><li><span class="meta"><code>file</code> {File}</span><p>File对象</p>
+</li></ul>
+                
+            </td>
+            <td><p>当文件被移除队列后触发。</p>
+</td>
+        </tr>
+        
+        <tr>
+            <td><code>startUpload</code></td>
+            <td class="events-tb-desc">
+                
+            </td>
+            <td><p>当开始上传流程时触发。</p>
+</td>
+        </tr>
+        
+        <tr>
+            <td><code>stopUpload</code></td>
+            <td class="events-tb-desc">
+                
+            </td>
+            <td><p>当开始上传流程暂停时触发。</p>
+</td>
+        </tr>
+        
+        <tr>
+            <td><code>uploadFinished</code></td>
+            <td class="events-tb-desc">
+                
+            </td>
+            <td><p>当文件上传结束时触发。</p>
+</td>
+        </tr>
+        
+        <tr>
+            <td><code>uploadProgress</code></td>
+            <td class="events-tb-desc">
+                
+                <ul class="params-list"><li><span class="meta"><code>file</code> {File}</span><p>File对象</p>
+</li><li><span class="meta"><code>percentage</code> {Number}</span><p>上传进度</p>
+</li></ul>
+                
+            </td>
+            <td><p>上传过程中触发，携带上传进度。</p>
+</td>
+        </tr>
+        
+        <tr>
+            <td><code>uploadError</code></td>
+            <td class="events-tb-desc">
+                
+                <ul class="params-list"><li><span class="meta"><code>file</code> {File}</span><p>File对象</p>
+</li><li><span class="meta"><code>reason</code> {String}</span><p>出错的code</p>
+</li></ul>
+                
+            </td>
+            <td><p>当文件上传出错时触发。</p>
+</td>
+        </tr>
+        
+        <tr>
+            <td><code>uploadSuccess</code></td>
+            <td class="events-tb-desc">
+                
+                <ul class="params-list"><li><span class="meta"><code>file</code> {File}</span><p>File对象</p>
+</li></ul>
+                
+            </td>
+            <td><p>当文件上传成功时触发。</p>
+</td>
+        </tr>
+        
+        <tr>
+            <td><code>uploadComplete</code></td>
+            <td class="events-tb-desc">
+                
+                <ul class="params-list"><li><span class="meta"><code>file</code> {File} [可选]</span><p>File对象</p>
+</li></ul>
+                
+            </td>
+            <td><p>不管成功或者失败，文件上传完成时触发。</p>
 </td>
         </tr>
         
@@ -595,6 +942,327 @@ uploader.addButton({
 
 
 <article class="clearfix method">
+    <h3 id="WebUploader_Uploader_makeThumb"  >makeThumb
+        
+    </h3>
+    
+
+    
+
+    
+    <ul class="signature">
+        
+        <li>makeThumb( file, cb ) 
+            <span class="return">⇒  undefined</span>
+            
+        </li>
+        <li>makeThumb( file, cb, width, height ) 
+            <span class="return">⇒  undefined</span>
+            
+        </li>
+    </ul>
+    
+    
+    
+
+    <p>生成缩略图，此过程为异步，所以需要传入<code>callback</code>。
+通常情况在图片加入队里后调用此方法来生成预览图以增强交互效果。</p>
+
+    
+        
+{% highlight javascript %}
+uploader.on( 'fileQueued', function( file ) {
+    var $li = ...;
+
+    uploader.makeThumb( file, function( error, ret ) {
+        if ( error ) {
+            $li.text('预览错误');
+        } else {
+            $li.append('&lt;img alt="" src="' + ret + '" />');
+        }
+    });
+
+});
+{% endhighlight %}
+
+
+    
+</article>
+
+
+
+
+<article class="clearfix method">
+    <h3 id="WebUploader_Uploader_removeFile"  >removeFile
+        
+    </h3>
+    
+
+    
+
+    
+    <ul class="signature">
+        
+        <li>removeFile( file ) 
+            <span class="return">⇒  undefined</span>
+            
+        </li>
+        <li>removeFile( id ) 
+            <span class="return">⇒  undefined</span>
+            
+        </li>
+    </ul>
+    
+    
+        <p>参数: </p>
+        <ul class="params-list"><li><span class="meta"><code>file</code> {File, id}</span><p>File对象或这File对象的id</p>
+</li></ul>
+    
+    
+
+    <p>移除某一文件。</p>
+
+    
+        
+{% highlight javascript %}
+$li.on('click', '.remove-this', function() {
+    uploader.removeFile( file );
+})
+{% endhighlight %}
+
+
+    
+</article>
+
+
+
+
+<article class="clearfix method">
+    <h3 id="WebUploader_Uploader_getFiles"  >getFiles
+        
+    </h3>
+    
+
+    
+
+    
+    <ul class="signature">
+        
+        <li>getFiles() 
+            <span class="return">⇒  Array</span>
+            
+        </li>
+        <li>getFiles( status1, status2, status... ) 
+            <span class="return">⇒  Array</span>
+            
+        </li>
+    </ul>
+    
+    
+    
+
+    <p>返回指定状态的文件集合，不传参数将返回所有状态的文件。</p>
+
+    
+        
+{% highlight javascript %}
+console.log( uploader.getFiles() );    // => all files
+console.log( uploader.getFiles('error') )    // => all error files.
+{% endhighlight %}
+
+
+    
+</article>
+
+
+
+
+<article class="clearfix method">
+    <h3 id="WebUploader_Uploader_retry"  >retry
+        
+    </h3>
+    
+
+    
+
+    
+    <ul class="signature">
+        
+        <li>retry() 
+            <span class="return">⇒  undefined</span>
+            
+        </li>
+        <li>retry( file ) 
+            <span class="return">⇒  undefined</span>
+            
+        </li>
+    </ul>
+    
+    
+    
+
+    <p>重试上传，重试指定文件，或者从出错的文件开始重新上传。</p>
+
+    
+        
+{% highlight javascript %}
+function retry() {
+    uploader.retry();
+}
+{% endhighlight %}
+
+
+    
+</article>
+
+
+
+
+<article class="clearfix method">
+    <h3 id="WebUploader_Uploader_predictRuntmeType"  >predictRuntmeType
+        
+    </h3>
+    
+
+    
+
+    
+    <ul class="signature">
+        
+        <li>predictRuntmeType() 
+            <span class="return">⇒  String</span>
+            
+        </li>
+    </ul>
+    
+    
+    
+
+    <p>预测Uploader将采用哪个<code>Runtime</code></p>
+
+    
+</article>
+
+
+
+
+<article class="clearfix method">
+    <h3 id="WebUploader_Uploader_upload"  >upload
+        
+    </h3>
+    
+
+    
+
+    
+    <ul class="signature">
+        
+        <li>upload() 
+            <span class="return">⇒  undefined</span>
+            
+        </li>
+    </ul>
+    
+    
+    
+
+    <p>开始上传。此方法可以从初始状态调用开始上传流程，也可以从暂停状态调用，继续上传流程。</p>
+
+    
+</article>
+
+
+
+
+<article class="clearfix method">
+    <h3 id="WebUploader_Uploader_stop"  >stop
+        
+    </h3>
+    
+
+    
+
+    
+    <ul class="signature">
+        
+        <li>stop() 
+            <span class="return">⇒  undefined</span>
+            
+        </li>
+        <li>stop( true ) 
+            <span class="return">⇒  undefined</span>
+            
+        </li>
+    </ul>
+    
+    
+    
+
+    <p>暂停上传。第一个参数为是否中断上传当前正在上传的文件。</p>
+
+    
+</article>
+
+
+
+
+<article class="clearfix method">
+    <h3 id="WebUploader_Uploader_isInProgress"  >isInProgress
+        
+    </h3>
+    
+
+    
+
+    
+    <ul class="signature">
+        
+        <li>isInProgress() 
+            <span class="return">⇒  Boolean</span>
+            
+        </li>
+    </ul>
+    
+    
+    
+
+    <p>判断<code>Uplaode</code>r是否正在上传中。</p>
+
+    
+</article>
+
+
+
+
+<article class="clearfix method">
+    <h3 id="WebUploader_Uploader_skipFile"  >skipFile
+        
+    </h3>
+    
+
+    
+
+    
+    <ul class="signature">
+        
+        <li>skipFile( file ) 
+            <span class="return">⇒  undefined</span>
+            
+        </li>
+    </ul>
+    
+    
+    
+
+    <p>掉过一个文件上传，直接标记指定文件为已上传状态。</p>
+
+    
+</article>
+
+
+
+
+<article class="clearfix method">
     <h3 id="WebUploader_Uploader_request"  >request
         
     </h3>
@@ -618,7 +1286,8 @@ uploader.addButton({
     
     
 
-    
+    <p>发送命令。当传入<code>callback</code>或者<code>handler</code>中返回<code>promise</code>时。返回一个当所有<code>handler</code>中的promise都完成后完成的新<code>promise</code>。</p>
+
     
 </article>
 

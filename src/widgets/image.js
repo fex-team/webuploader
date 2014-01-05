@@ -37,7 +37,37 @@ define([
 
     $.extend( Uploader.options, {
 
-        // 配置生成缩略图的选项。
+        /**
+         * @property {Object} [thumb]
+         * @namespace options
+         * @for Uploader
+         * @description 配置生成缩略图的选项。
+         *
+         * 默认为：
+         *
+         * ```javascript
+         * {
+         *     width: 110,
+         *     height: 110,
+         *
+         *     // 图片质量，只有type为`image/jpeg`的时候才有效。
+         *     quality: 70,
+         *
+         *     // 是否允许放大，如果想要生成小图的时候不失真，此选项应该设置为false.
+         *     allowMagnify: true,
+         *
+         *     // 是否允许裁剪。
+         *     crop: true,
+         *
+         *     // 是否保留头部meta信息。
+         *     preserveHeaders: false,
+         *
+         *     // 为空的话则保留原有图片格式。
+         *     // 否则强制转换成指定的类型。
+         *     type: 'image/jpeg'
+         * }
+         * ```
+         */
         thumb: {
             width: 110,
             height: 110,
@@ -51,7 +81,33 @@ define([
             type: 'image/jpeg'
         },
 
-        // 配置压缩的图片的选项。
+        /**
+         * @property {Object} [compress]
+         * @namespace options
+         * @for Uploader
+         * @description 配置压缩的图片的选项。如果此选项为`false`, 则图片在上传前不进行压缩。
+         *
+         * 默认为：
+         *
+         * ```javascript
+         * {
+         *     width: 1600,
+         *     height: 1600,
+         *
+         *     // 图片质量，只有type为`image/jpeg`的时候才有效。
+         *     quality: 90,
+         *
+         *     // 是否允许放大，如果想要生成小图的时候不失真，此选项应该设置为false.
+         *     allowMagnify: false,
+         *
+         *     // 是否允许裁剪。
+         *     crop: false,
+         *
+         *     // 是否保留头部meta信息。
+         *     preserveHeaders: true
+         * }
+         * ```
+         */
         compress: {
             width: 1600,
             height: 1600,
@@ -67,6 +123,29 @@ define([
         'before-send-file': 'compressImage'
     }, {
 
+
+        /**
+         * 生成缩略图，此过程为异步，所以需要传入`callback`。
+         * 通常情况在图片加入队里后调用此方法来生成预览图以增强交互效果。
+         * @method makeThumb
+         * @grammar makeThumb( file, cb ) => undefined
+         * @grammar makeThumb( file, cb, width, height ) => undefined
+         * @for Uploader
+         * @example
+         *
+         * uploader.on( 'fileQueued', function( file ) {
+         *     var $li = ...;
+         *
+         *     uploader.makeThumb( file, function( error, ret ) {
+         *         if ( error ) {
+         *             $li.text('预览错误');
+         *         } else {
+         *             $li.append('<img alt="" src="' + ret + '" />');
+         *         }
+         *     });
+         *
+         * });
+         */
         makeThumb: function( file, cb, width, height ) {
             var opts, image;
 
