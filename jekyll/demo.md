@@ -6,6 +6,7 @@ group: 'nav'
 weight : 4
 hideTitle: true
 noToc: true
+commentIssueId: 81
 styles:
   - /css/webuploader.css
   - /css/demo.css
