@@ -119,6 +119,7 @@
     margin: 0;
     border-radius: 0;
     background: none;
+    -webkit-box-shadow: 0 0 0;
 }
 #uploader .filelist li p.progress span {
     display: none;
