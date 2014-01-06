@@ -17,7 +17,7 @@
 #uploader .placeholder {
     border: 3px dashed #e6e6e6;
     min-height: 350px;
-    padding-top: 158px;
+    padding-top: 178px;
     text-align: center;
     background: url(../images/image.png) center 93px no-repeat;
     color: #cccccc;
@@ -31,9 +31,10 @@
     border-radius: 3px;
     line-height: 44px;
     padding: 0 30px;
+    *width: 120px;
     color: #fff;
     display: inline-block;
-    margin: 20px auto;
+    margin: 0 auto 20px auto;
     cursor: pointer;
     box-shadow: 0 1px 1px rgba(0, 0, 0, 0.1);
 }
