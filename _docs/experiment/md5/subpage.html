@@ -1,0 +1,53 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
+<html lang="en">
+<head>
+	<meta http-equiv="Content-Type" content="text/html;charset=UTF-8">
+	<title>Document</title>
+	<script type="text/javascript" src="jkm_md5.js"></script>
+	<script type="text/javascript">
+	function readContent(file, cb) {
+		var chunkSize = 2 * 1024 * 1024,
+			chunks = Math.ceil(file.size / chunkSize),
+			chunk = 0,
+			fr = new FileReader,
+			ret = [],
+			blobSlice = file.mozSlice || file.webkitSlice || file.slice,
+			loadNext;
+
+		loadNext = function() {
+			var start, end;
+
+			start = chunk * chunkSize;
+			end = start + chunkSize >= file.size ? file.size : start + chunkSize;
+
+			fr.onload = function() {
+				//ret += fr.result;
+				ret.push(fr.result);
+			};
+
+			fr.onloadend = function() {
+				fr.onload = fr.onloadend = null;
+
+				if (++chunk < chunks) {
+					loadNext();
+				} else {
+					blobSlice = file = null;
+					// cb(md5(ret));
+					//ret.join('');
+					cb();
+					ret.length = 0;
+				}
+			};
+
+			fr.readAsBinaryString(blobSlice.call(file, start, end));
+		};
+
+		loadNext();
+
+		console.log('subpage');
+	}
+	</script>
+</head>
+<body>
+</body>
+</html>

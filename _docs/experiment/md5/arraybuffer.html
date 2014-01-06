@@ -1,0 +1,164 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
+<html lang="en">
+<head>
+	<meta http-equiv="Content-Type" content="text/html;charset=UTF-8">
+	<title>Array BUffer</title>
+</head>
+<body>
+	<input type="file" id="fileselect" name="fileselect[]" multiple="multiple" />
+<!-- <script type="text/javascript" src="jkm_md5.js"></script> -->
+<!-- <script type="text/javascript" src="SparkMD5.js"></script> -->
+<script type="text/javascript" src="jkm_md5_arraybuffer.js"></script>
+<!-- <script type="text/javascript" src="fast_md5.js"></script> -->
+<script type="text/javascript">
+(function( input ){
+
+	var fr;
+
+	function concatArrayBuffer( arr ) {
+		var byteLength = 0,
+			len = arr.length,
+			position = 0,
+			i, tmp, buf;
+
+		for ( i = 0; i< len; i++ ) {
+			byteLength += arr[ i ].byteLength;
+		}
+
+		tmp = new Uint8Array( byteLength );
+
+		for ( i = 0; i< len; i++ ) {
+			buf = arr[ i ];
+			tmp.set(new Uint8Array(buf), position);
+			position += buf.byteLength;
+		}
+
+		return tmp.buffer;
+	}
+	
+	function readContent(file, cb) {
+		var chunkSize = 2 * 1024 * 1024,
+			chunks = Math.ceil(file.size / chunkSize),
+			chunk = 0,
+			ret = [],
+			blobSlice = file.mozSlice || file.webkitSlice || file.slice,
+			loadNext;
+
+		fr = fr || new FileReader;
+
+		loadNext = function() {
+			var start, end;
+
+			start = chunk * chunkSize;
+			end = start + chunkSize >= file.size ? file.size : start + chunkSize;
+
+			fr.onload = function( e ) {
+				ret.push( fr.result );
+				fr.result = null;
+			};
+
+			fr.onloadend = function() {
+				fr.onload = fr.onloadend = null;
+
+				if (++chunk < chunks) {
+					setTimeout( loadNext, 1 );
+				} else {
+					fr.readAsArrayBuffer(new Blob(['a'], {type:'text/plain'}));
+					cb( concatArrayBuffer( ret ) );
+					ret = loadNext = blobSlice = file = null;
+				}
+			};
+
+			fr.readAsArrayBuffer(blobSlice.call(file, start, end));
+		};
+
+		loadNext();
+	}
+
+	// function readContent2( file, cb ) {
+	// 	var fr = new FileReader;
+
+	// 	fr.onloadend = function() {
+	// 		// // ret = this.result;
+	// 		// console.timeEnd( 'read file content: ' + file.name );
+ //   //  		console.time( 'md5 content: ' + file.name );
+
+ //   //  		// console.log( md5( ret.result ) );
+
+ //   //  		console.timeEnd( 'md5 content: ' + file.name );
+
+ //   //  		fr.onloadend = null;
+ //   //  		fr.readAsBinaryString( new Blob() );
+ //    		// setTimeout(callback, 1);
+	// 	};
+
+	// 	// fr.onloadend = function() {
+	// 	// 	cb( ret );
+	// 	// };
+
+	// 	fr.readAsBinaryString( file );
+	// }
+	// 
+	
+    function Md5File( file, callback ) {
+    	console.time( 'read file content: ' + file.name );
+
+    	readContent( file, function( ret ) {
+    		console.timeEnd( 'read file content: ' + file.name );
+    		console.time( 'md5 content: ' + file.name );
+
+    		console.log( md5( ret ) );
+    		ret = null;
+
+    		console.timeEnd( 'md5 content: ' + file.name );
+    		setTimeout(callback, 1);
+    	});
+    }
+
+
+	function eachSeries(arr, iterator, callback) {
+        var len = arr.length;
+
+        callback = callback || function() {};
+        if (!arr.length) {
+            return callback();
+        }
+        var completed = 0;
+        var iterate = function() {
+            iterator(arr[completed], function(err) {
+                if (err) {
+                    callback(err);
+                    callback = function() {};
+                } else {
+                    completed += 1;
+                    if (completed >= len) {
+                        callback(null);
+                    } else {
+                        iterate();
+                    }
+                }
+            });
+        };
+        iterate();
+    }
+
+	input.addEventListener( 'change', function( e ) {
+		var files = e.target.files,
+			fn = arguments.callee;
+
+		console.time('All Done');
+		eachSeries( files, function( file, next ) {
+			Md5File( file, next );
+		}, function() {
+			console.timeEnd('All Done');
+			input.removeEventListener( 'change', fn );
+			fn = null;
+			// input.parentNode.removeChild(input);
+			// @todo
+		});
+	});
+
+})( document.getElementById('fileselect'));
+</script>
+</body>
+</html>

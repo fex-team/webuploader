@@ -1,0 +1,143 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
+<html lang="en">
+<head>
+	<meta http-equiv="Content-Type" content="text/html;charset=UTF-8">
+	<title>Md5 File Test</title>
+</head>
+<body>
+	<input type="file" id="fileselect" name="fileselect[]" multiple="multiple" />
+<!-- <script type="text/javascript" src="jkm_md5.js"></script> -->
+<!-- <script type="text/javascript" src="SparkMD5.js"></script> -->
+<script type="text/javascript" src="jkm_md5.js"></script>
+<!-- <script type="text/javascript" src="fast_md5.js"></script> -->
+<script type="text/javascript">
+(function( input ){
+
+	var fr;
+	
+	function readContent(file, cb) {
+		var chunkSize = 2 * 1024 * 1024,
+			chunks = Math.ceil(file.size / chunkSize),
+			chunk = 0,
+			ret = '',
+			blobSlice = file.mozSlice || file.webkitSlice || file.slice,
+			loadNext;
+
+		fr = fr || new FileReader;
+
+		loadNext = function() {
+			var start, end;
+
+			start = chunk * chunkSize;
+			end = start + chunkSize >= file.size ? file.size : start + chunkSize;
+
+			fr.onload = function( e ) {
+				ret += fr.result;
+				fr.result = null;
+			};
+
+			fr.onloadend = function() {
+				fr.onload = fr.onloadend = null;
+
+				if (++chunk < chunks) {
+					setTimeout( loadNext, 1 );
+				} else {
+					fr.readAsBinaryString(new Blob(['a'], {type:'text/plain'}));
+					cb( ret);
+					ret = loadNext = blobSlice = file = null;
+				}
+			};
+
+			fr.readAsBinaryString(blobSlice.call(file, start, end));
+		};
+
+		loadNext();
+	}
+
+	// function readContent2( file, cb ) {
+	// 	var fr = new FileReader;
+
+	// 	fr.onloadend = function() {
+	// 		// // ret = this.result;
+	// 		// console.timeEnd( 'read file content: ' + file.name );
+ //   //  		console.time( 'md5 content: ' + file.name );
+
+ //   //  		// console.log( md5( ret.result ) );
+
+ //   //  		console.timeEnd( 'md5 content: ' + file.name );
+
+ //   //  		fr.onloadend = null;
+ //   //  		fr.readAsBinaryString( new Blob() );
+ //    		// setTimeout(callback, 1);
+	// 	};
+
+	// 	// fr.onloadend = function() {
+	// 	// 	cb( ret );
+	// 	// };
+
+	// 	fr.readAsBinaryString( file );
+	// }
+	// 
+	
+    function Md5File( file, callback ) {
+    	console.time( 'read file content: ' + file.name );
+
+    	readContent( file, function( ret ) {
+    		console.timeEnd( 'read file content: ' + file.name );
+    		console.time( 'md5 content: ' + file.name );
+
+    		console.log( md5( ret ) );
+    		ret = null;
+
+    		console.timeEnd( 'md5 content: ' + file.name );
+    		setTimeout(callback, 1);
+    	});
+    }
+
+
+	function eachSeries(arr, iterator, callback) {
+        var len = arr.length;
+
+        callback = callback || function() {};
+        if (!arr.length) {
+            return callback();
+        }
+        var completed = 0;
+        var iterate = function() {
+            iterator(arr[completed], function(err) {
+                if (err) {
+                    callback(err);
+                    callback = function() {};
+                } else {
+                    completed += 1;
+                    if (completed >= len) {
+                        callback(null);
+                    } else {
+                        iterate();
+                    }
+                }
+            });
+        };
+        iterate();
+    }
+
+	input.addEventListener( 'change', function( e ) {
+		var files = e.target.files,
+			fn = arguments.callee;
+
+		console.time('All Done');
+		eachSeries( files, function( file, next ) {
+			Md5File( file, next );
+		}, function() {
+			console.timeEnd('All Done');
+			input.removeEventListener( 'change', fn );
+			fn = null;
+			// input.parentNode.removeChild(input);
+			// @todo
+		});
+	});
+
+})( document.getElementById('fileselect'));
+</script>
+</body>
+</html>
