@@ -1,0 +1,278 @@
+<!DOCTYPE html>
+<html lang="en">
+ 	<head>
+	    <!-- Meta, title, CSS, favicons, etc. -->
+	    <meta charset="utf-8">
+		<meta name="viewport" content="width=device-width, initial-scale=1.0">
+		<meta name="description" content="">
+		<meta name="author" content="">
+
+		<title>
+		  
+		    UPLOADER-EXPERIMENT-PERFORMANCE-PREVIEW-MEMORY
+		  
+		</title>
+
+		<!-- Bootstrap core CSS -->
+		<link href="../libs/bs/bootstrap.min.css" rel="stylesheet">
+		<style type="text/css">
+
+		.splitter{
+			margin: 45px 0;
+			background: -webkit-linear-gradient(left, rgba(0,0,0,0) 0%,rgba(0,0,0,0.25) 50%,rgba(0,0,0,0) 100%); 
+			height: 1px;
+		}
+		</style>
+	</head>
+
+	<body>
+		<div class="row">
+			<div class="col-lg-2"></div>
+			<div class="col-lg-8">
+				<div class="page-header">
+				  <h1>图片预览对比测试</h1>
+				</div>
+				<h4>readAsDataURL</h4>
+				<fieldset>
+				    <div class="form-group">
+				    	<div>
+				    		<p><label for="fileSelector">Select Files</label></p>
+					    	<p><input type="file" name="file" id="fileSelector2" multiple></p>
+				    	</div>
+				    	<div id="result2">
+				    		
+				    	</div>
+				    </div>
+				</fieldset>
+				<div class="splitter"></div>
+				<h4>URL.createObjectURL</h4>
+				<fieldset>
+				    <div class="form-group">
+				    	<div>
+				    		<p><label for="fileSelector">Select Files</label></p>
+					    	<p><input type="file" name="file" id="fileSelector3" multiple></p>
+				    	</div>
+				    	<div id="result3">
+				    		
+				    	</div>
+				    </div>
+				</fieldset>
+				<div class="splitter"></div>
+				<h4>readAsDataURL with resize</h4>
+				<fieldset>
+				    <div class="form-group">
+				    	<div>
+				    		<p><label for="fileSelector">Select Files</label></p>
+					    	<p><input type="file" name="file" id="fileSelector4" multiple></p>
+				    	</div>
+				    	<div id="result4">
+				    		
+				    	</div>
+				    </div>
+				</fieldset>
+				<div class="splitter"></div>
+				<h4>URL.createObjectURL with resize</h4>
+				<fieldset>
+				    <div class="form-group">
+				    	<div>
+				    		<p><label for="fileSelector">Select Files</label></p>
+					    	<p><input type="file" name="file" id="fileSelector5" multiple></p>
+				    	</div>
+				    	<div id="result5">
+				    		
+				    	</div>
+				    </div>
+				</fieldset>
+				<div class="splitter"></div>
+				<h4>readAsDataURL with web worker</h4>
+				<span class="label label-danger">web worker不允许使用canvas和image，无法直接压缩。但是后续可以考虑在webworker中实现二进制压缩。</span>
+				<div class="splitter"></div>
+			</div>
+			<div class="col-lg-2"></div>
+		</div>
+	</body>
+	<script>
+
+	window.URL = window.URL || window.webkitURL;
+
+	// readAsDataURL
+	var fs2 = document.getElementById( 'fileSelector2' );
+
+	fs2.addEventListener( 'change', function( e ){
+		var files = e.target.files;
+		var container = document.getElementById( 'result2' ); 
+
+		for (var i = 0, len = files.length; i < len; i++) {
+			var file = files[i];
+			var fr = new FileReader();
+
+			fr.onload = function( evt ) {
+				var img = new Image();
+
+				img.onload = function(){
+					img.style.height = '150px';
+
+					container.appendChild( img );
+
+					img.onload = null;
+					img = null;
+				};
+
+				img.className = 'img-thumbnail';
+				img.src = evt.target.result;
+			}
+
+			fr.readAsDataURL(file);
+		};
+	}, false );
+
+	// URL.createObjectURL
+	var fs3 = document.getElementById( 'fileSelector3' );
+
+	fs3.addEventListener( 'change', function( e ){
+  		var files = e.target.files;
+		var container = document.getElementById( 'result3' ); 
+
+		for (var i = 0, len = files.length; i < len; i++) {
+			var file = files[i];
+			var img = new Image();
+			img.src = URL.createObjectURL( file );
+			img.className = 'img-thumbnail';
+			img.style.height = '150px';
+
+			img.onload = function(){
+				URL.revokeObjectURL( this.src );
+				img.onload = null;
+				img = null;
+			};
+
+			container.appendChild( img );
+		};
+	}, false );
+
+	// readAsDataURL with resizer
+	function resizer( img, type, maxWidth, maxHeight, quality ) {
+		var w = img.width,
+			h = img.height,
+			r = w / h,
+			targetWidth,
+			targetHeight,
+			result;
+
+		if ( !maxWidth ) {
+			targetHeight = Math.min( maxHeight, h );
+			targetWidth = targetHeight * r;
+		}
+		else if ( !maxHeight ) {
+			targetWidth = Math.min( maxWidth, w );
+			targetHeight = targetWidth / r;
+		}
+
+		var canvas = document.createElement( 'canvas' );
+        canvas.width = targetWidth;
+        canvas.height = targetHeight;
+
+        var ctx = canvas.getContext( '2d' );
+        ctx.drawImage( img, 0, 0, targetWidth, targetHeight );
+
+        if ( type === 'image/jpeg') {
+        	result = canvas.toDataURL( 'image/jpeg', quality/100 );
+        }
+        else {
+        	result = canvas.toDataURL( 'image/png' );
+        }
+
+    	ctx.clearRect( 0, 0, canvas.width, canvas.height );
+    	canvas.width = canvas.height = 0;
+    	canvas = null;
+    	img = null;
+    	ctx = null;
+
+    	return result;
+	}
+
+	var fs4 = document.getElementById( 'fileSelector4' );
+
+	fs4.addEventListener( 'change', function( e ){
+		var files = e.target.files;
+		var container = document.getElementById( 'result4' ); 
+		var fr = new FileReader();
+		var i = 0;
+
+		function loadNext() {
+
+			if( i >= files.length ) {
+				return;
+			}
+
+			var file = files[i++];
+
+			fr.onload = function( evt ) {
+				var img = new Image();
+
+				
+				img.onload = function(){
+					img.onload = function(){
+						container.appendChild( img );
+					}
+
+					img.src = resizer( img, file.type, 0, 110, 90);
+				};
+
+				img.className = 'img-thumbnail';
+				
+				img.src = evt.target.result;
+				evt = null;
+				loadNext();
+			}
+
+			fr.readAsDataURL(file);
+
+		}
+
+		loadNext();
+
+	}, false );
+
+	var fs5 = document.getElementById( 'fileSelector5' );
+
+	fs5.addEventListener( 'change', function( e ){
+		var files = e.target.files;
+		var container = document.getElementById( 'result5' ); 
+		var i = 0;
+
+		function loadNext() {
+
+			if( i >= files.length ) {
+				return;
+			}
+
+			var file = files[i++];
+
+			var img = new Image();
+
+			img.onload = function(){
+				img.onload = function(){
+					container.appendChild( img );
+				}
+
+				URL.revokeObjectURL( img.src );
+
+				img.src = resizer( img, file.type, 0, 110, 90);
+
+			};
+
+			img.className = 'img-thumbnail';
+			
+			img.src = URL.createObjectURL( file );
+			
+			loadNext();
+
+		}
+
+		loadNext();
+
+	}, false );
+
+	</script>
+</html>
