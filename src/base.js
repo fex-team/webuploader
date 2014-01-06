@@ -34,7 +34,7 @@ define([
     }
 
     function bindFn( fn, context ) {
-        return fn.bind ? fn.bind( context ) : function() {
+        return Function.prototype.bind ? fn.bind( context ) : function() {
             return fn.apply( context, arguments );
         };
     }
@@ -252,7 +252,7 @@ define([
          * @method log
          */
         log: (function() {
-            if ( window.console.log ) {
+            if ( window.console ) {
                 return bindFn( console.log, console );
             }
             return noop;

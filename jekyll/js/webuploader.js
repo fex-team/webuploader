@@ -117,7 +117,7 @@
         }
     
         function bindFn( fn, context ) {
-            return fn.bind ? fn.bind( context ) : function() {
+            return Function.prototype.bind ? fn.bind( context ) : function() {
                 return fn.apply( context, arguments );
             };
         }
@@ -335,7 +335,7 @@
              * @method log
              */
             log: (function() {
-                if ( window.console.log ) {
+                if ( window.console ) {
                     return bindFn( console.log, console );
                 }
                 return noop;
@@ -450,10 +450,9 @@
         }
     
         function eachEvent( events, callback, iterator ) {
-    
             // 不支持对象，只支持多个event用空格隔开
-            (events || '').split( separator ).forEach(function( type ) {
-                iterator( type, callback );
+            $.each( (events || '').split( separator ), function( _, key ) {
+                iterator( key, callback );
             });
         }
     
@@ -1123,12 +1122,10 @@
     
             Blob.apply( this, arguments );
             this.name = file.name || ('untitled' + uid++);
+            ext = rExt.exec( file.name ) ? RegExp.$1.toLowerCase() : '';
     
-            if ( !this.type ) {
-                ext = rExt.exec( file.name ) ? RegExp.$1.toLowerCase() : '';
-                if ( ~'jpg,jpeg,png,gif,bmp'.indexOf( ext ) ) {
-                    this.type = 'image/' + ext;
-                }
+            if ( !this.type &&  ~'jpg,jpeg,png,gif,bmp'.indexOf( ext ) ) {
+                this.type = 'image/' + ext;
             }
     
             this.ext = ext;
@@ -1302,10 +1299,11 @@
             },
     
             /**
-             * @class Uploader
+             * 发送命令。当传入`callback`或者`handler`中返回`promise`时。返回一个当所有`handler`中的promise都完成后完成的新`promise`。
              * @method request
              * @grammar request( command, args ) => * | Promise
              * @grammar request( command, args, callback ) => Promise
+             * @for  Uploader
              */
             request: function() {
                 return this.owner.request.apply( this.owner, arguments );
@@ -4026,7 +4024,7 @@
         return Uploader.register({
             init: function( opts ) {
     
-                if ( !opts.dnd || this.request('get-runtime-type') !== 'html5' ) {
+                if ( !opts.dnd || this.request('predict-runtime-type') !== 'html5' ) {
                     return;
                 }
     
@@ -4062,14 +4060,14 @@
     ], function( Base, Uploader, FilePaste ) {
     
         /**
-         * @property {Selector} [paste=undefined]  指定监听paste事件的容器，如果不指定，不启用此功能。此功能粘贴添加截屏的图片。
+         * @property {Selector} [paste=undefined]  指定监听paste事件的容器，如果不指定，不启用此功能。此功能为通过粘贴来添加截屏的图片。建议设置为`document.body`.
          * @namespace options
          * @for Uploader
          */
         return Uploader.register({
             init: function( opts ) {
     
-                if ( !opts.paste || this.request('get-runtime-type') !== 'html5' ) {
+                if ( !opts.paste || this.request('predict-runtime-type') !== 'html5' ) {
                     return;
                 }
     
@@ -4133,7 +4131,37 @@
     
         $.extend( Uploader.options, {
     
-            // 配置生成缩略图的选项。
+            /**
+             * @property {Object} [thumb]
+             * @namespace options
+             * @for Uploader
+             * @description 配置生成缩略图的选项。
+             *
+             * 默认为：
+             *
+             * ```javascript
+             * {
+             *     width: 110,
+             *     height: 110,
+             *
+             *     // 图片质量，只有type为`image/jpeg`的时候才有效。
+             *     quality: 70,
+             *
+             *     // 是否允许放大，如果想要生成小图的时候不失真，此选项应该设置为false.
+             *     allowMagnify: true,
+             *
+             *     // 是否允许裁剪。
+             *     crop: true,
+             *
+             *     // 是否保留头部meta信息。
+             *     preserveHeaders: false,
+             *
+             *     // 为空的话则保留原有图片格式。
+             *     // 否则强制转换成指定的类型。
+             *     type: 'image/jpeg'
+             * }
+             * ```
+             */
             thumb: {
                 width: 110,
                 height: 110,
@@ -4147,7 +4175,33 @@
                 type: 'image/jpeg'
             },
     
-            // 配置压缩的图片的选项。
+            /**
+             * @property {Object} [compress]
+             * @namespace options
+             * @for Uploader
+             * @description 配置压缩的图片的选项。如果此选项为`false`, 则图片在上传前不进行压缩。
+             *
+             * 默认为：
+             *
+             * ```javascript
+             * {
+             *     width: 1600,
+             *     height: 1600,
+             *
+             *     // 图片质量，只有type为`image/jpeg`的时候才有效。
+             *     quality: 90,
+             *
+             *     // 是否允许放大，如果想要生成小图的时候不失真，此选项应该设置为false.
+             *     allowMagnify: false,
+             *
+             *     // 是否允许裁剪。
+             *     crop: false,
+             *
+             *     // 是否保留头部meta信息。
+             *     preserveHeaders: true
+             * }
+             * ```
+             */
             compress: {
                 width: 1600,
                 height: 1600,
@@ -4163,6 +4217,29 @@
             'before-send-file': 'compressImage'
         }, {
     
+    
+            /**
+             * 生成缩略图，此过程为异步，所以需要传入`callback`。
+             * 通常情况在图片加入队里后调用此方法来生成预览图以增强交互效果。
+             * @method makeThumb
+             * @grammar makeThumb( file, cb ) => undefined
+             * @grammar makeThumb( file, cb, width, height ) => undefined
+             * @for Uploader
+             * @example
+             *
+             * uploader.on( 'fileQueued', function( file ) {
+             *     var $li = ...;
+             *
+             *     uploader.makeThumb( file, function( error, ret ) {
+             *         if ( error ) {
+             *             $li.text('预览错误');
+             *         } else {
+             *             $li.append('<img alt="" src="' + ret + '" />');
+             *         }
+             *     });
+             *
+             * });
+             */
             makeThumb: function( file, cb, width, height ) {
                 var opts, image;
     
@@ -4283,13 +4360,6 @@
         var $ = Base.$,
             Status = WUFile.Status;
     
-        /**
-         * @event beforeFileQueued
-         * @param {File} file File对象
-         * @description 当文件被加入队列之前触发，此事件的handler返回值为`undefeined`，则此文件不会被添加进入队列。
-         * @for  Uploader
-         */
-    
         return Uploader.register({
             'add-file': 'addFiles',
             'get-file': 'getFile',
@@ -4329,6 +4399,21 @@
                 this.stats = this.queue.stats;
             },
     
+            /**
+             * @event beforeFileQueued
+             * @param {File} file File对象
+             * @description 当文件被加入队列之前触发，此事件的handler返回值为`false`，则此文件不会被添加进入队列。
+             * @for  Uploader
+             */
+    
+            /**
+             * @event fileQueued
+             * @param {File} file File对象
+             * @description 当文件被加入队列以后触发。
+             * @for  Uploader
+             */
+    
+    
             _addFile: function( file ) {
                 var me = this;
     
@@ -4354,6 +4439,12 @@
                 return this.queue.getFile( fileId );
             },
     
+            /**
+             * @event filesQueued
+             * @param {File} files 数组，内容为原始File(lib/File）对象。
+             * @description 当一批文件添加进队列以后触发。
+             * @for  Uploader
+             */
             addFiles: function( files ) {
                 var me = this;
     
@@ -4376,6 +4467,26 @@
                 return this.stats;
             },
     
+            /**
+             * @event fileDequeued
+             * @param {File} file File对象
+             * @description 当文件被移除队列后触发。
+             * @for  Uploader
+             */
+    
+            /**
+             * @method removeFile
+             * @grammar removeFile( file ) => undefined
+             * @grammar removeFile( id ) => undefined
+             * @param {File|id} file File对象或这File对象的id
+             * @description 移除某一文件。
+             * @for  Uploader
+             * @example
+             *
+             * $li.on('click', '.remove-this', function() {
+             *     uploader.removeFile( file );
+             * })
+             */
             removeFile: function( file ) {
                 var me = this;
     
@@ -4385,6 +4496,16 @@
                 me.owner.trigger( 'fileDequeued', file );
             },
     
+            /**
+             * @method getFiles
+             * @grammar getFiles() => Array
+             * @grammar getFiles( status1, status2, status... ) => Array
+             * @description 返回指定状态的文件集合，不传参数将返回所有状态的文件。
+             * @for  Uploader
+             * @example
+             * console.log( uploader.getFiles() );    // => all files
+             * console.log( uploader.getFiles('error') )    // => all error files.
+             */
             getFiles: function() {
                 return this.queue.getFiles.apply( this.queue, arguments );
             },
@@ -4393,6 +4514,17 @@
                 return this.queue.fetch.apply( this.queue, arguments );
             },
     
+            /**
+             * @method retry
+             * @grammar retry() => undefined
+             * @grammar retry( file ) => undefined
+             * @description 重试上传，重试指定文件，或者从出错的文件开始重新上传。
+             * @for  Uploader
+             * @example
+             * function retry() {
+             *     uploader.retry();
+             * }
+             */
             retry: function( file, noForceStart ) {
                 var me = this,
                     files, i, len;
@@ -4433,16 +4565,22 @@
         };
     
         return Uploader.register({
-            'get-runtime-type': 'getRuntmeType'
+            'predict-runtime-type': 'predictRuntmeType'
         }, {
     
             init: function() {
-                if ( !this.getRuntmeType() ) {
+                if ( !this.predictRuntmeType() ) {
                     throw Error('Runtime Error');
                 }
             },
     
-            getRuntmeType: function() {
+            /**
+             * 预测Uploader将采用哪个`Runtime`
+             * @grammar predictRuntmeType() => String
+             * @method predictRuntmeType
+             * @for  Uploader
+             */
+            predictRuntmeType: function() {
                 var orders = this.options.runtimeOrder || Runtime.orders,
                     type = this.type,
                     i, len;
@@ -4481,21 +4619,47 @@
         // 添加默认配置项
         $.extend( Uploader.options, {
     
-            // 是否允许在文件传输时提前把下一个文件准备好。
-            // 对于一个文件的准备工作比较耗时，比如图片压缩，md5序列化。
-            // 如果能提前在当前文件传输期处理，可以节省总体耗时。
+    
+            /**
+             * @property {Boolean} [prepareNextFile=false]
+             * @namespace options
+             * @for Uploader
+             * @description 是否允许在文件传输时提前把下一个文件准备好。
+             * 对于一个文件的准备工作比较耗时，比如图片压缩，md5序列化。
+             * 如果能提前在当前文件传输期处理，可以节省总体耗时。
+             */
             prepareNextFile: false,
     
-            // 是否要分片
+            /**
+             * @property {Boolean} [chunked=false]
+             * @namespace options
+             * @for Uploader
+             * @description 是否要分片处理大文件上传。
+             */
             chunked: false,
     
-            // 如果要分片，分多大一片？
+            /**
+             * @property {Boolean} [chunkSize=5242880]
+             * @namespace options
+             * @for Uploader
+             * @description 如果要分片，分多大一片？ 默认大小为5M.
+             */
             chunkSize: 5 * 1024 * 1024,
     
-            // 如果某个分片由于网络问题出错，允许自动重传多少次？
+            /**
+             * @property {Boolean} [chunkRetry=2]
+             * @namespace options
+             * @for Uploader
+             * @description 如果某个分片由于网络问题出错，允许自动重传多少次？
+             */
             chunkRetry: 2,
     
-            // 上传并发数。
+            /**
+             * @property {Boolean} [threads=3]
+             * @namespace options
+             * @for Uploader
+             * @description 上传并发数。允许同时最大上传进程数。
+             */
             threads: 3
         });
     
@@ -4572,6 +4736,18 @@
                 });
             },
     
+            /**
+             * @event startUpload
+             * @description 当开始上传流程时触发。
+             * @for  Uploader
+             */
+    
+            /**
+             * 开始上传。此方法可以从初始状态调用开始上传流程，也可以从暂停状态调用，继续上传流程。
+             * @grammar upload() => undefined
+             * @method upload
+             * @for  Uploader
+             */
             start: function() {
                 var me = this;
     
@@ -4602,6 +4778,19 @@
                 Base.nextTick( me.__tick );
             },
     
+            /**
+             * @event stopUpload
+             * @description 当开始上传流程暂停时触发。
+             * @for  Uploader
+             */
+    
+            /**
+             * 暂停上传。第一个参数为是否中断上传当前正在上传的文件。
+             * @grammar stop() => undefined
+             * @grammar stop( true ) => undefined
+             * @method stop
+             * @for  Uploader
+             */
             stop: function( interrupt ) {
                 var me = this;
     
@@ -4619,6 +4808,12 @@
                 me.owner.trigger('stopUpload');
             },
     
+            /**
+             * 判断`Uplaode`r是否正在上传中。
+             * @grammar isInProgress() => Boolean
+             * @method isInProgress
+             * @for  Uploader
+             */
             isInProgress: function() {
                 return !!this.runing;
             },
@@ -4627,6 +4822,12 @@
                 return this.request('get-stats');
             },
     
+            /**
+             * 掉过一个文件上传，直接标记指定文件为已上传状态。
+             * @grammar skipFile( file ) => undefined
+             * @method skipFile
+             * @for  Uploader
+             */
             skipFile: function( file, status ) {
                 file = this.request( 'get-file', file );
     
@@ -4647,6 +4848,11 @@
                 this.owner.trigger( 'uploadSkip', file );
             },
     
+            /**
+             * @event uploadFinished
+             * @description 当文件上传结束时触发。
+             * @for  Uploader
+             */
             _tick: function() {
                 var me = this,
                     opts = me.options,
@@ -4812,6 +5018,36 @@
                     }
                 });
             },
+    
+            /**
+             * @event uploadProgress
+             * @param {File} file File对象
+             * @param {Number} percentage 上传进度
+             * @description 上传过程中触发，携带上传进度。
+             * @for  Uploader
+             */
+    
+            /**
+             * @event uploadError
+             * @param {File} file File对象
+             * @param {String} reason 出错的code
+             * @description 当文件上传出错时触发。
+             * @for  Uploader
+             */
+    
+            /**
+             * @event uploadSuccess
+             * @param {File} file File对象
+             * @description 当文件上传成功时触发。
+             * @for  Uploader
+             */
+    
+            /**
+             * @event uploadComplete
+             * @param {File} [file] File对象
+             * @description 不管成功或者失败，文件上传完成时触发。
+             * @for  Uploader
+             */
     
             // 做上传操作。
             _doSend: function( block ) {
@@ -4991,7 +5227,12 @@
             }
         });
     
-        // 验证文件总数量
+        /**
+         * @property {int} [fileNumLimit=undefined]
+         * @namespace options
+         * @for Uploader
+         * @description 验证文件总数量, 超出则不允许加入队列。
+         */
         api.addValidator( 'fileNumLimit', function() {
             var uploader = this,
                 opts = uploader.options,
@@ -5026,7 +5267,12 @@
         });
     
     
-        // 验证文件总大小是否超出限制
+        /**
+         * @property {int} [fileSizeLimit=undefined]
+         * @namespace options
+         * @for Uploader
+         * @description 验证文件总大小是否超出限制, 超出则不允许加入队列。
+         */
         api.addValidator( 'fileSizeLimit', function() {
             var uploader = this,
                 opts = uploader.options,
@@ -5061,7 +5307,12 @@
             });
         });
     
-        // 验证单个文件大小是否超出限制
+        /**
+         * @property {int} [fileSingleSizeLimit=undefined]
+         * @namespace options
+         * @for Uploader
+         * @description 验证单个文件大小是否超出限制, 超出则不允许加入队列。
+         */
         api.addValidator( 'fileSingleSizeLimit', function() {
             var uploader = this,
                 opts = uploader.options,
@@ -5078,7 +5329,12 @@
             });
         });
     
-        // 去重， 根据文件名字、文件大小和最后修改时间来生成hash Key.
+        /**
+         * @property {int} [duplicate=undefined]
+         * @namespace options
+         * @for Uploader
+         * @description 去重， 根据文件名字、文件大小和最后修改时间来生成hash Key.
+         */
         api.addValidator( 'duplicate', function() {
             var uploader = this,
                 opts = uploader.options,
