@@ -11,7 +11,7 @@ commentIssueId: 82
 
 直接下载本站默认打包版本，下载包中包含`源码版本`和`压缩版本`。
 
-<a class="btn btn-success" href="{{site.baseurl}}/webuploader_1.0.zip">下载1.0版本</a>
+<a class="btn btn-success" href="https://github.com/gmuteam/webuploader/releases/download/v0.1.0/webuploader-0.1.0-dist.zip">下载1.0版本</a>
 
 或者直接使用cdn版本，
 
