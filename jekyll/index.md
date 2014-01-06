@@ -15,6 +15,12 @@ title: Web Uploader
             &nbsp;&nbsp;
             <a class="btn btn-success btn-lg" href="{{site.baseurl}}/download.html" role="button">&nbsp;&nbsp;&nbsp;&nbsp;下载&nbsp;&nbsp;&nbsp;&nbsp;</a>
         </p>
+        <div class="github-btns">
+            <iframe src="http://ghbtns.com/github-btn.html?user=gmuteam&repo=webuploader&type=watch&count=true"
+  allowtransparency="true" frameborder="0" scrolling="0" width="100" height="20"></iframe>
+            <iframe src="http://ghbtns.com/github-btn.html?user=gmuteam&repo=webuploader&type=fork&count=true"
+  allowtransparency="true" frameborder="0" scrolling="0" width="100" height="20"></iframe>
+        </div>
     </div>
 </div>
 
