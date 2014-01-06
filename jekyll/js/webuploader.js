@@ -117,7 +117,7 @@
         }
     
         function bindFn( fn, context ) {
-            return fn.bind ? fn.bind( context ) : function() {
+            return Function.prototype.bind ? fn.bind( context ) : function() {
                 return fn.apply( context, arguments );
             };
         }
@@ -450,10 +450,9 @@
         }
     
         function eachEvent( events, callback, iterator ) {
-    
             // 不支持对象，只支持多个event用空格隔开
-            (events || '').split( separator ).forEach(function( type ) {
-                iterator( type, callback );
+            $.each( (events || '').split( separator ), function( _, key ) {
+                iterator( key, callback );
             });
         }
     
