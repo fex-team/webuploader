@@ -16,7 +16,7 @@ define([
     }, {
 
         init: function() {
-            if ( !this.getRuntmeType() ) {
+            if ( !this.predictRuntmeType() ) {
                 throw Error('Runtime Error');
             }
         },

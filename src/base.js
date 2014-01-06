@@ -252,7 +252,7 @@ define([
          * @method log
          */
         log: (function() {
-            if ( window.console.log ) {
+            if ( window.console ) {
                 return bindFn( console.log, console );
             }
             return noop;
