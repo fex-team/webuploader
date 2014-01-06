@@ -1,23 +1,26 @@
 body {
     margin-top: 50px;
     font-size: 16px;
-    font-family:'Myriad Pro', Calibri, Helvetica, Arial, sans-serif;
+    font-family: "Myriad Pro", "Hiragino Sans GB","Microsoft YaHei","微软雅黑", Calibri, Helvetica, tahoma,arial,simsun,"宋体", sans-serif;
     line-height: 1.5;
     -webkit-font-smoothing: antialiased;
 }
 
 .jumbotron {
-    background: transparent url(../images/banner.jpg) no-repeat 50% 0%;
+    background: transparent url(../images/banner.jpg) repeat-x 50% 0%;
     color: #fff;
     text-shadow: 1px 1px 1px #3b3262;
     margin-bottom: 0;
-    position: relative;
+}
+
+.jumbotron .container {
+   position: relative;
 }
 
 .jumbotron .github-btns {
     position: absolute;
-    bottom: 50px;
-    right: 60px;
+    bottom: 0;
+    right: 0;
 }
 
 .fetature {
