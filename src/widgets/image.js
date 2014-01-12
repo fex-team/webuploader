@@ -127,9 +127,18 @@ define([
         /**
          * 生成缩略图，此过程为异步，所以需要传入`callback`。
          * 通常情况在图片加入队里后调用此方法来生成预览图以增强交互效果。
+         *
+         * `callback`中可以接收到两个参数。
+         * * 第一个为error，如果生成缩略图有错误，此error将为真。
+         * * 第二个为ret, 缩略图的Data URL值。
+         *
+         * **注意**
+         * Date URL在IE6/7中不支持，所以不用调用此方法了，直接显示一张暂不支持预览图片好了。
+         *
+         *
          * @method makeThumb
-         * @grammar makeThumb( file, cb ) => undefined
-         * @grammar makeThumb( file, cb, width, height ) => undefined
+         * @grammar makeThumb( file, callback ) => undefined
+         * @grammar makeThumb( file, callback, width, height ) => undefined
          * @for Uploader
          * @example
          *
