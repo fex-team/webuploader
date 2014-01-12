@@ -18,7 +18,7 @@ define([
             tick = function() {
                 var item;
 
-                while( waiting.length && occupied < max ) {
+                while ( waiting.length && occupied < max ) {
                     item = waiting.shift();
                     occupied += item[ 0 ];
                     item[ 1 ]();
@@ -26,13 +26,13 @@ define([
             };
 
         return function( emiter, size, cb ) {
-            waiting.push( [ size, cb ] );
+            waiting.push([ size, cb ]);
             emiter.once( 'destroy', function() {
                 occupied -= size;
                 setTimeout( tick, 1 );
-            } );
+            });
             setTimeout( tick, 1 );
-        }
+        };
     })( 5 * 1024 * 1024 );
 
     $.extend( Uploader.options, {
@@ -166,7 +166,7 @@ define([
                 return;
             }
 
-            opts = $.extend( {}, this.options.thumb );
+            opts = $.extend({}, this.options.thumb );
 
             // 如果传入的是object.
             if ( $.isPlainObject( width ) ) {
@@ -216,7 +216,7 @@ define([
                 return;
             }
 
-            opts = $.extend( {}, opts );
+            opts = $.extend({}, opts );
             deferred = Base.Deferred();
 
             image = new Image( opts );

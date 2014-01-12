@@ -14,8 +14,8 @@ define([
         RuntimeClient.call( this, 'Image' );
 
         this.on( 'load', function() {
-            this._info = this.exec( 'info' );
-            this._meta = this.exec( 'meta' );
+            this._info = this.exec('info');
+            this._meta = this.exec('meta');
         });
     }
 

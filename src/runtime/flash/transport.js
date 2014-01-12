@@ -20,7 +20,7 @@ define([
                 xhr = this._initAjax(),
                 blob = owner._blob,
                 server = opts.server,
-                formData, binary;
+                binary;
 
             xhr.connectRuntime( blob.ruid );
 
@@ -73,15 +73,14 @@ define([
 
         _initAjax: function() {
             var me = this,
-                xhr = new RuntimeClient('XMLHttpRequest'),
-                opts = this.options;
+                xhr = new RuntimeClient('XMLHttpRequest');
 
             xhr.on( 'uploadprogress progress', function( e ) {
                 return me.trigger( 'progress', e.loaded / e.total );
             });
 
-            xhr.on( 'load', function( e ) {
-                var status = xhr.exec( 'getStatus' );
+            xhr.on( 'load', function() {
+                var status = xhr.exec('getStatus');
 
                 xhr.off();
                 me._xhr = null;

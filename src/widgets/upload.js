@@ -361,9 +361,9 @@ define([
                 });
 
                 // befeore-send-file的钩子就有错误发生。
-                promise.fail( function( reason ) {
+                promise.fail(function( reason ) {
                     file.setStatus( Status.ERROR, reason );
-                    me.owner.trigger( 'uploadError', file, type );
+                    me.owner.trigger( 'uploadError', file, reason );
                     me.owner.trigger( 'uploadComplete', file );
                 });
 

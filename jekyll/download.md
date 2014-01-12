@@ -7,20 +7,6 @@ weight : 5
 hideTitle: true
 commentIssueId: 82
 ---
-## 下载
-
-直接下载本站默认打包版本，下载包中包含`源码版本`和`压缩版本`。
-
-<a class="btn btn-success" href="https://github.com/gmuteam/webuploader/releases/download/v0.1.0/webuploader-0.1.0-dist.zip">下载1.0版本</a>
-
-或者直接使用cdn版本，
-
-```html
-<!-- cdn正在申请中... -->
-```
-
-或者下载[Git项目包](https://github.com/gmuteam/webuploader/zipball/master)。
-
 ## 包内容
 
 下载包中包含以下文件
@@ -39,6 +25,35 @@ commentIssueId: 82
 
 ├── webuploader.withoutimage.js       // 去除图片处理的版本，包括HTML5和FLASH.
 └── webuploader.withoutimage.min.js   // min版本
+```
+
+## 下载
+
+直接下载本站默认打包版本，下载包中包含`源码版本`和`压缩版本`。
+
+<a class="btn btn-success" href="https://github.com/gmuteam/webuploader/releases/download/v0.1.0/webuploader-0.1.0-dist.zip">下载1.0版本</a>
+
+或者直接使用由[staticfile](http://www.staticfile.org/)提供的cdn版本，或者下载[Git项目包](https://github.com/gmuteam/webuploader/zipball/master)。
+
+```html
+// SWF文件，当使用Flash运行时需要引入。
+├── http://cdn.staticfile.org/webuploader/0.1.0/Uploader.swf
+
+// 完全版本。
+├── http://cdn.staticfile.org/webuploader/0.1.0/webuploader.js
+├── http://cdn.staticfile.org/webuploader/0.1.0/webuploader.min.js
+
+// 只有Flash实现的版本。
+├── http://cdn.staticfile.org/webuploader/0.1.0/webuploader.flashonly.js
+├── http://cdn.staticfile.org/webuploader/0.1.0/webuploader.flashonly.min.js
+
+// 只有Html5实现的版本。
+├── http://cdn.staticfile.org/webuploader/0.1.0/webuploader.html5only.js
+├── http://cdn.staticfile.org/webuploader/0.1.0/webuploader.html5only.min.js
+
+// 去除图片处理的版本，包括HTML5和FLASH.
+├── http://cdn.staticfile.org/webuploader/0.1.0/webuploader.withoutimage.js
+└── http://cdn.staticfile.org/webuploader/0.1.0/webuploader.withoutimage.min.js
 ```
 
 ## DIY打包
