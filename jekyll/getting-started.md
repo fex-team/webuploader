@@ -29,13 +29,6 @@ bannerContents:
 
 <!--SWF在初始化的时候指定，在后面将展示-->
 ```
-
-您可以[下载]({{site.baseurl}}/download.html)本站默认包，或者直接使用由[staticfile.org](http://www.staticfile.org)提供的在线文件。
-
-```html
-<!-- cdn正在申请中... -->
-```
-
 ## 文件上传
 
 WebUploader只包含文件上传的底层实现，不包括UI部分。所以交互方面可以自由发挥，以下将演示如何去实现一个简单的版本。
