@@ -236,7 +236,7 @@ module.exports = function(grunt) {
     grunt.loadTasks( 'build/tasks' );
 
     // Default task(s).
-    grunt.registerTask( 'default', [ 'jsbint:all', 'concat:all' ] );
+    grunt.registerTask( 'default', [ 'jsbint:all', 'dist' ] );
     grunt.registerTask( 'dist', [ 'concat' ] );
     grunt.registerTask( 'deploy', [ 'doc', 'jekyll', 'gh-pages' ] );
 };

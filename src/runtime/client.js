@@ -119,7 +119,7 @@ define([
                 destroy && destroy.apply( this, arguments );
                 this.trigger('destroy');
                 this.off();
-                this.exec( 'destroy' );
+                this.exec('destroy');
                 this.disconnectRuntime();
             };
         })( this.destroy );

@@ -51,7 +51,7 @@ define([
             });
 
             parent.append( container );
-            parent.addClass( 'webuploader-container' );
+            parent.addClass('webuploader-container');
             this._container = container;
             return container;
         },

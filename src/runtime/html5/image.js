@@ -14,7 +14,7 @@ define([
         // flag: 标记是否被修改过。
         modified: false,
 
-        init: function( opts ) {
+        init: function() {
             var me = this,
                 img = new Image();
 
@@ -192,12 +192,12 @@ define([
             x = (cvs.width - w) / 2;
             y = (cvs.height - h) / 2;
 
-            opts.preserveHeaders || this._rotateToOrientaion( cvs, orientation );
+            opts.preserveHeaders || this._rotate2Orientaion( cvs, orientation );
 
             this._renderImageToCanvas( cvs, img, x, y, w, h );
         },
 
-        _rotateToOrientaion: function( canvas, orientation ) {
+        _rotate2Orientaion: function( canvas, orientation ) {
             var width = canvas.width,
                 height = canvas.height,
                 ctx = canvas.getContext('2d');

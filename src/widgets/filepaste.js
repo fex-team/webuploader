@@ -16,7 +16,8 @@ define([
     return Uploader.register({
         init: function( opts ) {
 
-            if ( !opts.paste || this.request('predict-runtime-type') !== 'html5' ) {
+            if ( !opts.paste ||
+                    this.request('predict-runtime-type') !== 'html5' ) {
                 return;
             }
 
