@@ -56,10 +56,10 @@
         <div class="col-md-3">
             <div class="post-toc"><ul class="nav">
 <li>
-<a href="#toc_0">下载</a>
+<a href="#toc_0">包内容</a>
 </li>
 <li>
-<a href="#toc_1">包内容</a>
+<a href="#toc_1">下载</a>
 </li>
 <li>
 <a href="#toc_2">DIY打包</a>
@@ -83,18 +83,7 @@
             
 
             <div class="page-container">
-                <h2 id="toc_0">下载</h2>
-
-<p>直接下载本站默认打包版本，下载包中包含<code>源码版本</code>和<code>压缩版本</code>。</p>
-
-<p><a class="btn btn-success" href="https://github.com/gmuteam/webuploader/releases/download/v0.1.0/webuploader-0.1.0-dist.zip">下载1.0版本</a></p>
-
-<p>或者直接使用cdn版本，</p>
-<div class="highlight"><pre><code class="html language-html" data-lang="html"><span class="c">&lt;!-- cdn正在申请中... --&gt;</span>
-</code></pre></div>
-<p>或者下载<a href="https://github.com/gmuteam/webuploader/zipball/master">Git项目包</a>。</p>
-
-<h2 id="toc_1">包内容</h2>
+                <h2 id="toc_0">包内容</h2>
 
 <p>下载包中包含以下文件</p>
 <div class="highlight"><pre><code class="text language-text" data-lang="text">├── Uploader.swf                      // SWF文件，当使用Flash运行时需要引入。
@@ -110,6 +99,32 @@
 
 ├── webuploader.withoutimage.js       // 去除图片处理的版本，包括HTML5和FLASH.
 └── webuploader.withoutimage.min.js   // min版本
+</code></pre></div>
+<h2 id="toc_1">下载</h2>
+
+<p>直接下载本站默认打包版本，下载包中包含<code>源码版本</code>和<code>压缩版本</code>。</p>
+
+<p><a class="btn btn-success" href="https://github.com/gmuteam/webuploader/releases/download/v0.1.0/webuploader-0.1.0-dist.zip">下载1.0版本</a></p>
+
+<p>或者直接使用由<a href="http://www.staticfile.org/">staticfile</a>提供的cdn版本，或者下载<a href="https://github.com/gmuteam/webuploader/zipball/master">Git项目包</a>。</p>
+<div class="highlight"><pre><code class="html language-html" data-lang="html">// SWF文件，当使用Flash运行时需要引入。
+├── http://cdn.staticfile.org/webuploader/0.1.0/Uploader.swf
+
+// 完全版本。
+├── http://cdn.staticfile.org/webuploader/0.1.0/webuploader.js
+├── http://cdn.staticfile.org/webuploader/0.1.0/webuploader.min.js
+
+// 只有Flash实现的版本。
+├── http://cdn.staticfile.org/webuploader/0.1.0/webuploader.flashonly.js
+├── http://cdn.staticfile.org/webuploader/0.1.0/webuploader.flashonly.min.js
+
+// 只有Html5实现的版本。
+├── http://cdn.staticfile.org/webuploader/0.1.0/webuploader.html5only.js
+├── http://cdn.staticfile.org/webuploader/0.1.0/webuploader.html5only.min.js
+
+// 去除图片处理的版本，包括HTML5和FLASH.
+├── http://cdn.staticfile.org/webuploader/0.1.0/webuploader.withoutimage.js
+└── http://cdn.staticfile.org/webuploader/0.1.0/webuploader.withoutimage.min.js
 </code></pre></div>
 <h2 id="toc_2">DIY打包</h2>
 
