@@ -171,6 +171,16 @@ body {
     border-right: 1px solid #563d7c;
 }
 
+.friends-links {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+.weixin-img {
+  width: 129px;
+}
+
 
 /********************************
 *
