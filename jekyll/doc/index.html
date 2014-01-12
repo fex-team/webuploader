@@ -765,6 +765,42 @@ var uploader = WebUploader.Uploader({
         </tr>
         
         <tr>
+            <td><code>uploadStart</code></td>
+            <td class="events-tb-desc">
+                
+                <ul class="params-list"><li><span class="meta"><code>file</code> {File}</span><p>File对象</p>
+</li></ul>
+                
+            </td>
+            <td><p>某个文件开始上传前触发。</p>
+</td>
+        </tr>
+        
+        <tr>
+            <td><code>uploadBeforeSend</code></td>
+            <td class="events-tb-desc">
+                
+                <ul class="params-list"><li><span class="meta"><code>object</code> {Object}</span></li><li><span class="meta"><code>data</code> {Object}</span><p>默认的上传参数，可以扩展此对象来控制上传参数。</p>
+</li></ul>
+                
+            </td>
+            <td><p>但请求再发送前触发。</p>
+</td>
+        </tr>
+        
+        <tr>
+            <td><code>uploadAccept</code></td>
+            <td class="events-tb-desc">
+                
+                <ul class="params-list"><li><span class="meta"><code>object</code> {Object}</span></li><li><span class="meta"><code>ret</code> {Object}</span><p>服务端的返回数据，json格式，如果服务端不是json格式，从ret._raw中取数据，自行解析。</p>
+</li></ul>
+                
+            </td>
+            <td><p>当某个文件上传到服务端响应后，会派送此事件来询问服务端响应是否有效。如果此事件handler返回值为<code>false</code>, 则此文件将派送<code>server</code>类型的<code>uploadError</code>事件。</p>
+</td>
+        </tr>
+        
+        <tr>
             <td><code>uploadProgress</code></td>
             <td class="events-tb-desc">
                 
@@ -952,11 +988,11 @@ uploader.addButton({
     
     <ul class="signature">
         
-        <li>makeThumb( file, cb ) 
+        <li>makeThumb( file, callback ) 
             <span class="return">⇒  undefined</span>
             
         </li>
-        <li>makeThumb( file, cb, width, height ) 
+        <li>makeThumb( file, callback, width, height ) 
             <span class="return">⇒  undefined</span>
             
         </li>
@@ -967,6 +1003,13 @@ uploader.addButton({
 
     <p>生成缩略图，此过程为异步，所以需要传入<code>callback</code>。
 通常情况在图片加入队里后调用此方法来生成预览图以增强交互效果。</p>
+<p><code>callback</code>中可以接收到两个参数。</p>
+<ul>
+<li>第一个为error，如果生成缩略图有错误，此error将为真。</li>
+<li>第二个为ret, 缩略图的Data URL值。</li>
+</ul>
+<p><strong>注意</strong>
+Date URL在IE6/7中不支持，所以不用调用此方法了，直接显示一张暂不支持预览图片好了。</p>
 
     
         

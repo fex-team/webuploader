@@ -326,6 +326,13 @@ define([
             }
         },
 
+
+        /**
+         * @event uploadStart
+         * @param {File} file File对象
+         * @description 某个文件开始上传前触发。
+         * @for  Uploader
+         */
         _prepareNextFile: function() {
             var me = this,
                 file = me.request('fetch-file'),
@@ -416,6 +423,23 @@ define([
             });
         },
 
+
+        /**
+         * @event uploadBeforeSend
+         * @param {Object} object
+         * @param {Object} data 默认的上传参数，可以扩展此对象来控制上传参数。
+         * @description 但请求再发送前触发。
+         * @for  Uploader
+         */
+
+        /**
+         * @event uploadAccept
+         * @param {Object} object
+         * @param {Object} ret 服务端的返回数据，json格式，如果服务端不是json格式，从ret._raw中取数据，自行解析。
+         * @description 当某个文件上传到服务端响应后，会派送此事件来询问服务端响应是否有效。如果此事件handler返回值为`false`, 则此文件将派送`server`类型的`uploadError`事件。
+         * @for  Uploader
+         */
+
         /**
          * @event uploadProgress
          * @param {File} file File对象
@@ -423,6 +447,7 @@ define([
          * @description 上传过程中触发，携带上传进度。
          * @for  Uploader
          */
+
 
         /**
          * @event uploadError
