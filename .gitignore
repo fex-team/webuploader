@@ -1,7 +1,6 @@
 .DS_Store
 /pages
 /node_modules
-/dist
 /doc
 server/*
 !server/fileupload.php
