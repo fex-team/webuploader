@@ -111,6 +111,11 @@ module.exports = function(grunt) {
         version = version || grunt.config.get('pkg.version');
 
         src = src.replace( /@version@/g, version );
+
+        // 不处理 outro.js
+        if (filepath.indexOf('outro') >= 0) {
+            return src;
+        }
         // console.log( filepath, cwd );
 
         // 处理 define( dps ?, factory );
@@ -237,6 +242,7 @@ module.exports = function(grunt) {
                 if (options.stripBanners) {
                     src = stripBanner(src, options.stripBanners);
                 }
+
                 return src;
             }).join(options.separator) + footer;
 
