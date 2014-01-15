@@ -69,7 +69,7 @@ define([
         _addFile: function( file ) {
             var me = this;
 
-            if ( !file || file.size < 6 || me.accept &&
+            if ( !file || file.size < 6 || me.accept && file.name &&
                     !me.accept.test( file.name ) ) {
                 return;
             }
