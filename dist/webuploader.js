@@ -117,7 +117,7 @@
         }
     
         function bindFn( fn, context ) {
-            return Function.prototype.bind ? fn.bind( context ) : function() {
+            return function() {
                 return fn.apply( context, arguments );
             };
         }
@@ -4668,7 +4668,16 @@
              * @for Uploader
              * @description 上传并发数。允许同时最大上传进程数。
              */
-            threads: 3
+            threads: 3,
+    
+    
+            /**
+             * @property {Object} [formdata]
+             * @namespace options
+             * @for Uploader
+             * @description 文件上传请求的参数表，每次发送都会发送此对象中的参数。
+             */
+            formdata: null
         });
     
         // 负责将文件切片。
