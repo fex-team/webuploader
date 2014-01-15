@@ -2020,7 +2020,7 @@
     ], function( Base, Uploader, Queue, WUFile ) {
     
         var $ = Base.$,
-            rExt = /\.\w+$/
+            rExt = /\.\w+$/,
             Status = WUFile.Status;
     
         return Uploader.register({
@@ -2050,7 +2050,7 @@
                     }
     
                     if ( arr.length ) {
-                        accept = '\.' + arr.join(',')
+                        accept = '\\.' + arr.join(',')
                                 .replace( /,/g, '$|\\.' )
                                 .replace( /\*/g, '.*' ) + '$';
                     }
