@@ -117,7 +117,7 @@
         }
     
         function bindFn( fn, context ) {
-            return Function.prototype.bind ? fn.bind( context ) : function() {
+            return function() {
                 return fn.apply( context, arguments );
             };
         }
@@ -877,7 +877,7 @@
                 });
     
                 parent.append( container );
-                parent.addClass( 'webuploader-container' );
+                parent.addClass('webuploader-container');
                 this._container = container;
                 return container;
             },
@@ -1056,7 +1056,7 @@
                     destroy && destroy.apply( this, arguments );
                     this.trigger('destroy');
                     this.off();
-                    this.exec( 'destroy' );
+                    this.exec('destroy');
                     this.disconnectRuntime();
                 };
             })( this.destroy );
@@ -1813,8 +1813,8 @@
             RuntimeClient.call( this, 'Image' );
     
             this.on( 'load', function() {
-                this._info = this.exec( 'info' );
-                this._meta = this.exec( 'meta' );
+                this._info = this.exec('info');
+                this._meta = this.exec('meta');
             });
         }
     
@@ -2512,7 +2512,7 @@
                     xhr = this._initAjax(),
                     blob = owner._blob,
                     server = opts.server,
-                    formData, binary;
+                    binary;
     
                 xhr.connectRuntime( blob.ruid );
     
@@ -2565,15 +2565,14 @@
     
             _initAjax: function() {
                 var me = this,
-                    xhr = new RuntimeClient('XMLHttpRequest'),
-                    opts = this.options;
+                    xhr = new RuntimeClient('XMLHttpRequest');
     
                 xhr.on( 'uploadprogress progress', function( e ) {
                     return me.trigger( 'progress', e.loaded / e.total );
                 });
     
-                xhr.on( 'load', function( e ) {
-                    var status = xhr.exec( 'getStatus' );
+                xhr.on( 'load', function() {
+                    var status = xhr.exec('getStatus');
     
                     xhr.off();
                     me._xhr = null;
@@ -3074,9 +3073,7 @@
      * Uint8Array, FileReader, BlobBuilder, atob, ArrayBuffer
      * @fileOverview Image控件
      */
-    define( 'runtime/html5/imagemeta', [
-        'runtime/html5/util'
-    ], function( Util ) {
+    define( 'runtime/html5/imagemeta', function() {
     
         var api;
     
@@ -3208,7 +3205,7 @@
             // flag: 标记是否被修改过。
             modified: false,
     
-            init: function( opts ) {
+            init: function() {
                 var me = this,
                     img = new Image();
     
@@ -3386,12 +3383,12 @@
                 x = (cvs.width - w) / 2;
                 y = (cvs.height - h) / 2;
     
-                opts.preserveHeaders || this._rotateToOrientaion( cvs, orientation );
+                opts.preserveHeaders || this._rotate2Orientaion( cvs, orientation );
     
                 this._renderImageToCanvas( cvs, img, x, y, w, h );
             },
     
-            _rotateToOrientaion: function( canvas, orientation ) {
+            _rotate2Orientaion: function( canvas, orientation ) {
                 var width = canvas.width,
                     height = canvas.height,
                     ctx = canvas.getContext('2d');
@@ -4024,7 +4021,8 @@
         return Uploader.register({
             init: function( opts ) {
     
-                if ( !opts.dnd || this.request('predict-runtime-type') !== 'html5' ) {
+                if ( !opts.dnd ||
+                        this.request('predict-runtime-type') !== 'html5' ) {
                     return;
                 }
     
@@ -4067,7 +4065,8 @@
         return Uploader.register({
             init: function( opts ) {
     
-                if ( !opts.paste || this.request('predict-runtime-type') !== 'html5' ) {
+                if ( !opts.paste ||
+                        this.request('predict-runtime-type') !== 'html5' ) {
                     return;
                 }
     
@@ -4112,7 +4111,7 @@
                 tick = function() {
                     var item;
     
-                    while( waiting.length && occupied < max ) {
+                    while ( waiting.length && occupied < max ) {
                         item = waiting.shift();
                         occupied += item[ 0 ];
                         item[ 1 ]();
@@ -4120,13 +4119,13 @@
                 };
     
             return function( emiter, size, cb ) {
-                waiting.push( [ size, cb ] );
+                waiting.push([ size, cb ]);
                 emiter.once( 'destroy', function() {
                     occupied -= size;
                     setTimeout( tick, 1 );
-                } );
+                });
                 setTimeout( tick, 1 );
-            }
+            };
         })( 5 * 1024 * 1024 );
     
         $.extend( Uploader.options, {
@@ -4221,9 +4220,18 @@
             /**
              * 生成缩略图，此过程为异步，所以需要传入`callback`。
              * 通常情况在图片加入队里后调用此方法来生成预览图以增强交互效果。
+             *
+             * `callback`中可以接收到两个参数。
+             * * 第一个为error，如果生成缩略图有错误，此error将为真。
+             * * 第二个为ret, 缩略图的Data URL值。
+             *
+             * **注意**
+             * Date URL在IE6/7中不支持，所以不用调用此方法了，直接显示一张暂不支持预览图片好了。
+             *
+             *
              * @method makeThumb
-             * @grammar makeThumb( file, cb ) => undefined
-             * @grammar makeThumb( file, cb, width, height ) => undefined
+             * @grammar makeThumb( file, callback ) => undefined
+             * @grammar makeThumb( file, callback, width, height ) => undefined
              * @for Uploader
              * @example
              *
@@ -4251,7 +4259,7 @@
                     return;
                 }
     
-                opts = $.extend( {}, this.options.thumb );
+                opts = $.extend({}, this.options.thumb );
     
                 // 如果传入的是object.
                 if ( $.isPlainObject( width ) ) {
@@ -4301,7 +4309,7 @@
                     return;
                 }
     
-                opts = $.extend( {}, opts );
+                opts = $.extend({}, opts );
                 deferred = Base.Deferred();
     
                 image = new Image( opts );
@@ -4660,7 +4668,16 @@
              * @for Uploader
              * @description 上传并发数。允许同时最大上传进程数。
              */
-            threads: 3
+            threads: 3,
+    
+    
+            /**
+             * @property {Object} [formdata]
+             * @namespace options
+             * @for Uploader
+             * @description 文件上传请求的参数表，每次发送都会发送此对象中的参数。
+             */
+            formdata: null
         });
     
         // 负责将文件切片。
@@ -4929,6 +4946,13 @@
                 }
             },
     
+    
+            /**
+             * @event uploadStart
+             * @param {File} file File对象
+             * @description 某个文件开始上传前触发。
+             * @for  Uploader
+             */
             _prepareNextFile: function() {
                 var me = this,
                     file = me.request('fetch-file'),
@@ -4957,9 +4981,9 @@
                     });
     
                     // befeore-send-file的钩子就有错误发生。
-                    promise.fail( function( reason ) {
+                    promise.fail(function( reason ) {
                         file.setStatus( Status.ERROR, reason );
-                        me.owner.trigger( 'uploadError', file, type );
+                        me.owner.trigger( 'uploadError', file, reason );
                         me.owner.trigger( 'uploadComplete', file );
                     });
     
@@ -5019,6 +5043,23 @@
                 });
             },
     
+    
+            /**
+             * @event uploadBeforeSend
+             * @param {Object} object
+             * @param {Object} data 默认的上传参数，可以扩展此对象来控制上传参数。
+             * @description 但请求再发送前触发。
+             * @for  Uploader
+             */
+    
+            /**
+             * @event uploadAccept
+             * @param {Object} object
+             * @param {Object} ret 服务端的返回数据，json格式，如果服务端不是json格式，从ret._raw中取数据，自行解析。
+             * @description 当某个文件上传到服务端响应后，会派送此事件来询问服务端响应是否有效。如果此事件handler返回值为`false`, 则此文件将派送`server`类型的`uploadError`事件。
+             * @for  Uploader
+             */
+    
             /**
              * @event uploadProgress
              * @param {File} file File对象
@@ -5026,6 +5067,7 @@
              * @description 上传过程中触发，携带上传进度。
              * @for  Uploader
              */
+    
     
             /**
              * @event uploadError
@@ -5425,7 +5467,7 @@
         if ( typeof module === 'object' && typeof module.exports === 'object' ) {
             module.exports = exports;
         } else if ( window.define && window.define.amd ) {
-            window.define( '../build/outro',  exportName, exports );
+            window.define( function() { return exports; } );
         } else {
             origin = window[ exportName ];
             window[ exportName ] = exports;
@@ -5434,4 +5476,5 @@
             };
         }
     })( internalAmd.modules );
+    
 })( this );
