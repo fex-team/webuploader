@@ -10,6 +10,7 @@ define([
 ], function( Base, Uploader, Queue, WUFile ) {
 
     var $ = Base.$,
+        rExt = /\.\w+$/,
         Status = WUFile.Status;
 
     return Uploader.register({
@@ -39,9 +40,9 @@ define([
                 }
 
                 if ( arr.length ) {
-                    accept = arr.join(',')
-                            .replace( /,/g, '$|' )
-                            .replace( /\*/g, '.*' );
+                    accept = '\\.' + arr.join(',')
+                            .replace( /,/g, '$|\\.' )
+                            .replace( /\*/g, '.*' ) + '$';
                 }
 
                 this.accept = new RegExp( accept, 'i' );
@@ -70,7 +71,9 @@ define([
             var me = this;
 
             if ( !file || file.size < 6 || me.accept &&
-                    !me.accept.test( file.name ) ) {
+
+                    // 如果名字中有后缀，才做后缀白名单处理。
+                    rExt.exec( file.name ) && !me.accept.test( file.name ) ) {
                 return;
             }
 

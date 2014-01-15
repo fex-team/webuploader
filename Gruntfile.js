@@ -139,6 +139,13 @@ module.exports = function(grunt) {
             }
         },
 
+        copy: {
+            jekyll: {
+                src: 'dist/webuploader.js',
+                dest: 'jekyll/js/webuploader.js',
+            }
+        },
+
         watch: {
             options: {
                 debounceDelay: 250
@@ -232,11 +239,13 @@ module.exports = function(grunt) {
 
     grunt.loadNpmTasks('grunt-gh-pages');
 
+    grunt.loadNpmTasks('grunt-contrib-copy');
+
     // 加载build目录下的所有task
     grunt.loadTasks( 'build/tasks' );
 
     // Default task(s).
     grunt.registerTask( 'default', [ 'jsbint:all', 'dist' ] );
-    grunt.registerTask( 'dist', [ 'concat', 'uglify' ] );
+    grunt.registerTask( 'dist', [ 'concat', 'uglify', 'copy' ] );
     grunt.registerTask( 'deploy', [ 'doc', 'jekyll', 'gh-pages' ] );
 };
