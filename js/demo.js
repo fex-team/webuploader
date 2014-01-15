@@ -64,6 +64,12 @@ jQuery(function() {
         dnd: '#dndArea',
         paste: document.body,
 
+        accept: {
+            title: 'Images',
+            extensions: 'gif,jpg,jpeg,bmp,png',
+            mimeTypes: 'image/*'
+        },
+
         // swf文件路径
         swf: BASE_URL + '/js/Uploader.swf',
 
