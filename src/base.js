@@ -34,7 +34,7 @@ define([
     }
 
     function bindFn( fn, context ) {
-        return Function.prototype.bind ? fn.bind( context ) : function() {
+        return function() {
             return fn.apply( context, arguments );
         };
     }
