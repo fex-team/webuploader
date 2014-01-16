@@ -91,8 +91,10 @@ define(function() {
             },
 
             html: function( html ) {
-                elem.innerHTML = html;
-                return this;
+                if ( html ) {
+                    elem.innerHTML = html;
+                }
+                return elem.innerHTML;
             },
 
             attr: function( key, val ) {

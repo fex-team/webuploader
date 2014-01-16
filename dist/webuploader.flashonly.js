@@ -871,8 +871,8 @@
                     position: 'absolute',
                     top: '0px',
                     left: '0px',
-                    width: '1px',
-                    height: '1px',
+                    bottom: '0px',
+                    right: '0px',
                     overflow: 'hidden'
                 });
     
@@ -934,6 +934,7 @@
         Mediator.installTo( Runtime.prototype );
         return Runtime;
     });
+    
 
     /**
      * @fileOverview Runtime管理器，负责Runtime的选择, 连接
@@ -1156,9 +1157,9 @@
                 throw new Error('按钮指定错误');
             }
     
-            opts.label = opts.label || opts.container.text() || '选择文件';
+            opts.label = opts.label || opts.container.html() || ' ';
             opts.button = $( opts.button || document.createElement('div') );
-            opts.button.text( opts.label );
+            opts.button.html( opts.label );
             opts.container.html( opts.button );
     
             RuntimeClent.call( this, 'FilePicker', true );
@@ -1221,6 +1222,8 @@
                     pos = button.offset();
     
                 width && shimContainer.css({
+                    bottom: 'auto',
+                    right: 'auto',
                     width: width + 'px',
                     height: height + 'px'
                 }).offset( pos );
@@ -1236,6 +1239,7 @@
     
         return FilePicker;
     });
+    
 
     /**
      * @fileOverview 组件基类。
