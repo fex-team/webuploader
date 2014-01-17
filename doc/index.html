@@ -898,6 +898,22 @@
 </td>
         </tr>
         
+        <tr>
+            <td><code>error</code></td>
+            <td class="events-tb-desc">
+                
+                <ul class="params-list"><li><span class="meta"><code>type</code> {String}</span><p>错误类型。</p>
+</li></ul>
+                
+            </td>
+            <td><p>当validate不通过时，会以派送错误事件的形式通知调用者。通过<code>upload.on(&#39;error&#39;, handler)</code>可以捕获到此类错误，目前有以下错误会在特定的情况下派送错来。</p>
+<ul>
+<li><code>Q_EXCEED_NUM_LIMIT</code> 在设置了<code>fileNumLimit</code>且尝试给<code>uploader</code>添加的文件数量超出这个值时派送。</li>
+<li><code>Q_EXCEED_SIZE_LIMIT</code> 在设置了<code>Q_EXCEED_SIZE_LIMIT</code>且尝试给<code>uploader</code>添加的文件总大小超出这个值时派送。</li>
+</ul>
+</td>
+        </tr>
+        
     </table>
 </div>      
      
