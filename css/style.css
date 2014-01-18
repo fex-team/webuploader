@@ -180,8 +180,12 @@ body {
     list-style: none;
 }
 
-.weixin-img {
-  width: 129px;
+.weixin {
+  text-align: center;
+  display: inline-block;
+}
+.weixin img {
+  width: 80px;
 }
 
 
