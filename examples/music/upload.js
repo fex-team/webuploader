@@ -406,6 +406,7 @@
     }, {
         preupload: function(file) {
             var me = this,
+                owner = this.owner,
                 server = me.options.server,
                 deferred = WebUploader.Deferred(),
                 blob = file.source.getSource();
@@ -418,7 +419,7 @@
                     },
                     success: function( response ) {
                         if ( response.exist ) {
-                            file.setStatus( 'complete' );
+                            owner.skipFile( file );
                             var log = $('#'+file.id).find('p.imgWrap')
                             log.text('文件重复，已跳过');
                         }
