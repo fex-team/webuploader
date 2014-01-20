@@ -42,7 +42,7 @@
 // FocalLengthIn35mmFilm : 35
 // SceneCaptureType : Standard
 define([
-    'base',
+    '../../../base',
     '../imagemeta'
 ], function( Base, ImageMeta ) {
 

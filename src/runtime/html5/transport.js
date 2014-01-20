@@ -5,7 +5,7 @@
  * 而不需要重头再传一次。另外断点续传也需要用chunked方式。
  */
 define([
-    'base',
+    '../../base',
     './runtime'
 ], function( Base, Html5Runtime ) {
 

@@ -3,9 +3,9 @@
  */
 
 define([
-    'base',
-    'uploader',
-    'file',
+    '../base',
+    '../uploader',
+    '../file',
     './widget'
 ], function( Base, Uploader, WUFile ) {
 

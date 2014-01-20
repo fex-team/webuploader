@@ -2,10 +2,10 @@
  * @fileOverview 负责文件上传相关。
  */
 define([
-    'base',
-    'uploader',
-    'file',
-    'lib/transport',
+    '../base',
+    '../uploader',
+    '../file',
+    '../lib/transport',
     './widget'
 ], function( Base, Uploader, WUFile, Transport ) {
 

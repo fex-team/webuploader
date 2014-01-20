@@ -169,7 +169,7 @@ define([
      * @static
      * @grammar Base.create( opts ) => Uploader
      */
-    Base.create = function( opts ) {
+    Base.create = Uploader.create = function( opts ) {
         return new Uploader( opts );
     };
 

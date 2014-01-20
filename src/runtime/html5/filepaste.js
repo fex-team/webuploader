@@ -2,9 +2,9 @@
  * @fileOverview FilePaste
  */
 define([
-    'base',
+    '../../base',
     './runtime',
-    'lib/file'
+    '../../lib/file'
 ], function( Base, Html5Runtime, File ) {
 
     return Html5Runtime.register( 'FilePaste', {

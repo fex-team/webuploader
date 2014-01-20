@@ -2,13 +2,14 @@
  * @fileOverview 文件选择相关
  */
 define([
-    'base',
-    'uploader',
-    'lib/filepicker',
+    '../base',
+    '../uploader',
+    '../lib/filepicker',
     './widget'
 ], function( Base, Uploader, FilePicker ) {
+    var $ = Base.$;
 
-    Base.$.extend( Uploader.options, {
+    $.extend( Uploader.options, {
 
         /**
          * @property {Selector | Object} [pick=undefined]
