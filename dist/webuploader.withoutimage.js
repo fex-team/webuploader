@@ -814,7 +814,7 @@
          * @static
          * @grammar Base.create( opts ) => Uploader
          */
-        Base.create = function( opts ) {
+        Base.create = Uploader.create = function( opts ) {
             return new Uploader( opts );
         };
     
@@ -1414,8 +1414,9 @@
         'lib/filepicker',
         'widgets/widget'
     ], function( Base, Uploader, FilePicker ) {
+        var $ = Base.$;
     
-        Base.$.extend( Uploader.options, {
+        $.extend( Uploader.options, {
     
             /**
              * @property {Selector | Object} [pick=undefined]
@@ -1581,6 +1582,7 @@
         'lib/dnd',
         'widgets/widget'
     ], function( Base, Uploader, Dnd ) {
+        var $ = Base.$;
     
         Uploader.options.dnd = '';
     
@@ -3711,6 +3713,7 @@
         'runtime/flash/runtime',
         'runtime/client'
     ], function( Base, FlashRuntime, RuntimeClient ) {
+        var $ = Base.$;
     
         return FlashRuntime.register( 'Transport', {
             init: function() {
