@@ -9,7 +9,7 @@ define( 'jQuery', ['jquery'], function() {
     return jQuery.noConflict( true );
 });
 
-require([ 'preserve/all', 'jQuery' ], function( WebUploader, $ ) {
+require([ 'preset/all', 'jQuery' ], function( WebUploader, $ ) {
     // 当domReady的时候开始初始化
     $(function() {
         var $wrap = $('#uploader'),
