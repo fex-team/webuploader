@@ -75,7 +75,7 @@ require([ 'preserve/all', 'jQuery' ], function( WebUploader, $ ) {
             paste: '#uploader',
             swf: '../../dist/Uploader.swf',
             chunked: true,
-            runtimeOrder: 'flash',
+            // runtimeOrder: 'flash',
             sendAsBinary: true,
             server: '../../server/fileupload.php',
             // server: 'http://liaoxuezhi.fe.baidu.com/webupload/fileupload.php',
