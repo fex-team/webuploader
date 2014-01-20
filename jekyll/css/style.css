@@ -53,6 +53,9 @@ body {
     font-size: 2em;
     text-shadow: 0 -1px 0 rgba(0, 0, 0, 0.25);
 }
+.logo.active {
+  color: #fff;
+}
 @media (min-width: 768px) {
     .fetature .row .col-lg-4 {
         min-height: 250px;
@@ -177,8 +180,12 @@ body {
     list-style: none;
 }
 
-.weixin-img {
-  width: 129px;
+.weixin {
+  text-align: center;
+  display: inline-block;
+}
+.weixin img {
+  width: 80px;
 }
 
 

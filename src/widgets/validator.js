@@ -13,6 +13,16 @@ define([
         validators = {},
         api;
 
+    /**
+     * @event error
+     * @param {String} type 错误类型。
+     * @description 当validate不通过时，会以派送错误事件的形式通知调用者。通过`upload.on('error', handler)`可以捕获到此类错误，目前有以下错误会在特定的情况下派送错来。
+     *
+     * * `Q_EXCEED_NUM_LIMIT` 在设置了`fileNumLimit`且尝试给`uploader`添加的文件数量超出这个值时派送。
+     * * `Q_EXCEED_SIZE_LIMIT` 在设置了`Q_EXCEED_SIZE_LIMIT`且尝试给`uploader`添加的文件总大小超出这个值时派送。
+     * @for  Uploader
+     */
+
     // 暴露给外面的api
     api = {
 
