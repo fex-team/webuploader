@@ -2,7 +2,7 @@
  * @fileOverview Runtime管理器，负责Runtime的选择, 连接
  */
 define([
-    'base',
+    '../base',
     '../mediator'
 ], function( Base, Mediator ) {
 

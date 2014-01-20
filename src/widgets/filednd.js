@@ -2,11 +2,12 @@
  * @fileOverview DragAndDrop Widget。
  */
 define([
-    'base',
-    'uploader',
-    'lib/dnd',
+    '../base',
+    '../uploader',
+    '../lib/dnd',
     './widget'
 ], function( Base, Uploader, Dnd ) {
+    var $ = Base.$;
 
     Uploader.options.dnd = '';
 

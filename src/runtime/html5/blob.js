@@ -3,7 +3,7 @@
  */
 define([
     './runtime',
-    'lib/blob'
+    '../../lib/blob'
 ], function( Html5Runtime, Blob ) {
 
     return Html5Runtime.register( 'Blob', {

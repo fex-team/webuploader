@@ -37,7 +37,8 @@ module.exports = function(grunt) {
                     '**/*.js',
 
                     '!jq-bridge.js',
-                    '!promise.js'
+                    '!promise.js',
+                    '!preeserve/**/*.js'
 
                     // '!runtime/flash/**/*.js'
 
@@ -57,7 +58,8 @@ module.exports = function(grunt) {
                     '!runtime/flash/**/*.js',
 
                     '!jq-bridge.js',
-                    '!promise.js'
+                    '!promise.js',
+                    '!preeserve/**/*.js'
 
                 ],
 
@@ -75,7 +77,8 @@ module.exports = function(grunt) {
                     '!runtime/html5/**/*.js',
 
                     '!jq-bridge.js',
-                    '!promise.js'
+                    '!promise.js',
+                    '!preeserve/**/*.js'
                 ],
 
 
@@ -106,7 +109,8 @@ module.exports = function(grunt) {
                     'runtime/flash/filepicker.js',
 
                     '!jq-bridge.js',
-                    '!promise.js'
+                    '!promise.js',
+                    '!preeserve/**/*.js'
 
                 ],
 

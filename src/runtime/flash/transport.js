@@ -2,10 +2,11 @@
  * @fileOverview  Transport flash实现
  */
 define([
-    '/base',
+    '../../base',
     './runtime',
     '../client'
 ], function( Base, FlashRuntime, RuntimeClient ) {
+    var $ = Base.$;
 
     return FlashRuntime.register( 'Transport', {
         init: function() {

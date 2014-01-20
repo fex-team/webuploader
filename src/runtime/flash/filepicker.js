@@ -2,7 +2,7 @@
  * @fileOverview FilePicker
  */
 define([
-    'base',
+    '../../base',
     './runtime'
 ], function( Base, FlashRuntime ) {
     var $ = Base.$;

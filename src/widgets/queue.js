@@ -2,10 +2,10 @@
  * @fileOverview 队列
  */
 define([
-    'base',
-    'uploader',
-    'queue',
-    'file',
+    '../base',
+    '../uploader',
+    '../queue',
+    '../file',
     './widget'
 ], function( Base, Uploader, Queue, WUFile ) {
 

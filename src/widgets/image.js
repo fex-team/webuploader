@@ -2,9 +2,9 @@
  * @fileOverview 图片操作, 负责预览图片和上传前压缩图片
  */
 define([
-    'base',
-    'uploader',
-    'lib/image',
+    '../base',
+    '../uploader',
+    '../lib/image',
     './widget'
 ], function( Base, Uploader, Image ) {
 
