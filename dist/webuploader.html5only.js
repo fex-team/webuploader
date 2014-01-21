@@ -871,8 +871,8 @@
                     position: 'absolute',
                     top: '0px',
                     left: '0px',
-                    width: '1px',
-                    height: '1px',
+                    bottom: '0px',
+                    right: '0px',
                     overflow: 'hidden'
                 });
     
@@ -934,6 +934,7 @@
         Mediator.installTo( Runtime.prototype );
         return Runtime;
     });
+    
 
     /**
      * @fileOverview Runtime管理器，负责Runtime的选择, 连接
@@ -1135,6 +1136,7 @@
     
         return Base.inherits( Blob, File );
     });
+    
 
     /**
      * @fileOverview 错误信息
@@ -1156,9 +1158,9 @@
                 throw new Error('按钮指定错误');
             }
     
-            opts.label = opts.label || opts.container.text() || '选择文件';
+            opts.label = opts.label || opts.container.html() || ' ';
             opts.button = $( opts.button || document.createElement('div') );
-            opts.button.text( opts.label );
+            opts.button.html( opts.label );
             opts.container.html( opts.button );
     
             RuntimeClent.call( this, 'FilePicker', true );
@@ -1221,6 +1223,8 @@
                     pos = button.offset();
     
                 width && shimContainer.css({
+                    bottom: 'auto',
+                    right: 'auto',
                     width: width + 'px',
                     height: height + 'px'
                 }).offset( pos );
@@ -1236,6 +1240,7 @@
     
         return FilePicker;
     });
+    
 
     /**
      * @fileOverview 组件基类。
@@ -3949,8 +3954,6 @@
                     files, file, blob, i, len;
     
                 e = e.originalEvent || e;
-                e.preventDefault();
-                e.stopPropagation();
     
                 files = e.clipboardData.items;
     
@@ -3965,7 +3968,12 @@
                     allowed.push( new File( ruid, blob ) );
                 }
     
-                allowed.length && this.trigger( 'paste', allowed );
+                if ( allowed.length ) {
+                    // 不阻止非文件粘贴（文字粘贴）的事件冒泡
+                    e.preventDefault();
+                    e.stopPropagation();
+                    this.trigger( 'paste', allowed );
+                }
             },
     
             destroy: function() {
@@ -3973,6 +3981,7 @@
             }
         });
     });
+    
 
     /**
      * @fileOverview FilePicker
@@ -5400,7 +5409,7 @@
         });
     });
 
-    define( 'preserve/all', [
+    define( 'preset/all', [
         'base',
         'uploader',
         //widgets'../widgets/filepicker',
@@ -5425,7 +5434,7 @@
         return Base;
     });
 
-    define( 'preserve/flashonly', [
+    define( 'preset/flashonly', [
         'base',
         'uploader',
         //widgets'../widgets/filepicker',
@@ -5441,7 +5450,7 @@
         return Base;
     });
 
-    define( 'preserve/html5only', [
+    define( 'preset/html5only', [
         'base',
         'uploader',
         //widgets'../widgets/filepicker',
@@ -5463,7 +5472,7 @@
         return Base;
     });
 
-    define( 'preserve/withoutimage', [
+    define( 'preset/withoutimage', [
         'base',
         'uploader',
         //widgets'../widgets/filepicker',

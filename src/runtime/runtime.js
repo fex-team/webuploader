@@ -45,8 +45,8 @@ define([
                 position: 'absolute',
                 top: '0px',
                 left: '0px',
-                width: '1px',
-                height: '1px',
+                bottom: '0px',
+                right: '0px',
                 overflow: 'hidden'
             });
 
