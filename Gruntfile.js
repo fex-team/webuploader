@@ -38,7 +38,7 @@ module.exports = function(grunt) {
 
                     '!jq-bridge.js',
                     '!promise.js',
-                    '!preeserve/**/*.js'
+                    '!preset/**/*.js'
 
                     // '!runtime/flash/**/*.js'
 
@@ -59,7 +59,7 @@ module.exports = function(grunt) {
 
                     '!jq-bridge.js',
                     '!promise.js',
-                    '!preeserve/**/*.js'
+                    '!preset/**/*.js'
 
                 ],
 
@@ -78,7 +78,7 @@ module.exports = function(grunt) {
 
                     '!jq-bridge.js',
                     '!promise.js',
-                    '!preeserve/**/*.js'
+                    '!preset/**/*.js'
                 ],
 
 
@@ -110,7 +110,7 @@ module.exports = function(grunt) {
 
                     '!jq-bridge.js',
                     '!promise.js',
-                    '!preeserve/**/*.js'
+                    '!preset/**/*.js'
 
                 ],
 
