@@ -1,3 +1,6 @@
+/**
+ * @fileOverview 没有图像处理的版本。
+ */
 define([
     '../base',
     '../uploader',
@@ -12,7 +15,6 @@ define([
     '../widgets/validator',
 
     // runtimes
-    //
     // html5
     '../runtime/html5/blob',
     '../runtime/html5/dnd',
