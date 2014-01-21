@@ -1136,6 +1136,7 @@
     
         return Base.inherits( Blob, File );
     });
+    
 
     /**
      * @fileOverview 错误信息

@@ -1136,6 +1136,7 @@
     
         return Base.inherits( Blob, File );
     });
+    
 
     /**
      * @fileOverview 错误信息
@@ -3953,8 +3954,6 @@
                     files, file, blob, i, len;
     
                 e = e.originalEvent || e;
-                e.preventDefault();
-                e.stopPropagation();
     
                 files = e.clipboardData.items;
     
@@ -3969,7 +3968,12 @@
                     allowed.push( new File( ruid, blob ) );
                 }
     
-                allowed.length && this.trigger( 'paste', allowed );
+                if ( allowed.length ) {
+                    // 不阻止非文件粘贴（文字粘贴）的事件冒泡
+                    e.preventDefault();
+                    e.stopPropagation();
+                    this.trigger( 'paste', allowed );
+                }
             },
     
             destroy: function() {
@@ -3977,6 +3981,7 @@
             }
         });
     });
+    
 
     /**
      * @fileOverview FilePicker
@@ -5404,7 +5409,7 @@
         });
     });
 
-    define( 'preserve/all', [
+    define( 'preset/all', [
         'base',
         'uploader',
         //widgets'../widgets/filepicker',
@@ -5429,7 +5434,7 @@
         return Base;
     });
 
-    define( 'preserve/flashonly', [
+    define( 'preset/flashonly', [
         'base',
         'uploader',
         //widgets'../widgets/filepicker',
@@ -5445,7 +5450,7 @@
         return Base;
     });
 
-    define( 'preserve/html5only', [
+    define( 'preset/html5only', [
         'base',
         'uploader',
         //widgets'../widgets/filepicker',
@@ -5467,7 +5472,7 @@
         return Base;
     });
 
-    define( 'preserve/withoutimage', [
+    define( 'preset/withoutimage', [
         'base',
         'uploader',
         //widgets'../widgets/filepicker',
