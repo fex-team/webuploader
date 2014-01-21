@@ -2029,6 +2029,593 @@
     });
 
     /**
+     * @fileOverview 文件队列
+     */
+    define( 'queue', [
+        'base',
+        'mediator',
+        'file'
+    ], function( Base, Mediator, WUFile ) {
+    
+        var $ = Base.$,
+            STATUS = WUFile.Status;
+    
+        /**
+         * 文件队列, 用来存储各个状态中的文件。
+         * @class Queue
+         * @extends Mediator
+         */
+        function Queue() {
+    
+            /**
+             * 统计文件数。
+             * * `numOfQueue` 队列中的文件数。
+             * * `numOfSuccess` 上传成功的文件数
+             * * `numOfCancel` 被移除的文件数
+             * * `numOfProgress` 正在上传中的文件数
+             * * `numOfUploadFailed` 上传错误的文件数。
+             * * `numOfInvalid` 无效的文件数。
+             * @property {Object} stats
+             */
+            this.stats = {
+                numOfQueue: 0,
+                numOfSuccess: 0,
+                numOfCancel: 0,
+                numOfProgress: 0,
+                numOfUploadFailed: 0,
+                numOfInvalid: 0
+            };
+    
+            // 上传队列，仅包括等待上传的文件
+            this._queue = [];
+    
+            // 存储所有文件
+            this._map = {};
+        }
+    
+        $.extend( Queue.prototype, {
+    
+            /**
+             * 将新文件加入对队列尾部
+             *
+             * @method append
+             * @param  {File} file   文件对象
+             */
+            append: function( file ) {
+                this._queue.push( file );
+                this._fileAdded( file );
+                return this;
+            },
+    
+            /**
+             * 将新文件加入对队列头部
+             *
+             * @method prepend
+             * @param  {File} file   文件对象
+             */
+            prepend: function( file ) {
+                this._queue.unshift( file );
+                this._fileAdded( file );
+                return this;
+            },
+    
+            /**
+             * 获取文件对象
+             *
+             * @method getFile
+             * @param  {String} fileId   文件ID
+             * @return {File}
+             */
+            getFile: function( fileId ) {
+                if ( typeof fileId !== 'string' ) {
+                    return fileId;
+                }
+                return this._map[ fileId ];
+            },
+    
+            /**
+             * 从队列中取出一个指定状态的文件。
+             * @grammar fetch( status ) => File
+             * @method fetch
+             * @param {String} status [文件状态值](#WebUploader:File:File.Status)
+             * @return {File} [File](#WebUploader:File)
+             */
+            fetch: function( status ) {
+                var len = this._queue.length,
+                    i, file;
+    
+                status = status || STATUS.QUEUED;
+    
+                for ( i = 0; i < len; i++ ) {
+                    file = this._queue[ i ];
+    
+                    if ( status === file.getStatus() ) {
+                        return file;
+                    }
+                }
+    
+                return null;
+            },
+    
+            /**
+             * 获取指定类型的文件列表, 列表中每一个成员为[File](#WebUploader:File)对象。
+             * @grammar getFiles( [status1[, status2 ...]] ) => Array
+             * @method getFiles
+             * @param {String} [status] [文件状态值](#WebUploader:File:File.Status)
+             */
+            getFiles: function() {
+                var sts = [].slice.call( arguments, 0 ),
+                    ret = [],
+                    i = 0,
+                    len = this._queue.length,
+                    file;
+    
+                for ( ; i < len; i++ ) {
+                    file = this._queue[ i ];
+    
+                    if ( sts.length && !~$.inArray( file.getStatus(), sts ) ) {
+                        continue;
+                    }
+    
+                    ret.push( file );
+                }
+    
+                return ret;
+            },
+    
+            _fileAdded: function( file ) {
+                var me = this,
+                    existing = this._map[ file.id ];
+    
+                if ( !existing ) {
+                    this._map[ file.id ] = file;
+    
+                    file.on( 'statuschange', function( cur, pre ) {
+                        me._onFileStatusChange( cur, pre );
+                    });
+                }
+    
+                file.setStatus( STATUS.QUEUED );
+            },
+    
+            _onFileStatusChange: function( curStatus, preStatus ) {
+                var stats = this.stats;
+    
+                switch ( preStatus ) {
+                    case STATUS.PROGRESS:
+                        stats.numOfProgress--;
+                        break;
+    
+                    case STATUS.QUEUED:
+                        stats.numOfQueue --;
+                        break;
+    
+                    case STATUS.ERROR:
+                        stats.numOfUploadFailed--;
+                        break;
+    
+                    case STATUS.INVALID:
+                        stats.numOfInvalid--;
+                        break;
+                }
+    
+                switch ( curStatus ) {
+                    case STATUS.QUEUED:
+                        stats.numOfQueue++;
+                        break;
+    
+                    case STATUS.PROGRESS:
+                        stats.numOfProgress++;
+                        break;
+    
+                    case STATUS.ERROR:
+                        stats.numOfUploadFailed++;
+                        break;
+    
+                    case STATUS.COMPLETE:
+                        stats.numOfSuccess++;
+                        break;
+    
+                    case STATUS.CANCELLED:
+                        stats.numOfCancel++;
+                        break;
+    
+                    case STATUS.INVALID:
+                        stats.numOfInvalid++;
+                        break;
+                }
+            }
+    
+        });
+    
+        Mediator.installTo( Queue.prototype );
+    
+        return Queue;
+    });
+
+    /**
+     * @fileOverview Runtime管理器，负责Runtime的选择, 连接
+     */
+    define( 'runtime/compbase', function() {
+    
+        function CompBase( owner, runtime ) {
+    
+            this.owner = owner;
+            this.options = owner.options;
+    
+            this.getRuntime = function() {
+                return runtime;
+            };
+    
+            this.getRuid = function() {
+                return runtime.uid;
+            };
+    
+            this.trigger = function() {
+                return owner.trigger.apply( owner, arguments );
+            };
+        }
+    
+        return CompBase;
+    });
+
+    /**
+     * @fileOverview FlashRuntime
+     */
+    define( 'runtime/flash/runtime', [
+        'base',
+        'runtime/runtime',
+        'runtime/compbase'
+    ], function( Base, Runtime, CompBase ) {
+    
+        var $ = Base.$,
+            type = 'flash',
+            components = {};
+    
+    
+        function getFlashVersion() {
+            var version;
+    
+            try {
+                version = navigator.plugins[ 'Shockwave Flash' ];
+                version = version.description;
+            } catch ( ex ) {
+                try {
+                    version = new ActiveXObject('ShockwaveFlash.ShockwaveFlash')
+                            .GetVariable('$version');
+                } catch ( ex2 ) {
+                    version = '0.0';
+                }
+            }
+            version = version.match( /\d+/g );
+            return parseFloat( version[ 0 ] + '.' + version[ 1 ], 10 );
+        }
+    
+        function FlashRuntime() {
+            var pool = {},
+                clients = {},
+                destory = this.destory,
+                me = this,
+                jsreciver = Base.guid('webuploader_');
+    
+            Runtime.apply( me, arguments );
+            me.type = type;
+    
+    
+            // 这个方法的调用者，实际上是RuntimeClient
+            me.exec = function( comp, fn/*, args...*/ ) {
+                var client = this,
+                    uid = client.uid,
+                    args = Base.slice( arguments, 2 ),
+                    instance;
+    
+                clients[ uid ] = client;
+    
+                if ( components[ comp ] ) {
+                    if ( !pool[ uid ] ) {
+                        pool[ uid ] = new components[ comp ]( client, me );
+                    }
+    
+                    instance = pool[ uid ];
+    
+                    if ( instance[ fn ] ) {
+                        return instance[ fn ].apply( instance, args );
+                    }
+                }
+    
+                return me.flashExec.apply( client, arguments );
+            };
+    
+            function hander( evt, obj ) {
+                var type = evt.type || evt,
+                    parts, uid;
+    
+                parts = type.split('::');
+                uid = parts[ 0 ];
+                type = parts[ 1 ];
+    
+                // console.log.apply( console, arguments );
+    
+                if ( type === 'Ready' && uid === me.uid ) {
+                    me.trigger('ready');
+                } else if ( clients[ uid ] ) {
+                    clients[ uid ].trigger( type.toLowerCase(), evt, obj );
+                }
+    
+                // Base.log( evt, obj );
+            }
+    
+            // flash的接受器。
+            window[ jsreciver ] = function() {
+                var args = arguments;
+    
+                // 为了能捕获得到。
+                setTimeout(function() {
+                    hander.apply( null, args );
+                }, 1 );
+            };
+    
+            this.jsreciver = jsreciver;
+    
+            this.destory = function() {
+                // @todo 删除池子中的所有实例
+                return destory && destory.apply( this, arguments );
+            };
+    
+            this.flashExec = function( comp, fn ) {
+                var flash = me.getFlash(),
+                    args = Base.slice( arguments, 2 );
+    
+                return flash.exec( this.uid, comp, fn, args );
+            };
+    
+            // @todo
+        }
+    
+        Base.inherits( Runtime, {
+            constructor: FlashRuntime,
+    
+            init: function() {
+                var container = this.getContainer(),
+                    opts = this.options,
+                    html;
+    
+                // if not the minimal height, shims are not initialized
+                // in older browsers (e.g FF3.6, IE6,7,8, Safari 4.0,5.0, etc)
+                container.css({
+                    position: 'absolute',
+                    top: '-8px',
+                    left: '-8px',
+                    width: '9px',
+                    height: '9px',
+                    overflow: 'hidden'
+                });
+    
+                // insert flash object
+                html = '<object id="' + this.uid + '" type="application/' +
+                        'x-shockwave-flash" data="' +  opts.swf + '" ';
+    
+                if ( Base.isIE ) {
+                    html += 'classid="clsid:d27cdb6e-ae6d-11cf-96b8-444553540000" ';
+                }
+    
+                html += 'width="100%" height="100%" style="outline:0">'  +
+                    '<param name="movie" value="' + opts.swf + '" />' +
+                    '<param name="flashvars" value="uid=' + this.uid +
+                    '&jsreciver=' + this.jsreciver + '" />' +
+                    '<param name="wmode" value="transparent" />' +
+                    '<param name="allowscriptaccess" value="always" />' +
+                '</object>';
+    
+                container.html( html );
+            },
+    
+            getFlash: function() {
+                if ( this._flash ) {
+                    return this._flash;
+                }
+    
+                this._flash = $( '#' + this.uid ).get( 0 );
+                return this._flash;
+            }
+    
+        });
+    
+        FlashRuntime.register = function( name, component ) {
+            component = components[ name ] = Base.inherits( CompBase, $.extend({
+    
+                // @todo fix this later
+                flashExec: function() {
+                    var owner = this.owner,
+                        runtime = this.getRuntime();
+    
+                    return runtime.flashExec.apply( owner, arguments );
+                }
+            }, component ) );
+    
+            return component;
+        };
+    
+        if ( getFlashVersion() >= 11.3 ) {
+            Runtime.addRuntime( type, FlashRuntime );
+        }
+    
+        return FlashRuntime;
+    });
+
+    /**
+     * @fileOverview FilePicker
+     */
+    define( 'runtime/flash/filepicker', [
+        'base',
+        'runtime/flash/runtime'
+    ], function( Base, FlashRuntime ) {
+        var $ = Base.$;
+    
+        return FlashRuntime.register( 'FilePicker', {
+            init: function( opts ) {
+                var copy = $.extend({}, opts );
+    
+                delete copy.button;
+                delete copy.container;
+    
+                this.flashExec( 'FilePicker', 'init', copy );
+            },
+    
+            destroy: function() {
+                // todo
+            }
+        });
+    });
+
+    /**
+     * @fileOverview 图片压缩
+     */
+    define( 'runtime/flash/image', [
+        'runtime/flash/runtime'
+    ], function( FlashRuntime ) {
+    
+        return FlashRuntime.register( 'Image', {
+            // init: function( options ) {
+            //     var owner = this.owner;
+    
+            //     this.flashExec( 'Image', 'init', options );
+            //     owner.on( 'load', function() {
+            //         debugger;
+            //     });
+            // },
+    
+            loadFromBlob: function( blob ) {
+                var owner = this.owner;
+    
+                owner.info() && this.flashExec( 'Image', 'info', owner.info() );
+                owner.meta() && this.flashExec( 'Image', 'meta', owner.meta() );
+    
+                this.flashExec( 'Image', 'loadFromBlob', blob.uid );
+            }
+        });
+    });
+
+    /**
+     * @fileOverview  Transport flash实现
+     */
+    define( 'runtime/flash/transport', [
+        'base',
+        'runtime/flash/runtime',
+        'runtime/client'
+    ], function( Base, FlashRuntime, RuntimeClient ) {
+        var $ = Base.$;
+    
+        return FlashRuntime.register( 'Transport', {
+            init: function() {
+                this._status = 0;
+                this._response = null;
+                this._responseJson = null;
+            },
+    
+            send: function() {
+                var owner = this.owner,
+                    opts = this.options,
+                    xhr = this._initAjax(),
+                    blob = owner._blob,
+                    server = opts.server,
+                    binary;
+    
+                xhr.connectRuntime( blob.ruid );
+    
+                if ( opts.sendAsBinary ) {
+                    server += (/\?/.test( server ) ? '&' : '?') +
+                            $.param( owner._formData );
+    
+                    binary = blob.uid;
+                } else {
+                    $.each( owner._formData, function( k, v ) {
+                        xhr.exec( 'append', k, v );
+                    });
+    
+                    xhr.exec( 'appendBlob', opts.fileVar, blob.uid,
+                            opts.filename || owner._formData.name || '' );
+                }
+    
+                this._setRequestHeader( xhr, opts.headers );
+                xhr.exec( 'send', {
+                    method: opts.method,
+                    url: server
+                }, binary );
+            },
+    
+            getStatus: function() {
+                return this._status;
+            },
+    
+            getResponse: function() {
+                return this._response;
+            },
+    
+            getResponseAsJson: function() {
+                return this._responseJson;
+            },
+    
+            abort: function() {
+                var xhr = this._xhr;
+    
+                if ( xhr ) {
+                    xhr.exec('abort');
+                    xhr.destroy();
+                    this._xhr = xhr = null;
+                }
+            },
+    
+            destroy: function() {
+                this.abort();
+            },
+    
+            _initAjax: function() {
+                var me = this,
+                    xhr = new RuntimeClient('XMLHttpRequest');
+    
+                xhr.on( 'uploadprogress progress', function( e ) {
+                    return me.trigger( 'progress', e.loaded / e.total );
+                });
+    
+                xhr.on( 'load', function() {
+                    var status = xhr.exec('getStatus');
+    
+                    xhr.off();
+                    me._xhr = null;
+    
+                    if ( status === 200 ) {
+                        me._response = xhr.exec('getResponse');
+                        me._responseJson = xhr.exec('getResponseAsJson');
+                        return me.trigger('load');
+                    }
+    
+                    me._status = status;
+                    xhr.destroy();
+                    xhr = null;
+    
+                    return me.trigger( 'error', 'http' );
+                });
+    
+                xhr.on( 'error', function() {
+                    xhr.off();
+                    me._xhr = null;
+                    me.trigger( 'error', 'http' );
+                });
+    
+                me._xhr = xhr;
+                return xhr;
+            },
+    
+            _setRequestHeader: function( xhr, headers ) {
+                $.each( headers, function( key, val ) {
+                    xhr.exec( 'setRequestHeader', key, val );
+                });
+            }
+        });
+    });
+
+    /**
      * @fileOverview DragAndDrop Widget。
      */
     define( 'widgets/filednd', [
@@ -2381,211 +2968,6 @@
                 return deferred.promise();
             }
         });
-    });
-
-    /**
-     * @fileOverview 文件队列
-     */
-    define( 'queue', [
-        'base',
-        'mediator',
-        'file'
-    ], function( Base, Mediator, WUFile ) {
-    
-        var $ = Base.$,
-            STATUS = WUFile.Status;
-    
-        /**
-         * 文件队列, 用来存储各个状态中的文件。
-         * @class Queue
-         * @extends Mediator
-         */
-        function Queue() {
-    
-            /**
-             * 统计文件数。
-             * * `numOfQueue` 队列中的文件数。
-             * * `numOfSuccess` 上传成功的文件数
-             * * `numOfCancel` 被移除的文件数
-             * * `numOfProgress` 正在上传中的文件数
-             * * `numOfUploadFailed` 上传错误的文件数。
-             * * `numOfInvalid` 无效的文件数。
-             * @property {Object} stats
-             */
-            this.stats = {
-                numOfQueue: 0,
-                numOfSuccess: 0,
-                numOfCancel: 0,
-                numOfProgress: 0,
-                numOfUploadFailed: 0,
-                numOfInvalid: 0
-            };
-    
-            // 上传队列，仅包括等待上传的文件
-            this._queue = [];
-    
-            // 存储所有文件
-            this._map = {};
-        }
-    
-        $.extend( Queue.prototype, {
-    
-            /**
-             * 将新文件加入对队列尾部
-             *
-             * @method append
-             * @param  {File} file   文件对象
-             */
-            append: function( file ) {
-                this._queue.push( file );
-                this._fileAdded( file );
-                return this;
-            },
-    
-            /**
-             * 将新文件加入对队列头部
-             *
-             * @method prepend
-             * @param  {File} file   文件对象
-             */
-            prepend: function( file ) {
-                this._queue.unshift( file );
-                this._fileAdded( file );
-                return this;
-            },
-    
-            /**
-             * 获取文件对象
-             *
-             * @method getFile
-             * @param  {String} fileId   文件ID
-             * @return {File}
-             */
-            getFile: function( fileId ) {
-                if ( typeof fileId !== 'string' ) {
-                    return fileId;
-                }
-                return this._map[ fileId ];
-            },
-    
-            /**
-             * 从队列中取出一个指定状态的文件。
-             * @grammar fetch( status ) => File
-             * @method fetch
-             * @param {String} status [文件状态值](#WebUploader:File:File.Status)
-             * @return {File} [File](#WebUploader:File)
-             */
-            fetch: function( status ) {
-                var len = this._queue.length,
-                    i, file;
-    
-                status = status || STATUS.QUEUED;
-    
-                for ( i = 0; i < len; i++ ) {
-                    file = this._queue[ i ];
-    
-                    if ( status === file.getStatus() ) {
-                        return file;
-                    }
-                }
-    
-                return null;
-            },
-    
-            /**
-             * 获取指定类型的文件列表, 列表中每一个成员为[File](#WebUploader:File)对象。
-             * @grammar getFiles( [status1[, status2 ...]] ) => Array
-             * @method getFiles
-             * @param {String} [status] [文件状态值](#WebUploader:File:File.Status)
-             */
-            getFiles: function() {
-                var sts = [].slice.call( arguments, 0 ),
-                    ret = [],
-                    i = 0,
-                    len = this._queue.length,
-                    file;
-    
-                for ( ; i < len; i++ ) {
-                    file = this._queue[ i ];
-    
-                    if ( sts.length && !~$.inArray( file.getStatus(), sts ) ) {
-                        continue;
-                    }
-    
-                    ret.push( file );
-                }
-    
-                return ret;
-            },
-    
-            _fileAdded: function( file ) {
-                var me = this,
-                    existing = this._map[ file.id ];
-    
-                if ( !existing ) {
-                    this._map[ file.id ] = file;
-    
-                    file.on( 'statuschange', function( cur, pre ) {
-                        me._onFileStatusChange( cur, pre );
-                    });
-                }
-    
-                file.setStatus( STATUS.QUEUED );
-            },
-    
-            _onFileStatusChange: function( curStatus, preStatus ) {
-                var stats = this.stats;
-    
-                switch ( preStatus ) {
-                    case STATUS.PROGRESS:
-                        stats.numOfProgress--;
-                        break;
-    
-                    case STATUS.QUEUED:
-                        stats.numOfQueue --;
-                        break;
-    
-                    case STATUS.ERROR:
-                        stats.numOfUploadFailed--;
-                        break;
-    
-                    case STATUS.INVALID:
-                        stats.numOfInvalid--;
-                        break;
-                }
-    
-                switch ( curStatus ) {
-                    case STATUS.QUEUED:
-                        stats.numOfQueue++;
-                        break;
-    
-                    case STATUS.PROGRESS:
-                        stats.numOfProgress++;
-                        break;
-    
-                    case STATUS.ERROR:
-                        stats.numOfUploadFailed++;
-                        break;
-    
-                    case STATUS.COMPLETE:
-                        stats.numOfSuccess++;
-                        break;
-    
-                    case STATUS.CANCELLED:
-                        stats.numOfCancel++;
-                        break;
-    
-                    case STATUS.INVALID:
-                        stats.numOfInvalid++;
-                        break;
-                }
-            }
-    
-        });
-    
-        Mediator.installTo( Queue.prototype );
-    
-        return Queue;
     });
 
     /**
@@ -3673,1849 +4055,6 @@
         });
     
         return api;
-    });
-
-    /**
-     * @fileOverview Runtime管理器，负责Runtime的选择, 连接
-     */
-    define( 'runtime/compbase', function() {
-    
-        function CompBase( owner, runtime ) {
-    
-            this.owner = owner;
-            this.options = owner.options;
-    
-            this.getRuntime = function() {
-                return runtime;
-            };
-    
-            this.getRuid = function() {
-                return runtime.uid;
-            };
-    
-            this.trigger = function() {
-                return owner.trigger.apply( owner, arguments );
-            };
-        }
-    
-        return CompBase;
-    });
-
-    /**
-     * @fileOverview Html5Runtime
-     */
-    define( 'runtime/html5/runtime', [
-        'base',
-        'runtime/runtime',
-        'runtime/compbase'
-    ], function( Base, Runtime, CompBase ) {
-    
-        var type = 'html5',
-            components = {};
-    
-        function Html5Runtime() {
-            var pool = {},
-                me = this,
-                destory = this.destory;
-    
-            Runtime.apply( me, arguments );
-            me.type = type;
-    
-    
-            // 这个方法的调用者，实际上是RuntimeClient
-            me.exec = function( comp, fn/*, args...*/) {
-                var client = this,
-                    uid = client.uid,
-                    args = Base.slice( arguments, 2 ),
-                    instance;
-    
-                if ( components[ comp ] ) {
-                    instance = pool[ uid ] = pool[ uid ] ||
-                            new components[ comp ]( client, me );
-    
-                    if ( instance[ fn ] ) {
-                        return instance[ fn ].apply( instance, args );
-                    }
-                }
-            };
-    
-            me.destory = function() {
-                // @todo 删除池子中的所有实例
-                return destory && destory.apply( this, arguments );
-            };
-        }
-    
-        Base.inherits( Runtime, {
-            constructor: Html5Runtime,
-    
-            // 不需要连接其他程序，直接执行callback
-            init: function() {
-                var me = this;
-                setTimeout(function() {
-                    me.trigger('ready');
-                }, 1 );
-            }
-    
-        });
-    
-        Html5Runtime.register = function( name, component ) {
-            var klass = components[ name ] = Base.inherits( CompBase, component );
-            return klass;
-        };
-    
-        // 注册html5运行时。
-        if ( window.Blob && window.FileReader && window.DataView ) {
-            Runtime.addRuntime( type, Html5Runtime );
-        }
-    
-        return Html5Runtime;
-    });
-
-    /**
-     * @fileOverview FilePaste
-     */
-    define( 'runtime/html5/dnd', [
-        'base',
-        'runtime/html5/runtime',
-        'lib/file'
-    ], function( Base, Html5Runtime, File ) {
-    
-        var $ = Base.$;
-    
-        return Html5Runtime.register( 'DragAndDrop', {
-            init: function() {
-                var elem = this.elem = this.options.container;
-    
-                this.dragEnterHandler = Base.bindFn( this._dragEnterHandler, this );
-                this.dragOverHandler = Base.bindFn( this._dragOverHandler, this );
-                this.dragLeaveHandler = Base.bindFn( this._dragLeaveHandler, this );
-                this.dropHandler = Base.bindFn( this._dropHandler, this );
-    
-                elem.on( 'dragenter', this.dragEnterHandler );
-                elem.on( 'dragover', this.dragOverHandler );
-                elem.on( 'dragleave', this.dragLeaveHandler );
-                elem.on( 'drop', this.dropHandler );
-    
-                if ( this.options.disableGlobalDnd ) {
-                    $( document ).on( 'dragover', this.dragOverHandler );
-                    $( document ).on( 'drop', this.dropHandler );
-                }
-            },
-    
-            _dragEnterHandler: function( e ) {
-                this.elem.addClass('webuploader-dnd-over');
-    
-                e = e.originalEvent || e;
-                e.dataTransfer.dropEffect = 'copy';
-    
-                return false;
-            },
-    
-            _dragOverHandler: function( e ) {
-                // 只处理框内的。
-                if ( !$.contains( this.elem.parent().get( 0 ), e.target ) ) {
-                    return false;
-                }
-    
-                this._dragEnterHandler.call( this, e );
-    
-                return false;
-            },
-    
-            _dragLeaveHandler: function() {
-                this.elem.removeClass('webuploader-dnd-over');
-                return false;
-            },
-    
-            _dropHandler: function( e ) {
-                var results  = [],
-                    promises = [],
-                    me = this,
-                    ruid = me.getRuid(),
-                    items, files, dataTransfer, file, i, len, canAccessFolder;
-    
-                // 只处理框内的。
-                if ( !$.contains( me.elem.parent().get( 0 ), e.target ) ) {
-                    return false;
-                }
-    
-                e = e.originalEvent || e;
-                dataTransfer = e.dataTransfer;
-                items = dataTransfer.items;
-                files = dataTransfer.files;
-    
-                canAccessFolder = !!(items && items[ 0 ].webkitGetAsEntry);
-    
-                for ( i = 0, len = files.length; i < len; i++ ) {
-                    file = files[ i ];
-                    if ( file.type ) {
-                        results.push( file );
-                    } else if ( !file.type && canAccessFolder ) {
-                        promises.push( this._traverseDirectoryTree(
-                                items[ i ].webkitGetAsEntry(), results ) );
-                    }
-                }
-    
-                Base.when.apply( Base, promises ).done(function() {
-                    me.trigger( 'drop', $.map( results, function( file ) {
-                        return new File( ruid, file );
-                    }) );
-                });
-    
-                this.elem.removeClass('webuploader-dnd-over');
-                return false;
-            },
-    
-            _traverseDirectoryTree: function( entry, results ) {
-                var deferred = Base.Deferred(),
-                    me = this;
-    
-                if ( entry.isFile ) {
-                    entry.file(function( file ) {
-                        file.type && results.push( file );
-                        deferred.resolve( true );
-                    });
-                } else if ( entry.isDirectory ) {
-                    entry.createReader().readEntries(function( entries ) {
-                        var len = entries.length,
-                            promises = [],
-                            arr = [],    // 为了保证顺序。
-                            i;
-    
-                        for ( i = 0; i < len; i++ ) {
-                            promises.push( me._traverseDirectoryTree(
-                                    entries[ i ], arr ) );
-                        }
-    
-                        Base.when.apply( Base, promises ).then(function() {
-                            results.push.apply( results, arr );
-                            deferred.resolve( true );
-                        }, deferred.reject );
-                    });
-                }
-    
-                return deferred.promise();
-            },
-    
-            destroy: function() {
-                var elem = this.elem;
-    
-                elem.off( 'dragenter', this.dragEnterHandler );
-                elem.off( 'dragover', this.dragEnterHandler );
-                elem.off( 'dragleave', this.dragLeaveHandler );
-                elem.off( 'drop', this.dropHandler );
-    
-                if ( this.options.disableGlobalDnd ) {
-                    $( document ).off( 'dragover', this.dragOverHandler );
-                    $( document ).off( 'drop', this.dropHandler );
-                }
-            }
-        });
-    });
-
-    /**
-     * @fileOverview FilePaste
-     */
-    define( 'runtime/html5/filepaste', [
-        'base',
-        'runtime/html5/runtime',
-        'lib/file'
-    ], function( Base, Html5Runtime, File ) {
-    
-        return Html5Runtime.register( 'FilePaste', {
-            init: function() {
-                var opts = this.options,
-                    elem = this.elem = opts.container,
-                    accept = '.*',
-                    arr, i, len, item;
-    
-                // accetp的mimeTypes中生成匹配正则。
-                if ( opts.accept ) {
-                    arr = [];
-    
-                    for ( i = 0, len = opts.accept.length; i < len; i++ ) {
-                        item = opts.accept[ i ].mimeTypes;
-                        item && arr.push( item );
-                    }
-    
-                    if ( arr.length ) {
-                        accept = arr.join(',');
-                        accept = accept.replace( /,/g, '|' ).replace( /\*/g, '.*' );
-                    }
-                }
-                this.accept = accept = new RegExp( accept, 'i' );
-                this.hander = Base.bindFn( this._pasteHander, this );
-                elem.on( 'paste', this.hander );
-            },
-    
-            _pasteHander: function( e ) {
-                var allowed = [],
-                    ruid = this.getRuid(),
-                    files, file, blob, i, len;
-    
-                e = e.originalEvent || e;
-    
-                files = e.clipboardData.items;
-    
-                for ( i = 0, len = files.length; i < len; i++ ) {
-                    file = files[ i ];
-    
-                    if ( !file.type || !(blob = file.getAsFile()) ||
-                            blob.size < 6 ) {
-                        continue;
-                    }
-    
-                    allowed.push( new File( ruid, blob ) );
-                }
-    
-                if ( allowed.length ) {
-                    // 不阻止非文件粘贴（文字粘贴）的事件冒泡
-                    e.preventDefault();
-                    e.stopPropagation();
-                    this.trigger( 'paste', allowed );
-                }
-            },
-    
-            destroy: function() {
-                this.elem.off( 'paste', this.hander );
-            }
-        });
-    });
-    
-
-    /**
-     * @fileOverview FilePicker
-     */
-    define( 'runtime/html5/filepicker', [
-        'base',
-        'runtime/html5/runtime'
-    ], function( Base, Html5Runtime ) {
-    
-        var $ = Base.$;
-    
-        return Html5Runtime.register( 'FilePicker', {
-            init: function() {
-                var container = this.getRuntime().getContainer(),
-                    me = this,
-                    owner = me.owner,
-                    opts = me.options,
-                    lable = $( document.createElement('label') ),
-                    input = $( document.createElement('input') ),
-                    arr, i, len, mouseHandler;
-    
-                input.attr( 'type', 'file' );
-    
-                input.css({
-                    position: 'absolute',
-                    clip: 'rect(1px,1px,1px,1px)'
-                });
-    
-                lable.on( 'click', function() {
-                    input.trigger('click');
-                });
-    
-                lable.css({
-                    opacity: 0,
-                    width: '100%',
-                    height: '100%',
-                    display: 'block',
-                    cursor: 'pointer',
-                    background: '#ffffff'
-                });
-    
-                if ( opts.multiple ) {
-                    input.attr( 'multiple', 'multiple' );
-                }
-    
-                // @todo Firefox不支持单独指定后缀
-                if ( opts.accept && opts.accept.length > 0 ) {
-                    arr = [];
-    
-                    for ( i = 0, len = opts.accept.length; i < len; i++ ) {
-                        arr.push( opts.accept[ i ].mimeTypes );
-                    }
-    
-                    input.attr( 'accept', arr.join(',') );
-                }
-    
-                container.append( input );
-                container.append( lable );
-    
-                mouseHandler = function( e ) {
-                    owner.trigger( e.type );
-                };
-    
-                input.on( 'change', function( e ) {
-                    var fn = arguments.callee,
-                        clone;
-    
-                    me.files = e.target.files;
-    
-                    // reset input
-                    clone = this.cloneNode( true );
-                    this.parentNode.replaceChild( clone, this );
-    
-                    input.off();
-                    input = $( clone ).on( 'change', fn )
-                            .on( 'mouseenter mouseleave', mouseHandler );
-    
-                    owner.trigger('change');
-                });
-    
-                lable.on( 'mouseenter mouseleave', mouseHandler );
-    
-            },
-    
-    
-            getFiles: function() {
-                return this.files;
-            },
-    
-            destroy: function() {
-                // todo
-            }
-        });
-    });
-
-    /**
-     * Terms:
-     *
-     * Uint8Array, FileReader, BlobBuilder, atob, ArrayBuffer
-     * @fileOverview Image控件
-     */
-    define( 'runtime/html5/imagemeta', function() {
-    
-        var api;
-    
-        api = {
-            parsers: {
-                0xffe1: []
-            },
-    
-            maxMetaDataSize: 262144,
-    
-            parse: function( blob, cb ) {
-                var me = this,
-                    fr = new FileReader();
-    
-                fr.onload = function() {
-                    cb( false, me._parse( this.result ) );
-                    fr = fr.onload = fr.onerror = null;
-                };
-    
-                fr.onerror = function( e ) {
-                    cb( e.message );
-                    fr = fr.onload = fr.onerror = null;
-                };
-    
-                blob = blob.slice( 0, me.maxMetaDataSize );
-                fr.readAsArrayBuffer( blob.getSource() );
-            },
-    
-            _parse: function( buffer, noParse ) {
-                if ( buffer.byteLength < 6 ) {
-                    return;
-                }
-    
-                var dataview = new DataView( buffer ),
-                    offset = 2,
-                    maxOffset = dataview.byteLength - 4,
-                    headLength = offset,
-                    ret = {},
-                    markerBytes, markerLength, parsers, i;
-    
-                if ( dataview.getUint16( 0 ) === 0xffd8 ) {
-    
-                    while ( offset < maxOffset ) {
-                        markerBytes = dataview.getUint16( offset );
-    
-                        if ( markerBytes >= 0xffe0 && markerBytes <= 0xffef ||
-                                markerBytes === 0xfffe ) {
-    
-                            markerLength = dataview.getUint16( offset + 2 ) + 2;
-    
-                            if ( offset + markerLength > dataview.byteLength ) {
-                                break;
-                            }
-    
-                            parsers = api.parsers[ markerBytes ];
-    
-                            if ( !noParse && parsers ) {
-                                for ( i = 0; i < parsers.length; i += 1 ) {
-                                    parsers[ i ].call( api, dataview, offset,
-                                            markerLength, ret );
-                                }
-                            }
-    
-                            offset += markerLength;
-                            headLength = offset;
-                        } else {
-                            break;
-                        }
-                    }
-    
-                    if ( headLength > 6 ) {
-                        if ( buffer.slice ) {
-                            ret.imageHead = buffer.slice( 2, headLength );
-                        } else {
-                            // Workaround for IE10, which does not yet
-                            // support ArrayBuffer.slice:
-                            ret.imageHead = new Uint8Array( buffer )
-                                    .subarray( 2, headLength );
-                        }
-                    }
-                }
-    
-                return ret;
-            },
-    
-            updateImageHead: function( buffer, head ) {
-                var data = this._parse( buffer, true ),
-                    buf1, buf2, bodyoffset;
-    
-    
-                bodyoffset = 2;
-                if ( data.imageHead ) {
-                    bodyoffset = 2 + data.imageHead.byteLength;
-                }
-    
-                if ( buffer.slice ) {
-                    buf2 = buffer.slice( bodyoffset );
-                } else {
-                    buf2 = new Uint8Array( buffer ).subarray( bodyoffset );
-                }
-    
-                buf1 = new Uint8Array( head.byteLength + 2 + buf2.byteLength );
-    
-                buf1[ 0 ] = 0xFF;
-                buf1[ 1 ] = 0xD8;
-                buf1.set( new Uint8Array( head ), 2 );
-                buf1.set( new Uint8Array( buf2 ), head.byteLength + 2 );
-    
-                return buf1.buffer;
-            }
-        };
-    
-        return api;
-    });
-
-    /**
-     * 代码来自于：https://github.com/blueimp/JavaScript-Load-Image
-     * 暂时项目中只用了orientation.
-     *
-     * 去除了 Exif Sub IFD Pointer, GPS Info IFD Pointer, Exif Thumbnail.
-     * @fileOverview EXIF解析
-     */
-    
-    // Sample
-    // ====================================
-    // Make : Apple
-    // Model : iPhone 4S
-    // Orientation : 1
-    // XResolution : 72 [72/1]
-    // YResolution : 72 [72/1]
-    // ResolutionUnit : 2
-    // Software : QuickTime 7.7.1
-    // DateTime : 2013:09:01 22:53:55
-    // ExifIFDPointer : 190
-    // ExposureTime : 0.058823529411764705 [1/17]
-    // FNumber : 2.4 [12/5]
-    // ExposureProgram : Normal program
-    // ISOSpeedRatings : 800
-    // ExifVersion : 0220
-    // DateTimeOriginal : 2013:09:01 22:52:51
-    // DateTimeDigitized : 2013:09:01 22:52:51
-    // ComponentsConfiguration : YCbCr
-    // ShutterSpeedValue : 4.058893515764426
-    // ApertureValue : 2.5260688216892597 [4845/1918]
-    // BrightnessValue : -0.3126686601998395
-    // MeteringMode : Pattern
-    // Flash : Flash did not fire, compulsory flash mode
-    // FocalLength : 4.28 [107/25]
-    // SubjectArea : [4 values]
-    // FlashpixVersion : 0100
-    // ColorSpace : 1
-    // PixelXDimension : 2448
-    // PixelYDimension : 3264
-    // SensingMethod : One-chip color area sensor
-    // ExposureMode : 0
-    // WhiteBalance : Auto white balance
-    // FocalLengthIn35mmFilm : 35
-    // SceneCaptureType : Standard
-    define( 'runtime/html5/imagemeta/exif', [
-        'base',
-        'runtime/html5/imagemeta'
-    ], function( Base, ImageMeta ) {
-    
-        var EXIF = {};
-    
-        EXIF.ExifMap = function() {
-            return this;
-        };
-    
-        EXIF.ExifMap.prototype.map = {
-            'Orientation': 0x0112
-        };
-    
-        EXIF.ExifMap.prototype.get = function( id ) {
-            return this[ id ] || this[ this.map[ id ] ];
-        };
-    
-        EXIF.exifTagTypes = {
-            // byte, 8-bit unsigned int:
-            1: {
-                getValue: function( dataView, dataOffset ) {
-                    return dataView.getUint8( dataOffset );
-                },
-                size: 1
-            },
-    
-            // ascii, 8-bit byte:
-            2: {
-                getValue: function( dataView, dataOffset ) {
-                    return String.fromCharCode( dataView.getUint8( dataOffset ) );
-                },
-                size: 1,
-                ascii: true
-            },
-    
-            // short, 16 bit int:
-            3: {
-                getValue: function( dataView, dataOffset, littleEndian ) {
-                    return dataView.getUint16( dataOffset, littleEndian );
-                },
-                size: 2
-            },
-    
-            // long, 32 bit int:
-            4: {
-                getValue: function( dataView, dataOffset, littleEndian ) {
-                    return dataView.getUint32( dataOffset, littleEndian );
-                },
-                size: 4
-            },
-    
-            // rational = two long values,
-            // first is numerator, second is denominator:
-            5: {
-                getValue: function( dataView, dataOffset, littleEndian ) {
-                    return dataView.getUint32( dataOffset, littleEndian ) /
-                        dataView.getUint32( dataOffset + 4, littleEndian );
-                },
-                size: 8
-            },
-    
-            // slong, 32 bit signed int:
-            9: {
-                getValue: function( dataView, dataOffset, littleEndian ) {
-                    return dataView.getInt32( dataOffset, littleEndian );
-                },
-                size: 4
-            },
-    
-            // srational, two slongs, first is numerator, second is denominator:
-            10: {
-                getValue: function( dataView, dataOffset, littleEndian ) {
-                    return dataView.getInt32( dataOffset, littleEndian ) /
-                        dataView.getInt32( dataOffset + 4, littleEndian );
-                },
-                size: 8
-            }
-        };
-    
-        // undefined, 8-bit byte, value depending on field:
-        EXIF.exifTagTypes[ 7 ] = EXIF.exifTagTypes[ 1 ];
-    
-        EXIF.getExifValue = function( dataView, tiffOffset, offset, type, length,
-                littleEndian ) {
-    
-            var tagType = EXIF.exifTagTypes[ type ],
-                tagSize, dataOffset, values, i, str, c;
-    
-            if ( !tagType ) {
-                Base.log('Invalid Exif data: Invalid tag type.');
-                return;
-            }
-    
-            tagSize = tagType.size * length;
-    
-            // Determine if the value is contained in the dataOffset bytes,
-            // or if the value at the dataOffset is a pointer to the actual data:
-            dataOffset = tagSize > 4 ? tiffOffset + dataView.getUint32( offset + 8,
-                    littleEndian ) : (offset + 8);
-    
-            if ( dataOffset + tagSize > dataView.byteLength ) {
-                Base.log('Invalid Exif data: Invalid data offset.');
-                return;
-            }
-    
-            if ( length === 1 ) {
-                return tagType.getValue( dataView, dataOffset, littleEndian );
-            }
-    
-            values = [];
-    
-            for ( i = 0; i < length; i += 1 ) {
-                values[ i ] = tagType.getValue( dataView,
-                        dataOffset + i * tagType.size, littleEndian );
-            }
-    
-            if ( tagType.ascii ) {
-                str = '';
-    
-                // Concatenate the chars:
-                for ( i = 0; i < values.length; i += 1 ) {
-                    c = values[ i ];
-    
-                    // Ignore the terminating NULL byte(s):
-                    if ( c === '\u0000' ) {
-                        break;
-                    }
-                    str += c;
-                }
-    
-                return str;
-            }
-            return values;
-        };
-    
-        EXIF.parseExifTag = function( dataView, tiffOffset, offset, littleEndian,
-                data ) {
-    
-            var tag = dataView.getUint16( offset, littleEndian );
-            data.exif[ tag ] = EXIF.getExifValue( dataView, tiffOffset, offset,
-                    dataView.getUint16( offset + 2, littleEndian ),    // tag type
-                    dataView.getUint32( offset + 4, littleEndian ),    // tag length
-                    littleEndian );
-        };
-    
-        EXIF.parseExifTags = function( dataView, tiffOffset, dirOffset,
-                littleEndian, data ) {
-    
-            var tagsNumber, dirEndOffset, i;
-    
-            if ( dirOffset + 6 > dataView.byteLength ) {
-                Base.log('Invalid Exif data: Invalid directory offset.');
-                return;
-            }
-    
-            tagsNumber = dataView.getUint16( dirOffset, littleEndian );
-            dirEndOffset = dirOffset + 2 + 12 * tagsNumber;
-    
-            if ( dirEndOffset + 4 > dataView.byteLength ) {
-                Base.log('Invalid Exif data: Invalid directory size.');
-                return;
-            }
-    
-            for ( i = 0; i < tagsNumber; i += 1 ) {
-                this.parseExifTag( dataView, tiffOffset,
-                        dirOffset + 2 + 12 * i,    // tag offset
-                        littleEndian, data );
-            }
-    
-            // Return the offset to the next directory:
-            return dataView.getUint32( dirEndOffset, littleEndian );
-        };
-    
-        // EXIF.getExifThumbnail = function(dataView, offset, length) {
-        //     var hexData,
-        //         i,
-        //         b;
-        //     if (!length || offset + length > dataView.byteLength) {
-        //         Base.log('Invalid Exif data: Invalid thumbnail data.');
-        //         return;
-        //     }
-        //     hexData = [];
-        //     for (i = 0; i < length; i += 1) {
-        //         b = dataView.getUint8(offset + i);
-        //         hexData.push((b < 16 ? '0' : '') + b.toString(16));
-        //     }
-        //     return 'data:image/jpeg,%' + hexData.join('%');
-        // };
-    
-        EXIF.parseExifData = function( dataView, offset, length, data ) {
-    
-            var tiffOffset = offset + 10,
-                littleEndian, dirOffset;
-    
-            // Check for the ASCII code for "Exif" (0x45786966):
-            if ( dataView.getUint32( offset + 4 ) !== 0x45786966 ) {
-                // No Exif data, might be XMP data instead
-                return;
-            }
-            if ( tiffOffset + 8 > dataView.byteLength ) {
-                Base.log('Invalid Exif data: Invalid segment size.');
-                return;
-            }
-    
-            // Check for the two null bytes:
-            if ( dataView.getUint16( offset + 8 ) !== 0x0000 ) {
-                Base.log('Invalid Exif data: Missing byte alignment offset.');
-                return;
-            }
-    
-            // Check the byte alignment:
-            switch ( dataView.getUint16( tiffOffset ) ) {
-                case 0x4949:
-                    littleEndian = true;
-                    break;
-    
-                case 0x4D4D:
-                    littleEndian = false;
-                    break;
-    
-                default:
-                    Base.log('Invalid Exif data: Invalid byte alignment marker.');
-                    return;
-            }
-    
-            // Check for the TIFF tag marker (0x002A):
-            if ( dataView.getUint16( tiffOffset + 2, littleEndian ) !== 0x002A ) {
-                Base.log('Invalid Exif data: Missing TIFF marker.');
-                return;
-            }
-    
-            // Retrieve the directory offset bytes, usually 0x00000008 or 8 decimal:
-            dirOffset = dataView.getUint32( tiffOffset + 4, littleEndian );
-            // Create the exif object to store the tags:
-            data.exif = new EXIF.ExifMap();
-            // Parse the tags of the main image directory and retrieve the
-            // offset to the next directory, usually the thumbnail directory:
-            dirOffset = EXIF.parseExifTags( dataView, tiffOffset,
-                    tiffOffset + dirOffset, littleEndian, data );
-    
-            // 尝试读取缩略图
-            // if ( dirOffset ) {
-            //     thumbnailData = {exif: {}};
-            //     dirOffset = EXIF.parseExifTags(
-            //         dataView,
-            //         tiffOffset,
-            //         tiffOffset + dirOffset,
-            //         littleEndian,
-            //         thumbnailData
-            //     );
-    
-            //     // Check for JPEG Thumbnail offset:
-            //     if (thumbnailData.exif[0x0201]) {
-            //         data.exif.Thumbnail = EXIF.getExifThumbnail(
-            //             dataView,
-            //             tiffOffset + thumbnailData.exif[0x0201],
-            //             thumbnailData.exif[0x0202] // Thumbnail data length
-            //         );
-            //     }
-            // }
-        };
-    
-        ImageMeta.parsers[ 0xffe1 ].push( EXIF.parseExifData );
-        return EXIF;
-    });
-
-    /**
-     * Terms:
-     *
-     * Uint8Array, FileReader, BlobBuilder, atob, ArrayBuffer
-     * @fileOverview Image控件
-     */
-    define( 'runtime/html5/util', function() {
-    
-        var urlAPI = window.createObjectURL && window ||
-                window.URL && URL.revokeObjectURL && URL ||
-                window.webkitURL;
-    
-        return {
-            createObjectURL: urlAPI && urlAPI.createObjectURL,
-            revokeObjectURL: urlAPI && urlAPI.revokeObjectURL,
-    
-            dataURL2Blob: function( dataURI ) {
-                var byteStr, intArray, ab, i, mimetype, parts;
-    
-                parts = dataURI.split(',');
-    
-                if ( ~parts[ 0 ].indexOf('base64') ) {
-                    byteStr = atob( parts[ 1 ] );
-                } else {
-                    byteStr = decodeURIComponent( parts[ 1 ] );
-                }
-    
-                ab = new ArrayBuffer( byteStr.length );
-                intArray = new Uint8Array( ab );
-    
-                for ( i = 0; i < byteStr.length; i++ ) {
-                    intArray[ i ] = byteStr.charCodeAt( i );
-                }
-    
-                mimetype = parts[ 0 ].split(':')[ 1 ].split(';')[ 0 ];
-    
-                return new Blob([ ab ], {
-                    type: mimetype
-                });
-            },
-    
-            dataURL2ArrayBuffer: function( dataURI ) {
-                var byteStr, intArray, i, parts;
-    
-                parts = dataURI.split(',');
-    
-                if ( ~parts[ 0 ].indexOf('base64') ) {
-                    byteStr = atob( parts[ 1 ] );
-                } else {
-                    byteStr = decodeURIComponent( parts[ 1 ] );
-                }
-    
-                intArray = new Uint8Array( byteStr.length );
-    
-                for ( i = 0; i < byteStr.length; i++ ) {
-                    intArray[ i ] = byteStr.charCodeAt( i );
-                }
-    
-                return intArray.buffer;
-            },
-    
-            arrayBufferToBlob: function( buffer, type ) {
-                return new Blob([ buffer ], type ? { type: type } : {} );
-            }
-        };
-    });
-
-    /**
-     * @fileOverview Image
-     */
-    define( 'runtime/html5/image', [
-        'runtime/html5/runtime',
-        'runtime/html5/util',
-        'runtime/html5/imagemeta'
-    ], function( Html5Runtime, Util, ImageMeta ) {
-    
-        var BLANK = 'data:image/gif;base64,R0lGODlhAQABAAD/ACwAAAAAAQABAAACADs%3D';
-    
-        return Html5Runtime.register( 'Image', {
-    
-            // flag: 标记是否被修改过。
-            modified: false,
-    
-            init: function() {
-                var me = this,
-                    img = new Image();
-    
-                img.onload = function() {
-    
-                    me._info = {
-                        type: me.type,
-                        width: this.width,
-                        height: this.height
-                    };
-    
-                    // 读取meta信息。
-                    if ( !me._metas && ~'image/jpegimage/jpg'.indexOf( me.type ) ) {
-                        ImageMeta.parse( me._blob, function( error, ret ) {
-                            me._metas = ret;
-                            me.owner.trigger('load');
-                        });
-                    } else {
-                        me.owner.trigger('load');
-                    }
-                };
-    
-                img.onerror = function() {
-                    me.owner.trigger('error');
-                };
-    
-                me._img = img;
-            },
-    
-            loadFromBlob: function( blob ) {
-                var me = this,
-                    img = me._img;
-    
-                me._blob = blob;
-                me.type = blob.type;
-                img.src = Util.createObjectURL( blob.getSource() );
-                me.owner.once( 'load', function() {
-                    Util.revokeObjectURL( img.src );
-                });
-            },
-    
-            resize: function( width, height ) {
-                var canvas = this._canvas ||
-                        (this._canvas = document.createElement('canvas'));
-    
-                this._resize( this._img, canvas, width, height );
-                this._blob = null;    // 没用了，可以删掉了。
-                this.modified = true;
-                this.owner.trigger('complete');
-            },
-    
-            getAsBlob: function( type ) {
-                var blob = this._blob,
-                    opts = this.options,
-                    canvas;
-    
-                type = type || this.type;
-    
-                // blob需要重新生成。
-                if ( this.modified || this.type !== type ) {
-                    canvas = this._canvas;
-    
-                    if ( type === 'image/jpeg' ) {
-                        blob = canvas.toDataURL( 'image/jpeg', opts.quality / 100 );
-    
-                        if ( opts.preserveHeaders && this._metas &&
-                                this._metas.imageHead ) {
-    
-                            blob = Util.dataURL2ArrayBuffer( blob );
-                            blob = ImageMeta.updateImageHead( blob,
-                                    this._metas.imageHead );
-                            blob = Util.arrayBufferToBlob( blob, type );
-                            return blob;
-                        }
-                    } else {
-                        blob = canvas.toDataURL( type );
-                    }
-    
-                    blob = Util.dataURL2Blob( blob );
-                }
-    
-                return blob;
-            },
-    
-            getAsDataUrl: function( type ) {
-                var opts = this.options;
-    
-                type = type || this.type;
-    
-                if ( type === 'image/jpeg' ) {
-                    return this._canvas.toDataURL( type, opts.quality / 100 );
-                } else {
-                    return this._canvas.toDataURL( type );
-                }
-            },
-    
-            getOrientation: function() {
-                return this._metas && this._metas.exif &&
-                        this._metas.exif.get('Orientation') || 1;
-            },
-    
-            info: function( val ) {
-    
-                // setter
-                if ( val ) {
-                    this._info = val;
-                    return this;
-                }
-    
-                // getter
-                return this._info;
-            },
-    
-            meta: function( val ) {
-    
-                // setter
-                if ( val ) {
-                    this._meta = val;
-                    return this;
-                }
-    
-                // getter
-                return this._meta;
-            },
-    
-            destroy: function() {
-                var canvas = this._canvas;
-                this._img.onload = null;
-    
-                if ( canvas ) {
-                    canvas.getContext('2d')
-                            .clearRect( 0, 0, canvas.width, canvas.height );
-                    canvas.width = canvas.height = 0;
-                    this._canvas = null;
-                }
-    
-                // 释放内存。非常重要，否则释放不了image的内存。
-                this._img.src = BLANK;
-                this._img = this._blob = null;
-            },
-    
-            _resize: function( img, cvs, width, height ) {
-                var opts = this.options,
-                    naturalWidth = img.width,
-                    naturalHeight = img.height,
-                    orientation = this.getOrientation(),
-                    scale, w, h, x, y;
-    
-                // values that require 90 degree rotation
-                if ( ~[ 5, 6, 7, 8 ].indexOf( orientation ) ) {
-    
-                    // 交换width, height的值。
-                    width ^= height;
-                    height ^= width;
-                    width ^= height;
-                }
-    
-                scale = Math[ opts.crop ? 'max' : 'min' ]( width / naturalWidth,
-                        height / naturalHeight );
-    
-                // 不允许放大。
-                opts.allowMagnify || (scale = Math.min( 1, scale ));
-    
-                w = naturalWidth * scale;
-                h = naturalHeight * scale;
-    
-                if ( opts.crop ) {
-                    cvs.width = width;
-                    cvs.height = height;
-                } else {
-                    cvs.width = w;
-                    cvs.height = h;
-                }
-    
-                x = (cvs.width - w) / 2;
-                y = (cvs.height - h) / 2;
-    
-                opts.preserveHeaders || this._rotate2Orientaion( cvs, orientation );
-    
-                this._renderImageToCanvas( cvs, img, x, y, w, h );
-            },
-    
-            _rotate2Orientaion: function( canvas, orientation ) {
-                var width = canvas.width,
-                    height = canvas.height,
-                    ctx = canvas.getContext('2d');
-    
-                switch ( orientation ) {
-                    case 5:
-                    case 6:
-                    case 7:
-                    case 8:
-                        canvas.width = height;
-                        canvas.height = width;
-                        break;
-                }
-    
-                switch ( orientation ) {
-                    case 2:    // horizontal flip
-                        ctx.translate( width, 0 );
-                        ctx.scale( -1, 1 );
-                        break;
-    
-                    case 3:    // 180 rotate left
-                        ctx.translate( width, height );
-                        ctx.rotate( Math.PI );
-                        break;
-    
-                    case 4:    // vertical flip
-                        ctx.translate( 0, height );
-                        ctx.scale( 1, -1 );
-                        break;
-    
-                    case 5:    // vertical flip + 90 rotate right
-                        ctx.rotate( 0.5 * Math.PI );
-                        ctx.scale( 1, -1 );
-                        break;
-    
-                    case 6:    // 90 rotate right
-                        ctx.rotate( 0.5 * Math.PI );
-                        ctx.translate( 0, -height );
-                        break;
-    
-                    case 7:    // horizontal flip + 90 rotate right
-                        ctx.rotate( 0.5 * Math.PI );
-                        ctx.translate( width, -height );
-                        ctx.scale( -1, 1 );
-                        break;
-    
-                    case 8:    // 90 rotate left
-                        ctx.rotate( -0.5 * Math.PI );
-                        ctx.translate( -width, 0 );
-                        break;
-                }
-            },
-    
-            _renderImageToCanvas: function( canvas, img, x, y, w, h ) {
-                canvas.getContext('2d').drawImage( img, x, y, w, h );
-            }
-    
-            /*_renderImageToCanvas: (function() {
-                var subsampled, vertSquashRatio;
-    
-                // Detect subsampling in loaded image.
-                // In iOS, larger images than 2M pixels may be subsampled in rendering.
-                function detectSubsampling(img) {
-                    var iw = img.naturalWidth,
-                        ih = img.naturalHeight;
-                    if (iw * ih > 1024 * 1024) { // subsampling may happen over megapixel image
-                        var canvas = document.createElement('canvas');
-                        canvas.width = canvas.height = 1;
-                        var ctx = canvas.getContext('2d');
-                        ctx.drawImage(img, -iw + 1, 0);
-                        // subsampled image becomes half smaller in rendering size.
-                        // check alpha channel value to confirm image is covering edge pixel or not.
-                        // if alpha value is 0 image is not covering, hence subsampled.
-                        return ctx.getImageData(0, 0, 1, 1).data[3] === 0;
-                    } else {
-                        return false;
-                    }
-                }
-    
-    
-                // Detecting vertical squash in loaded image.
-                // Fixes a bug which squash image vertically while drawing into canvas for some images.
-                function detectVerticalSquash(img, iw, ih) {
-                    var canvas = document.createElement('canvas');
-                    canvas.width = 1;
-                    canvas.height = ih;
-                    var ctx = canvas.getContext('2d');
-                    ctx.drawImage(img, 0, 0);
-                    var data = ctx.getImageData(0, 0, 1, ih).data;
-                    // search image edge pixel position in case it is squashed vertically.
-                    var sy = 0;
-                    var ey = ih;
-                    var py = ih;
-                    while (py > sy) {
-                        var alpha = data[(py - 1) * 4 + 3];
-                        if (alpha === 0) {
-                            ey = py;
-                        } else {
-                            sy = py;
-                        }
-                        py = (ey + sy) >> 1;
-                    }
-                    var ratio = (py / ih);
-                    return (ratio === 0) ? 1 : ratio;
-                }
-    
-                return function( canvas, img, x, y, w, h ) {
-    
-    
-                    var iw = img.naturalWidth, ih = img.naturalHeight;
-                    var width = w, height = h;
-                    var ctx = canvas.getContext('2d');
-                    ctx.save();
-    
-                    subsampled = typeof subsampled === 'undefined' ? detectSubsampling( img ) : subsampled;
-                    if ( subsampled ) {
-                        iw /= 2;
-                        ih /= 2;
-                    }
-    
-                    var d = 1024; // size of tiling canvas
-                    var tmpCanvas = document.createElement('canvas');
-                    tmpCanvas.width = tmpCanvas.height = d;
-                    var tmpCtx = tmpCanvas.getContext('2d');
-    
-                    vertSquashRatio = vertSquashRatio || detectVerticalSquash(img, iw, ih);
-                    console.log( vertSquashRatio );
-    
-                    var dw = Math.ceil(d * width / iw);
-                    var dh = Math.ceil(d * height / ih / vertSquashRatio);
-                    var sy = 0;
-                    var dy = 0;
-                    while (sy < ih) {
-                      var sx = 0;
-                      var dx = 0;
-                      while (sx < iw) {
-                        tmpCtx.clearRect(0, 0, d, d);
-                        tmpCtx.drawImage(img, x - sx, y - sy );
-                        ctx.drawImage(tmpCanvas, 0, 0, d, d, dx, dy, dw, dh);
-                        sx += d;
-                        dx += dw;
-                      }
-                      sy += d;
-                      dy += dh;
-                    }
-                    ctx.restore();
-                    tmpCanvas = tmpCtx = null;
-                };
-            })()*/
-        });
-    });
-
-    /**
-     * @fileOverview Transport
-     * @todo 支持chunked传输，优势：
-     * 可以将大文件分成小块，挨个传输，可以提高大文件成功率，当失败的时候，也只需要重传那小部分，
-     * 而不需要重头再传一次。另外断点续传也需要用chunked方式。
-     */
-    define( 'runtime/html5/transport', [
-        'base',
-        'runtime/html5/runtime'
-    ], function( Base, Html5Runtime ) {
-    
-        var noop = Base.noop,
-            $ = Base.$;
-    
-        return Html5Runtime.register( 'Transport', {
-            init: function() {
-                this._status = 0;
-                this._response = null;
-            },
-    
-            send: function() {
-                var owner = this.owner,
-                    opts = this.options,
-                    xhr = this._initAjax(),
-                    blob = owner._blob,
-                    server = opts.server,
-                    formData, binary;
-    
-                if ( opts.sendAsBinary ) {
-                    server += (/\?/.test( server ) ? '&' : '?') +
-                            $.param( owner._formData );
-    
-                    binary = blob.getSource();
-                } else {
-                    formData = new FormData();
-                    $.each( owner._formData, function( k, v ) {
-                        formData.append( k, v );
-                    });
-    
-                    formData.append( opts.fileVar, blob.getSource(),
-                            opts.filename || owner._formData.name || '' );
-                }
-    
-                if ( opts.withCredentials && 'withCredentials' in xhr ) {
-                    xhr.open( opts.method, server, true );
-                    xhr.withCredentials = true;
-                } else {
-                    xhr.open( opts.method, server );
-                }
-    
-                this._setRequestHeader( xhr, opts.headers );
-                binary && xhr.overrideMimeType('application/octet-stream');
-                xhr.send( binary || formData );
-            },
-    
-            getResponse: function() {
-                return this._response;
-            },
-    
-            getResponseAsJson: function() {
-                return this._parseJson( this._response );
-            },
-    
-            getStatus: function() {
-                return this._status;
-            },
-    
-            abort: function() {
-                var xhr = this._xhr;
-    
-                if ( xhr ) {
-                    xhr.upload.onprogress = noop;
-                    xhr.onreadystatechange = noop;
-                    xhr.abort();
-    
-                    this._xhr = xhr = null;
-                }
-            },
-    
-            destroy: function() {
-                this.abort();
-            },
-    
-            _initAjax: function() {
-                var me = this,
-                    xhr = new XMLHttpRequest(),
-                    opts = this.options;
-    
-                if ( opts.withCredentials && !('withCredentials' in xhr) &&
-                        typeof XDomainRequest !== 'undefined' ) {
-                    xhr = new XDomainRequest();
-                }
-    
-                xhr.upload.onprogress = function( e ) {
-                    var percentage = 0;
-    
-                    if ( e.lengthComputable ) {
-                        percentage = e.loaded / e.total;
-                    }
-    
-                    return me.trigger( 'progress', percentage );
-                };
-    
-                xhr.onreadystatechange = function() {
-    
-                    if ( xhr.readyState !== 4 ) {
-                        return;
-                    }
-    
-                    xhr.upload.onprogress = noop;
-                    xhr.onreadystatechange = noop;
-                    me._xhr = null;
-    
-                    // 只考虑200的情况
-                    if ( xhr.status === 200 ) {
-                        me._response = xhr.responseText;
-                        return me.trigger('load');
-                    }
-    
-                    me._status = xhr.status;
-                    xhr = null;
-    
-                    return me.trigger( 'error', me._status ? 'http' : 'abort' );
-                };
-    
-                me._xhr = xhr;
-                return xhr;
-            },
-    
-            _setRequestHeader: function( xhr, headers ) {
-                $.each( headers, function( key, val ) {
-                    xhr.setRequestHeader( key, val );
-                });
-            },
-    
-            _parseJson: function( str ) {
-                var json;
-    
-                try {
-                    json = JSON.parse( str );
-                } catch ( ex ) {
-                    json = {};
-                }
-    
-                return json;
-            }
-        });
-    });
-
-    /**
-     * @fileOverview FlashRuntime
-     */
-    define( 'runtime/flash/runtime', [
-        'base',
-        'runtime/runtime',
-        'runtime/compbase'
-    ], function( Base, Runtime, CompBase ) {
-    
-        var $ = Base.$,
-            type = 'flash',
-            components = {};
-    
-    
-        function getFlashVersion() {
-            var version;
-    
-            try {
-                version = navigator.plugins[ 'Shockwave Flash' ];
-                version = version.description;
-            } catch ( ex ) {
-                try {
-                    version = new ActiveXObject('ShockwaveFlash.ShockwaveFlash')
-                            .GetVariable('$version');
-                } catch ( ex2 ) {
-                    version = '0.0';
-                }
-            }
-            version = version.match( /\d+/g );
-            return parseFloat( version[ 0 ] + '.' + version[ 1 ], 10 );
-        }
-    
-        function FlashRuntime() {
-            var pool = {},
-                clients = {},
-                destory = this.destory,
-                me = this,
-                jsreciver = Base.guid('webuploader_');
-    
-            Runtime.apply( me, arguments );
-            me.type = type;
-    
-    
-            // 这个方法的调用者，实际上是RuntimeClient
-            me.exec = function( comp, fn/*, args...*/ ) {
-                var client = this,
-                    uid = client.uid,
-                    args = Base.slice( arguments, 2 ),
-                    instance;
-    
-                clients[ uid ] = client;
-    
-                if ( components[ comp ] ) {
-                    if ( !pool[ uid ] ) {
-                        pool[ uid ] = new components[ comp ]( client, me );
-                    }
-    
-                    instance = pool[ uid ];
-    
-                    if ( instance[ fn ] ) {
-                        return instance[ fn ].apply( instance, args );
-                    }
-                }
-    
-                return me.flashExec.apply( client, arguments );
-            };
-    
-            function hander( evt, obj ) {
-                var type = evt.type || evt,
-                    parts, uid;
-    
-                parts = type.split('::');
-                uid = parts[ 0 ];
-                type = parts[ 1 ];
-    
-                // console.log.apply( console, arguments );
-    
-                if ( type === 'Ready' && uid === me.uid ) {
-                    me.trigger('ready');
-                } else if ( clients[ uid ] ) {
-                    clients[ uid ].trigger( type.toLowerCase(), evt, obj );
-                }
-    
-                // Base.log( evt, obj );
-            }
-    
-            // flash的接受器。
-            window[ jsreciver ] = function() {
-                var args = arguments;
-    
-                // 为了能捕获得到。
-                setTimeout(function() {
-                    hander.apply( null, args );
-                }, 1 );
-            };
-    
-            this.jsreciver = jsreciver;
-    
-            this.destory = function() {
-                // @todo 删除池子中的所有实例
-                return destory && destory.apply( this, arguments );
-            };
-    
-            this.flashExec = function( comp, fn ) {
-                var flash = me.getFlash(),
-                    args = Base.slice( arguments, 2 );
-    
-                return flash.exec( this.uid, comp, fn, args );
-            };
-    
-            // @todo
-        }
-    
-        Base.inherits( Runtime, {
-            constructor: FlashRuntime,
-    
-            init: function() {
-                var container = this.getContainer(),
-                    opts = this.options,
-                    html;
-    
-                // if not the minimal height, shims are not initialized
-                // in older browsers (e.g FF3.6, IE6,7,8, Safari 4.0,5.0, etc)
-                container.css({
-                    position: 'absolute',
-                    top: '-8px',
-                    left: '-8px',
-                    width: '9px',
-                    height: '9px',
-                    overflow: 'hidden'
-                });
-    
-                // insert flash object
-                html = '<object id="' + this.uid + '" type="application/' +
-                        'x-shockwave-flash" data="' +  opts.swf + '" ';
-    
-                if ( Base.isIE ) {
-                    html += 'classid="clsid:d27cdb6e-ae6d-11cf-96b8-444553540000" ';
-                }
-    
-                html += 'width="100%" height="100%" style="outline:0">'  +
-                    '<param name="movie" value="' + opts.swf + '" />' +
-                    '<param name="flashvars" value="uid=' + this.uid +
-                    '&jsreciver=' + this.jsreciver + '" />' +
-                    '<param name="wmode" value="transparent" />' +
-                    '<param name="allowscriptaccess" value="always" />' +
-                '</object>';
-    
-                container.html( html );
-            },
-    
-            getFlash: function() {
-                if ( this._flash ) {
-                    return this._flash;
-                }
-    
-                this._flash = $( '#' + this.uid ).get( 0 );
-                return this._flash;
-            }
-    
-        });
-    
-        FlashRuntime.register = function( name, component ) {
-            component = components[ name ] = Base.inherits( CompBase, $.extend({
-    
-                // @todo fix this later
-                flashExec: function() {
-                    var owner = this.owner,
-                        runtime = this.getRuntime();
-    
-                    return runtime.flashExec.apply( owner, arguments );
-                }
-            }, component ) );
-    
-            return component;
-        };
-    
-        if ( getFlashVersion() >= 11.3 ) {
-            Runtime.addRuntime( type, FlashRuntime );
-        }
-    
-        return FlashRuntime;
-    });
-
-    /**
-     * @fileOverview 图片压缩
-     */
-    define( 'runtime/flash/image', [
-        'runtime/flash/runtime'
-    ], function( FlashRuntime ) {
-    
-        return FlashRuntime.register( 'Image', {
-            // init: function( options ) {
-            //     var owner = this.owner;
-    
-            //     this.flashExec( 'Image', 'init', options );
-            //     owner.on( 'load', function() {
-            //         debugger;
-            //     });
-            // },
-    
-            loadFromBlob: function( blob ) {
-                var owner = this.owner;
-    
-                owner.info() && this.flashExec( 'Image', 'info', owner.info() );
-                owner.meta() && this.flashExec( 'Image', 'meta', owner.meta() );
-    
-                this.flashExec( 'Image', 'loadFromBlob', blob.uid );
-            }
-        });
-    });
-
-    /**
-     * @fileOverview  Transport flash实现
-     */
-    define( 'runtime/flash/transport', [
-        'base',
-        'runtime/flash/runtime',
-        'runtime/client'
-    ], function( Base, FlashRuntime, RuntimeClient ) {
-        var $ = Base.$;
-    
-        return FlashRuntime.register( 'Transport', {
-            init: function() {
-                this._status = 0;
-                this._response = null;
-                this._responseJson = null;
-            },
-    
-            send: function() {
-                var owner = this.owner,
-                    opts = this.options,
-                    xhr = this._initAjax(),
-                    blob = owner._blob,
-                    server = opts.server,
-                    binary;
-    
-                xhr.connectRuntime( blob.ruid );
-    
-                if ( opts.sendAsBinary ) {
-                    server += (/\?/.test( server ) ? '&' : '?') +
-                            $.param( owner._formData );
-    
-                    binary = blob.uid;
-                } else {
-                    $.each( owner._formData, function( k, v ) {
-                        xhr.exec( 'append', k, v );
-                    });
-    
-                    xhr.exec( 'appendBlob', opts.fileVar, blob.uid,
-                            opts.filename || owner._formData.name || '' );
-                }
-    
-                this._setRequestHeader( xhr, opts.headers );
-                xhr.exec( 'send', {
-                    method: opts.method,
-                    url: server
-                }, binary );
-            },
-    
-            getStatus: function() {
-                return this._status;
-            },
-    
-            getResponse: function() {
-                return this._response;
-            },
-    
-            getResponseAsJson: function() {
-                return this._responseJson;
-            },
-    
-            abort: function() {
-                var xhr = this._xhr;
-    
-                if ( xhr ) {
-                    xhr.exec('abort');
-                    xhr.destroy();
-                    this._xhr = xhr = null;
-                }
-            },
-    
-            destroy: function() {
-                this.abort();
-            },
-    
-            _initAjax: function() {
-                var me = this,
-                    xhr = new RuntimeClient('XMLHttpRequest');
-    
-                xhr.on( 'uploadprogress progress', function( e ) {
-                    return me.trigger( 'progress', e.loaded / e.total );
-                });
-    
-                xhr.on( 'load', function() {
-                    var status = xhr.exec('getStatus');
-    
-                    xhr.off();
-                    me._xhr = null;
-    
-                    if ( status === 200 ) {
-                        me._response = xhr.exec('getResponse');
-                        me._responseJson = xhr.exec('getResponseAsJson');
-                        return me.trigger('load');
-                    }
-    
-                    me._status = status;
-                    xhr.destroy();
-                    xhr = null;
-    
-                    return me.trigger( 'error', 'http' );
-                });
-    
-                xhr.on( 'error', function() {
-                    xhr.off();
-                    me._xhr = null;
-                    me.trigger( 'error', 'http' );
-                });
-    
-                me._xhr = xhr;
-                return xhr;
-            },
-    
-            _setRequestHeader: function( xhr, headers ) {
-                $.each( headers, function( key, val ) {
-                    xhr.exec( 'setRequestHeader', key, val );
-                });
-            }
-        });
-    });
-
-    define( 'preset/all', [
-        'base',
-        'uploader',
-        //widgets'../widgets/filepicker',
-        'widgets/filednd',
-        'widgets/filepaste',
-        'widgets/image',
-        'widgets/queue',
-        'widgets/runtime',
-        'widgets/upload',
-        'widgets/validator',
-        //runtimes////html5'../runtime/html5/blob',
-        'runtime/html5/dnd',
-        'runtime/html5/filepaste',
-        'runtime/html5/filepicker',
-        'runtime/html5/imagemeta/exif',
-        'runtime/html5/image',
-        'runtime/html5/transport',
-        //flash'../runtime/flash/filepicker',
-        'runtime/flash/image',
-        'runtime/flash/transport'
-    ], function( Base ) {
-        return Base;
-    });
-
-    define( 'preset/flashonly', [
-        'base',
-        'uploader',
-        //widgets'../widgets/filepicker',
-        'widgets/image',
-        'widgets/queue',
-        'widgets/runtime',
-        'widgets/upload',
-        'widgets/validator',
-        //runtimes//flash'../runtime/flash/filepicker',
-        'runtime/flash/image',
-        'runtime/flash/transport'
-    ], function( Base ) {
-        return Base;
-    });
-
-    define( 'preset/html5only', [
-        'base',
-        'uploader',
-        //widgets'../widgets/filepicker',
-        'widgets/filednd',
-        'widgets/filepaste',
-        'widgets/image',
-        'widgets/queue',
-        'widgets/runtime',
-        'widgets/upload',
-        'widgets/validator',
-        //runtimes////html5'../runtime/html5/blob',
-        'runtime/html5/dnd',
-        'runtime/html5/filepaste',
-        'runtime/html5/filepicker',
-        'runtime/html5/imagemeta/exif',
-        'runtime/html5/image',
-        'runtime/html5/transport'
-    ], function( Base ) {
-        return Base;
-    });
-
-    define( 'preset/withoutimage', [
-        'base',
-        'uploader',
-        //widgets'../widgets/filepicker',
-        'widgets/filednd',
-        'widgets/filepaste',
-        'widgets/queue',
-        'widgets/runtime',
-        'widgets/upload',
-        'widgets/validator',
-        //runtimes////html5'../runtime/html5/blob',
-        'runtime/html5/dnd',
-        'runtime/html5/filepaste',
-        'runtime/html5/filepicker',
-        'runtime/html5/transport',
-        //flash'../runtime/flash/filepicker',
-        'runtime/flash/transport'
-    ], function( Base ) {
-        return Base;
-    });
-
-    /**
-     * @fileOverview FilePicker
-     */
-    define( 'runtime/flash/filepicker', [
-        'base',
-        'runtime/flash/runtime'
-    ], function( Base, FlashRuntime ) {
-        var $ = Base.$;
-    
-        return FlashRuntime.register( 'FilePicker', {
-            init: function( opts ) {
-                var copy = $.extend({}, opts );
-    
-                delete copy.button;
-                delete copy.container;
-    
-                this.flashExec( 'FilePicker', 'init', copy );
-            },
-    
-            destroy: function() {
-                // todo
-            }
-        });
     });
 
     /**
