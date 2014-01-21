@@ -1,3 +1,6 @@
+/**
+ * @fileOverview 只有flash实现的文件版本。
+ */
 define([
     '../base',
     '../uploader',

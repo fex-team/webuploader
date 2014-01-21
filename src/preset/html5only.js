@@ -1,3 +1,6 @@
+/**
+ * @fileOverview 只有html5实现的文件版本。
+ */
 define([
     '../base',
     '../uploader',
@@ -13,7 +16,6 @@ define([
     '../widgets/validator',
 
     // runtimes
-    //
     // html5
     '../runtime/html5/blob',
     '../runtime/html5/dnd',
