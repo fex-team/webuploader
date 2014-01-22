@@ -1222,7 +1222,7 @@
                     height = button.outerHeight(),
                     pos = button.offset();
     
-                width && shimContainer.css({
+                width && height && shimContainer.css({
                     bottom: 'auto',
                     right: 'auto',
                     width: width + 'px',
@@ -5493,7 +5493,8 @@
         if ( typeof module === 'object' && typeof module.exports === 'object' ) {
             module.exports = exports;
         } else if ( window.define && window.define.amd ) {
-            window.define( function() { return exports; } );
+            define = window.define;
+            define( function() { return exports; } );
         } else {
             origin = window[ exportName ];
             window[ exportName ] = exports;
