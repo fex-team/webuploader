@@ -2724,6 +2724,7 @@
                 this.dragOverHandler = Base.bindFn( this._dragOverHandler, this );
                 this.dragLeaveHandler = Base.bindFn( this._dragLeaveHandler, this );
                 this.dropHandler = Base.bindFn( this._dropHandler, this );
+                this.dndOver = false;
     
                 elem.on( 'dragenter', this.dragEnterHandler );
                 elem.on( 'dragover', this.dragOverHandler );
@@ -2737,6 +2738,7 @@
             },
     
             _dragEnterHandler: function( e ) {
+                this.dndOver = true;
                 this.elem.addClass('webuploader-dnd-over');
     
                 e = e.originalEvent || e;
@@ -2747,7 +2749,8 @@
     
             _dragOverHandler: function( e ) {
                 // 只处理框内的。
-                if ( !$.contains( this.elem.parent().get( 0 ), e.target ) ) {
+                var parentElem = this.elem.parent().get( 0 );
+                if ( parentElem && !$.contains( parentElem, e.target ) ) {
                     return false;
                 }
     
@@ -2757,7 +2760,15 @@
             },
     
             _dragLeaveHandler: function() {
-                this.elem.removeClass('webuploader-dnd-over');
+                var me = this,
+                    handler = function() {
+                        if ( !me.dndOver ) {
+                            me.elem.removeClass('webuploader-dnd-over');
+                        }
+                    };
+                setTimeout( handler, 50 );
+                this.dndOver = false;
+    
                 return false;
             },
     
@@ -2766,10 +2777,11 @@
                     promises = [],
                     me = this,
                     ruid = me.getRuid(),
+                    parentElem = me.elem.parent().get( 0 ),
                     items, files, dataTransfer, file, i, len, canAccessFolder;
     
                 // 只处理框内的。
-                if ( !$.contains( me.elem.parent().get( 0 ), e.target ) ) {
+                if ( parentElem && !$.contains( parentElem, e.target ) ) {
                     return false;
                 }
     
@@ -2796,6 +2808,7 @@
                     }) );
                 });
     
+                this.dndOver = false;
                 this.elem.removeClass('webuploader-dnd-over');
                 return false;
             },
@@ -2846,6 +2859,7 @@
             }
         });
     });
+    
 
     /**
      * @fileOverview FilePaste
