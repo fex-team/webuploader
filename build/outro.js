@@ -37,7 +37,8 @@
     if ( typeof module === 'object' && typeof module.exports === 'object' ) {
         module.exports = exports;
     } else if ( window.define && window.define.amd ) {
-        window.define( function() { return exports; } );
+        define = window.define;
+        define( function() { return exports; } );
     } else {
         origin = window[ exportName ];
         window[ exportName ] = exports;

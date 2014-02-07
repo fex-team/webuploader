@@ -82,7 +82,7 @@ define([
                 height = button.outerHeight(),
                 pos = button.offset();
 
-            width && shimContainer.css({
+            width && height && shimContainer.css({
                 bottom: 'auto',
                 right: 'auto',
                 width: width + 'px',
