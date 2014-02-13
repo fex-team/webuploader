@@ -4,20 +4,16 @@
  *
  * 将所有modules，将路径ids装换成对象。
  */
-(function( modules ) {
-    var
-        // 让首写字母大写。
-        ucFirst = function( str ) {
-            return str && (str.charAt( 0 ).toUpperCase() + str.substr( 1 ));
-        },
 
-        // 暴露出去的key
-        exportName = 'WebUploader',
-        exports = modules.base,
-        key, host, parts, part, last, origin;
+    var key, host, parts, part, last, origin,
+        WebUploader = modules.base;
+        // 让首写字母大写。
+    var ucFirst = function( str ) {
+            return str && (str.charAt( 0 ).toUpperCase() + str.substr( 1 ));
+        };
 
     for ( key in modules ) {
-        host = exports;
+        host = WebUploader;
 
         if ( !modules.hasOwnProperty( key ) ) {
             continue;
@@ -34,16 +30,19 @@
         host[ last ] = modules[ key ];
     }
 
-    if ( typeof module === 'object' && typeof module.exports === 'object' ) {
-        module.exports = exports;
-    } else if ( window.define && window.define.amd ) {
-        define = window.define;
-        define( function() { return exports; } );
-    } else {
-        origin = window[ exportName ];
-        window[ exportName ] = exports;
-        window[ exportName ].noConflict = function() {
-            window[ exportName ] = origin;
-        };
-    }
-})( internalAmd.modules );
+    return WebUploader;
+})( window );
+
+var exportName = 'WebUploader';  // 暴露出去的key
+
+if ( typeof module === 'object' && typeof module.exports === 'object' ) {
+    module.exports = WebUploader;
+} else if ( typeof define === 'function' && define.amd ) {
+    define(exportName, function() { return WebUploader; } );
+}
+
+origin = window[ exportName ];
+window[ exportName ] = WebUploader;
+window[ exportName ].noConflict = function() {
+    window[ exportName ] = origin;
+};
