@@ -3,78 +3,66 @@
  *
  * AMD API 内部的简单不完全实现，请忽略。只有当WebUploader被合并成一个文件的时候才会引入。
  */
-var internalAmd = (function( global, undefined ) {
-        var modules = {},
+var WebUploader = (function( global, undefined ) {
+    var modules = {},
 
-            // 简单不完全实现https://github.com/amdjs/amdjs-api/wiki/require
-            require = function( deps, callback ) {
-                var args, len, i;
+        // 简单不完全实现https://github.com/amdjs/amdjs-api/wiki/require
+        require = function( deps, callback ) {
+            var args, len, i;
 
-                // 如果deps不是数组，则直接返回指定module
-                if ( typeof deps === 'string' ) {
-                    return getModule( deps );
-                } else {
-                    args = [];
-                    for( len = deps.length, i = 0; i < len; i++ ) {
-                        args.push( getModule( deps[ i ] ) );
-                    }
-
-                    return callback.apply( null, args );
-                }
-            },
-
-            // 内部的define，暂时不支持不指定id.
-            define = function( id, deps, factory ) {
-                if ( arguments.length === 2 ) {
-                    factory = deps;
-                    deps = null;
+            // 如果deps不是数组，则直接返回指定module
+            if ( typeof deps === 'string' ) {
+                return getModule( deps );
+            } else {
+                args = [];
+                for( len = deps.length, i = 0; i < len; i++ ) {
+                    args.push( getModule( deps[ i ] ) );
                 }
 
-                if ( typeof id !== 'string' || !factory ) {
-                    throw new Error('Define Error');
-                }
+                return callback.apply( null, args );
+            }
+        },
 
-                require( deps || [], function() {
-                    setModule( id, factory, arguments );
-                });
-            },
+        // 内部的define，暂时不支持不指定id.
+        define = function( id, deps, factory ) {
+            if ( arguments.length === 2 ) {
+                factory = deps;
+                deps = null;
+            }
 
-            // 设置module, 兼容CommonJs写法。
-            setModule = function( id, factory, args ) {
-                var module = {
-                        exports: factory
-                    },
-                    returned;
+            if ( typeof id !== 'string' || !factory ) {
+                throw new Error('Define Error');
+            }
 
-                if ( typeof factory === 'function' ) {
-                    args.length || (args = [ require, module.exports, module ]);
-                    returned = factory.apply( null, args );
-                    returned !== undefined && (module.exports = returned);
-                }
+            require( deps || [], function() {
+                setModule( id, factory, arguments );
+            });
+        },
 
-                modules[ id ] = module.exports;
-            },
+        // 设置module, 兼容CommonJs写法。
+        setModule = function( id, factory, args ) {
+            var module = {
+                    exports: factory
+                },
+                returned;
 
-            // 根据id获取module
-            getModule = function( id ) {
-                var module = modules[ id ] || global[ id ];
+            if ( typeof factory === 'function' ) {
+                args.length || (args = [ require, module.exports, module ]);
+                returned = factory.apply( null, args );
+                returned !== undefined && (module.exports = returned);
+            }
 
-                if ( !module ) {
-                    throw new Error( '`' + id + '` is undefined' );
-                }
+            modules[ id ] = module.exports;
+        },
 
-                return module;
-            };
+        // 根据id获取module
+        getModule = function( id ) {
+            var module = modules[ id ] || global[ id ];
 
-        return {
-            define: define,
-            require: require,
+            if ( !module ) {
+                throw new Error( '`' + id + '` is undefined' );
+            }
 
-            // 暴露所有的模块。
-            modules: modules
+            return module;
         };
-    })( window ),
 
-    /* jshint unused: false */
-    require = internalAmd.require,
-    define = internalAmd.define;

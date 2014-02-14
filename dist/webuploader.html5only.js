@@ -5,81 +5,70 @@
      *
      * AMD API 内部的简单不完全实现，请忽略。只有当WebUploader被合并成一个文件的时候才会引入。
      */
-    var internalAmd = (function( global, undefined ) {
-            var modules = {},
+    var WebUploader = (function( global, undefined ) {
+        var modules = {},
     
-                // 简单不完全实现https://github.com/amdjs/amdjs-api/wiki/require
-                require = function( deps, callback ) {
-                    var args, len, i;
+            // 简单不完全实现https://github.com/amdjs/amdjs-api/wiki/require
+            require = function( deps, callback ) {
+                var args, len, i;
     
-                    // 如果deps不是数组，则直接返回指定module
-                    if ( typeof deps === 'string' ) {
-                        return getModule( deps );
-                    } else {
-                        args = [];
-                        for( len = deps.length, i = 0; i < len; i++ ) {
-                            args.push( getModule( deps[ i ] ) );
-                        }
-    
-                        return callback.apply( null, args );
-                    }
-                },
-    
-                // 内部的define，暂时不支持不指定id.
-                define = function( id, deps, factory ) {
-                    if ( arguments.length === 2 ) {
-                        factory = deps;
-                        deps = null;
+                // 如果deps不是数组，则直接返回指定module
+                if ( typeof deps === 'string' ) {
+                    return getModule( deps );
+                } else {
+                    args = [];
+                    for( len = deps.length, i = 0; i < len; i++ ) {
+                        args.push( getModule( deps[ i ] ) );
                     }
     
-                    if ( typeof id !== 'string' || !factory ) {
-                        throw new Error('Define Error');
-                    }
+                    return callback.apply( null, args );
+                }
+            },
     
-                    require( deps || [], function() {
-                        setModule( id, factory, arguments );
-                    });
-                },
+            // 内部的define，暂时不支持不指定id.
+            define = function( id, deps, factory ) {
+                if ( arguments.length === 2 ) {
+                    factory = deps;
+                    deps = null;
+                }
     
-                // 设置module, 兼容CommonJs写法。
-                setModule = function( id, factory, args ) {
-                    var module = {
-                            exports: factory
-                        },
-                        returned;
+                if ( typeof id !== 'string' || !factory ) {
+                    throw new Error('Define Error');
+                }
     
-                    if ( typeof factory === 'function' ) {
-                        args.length || (args = [ require, module.exports, module ]);
-                        returned = factory.apply( null, args );
-                        returned !== undefined && (module.exports = returned);
-                    }
+                require( deps || [], function() {
+                    setModule( id, factory, arguments );
+                });
+            },
     
-                    modules[ id ] = module.exports;
-                },
+            // 设置module, 兼容CommonJs写法。
+            setModule = function( id, factory, args ) {
+                var module = {
+                        exports: factory
+                    },
+                    returned;
     
-                // 根据id获取module
-                getModule = function( id ) {
-                    var module = modules[ id ] || global[ id ];
+                if ( typeof factory === 'function' ) {
+                    args.length || (args = [ require, module.exports, module ]);
+                    returned = factory.apply( null, args );
+                    returned !== undefined && (module.exports = returned);
+                }
     
-                    if ( !module ) {
-                        throw new Error( '`' + id + '` is undefined' );
-                    }
+                modules[ id ] = module.exports;
+            },
     
-                    return module;
-                };
+            // 根据id获取module
+            getModule = function( id ) {
+                var module = modules[ id ] || global[ id ];
     
-            return {
-                define: define,
-                require: require,
+                if ( !module ) {
+                    throw new Error( '`' + id + '` is undefined' );
+                }
     
-                // 暴露所有的模块。
-                modules: modules
+                return module;
             };
-        })( window ),
     
-        /* jshint unused: false */
-        require = internalAmd.require,
-        define = internalAmd.define;
+    
 
     /**
      * @fileOverview 基础类方法。
@@ -2375,7 +2364,7 @@
                 elem.on( 'dragleave', this.dragLeaveHandler );
                 elem.on( 'drop', this.dropHandler );
     
-                if ( this.options.disableGlobalDnd ) {
+                if ( !this.options.disableGlobalDnd ) {
                     $( document ).on( 'dragover', this.dragOverHandler );
                     $( document ).on( 'drop', this.dropHandler );
                 }
@@ -5118,20 +5107,16 @@
      *
      * 将所有modules，将路径ids装换成对象。
      */
-    (function( modules ) {
-        var
-            // 让首写字母大写。
-            ucFirst = function( str ) {
-                return str && (str.charAt( 0 ).toUpperCase() + str.substr( 1 ));
-            },
     
-            // 暴露出去的key
-            exportName = 'WebUploader',
-            exports = modules.base,
-            key, host, parts, part, last, origin;
+        var key, host, parts, part, last, origin,
+            WebUploader = modules.base;
+            // 让首写字母大写。
+        var ucFirst = function( str ) {
+                return str && (str.charAt( 0 ).toUpperCase() + str.substr( 1 ));
+            };
     
         for ( key in modules ) {
-            host = exports;
+            host = WebUploader;
     
             if ( !modules.hasOwnProperty( key ) ) {
                 continue;
@@ -5148,18 +5133,21 @@
             host[ last ] = modules[ key ];
         }
     
-        if ( typeof module === 'object' && typeof module.exports === 'object' ) {
-            module.exports = exports;
-        } else if ( window.define && window.define.amd ) {
-            define = window.define;
-            define( function() { return exports; } );
-        } else {
-            origin = window[ exportName ];
-            window[ exportName ] = exports;
-            window[ exportName ].noConflict = function() {
-                window[ exportName ] = origin;
-            };
-        }
-    })( internalAmd.modules );
+        return WebUploader;
+    })( window );
+    
+    var exportName = 'WebUploader';  // 暴露出去的key
+    
+    if ( typeof module === 'object' && typeof module.exports === 'object' ) {
+        module.exports = WebUploader;
+    } else if ( typeof define === 'function' && define.amd ) {
+        define(exportName, function() { return WebUploader; } );
+    }
+    
+    origin = window[ exportName ];
+    window[ exportName ] = WebUploader;
+    window[ exportName ].noConflict = function() {
+        window[ exportName ] = origin;
+    };
     
 })( this );
