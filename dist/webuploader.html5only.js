@@ -1564,9 +1564,9 @@
              * 文件MIMETYPE类型，与文件类型的对应关系请参考[http://t.cn/z8ZnFny](http://t.cn/z8ZnFny)
              * @property type
              * @type {string}
-             * @default 'image/png'
+             * @default 'application'
              */
-            this.type = source.type || 'image/png';
+            this.type = source.type || 'application';
     
             /**
              * 文件最后修改日期
@@ -1702,6 +1702,7 @@
     
         return WUFile;
     });
+    
 
     /**
      * @fileOverview 错误信息
@@ -4979,6 +4980,10 @@
             uploader.on( 'fileDequeued', function() {
                 count--;
             });
+    
+            uploader.on( 'uploadFinished', function() {
+                count = 0;
+            });
         });
     
     
@@ -5020,6 +5025,10 @@
             uploader.on( 'fileDequeued', function( file ) {
                 count -= file.size;
             });
+    
+            uploader.on( 'uploadFinished', function() {
+                count = 0;
+            });
         });
     
         /**
@@ -5037,11 +5046,16 @@
                 return;
             }
     
-            uploader.on( 'fileQueued', function( file ) {
+            uploader.on( 'beforeFileQueued', function( file ) {
+    
                 if ( file.size > max ) {
                     file.setStatus( WUFile.Status.INVALID, 'exceed_size' );
+                    this.trigger( 'error', 'F_EXCEED_SIZE' );
+                    return false;
                 }
+    
             });
+    
         });
     
         /**
@@ -5079,6 +5093,7 @@
     
                 // 已经重复了
                 if ( mapping[ hash ] ) {
+                    this.trigger( 'error', 'F_DUPLICATE' );
                     return false;
                 }
             });
@@ -5100,6 +5115,7 @@
     
         return api;
     });
+    
 
     /**
      * @file 暴露变量给外部使用。

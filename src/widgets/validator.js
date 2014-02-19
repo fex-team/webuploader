@@ -84,6 +84,10 @@ define([
         uploader.on( 'fileDequeued', function() {
             count--;
         });
+
+        uploader.on( 'uploadFinished', function() {
+            count = 0;
+        });
     });
 
 
@@ -125,6 +129,10 @@ define([
         uploader.on( 'fileDequeued', function( file ) {
             count -= file.size;
         });
+
+        uploader.on( 'uploadFinished', function() {
+            count = 0;
+        });
     });
 
     /**
@@ -142,11 +150,16 @@ define([
             return;
         }
 
-        uploader.on( 'fileQueued', function( file ) {
+        uploader.on( 'beforeFileQueued', function( file ) {
+
             if ( file.size > max ) {
                 file.setStatus( WUFile.Status.INVALID, 'exceed_size' );
+                this.trigger( 'error', 'F_EXCEED_SIZE' );
+                return false;
             }
+
         });
+
     });
 
     /**
@@ -184,6 +197,7 @@ define([
 
             // 已经重复了
             if ( mapping[ hash ] ) {
+                this.trigger( 'error', 'F_DUPLICATE' );
                 return false;
             }
         });
