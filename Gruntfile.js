@@ -94,6 +94,12 @@ module.exports = function(grunt) {
             doc: {
                 files: ['src/**/*.js', 'Gruntfile.js', 'build/docTpl/**/*'],
                 tasks: ['doc'],
+            },
+
+
+            dev: {
+                files: 'src/**/*.js',
+                tasks: 'build:all'
             }
         },
 

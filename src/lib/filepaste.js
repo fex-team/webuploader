@@ -23,6 +23,7 @@ define([
 
             me.connectRuntime( me.options, function() {
                 me.exec('init');
+                me.trigger('ready');
             });
         },
 

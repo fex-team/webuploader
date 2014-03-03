@@ -13,6 +13,11 @@
 	background: #00a2d4;
 }
 
+.webuploader-pick-disable {
+	opacity: 0.6;
+	pointer-events:none;
+}
+
 .webuploader-dnd {
 	width: 400px;
 	height: 400px;
