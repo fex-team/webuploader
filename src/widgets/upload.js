@@ -67,6 +67,28 @@ define([
          * @description 文件上传请求的参数表，每次发送都会发送此对象中的参数。
          */
         formdata: null
+
+        /**
+         * @property {Object} [fileVal='file']
+         * @namespace options
+         * @for Uploader
+         * @description 设置文件上传域的name。
+         */
+
+        /**
+         * @property {Object} [method='POST']
+         * @namespace options
+         * @for Uploader
+         * @description 文件上传方式，`POST`或者`GET`。
+         */
+
+        /**
+         * @property {Object} [sendAsBinary=false]
+         * @namespace options
+         * @for Uploader
+         * @description 是否已二进制的流的方式发送文件，这样整个上传内容`php://input`都为文件内容，
+         * 其他参数在$_GET数组中。
+         */
     });
 
     // 负责将文件切片。

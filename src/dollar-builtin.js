@@ -1,6 +1,9 @@
 /**
  * @fileOverview  jq-bridge 主要实现像jQuery一样的功能方法，可以替换成jQuery，
  * 这里只实现了此组件所需的部分。
+ *
+ * **此文件的代码还不可用，还是直接用jquery吧**
+ * @beta
  */
 define(function() {
     var doc = window.document,

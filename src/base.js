@@ -19,7 +19,7 @@
  * @title WebUploader API文档
  */
 define([
-    'jQuery'
+    './dollar'
 ], function( $ ) {
 
     var noop = function() {},

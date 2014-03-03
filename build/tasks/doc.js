@@ -1,8 +1,7 @@
 module.exports = function( grunt ) {
-    var Doc = require( 'gmudoc/lib/doc.js' );
-
-
     grunt.registerTask( 'doc', '生成文档', function() {
+        var Doc = require( 'gmudoc/lib/doc.js' );
+
         var opts = this.options({
                 cwd: '',
                 files: [],

@@ -3,6 +3,7 @@
  */
 define([
     '../base',
+    '../promise',
     '../uploader',
 
     // widgets

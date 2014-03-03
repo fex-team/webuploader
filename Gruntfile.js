@@ -1,16 +1,12 @@
 module.exports = function(grunt) {
     'use strict';
 
-    var path = require('path');
-
     grunt.initConfig({
         pkg: grunt.file.readJSON('package.json'),
 
-        concat: {
+        build: {
             options: {
-                banner: '/* WebUploader <%= pkg.version %> */\n(function( window, undefined ) {\n',
-                footer: '\n})( this );',
-                separator: '\n\n',
+                banner: '/*! WebUploader <%= pkg.version %> */\n',
 
                 // 调整缩进
                 process: function( src, filepath ) {
@@ -19,105 +15,30 @@ module.exports = function(grunt) {
             },
 
             all: {
-                options: {
-                    process: function( src ) {
-                        return src
-                                // .replace('jQuery', 'jq-bridge')
-                                .replace( /(^|\r\n|\r|\n)/g, '$1    ');
-                    }
-                },
+                preset: 'all',
+                dest: "dist/webuploader.js",
 
-                cwd: 'src',
-
-                src: [
-                    // 'jq-bridge.js',
-
-                    // 把剩余的打包进来。
-                    'widgets/filepicker.js',
-                    '**/*.js',
-
-                    '!jq-bridge.js',
-                    '!promise.js',
-                    '!preset/**/*.js'
-
-                    // '!runtime/flash/**/*.js'
-
-                ],
-
-
-                dest: 'dist/webuploader.js'
-            },
-
-            html5only: {
-                cwd: 'src',
-
-                src: [
-                    'widgets/filepicker.js',
-                    '**/*.js',
-
-                    '!runtime/flash/**/*.js',
-
-                    '!jq-bridge.js',
-                    '!promise.js',
-                    '!preset/**/*.js'
-
-                ],
-
-
-                dest: 'dist/webuploader.html5only.js'
+                // 在没有jquery类似的库的前提下可以设置builtin,去除强行依赖。
+                builtin: {
+                    dollar: false,
+                    promise: false
+                }
             },
 
             flashonly: {
-                cwd: 'src',
-
-                src: [
-                    'widgets/filepicker.js',
-                    '**/*.js',
-
-                    '!runtime/html5/**/*.js',
-
-                    '!jq-bridge.js',
-                    '!promise.js',
-                    '!preset/**/*.js'
-                ],
-
-
-                dest: 'dist/webuploader.flashonly.js'
+                preset: 'flashonly',
+                dest: "dist/webuploader.flashonly.js",
             },
 
-            // 如果没有图片处理功能，则只需要一下配置一下文件。
-            ignoreimages: {
-                cwd: 'src',
+            html5only: {
+                preset: 'html5only',
+                dest: "dist/webuploader.html5only.js",
+            },
 
-                src: [
-                    // 把剩余的打包进来。
-                    'widgets/filepicker.js',
-                    'widgets/filednd.js',
-                    'widgets/queue.js',
-                    'widgets/runtime.js',
-                    'widgets/upload.js',
-
-                    // html5运行时
-                    'runtime/html5/blob.js',
-                    'runtime/html5/transport.js',
-                    'runtime/html5/filepicker.js',
-                    'runtime/html5/dnd.js',
-
-
-                    'runtime/flash/blob.js',
-                    'runtime/flash/transport.js',
-                    'runtime/flash/filepicker.js',
-
-                    '!jq-bridge.js',
-                    '!promise.js',
-                    '!preset/**/*.js'
-
-                ],
-
-
-                dest: 'dist/webuploader.withoutimage.js'
+            withoutimage: {
+                preset: 'withoutimage',
+                dest: "dist/webuploader.withoutimage.js",
             }
-
         },
 
         uglify: {
@@ -147,6 +68,11 @@ module.exports = function(grunt) {
             jekyll: {
                 src: 'dist/webuploader.js',
                 dest: 'jekyll/js/webuploader.js',
+            },
+
+            dist: {
+                src: 'css/webuploader.css',
+                dest: 'dist/webuploader.css'
             }
         },
 
@@ -250,6 +176,6 @@ module.exports = function(grunt) {
 
     // Default task(s).
     grunt.registerTask( 'default', [ 'jsbint:all', 'dist' ] );
-    grunt.registerTask( 'dist', [ 'concat', 'uglify', 'copy' ] );
+    grunt.registerTask( 'dist', [ 'build', 'uglify', 'copy' ] );
     grunt.registerTask( 'deploy', [ 'doc', 'jekyll', 'gh-pages' ] );
 };
