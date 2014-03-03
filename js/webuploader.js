@@ -9,89 +9,92 @@
 (function( root, factory ) {
     var modules = {},
 
-    // 简单不完全实现https://github.com/amdjs/amdjs-api/wiki/require
-    require2 = function( deps, callback ) {
-        var args, len, i;
+        // 内部require, 简单不完全实现。
+        // https://github.com/amdjs/amdjs-api/wiki/require
+        require2 = function( deps, callback ) {
+            var args, len, i;
 
-        // 如果deps不是数组，则直接返回指定module
-        if ( typeof deps === 'string' ) {
-            return getModule( deps );
-        } else {
-            args = [];
-            for( len = deps.length, i = 0; i < len; i++ ) {
-                args.push( getModule( deps[ i ] ) );
+            // 如果deps不是数组，则直接返回指定module
+            if ( typeof deps === 'string' ) {
+                return getModule( deps );
+            } else {
+                args = [];
+                for( len = deps.length, i = 0; i < len; i++ ) {
+                    args.push( getModule( deps[ i ] ) );
+                }
+
+                return callback.apply( null, args );
+            }
+        },
+
+        // 内部define，暂时不支持不指定id.
+        define2 = function( id, deps, factory ) {
+            if ( arguments.length === 2 ) {
+                factory = deps;
+                deps = null;
             }
 
-            return callback.apply( null, args );
-        }
-    },
+            require2( deps || [], function() {
+                setModule( id, factory, arguments );
+            });
+        },
 
-    // 内部的define，暂时不支持不指定id.
-    define2 = function( id, deps, factory ) {
-        if ( arguments.length === 2 ) {
-            factory = deps;
-            deps = null;
-        }
+        // 设置module, 兼容CommonJs写法。
+        setModule = function( id, factory, args ) {
+            var module = {
+                    exports: factory
+                },
+                returned;
 
-        require2( deps || [], function() {
-            setModule( id, factory, arguments );
-        });
-    },
-
-    // 设置module, 兼容CommonJs写法。
-    setModule = function( id, factory, args ) {
-        var module = {
-                exports: factory
-            },
-            returned;
-
-        if ( typeof factory === 'function' ) {
-            args.length || (args = [ require2, module.exports, module ]);
-            returned = factory.apply( null, args );
-            returned !== undefined && (module.exports = returned);
-        }
-
-        modules[ id ] = module.exports;
-    },
-
-    // 根据id获取module
-    getModule = function( id ) {
-        var module = modules[ id ] || root[ id ];
-
-        if ( !module ) {
-            throw new Error( '`' + id + '` is undefined' );
-        }
-
-        return module;
-    },
-
-    // 将所有modules，将路径ids装换成对象。
-    exportsTo = function( obj ) {
-        var key, host, parts, part, last, ucFirst;
-
-        // make the first character upper case.
-        ucFirst = function( str ) {
-            return str && (str.charAt( 0 ).toUpperCase() + str.substr( 1 ));
-        };
-
-        for ( key in modules ) {
-            host = obj;
-
-            if ( !modules.hasOwnProperty( key ) ) {
-                continue;
+            if ( typeof factory === 'function' ) {
+                args.length || (args = [ require2, module.exports, module ]);
+                returned = factory.apply( null, args );
+                returned !== undefined && (module.exports = returned);
             }
 
-            parts = key.split('/');
-            last = ucFirst( parts.pop() );
+            modules[ id ] = module.exports;
+        },
 
-            while( (part = ucFirst( parts.shift() )) ) {
-                host[ part ] = host[ part ] || {};
-                host = host[ part ];
+        // 根据id获取module
+        getModule = function( id ) {
+            var module = modules[ id ] || root[ id ];
+
+            if ( !module ) {
+                throw new Error( '`' + id + '` is undefined' );
             }
 
-            host[ last ] = modules[ key ];
-        }
-    };
+            return module;
+        },
+
+        // 将所有modules，将路径ids装换成对象。
+        exportsTo = function( obj ) {
+            var key, host, parts, part, last, ucFirst;
+
+            // make the first character upper case.
+            ucFirst = function( str ) {
+                return str && (str.charAt( 0 ).toUpperCase() + str.substr( 1 ));
+            };
+
+            for ( key in modules ) {
+                host = obj;
+
+                if ( !modules.hasOwnProperty( key ) ) {
+                    continue;
+                }
+
+                parts = key.split('/');
+                last = ucFirst( parts.pop() );
+
+                while( (part = ucFirst( parts.shift() )) ) {
+                    host[ part ] = host[ part ] || {};
+                    host = host[ part ];
+                }
+
+                host[ last ] = modules[ key ];
+            }
+        },
+
+        origin;
 
     if ( typeof module === 'object' && typeof module.exports === 'object' ) {
 
@@ -122,7 +125,6 @@
     /**
      * @fileOverview jQuery or Zepto
      */
-<<<<<<< HEAD
     define('dollar-third',[],function() {
         return window.jQuery || window.Zepto;
     });
@@ -134,73 +136,6 @@
     ], function( _ ) {
         return _;
     });
-=======
-    var WebUploader = (function( global, undefined ) {
-        var modules = {},
-    
-            // 简单不完全实现https://github.com/amdjs/amdjs-api/wiki/require
-            require = function( deps, callback ) {
-                var args, len, i;
-    
-                // 如果deps不是数组，则直接返回指定module
-                if ( typeof deps === 'string' ) {
-                    return getModule( deps );
-                } else {
-                    args = [];
-                    for( len = deps.length, i = 0; i < len; i++ ) {
-                        args.push( getModule( deps[ i ] ) );
-                    }
-    
-                    return callback.apply( null, args );
-                }
-            },
-    
-            // 内部的define，暂时不支持不指定id.
-            define = function( id, deps, factory ) {
-                if ( arguments.length === 2 ) {
-                    factory = deps;
-                    deps = null;
-                }
-    
-                if ( typeof id !== 'string' || !factory ) {
-                    throw new Error('Define Error');
-                }
-    
-                require( deps || [], function() {
-                    setModule( id, factory, arguments );
-                });
-            },
-    
-            // 设置module, 兼容CommonJs写法。
-            setModule = function( id, factory, args ) {
-                var module = {
-                        exports: factory
-                    },
-                    returned;
-    
-                if ( typeof factory === 'function' ) {
-                    args.length || (args = [ require, module.exports, module ]);
-                    returned = factory.apply( null, args );
-                    returned !== undefined && (module.exports = returned);
-                }
-    
-                modules[ id ] = module.exports;
-            },
-    
-            // 根据id获取module
-            getModule = function( id ) {
-                var module = modules[ id ] || global[ id ];
-    
-                if ( !module ) {
-                    throw new Error( '`' + id + '` is undefined' );
-                }
-    
-                return module;
-            };
-    
-    
-
->>>>>>> upstream/master
     /**
      * @fileOverview 基础类方法。
      */
@@ -270,62 +205,6 @@
              * @property {jQuery|Zepto} $ 引用依赖的jQuery或者Zepto对象。
              */
             $: $,
-    
-            /**
-             * 创建一个[Deferred](http://api.jquery.com/category/deferred-object/)对象。
-             * 详细的Deferred用法说明，请参照jQuery的API文档。
-             *
-             * Deferred对象在钩子回掉函数中经常要用到，用来处理需要等待的异步操作。
-             *
-             *
-             * @method Deferred
-             * @grammar Base.Deferred() => Deferred
-             * @example
-             * // 在文件开始发送前做些异步操作。
-             * // WebUploader会等待此异步操作完成后，开始发送文件。
-             * Uploader.register({
-             *     'before-send-file': 'doSomthingAsync'
-             * }, {
-             *
-             *     doSomthingAsync: function() {
-             *         var deferred = Base.Deferred();
-             *
-             *         // 模拟一次异步操作。
-             *         setTimeout(deferred.resolve, 2000);
-             *
-             *         return deferred.promise();
-             *     }
-             * });
-             */
-            Deferred: $.Deferred,
-    
-            /**
-             * 判断传入的参数是否为一个promise对象。
-             * @method isPromise
-             * @grammar Base.isPromise( anything ) => Boolean
-             * @param  {*}  anything 检测对象。
-             * @return {Boolean}
-             * @example
-             * console.log( Base.isPromise() );    // => false
-             * console.log( Base.isPromise({ key: '123' }) );    // => false
-             * console.log( Base.isPromise( Base.Deferred().promise() ) );    // => true
-             *
-             * // Deferred也是一个Promise
-             * console.log( Base.isPromise( Base.Deferred() ) );    // => true
-             */
-            isPromise: function( anything ) {
-                return anything && typeof anything.then === 'function';
-            },
-    
-    
-            /**
-             * 返回一个promise，此promise在所有传入的promise都完成了后完成。
-             * 详细请查看[这里](http://api.jquery.com/jQuery.when/)。
-             *
-             * @method when
-             * @grammar Base.when( promise1[, promise2[, promise3...]] ) => Promise
-             */
-            when: $.when,
     
             /**
              * @description  简单的浏览器检查结果。
@@ -826,8 +705,8 @@
             stop: 'stop-upload',
             getFile: 'get-file',
             getFiles: 'get-files',
-            // addFile: 'add-file',
-            // addFiles: 'add-file',
+            addFile: 'add-file',
+            addFiles: 'add-file',
             removeFile: 'remove-file',
             skipFile: 'skip-file',
             retry: 'retry',
@@ -1347,6 +1226,7 @@
                 me.connectRuntime( opts, function() {
                     me.refresh();
                     me.exec( 'init', opts );
+                    me.trigger('ready');
                 });
     
                 $( window ).on( 'resize', function() {
@@ -1367,6 +1247,23 @@
                     width: width + 'px',
                     height: height + 'px'
                 }).offset( pos );
+            },
+    
+            enable: function() {
+                var btn = this.options.button;
+    
+                btn.removeClass('webuploader-pick-disable');
+                this.refresh();
+            },
+    
+            disable: function() {
+                var btn = this.options.button;
+    
+                this.getRuntime().getContainer().css({
+                    top: '-99999px'
+                });
+    
+                btn.addClass('webuploader-pick-disable');
             },
     
             destroy: function() {
@@ -1601,7 +1498,9 @@
     
         return Uploader.register({
             'add-btn': 'addButton',
-            'refresh': 'refresh'
+            refresh: 'refresh',
+            disable: 'disable',
+            enable: 'enable'
         }, {
     
             init: function( opts ) {
@@ -1662,6 +1561,18 @@
                 this.pickers.push( picker );
     
                 return deferred.promise();
+            },
+    
+            disable: function() {
+                $.each( this.pickers, function() {
+                    this.disable();
+                });
+            },
+    
+            enable: function() {
+                $.each( this.pickers, function() {
+                    this.enable();
+                });
             }
         });
     });
@@ -1688,20 +1599,10 @@
             RuntimeClent.call( this, 'DragAndDrop' );
         }
     
-<<<<<<< HEAD
         DragAndDrop.options = {
             accept: null,
             disableGlobalDnd: false
         };
-=======
-            /**
-             * 文件MIMETYPE类型，与文件类型的对应关系请参考[http://t.cn/z8ZnFny](http://t.cn/z8ZnFny)
-             * @property type
-             * @type {string}
-             * @default 'application'
-             */
-            this.type = source.type || 'application';
->>>>>>> upstream/master
     
         Base.inherits( RuntimeClent, {
             constructor: DragAndDrop,
@@ -1711,6 +1612,7 @@
     
                 me.connectRuntime( me.options, function() {
                     me.exec('init');
+                    me.trigger('ready');
                 });
             },
     
@@ -1769,11 +1671,6 @@
             }
         });
     });
-<<<<<<< HEAD
-=======
-    
-
->>>>>>> upstream/master
     /**
      * @fileOverview 错误信息
      */
@@ -1799,6 +1696,7 @@
     
                 me.connectRuntime( me.options, function() {
                     me.exec('init');
+                    me.trigger('ready');
                 });
             },
     
@@ -3195,612 +3093,11 @@
                 Base.nextTick( me.__tick );
             },
     
-<<<<<<< HEAD
             /**
              * @event stopUpload
              * @description 当开始上传流程暂停时触发。
              * @for  Uploader
              */
-=======
-                return new Blob( this.getRuid(), blob );
-            }
-        });
-    });
-
-    /**
-     * @fileOverview FilePaste
-     */
-    define( 'runtime/html5/dnd', [
-        'base',
-        'runtime/html5/runtime',
-        'lib/file'
-    ], function( Base, Html5Runtime, File ) {
-    
-        var $ = Base.$;
-    
-        return Html5Runtime.register( 'DragAndDrop', {
-            init: function() {
-                var elem = this.elem = this.options.container;
-    
-                this.dragEnterHandler = Base.bindFn( this._dragEnterHandler, this );
-                this.dragOverHandler = Base.bindFn( this._dragOverHandler, this );
-                this.dragLeaveHandler = Base.bindFn( this._dragLeaveHandler, this );
-                this.dropHandler = Base.bindFn( this._dropHandler, this );
-                this.dndOver = false;
-    
-                elem.on( 'dragenter', this.dragEnterHandler );
-                elem.on( 'dragover', this.dragOverHandler );
-                elem.on( 'dragleave', this.dragLeaveHandler );
-                elem.on( 'drop', this.dropHandler );
-    
-                if ( !this.options.disableGlobalDnd ) {
-                    $( document ).on( 'dragover', this.dragOverHandler );
-                    $( document ).on( 'drop', this.dropHandler );
-                }
-            },
-    
-            _dragEnterHandler: function( e ) {
-                this.dndOver = true;
-                this.elem.addClass('webuploader-dnd-over');
-    
-                e = e.originalEvent || e;
-                e.dataTransfer.dropEffect = 'copy';
-    
-                return false;
-            },
-    
-            _dragOverHandler: function( e ) {
-                // 只处理框内的。
-                var parentElem = this.elem.parent().get( 0 );
-                if ( parentElem && !$.contains( parentElem, e.target ) ) {
-                    return false;
-                }
-    
-                this._dragEnterHandler.call( this, e );
-    
-                return false;
-            },
-    
-            _dragLeaveHandler: function() {
-                var me = this,
-                    handler = function() {
-                        if ( !me.dndOver ) {
-                            me.elem.removeClass('webuploader-dnd-over');
-                        }
-                    };
-                setTimeout( handler, 50 );
-                this.dndOver = false;
-    
-                return false;
-            },
-    
-            _dropHandler: function( e ) {
-                var results  = [],
-                    promises = [],
-                    me = this,
-                    ruid = me.getRuid(),
-                    parentElem = me.elem.parent().get( 0 ),
-                    items, files, dataTransfer, file, i, len, canAccessFolder;
-    
-                // 只处理框内的。
-                if ( parentElem && !$.contains( parentElem, e.target ) ) {
-                    return false;
-                }
-    
-                e = e.originalEvent || e;
-                dataTransfer = e.dataTransfer;
-                items = dataTransfer.items;
-                files = dataTransfer.files;
-    
-                canAccessFolder = !!(items && items[ 0 ].webkitGetAsEntry);
-    
-                for ( i = 0, len = files.length; i < len; i++ ) {
-                    file = files[ i ];
-                    if ( file.type ) {
-                        results.push( file );
-                    } else if ( !file.type && canAccessFolder ) {
-                        promises.push( this._traverseDirectoryTree(
-                                items[ i ].webkitGetAsEntry(), results ) );
-                    }
-                }
-    
-                Base.when.apply( Base, promises ).done(function() {
-                    me.trigger( 'drop', $.map( results, function( file ) {
-                        return new File( ruid, file );
-                    }) );
-                });
-    
-                this.dndOver = false;
-                this.elem.removeClass('webuploader-dnd-over');
-                return false;
-            },
-    
-            _traverseDirectoryTree: function( entry, results ) {
-                var deferred = Base.Deferred(),
-                    me = this;
-    
-                if ( entry.isFile ) {
-                    entry.file(function( file ) {
-                        file.type && results.push( file );
-                        deferred.resolve( true );
-                    });
-                } else if ( entry.isDirectory ) {
-                    entry.createReader().readEntries(function( entries ) {
-                        var len = entries.length,
-                            promises = [],
-                            arr = [],    // 为了保证顺序。
-                            i;
-    
-                        for ( i = 0; i < len; i++ ) {
-                            promises.push( me._traverseDirectoryTree(
-                                    entries[ i ], arr ) );
-                        }
-    
-                        Base.when.apply( Base, promises ).then(function() {
-                            results.push.apply( results, arr );
-                            deferred.resolve( true );
-                        }, deferred.reject );
-                    });
-                }
-    
-                return deferred.promise();
-            },
-    
-            destroy: function() {
-                var elem = this.elem;
-    
-                elem.off( 'dragenter', this.dragEnterHandler );
-                elem.off( 'dragover', this.dragEnterHandler );
-                elem.off( 'dragleave', this.dragLeaveHandler );
-                elem.off( 'drop', this.dropHandler );
-    
-                if ( this.options.disableGlobalDnd ) {
-                    $( document ).off( 'dragover', this.dragOverHandler );
-                    $( document ).off( 'drop', this.dropHandler );
-                }
-            }
-        });
-    });
-    
-
-    /**
-     * @fileOverview FilePaste
-     */
-    define( 'runtime/html5/filepaste', [
-        'base',
-        'runtime/html5/runtime',
-        'lib/file'
-    ], function( Base, Html5Runtime, File ) {
-    
-        return Html5Runtime.register( 'FilePaste', {
-            init: function() {
-                var opts = this.options,
-                    elem = this.elem = opts.container,
-                    accept = '.*',
-                    arr, i, len, item;
-    
-                // accetp的mimeTypes中生成匹配正则。
-                if ( opts.accept ) {
-                    arr = [];
-    
-                    for ( i = 0, len = opts.accept.length; i < len; i++ ) {
-                        item = opts.accept[ i ].mimeTypes;
-                        item && arr.push( item );
-                    }
-    
-                    if ( arr.length ) {
-                        accept = arr.join(',');
-                        accept = accept.replace( /,/g, '|' ).replace( /\*/g, '.*' );
-                    }
-                }
-                this.accept = accept = new RegExp( accept, 'i' );
-                this.hander = Base.bindFn( this._pasteHander, this );
-                elem.on( 'paste', this.hander );
-            },
-    
-            _pasteHander: function( e ) {
-                var allowed = [],
-                    ruid = this.getRuid(),
-                    files, file, blob, i, len;
-    
-                e = e.originalEvent || e;
-    
-                files = e.clipboardData.items;
-    
-                for ( i = 0, len = files.length; i < len; i++ ) {
-                    file = files[ i ];
-    
-                    if ( !file.type || !(blob = file.getAsFile()) ||
-                            blob.size < 6 ) {
-                        continue;
-                    }
-    
-                    allowed.push( new File( ruid, blob ) );
-                }
-    
-                if ( allowed.length ) {
-                    // 不阻止非文件粘贴（文字粘贴）的事件冒泡
-                    e.preventDefault();
-                    e.stopPropagation();
-                    this.trigger( 'paste', allowed );
-                }
-            },
-    
-            destroy: function() {
-                this.elem.off( 'paste', this.hander );
-            }
-        });
-    });
-    
-
-    /**
-     * @fileOverview FilePicker
-     */
-    define( 'runtime/html5/filepicker', [
-        'base',
-        'runtime/html5/runtime'
-    ], function( Base, Html5Runtime ) {
-    
-        var $ = Base.$;
-    
-        return Html5Runtime.register( 'FilePicker', {
-            init: function() {
-                var container = this.getRuntime().getContainer(),
-                    me = this,
-                    owner = me.owner,
-                    opts = me.options,
-                    lable = $( document.createElement('label') ),
-                    input = $( document.createElement('input') ),
-                    arr, i, len, mouseHandler;
-    
-                input.attr( 'type', 'file' );
-    
-                input.css({
-                    position: 'absolute',
-                    clip: 'rect(1px,1px,1px,1px)'
-                });
-    
-                lable.on( 'click', function() {
-                    input.trigger('click');
-                });
-    
-                lable.css({
-                    opacity: 0,
-                    width: '100%',
-                    height: '100%',
-                    display: 'block',
-                    cursor: 'pointer',
-                    background: '#ffffff'
-                });
-    
-                if ( opts.multiple ) {
-                    input.attr( 'multiple', 'multiple' );
-                }
-    
-                // @todo Firefox不支持单独指定后缀
-                if ( opts.accept && opts.accept.length > 0 ) {
-                    arr = [];
-    
-                    for ( i = 0, len = opts.accept.length; i < len; i++ ) {
-                        arr.push( opts.accept[ i ].mimeTypes );
-                    }
-    
-                    input.attr( 'accept', arr.join(',') );
-                }
-    
-                container.append( input );
-                container.append( lable );
-    
-                mouseHandler = function( e ) {
-                    owner.trigger( e.type );
-                };
-    
-                input.on( 'change', function( e ) {
-                    var fn = arguments.callee,
-                        clone;
-    
-                    me.files = e.target.files;
-    
-                    // reset input
-                    clone = this.cloneNode( true );
-                    this.parentNode.replaceChild( clone, this );
-    
-                    input.off();
-                    input = $( clone ).on( 'change', fn )
-                            .on( 'mouseenter mouseleave', mouseHandler );
-    
-                    owner.trigger('change');
-                });
-    
-                lable.on( 'mouseenter mouseleave', mouseHandler );
-    
-            },
-    
-    
-            getFiles: function() {
-                return this.files;
-            },
-    
-            destroy: function() {
-                // todo
-            }
-        });
-    });
-
-    /**
-     * Terms:
-     *
-     * Uint8Array, FileReader, BlobBuilder, atob, ArrayBuffer
-     * @fileOverview Image控件
-     */
-    define( 'runtime/html5/util', function() {
-    
-        var urlAPI = window.createObjectURL && window ||
-                window.URL && URL.revokeObjectURL && URL ||
-                window.webkitURL;
-    
-        return {
-            createObjectURL: urlAPI && urlAPI.createObjectURL,
-            revokeObjectURL: urlAPI && urlAPI.revokeObjectURL,
-    
-            dataURL2Blob: function( dataURI ) {
-                var byteStr, intArray, ab, i, mimetype, parts;
-    
-                parts = dataURI.split(',');
-    
-                if ( ~parts[ 0 ].indexOf('base64') ) {
-                    byteStr = atob( parts[ 1 ] );
-                } else {
-                    byteStr = decodeURIComponent( parts[ 1 ] );
-                }
-    
-                ab = new ArrayBuffer( byteStr.length );
-                intArray = new Uint8Array( ab );
-    
-                for ( i = 0; i < byteStr.length; i++ ) {
-                    intArray[ i ] = byteStr.charCodeAt( i );
-                }
-    
-                mimetype = parts[ 0 ].split(':')[ 1 ].split(';')[ 0 ];
-    
-                return new Blob([ ab ], {
-                    type: mimetype
-                });
-            },
-    
-            dataURL2ArrayBuffer: function( dataURI ) {
-                var byteStr, intArray, i, parts;
-    
-                parts = dataURI.split(',');
-    
-                if ( ~parts[ 0 ].indexOf('base64') ) {
-                    byteStr = atob( parts[ 1 ] );
-                } else {
-                    byteStr = decodeURIComponent( parts[ 1 ] );
-                }
-    
-                intArray = new Uint8Array( byteStr.length );
-    
-                for ( i = 0; i < byteStr.length; i++ ) {
-                    intArray[ i ] = byteStr.charCodeAt( i );
-                }
-    
-                return intArray.buffer;
-            },
-    
-            arrayBufferToBlob: function( buffer, type ) {
-                return new Blob([ buffer ], type ? { type: type } : {} );
-            }
-        };
-    });
-
-    /**
-     * Terms:
-     *
-     * Uint8Array, FileReader, BlobBuilder, atob, ArrayBuffer
-     * @fileOverview Image控件
-     */
-    define( 'runtime/html5/imagemeta', function() {
-    
-        var api;
-    
-        api = {
-            parsers: {
-                0xffe1: []
-            },
-    
-            maxMetaDataSize: 262144,
-    
-            parse: function( blob, cb ) {
-                var me = this,
-                    fr = new FileReader();
-    
-                fr.onload = function() {
-                    cb( false, me._parse( this.result ) );
-                    fr = fr.onload = fr.onerror = null;
-                };
-    
-                fr.onerror = function( e ) {
-                    cb( e.message );
-                    fr = fr.onload = fr.onerror = null;
-                };
-    
-                blob = blob.slice( 0, me.maxMetaDataSize );
-                fr.readAsArrayBuffer( blob.getSource() );
-            },
-    
-            _parse: function( buffer, noParse ) {
-                if ( buffer.byteLength < 6 ) {
-                    return;
-                }
-    
-                var dataview = new DataView( buffer ),
-                    offset = 2,
-                    maxOffset = dataview.byteLength - 4,
-                    headLength = offset,
-                    ret = {},
-                    markerBytes, markerLength, parsers, i;
-    
-                if ( dataview.getUint16( 0 ) === 0xffd8 ) {
-    
-                    while ( offset < maxOffset ) {
-                        markerBytes = dataview.getUint16( offset );
-    
-                        if ( markerBytes >= 0xffe0 && markerBytes <= 0xffef ||
-                                markerBytes === 0xfffe ) {
-    
-                            markerLength = dataview.getUint16( offset + 2 ) + 2;
-    
-                            if ( offset + markerLength > dataview.byteLength ) {
-                                break;
-                            }
-    
-                            parsers = api.parsers[ markerBytes ];
-    
-                            if ( !noParse && parsers ) {
-                                for ( i = 0; i < parsers.length; i += 1 ) {
-                                    parsers[ i ].call( api, dataview, offset,
-                                            markerLength, ret );
-                                }
-                            }
-    
-                            offset += markerLength;
-                            headLength = offset;
-                        } else {
-                            break;
-                        }
-                    }
-    
-                    if ( headLength > 6 ) {
-                        if ( buffer.slice ) {
-                            ret.imageHead = buffer.slice( 2, headLength );
-                        } else {
-                            // Workaround for IE10, which does not yet
-                            // support ArrayBuffer.slice:
-                            ret.imageHead = new Uint8Array( buffer )
-                                    .subarray( 2, headLength );
-                        }
-                    }
-                }
-    
-                return ret;
-            },
-    
-            updateImageHead: function( buffer, head ) {
-                var data = this._parse( buffer, true ),
-                    buf1, buf2, bodyoffset;
-    
-    
-                bodyoffset = 2;
-                if ( data.imageHead ) {
-                    bodyoffset = 2 + data.imageHead.byteLength;
-                }
-    
-                if ( buffer.slice ) {
-                    buf2 = buffer.slice( bodyoffset );
-                } else {
-                    buf2 = new Uint8Array( buffer ).subarray( bodyoffset );
-                }
-    
-                buf1 = new Uint8Array( head.byteLength + 2 + buf2.byteLength );
-    
-                buf1[ 0 ] = 0xFF;
-                buf1[ 1 ] = 0xD8;
-                buf1.set( new Uint8Array( head ), 2 );
-                buf1.set( new Uint8Array( buf2 ), head.byteLength + 2 );
-    
-                return buf1.buffer;
-            }
-        };
-    
-        return api;
-    });
-
-    /**
-     * @fileOverview Image
-     */
-    define( 'runtime/html5/image', [
-        'runtime/html5/runtime',
-        'runtime/html5/util',
-        'runtime/html5/imagemeta'
-    ], function( Html5Runtime, Util, ImageMeta ) {
-    
-        var BLANK = 'data:image/gif;base64,R0lGODlhAQABAAD/ACwAAAAAAQABAAACADs%3D';
-    
-        return Html5Runtime.register( 'Image', {
-    
-            // flag: 标记是否被修改过。
-            modified: false,
-    
-            init: function() {
-                var me = this,
-                    img = new Image();
-    
-                img.onload = function() {
-    
-                    me._info = {
-                        type: me.type,
-                        width: this.width,
-                        height: this.height
-                    };
-    
-                    // 读取meta信息。
-                    if ( !me._metas && ~'image/jpegimage/jpg'.indexOf( me.type ) ) {
-                        ImageMeta.parse( me._blob, function( error, ret ) {
-                            me._metas = ret;
-                            me.owner.trigger('load');
-                        });
-                    } else {
-                        me.owner.trigger('load');
-                    }
-                };
-    
-                img.onerror = function() {
-                    me.owner.trigger('error');
-                };
-    
-                me._img = img;
-            },
-    
-            loadFromBlob: function( blob ) {
-                var me = this,
-                    img = me._img;
-    
-                me._blob = blob;
-                me.type = blob.type;
-                img.src = Util.createObjectURL( blob.getSource() );
-                me.owner.once( 'load', function() {
-                    Util.revokeObjectURL( img.src );
-                });
-            },
-    
-            resize: function( width, height ) {
-                var canvas = this._canvas ||
-                        (this._canvas = document.createElement('canvas'));
-    
-                this._resize( this._img, canvas, width, height );
-                this._blob = null;    // 没用了，可以删掉了。
-                this.modified = true;
-                this.owner.trigger('complete');
-            },
-    
-            getAsBlob: function( type ) {
-                var blob = this._blob,
-                    opts = this.options,
-                    canvas;
-    
-                type = type || this.type;
-    
-                // blob需要重新生成。
-                if ( this.modified || this.type !== type ) {
-                    canvas = this._canvas;
-    
-                    if ( type === 'image/jpeg' ) {
-                        blob = canvas.toDataURL( 'image/jpeg', opts.quality / 100 );
-    
-                        if ( opts.preserveHeaders && this._metas &&
-                                this._metas.imageHead ) {
->>>>>>> upstream/master
     
             /**
              * 暂停上传。第一个参数为是否中断上传当前正在上传的文件。
@@ -4591,7 +3888,7 @@
                 elem.on( 'dragleave', this.dragLeaveHandler );
                 elem.on( 'drop', this.dropHandler );
     
-                if ( this.options.disableGlobalDnd ) {
+                if ( !this.options.disableGlobalDnd ) {
                     $( document ).on( 'dragover', this.dragOverHandler );
                     $( document ).on( 'drop', this.dropHandler );
                 }
@@ -6108,18 +5405,8 @@
                 owner.info() && this.flashExec( 'Image', 'info', owner.info() );
                 owner.meta() && this.flashExec( 'Image', 'meta', owner.meta() );
     
-<<<<<<< HEAD
                 this.flashExec( 'Image', 'loadFromBlob', blob.uid );
             }
-=======
-            uploader.on( 'fileDequeued', function() {
-                count--;
-            });
-    
-            uploader.on( 'uploadFinished', function() {
-                count = 0;
-            });
->>>>>>> upstream/master
         });
     });
     /**
@@ -6174,20 +5461,9 @@
                 return this._status;
             },
     
-<<<<<<< HEAD
             getResponse: function() {
                 return this._response;
             },
-=======
-            uploader.on( 'fileDequeued', function( file ) {
-                count -= file.size;
-            });
-    
-            uploader.on( 'uploadFinished', function() {
-                count = 0;
-            });
-        });
->>>>>>> upstream/master
     
             getResponseAsJson: function() {
                 return this._responseJson;
@@ -6196,26 +5472,12 @@
             abort: function() {
                 var xhr = this._xhr;
     
-<<<<<<< HEAD
                 if ( xhr ) {
                     xhr.exec('abort');
                     xhr.destroy();
                     this._xhr = xhr = null;
                 }
             },
-=======
-            uploader.on( 'beforeFileQueued', function( file ) {
-    
-                if ( file.size > max ) {
-                    file.setStatus( WUFile.Status.INVALID, 'exceed_size' );
-                    this.trigger( 'error', 'F_EXCEED_SIZE' );
-                    return false;
-                }
-    
-            });
-    
-        });
->>>>>>> upstream/master
     
             destroy: function() {
                 this.abort();
@@ -6241,18 +5503,9 @@
                         return me.trigger('load');
                     }
     
-<<<<<<< HEAD
                     me._status = status;
                     xhr.destroy();
                     xhr = null;
-=======
-                // 已经重复了
-                if ( mapping[ hash ] ) {
-                    this.trigger( 'error', 'F_DUPLICATE' );
-                    return false;
-                }
-            });
->>>>>>> upstream/master
     
                     return me.trigger( 'error', 'http' );
                 });
@@ -6274,63 +5527,13 @@
             }
         });
     });
-<<<<<<< HEAD
-=======
-    
-
->>>>>>> upstream/master
     /**
      * @fileOverview 完全版本。
      */
-<<<<<<< HEAD
     define('preset/all',[
         'base',
         'promise',
         'uploader',
-=======
-    
-        var key, host, parts, part, last, origin,
-            WebUploader = modules.base;
-            // 让首写字母大写。
-        var ucFirst = function( str ) {
-                return str && (str.charAt( 0 ).toUpperCase() + str.substr( 1 ));
-            };
-    
-        for ( key in modules ) {
-            host = WebUploader;
-    
-            if ( !modules.hasOwnProperty( key ) ) {
-                continue;
-            }
-    
-            parts = key.split('/');
-            last = ucFirst( parts.pop() );
-    
-            while( (part = ucFirst( parts.shift() )) ) {
-                host[ part ] = host[ part ] || {};
-                host = host[ part ];
-            }
-    
-            host[ last ] = modules[ key ];
-        }
-    
-        return WebUploader;
-    })( window );
-    
-    var exportName = 'WebUploader';  // 暴露出去的key
-    
-    if ( typeof module === 'object' && typeof module.exports === 'object' ) {
-        module.exports = WebUploader;
-    } else if ( typeof define === 'function' && define.amd ) {
-        define(exportName, function() { return WebUploader; } );
-    }
-    
-    origin = window[ exportName ];
-    window[ exportName ] = WebUploader;
-    window[ exportName ].noConflict = function() {
-        window[ exportName ] = origin;
-    };
->>>>>>> upstream/master
     
         // widgets
         'widgets/filepicker',
