@@ -73,6 +73,8 @@ jQuery(function() {
         // swf文件路径
         swf: BASE_URL + '/js/Uploader.swf',
 
+        disableGlobalDnd: true,
+
         chunked: true,
         server: 'http://webuploader.duapp.com/server/fileupload.php',
         fileNumLimit: 300,
