@@ -1998,9 +1998,9 @@
              * 文件MIMETYPE类型，与文件类型的对应关系请参考[http://t.cn/z8ZnFny](http://t.cn/z8ZnFny)
              * @property type
              * @type {string}
-             * @default 'image/png'
+             * @default 'application'
              */
-            this.type = source.type || 'image/png';
+            this.type = source.type || 'application';
     
             /**
              * 文件最后修改日期
@@ -2136,6 +2136,7 @@
     
         return WUFile;
     });
+    
     /**
      * @fileOverview 文件队列
      */
@@ -2795,6 +2796,28 @@
              * @description 文件上传请求的参数表，每次发送都会发送此对象中的参数。
              */
             formdata: null
+    
+            /**
+             * @property {Object} [fileVal='file']
+             * @namespace options
+             * @for Uploader
+             * @description 设置文件上传域的name。
+             */
+    
+            /**
+             * @property {Object} [method='POST']
+             * @namespace options
+             * @for Uploader
+             * @description 文件上传方式，`POST`或者`GET`。
+             */
+    
+            /**
+             * @property {Object} [sendAsBinary=false]
+             * @namespace options
+             * @for Uploader
+             * @description 是否已二进制的流的方式发送文件，这样整个上传内容`php://input`都为文件内容，
+             * 其他参数在$_GET数组中。
+             */
         });
     
         // 负责将文件切片。
@@ -3432,6 +3455,10 @@
             uploader.on( 'fileDequeued', function() {
                 count--;
             });
+    
+            uploader.on( 'uploadFinished', function() {
+                count = 0;
+            });
         });
     
     
@@ -3473,6 +3500,10 @@
             uploader.on( 'fileDequeued', function( file ) {
                 count -= file.size;
             });
+    
+            uploader.on( 'uploadFinished', function() {
+                count = 0;
+            });
         });
     
         /**
@@ -3490,11 +3521,16 @@
                 return;
             }
     
-            uploader.on( 'fileQueued', function( file ) {
+            uploader.on( 'beforeFileQueued', function( file ) {
+    
                 if ( file.size > max ) {
                     file.setStatus( WUFile.Status.INVALID, 'exceed_size' );
+                    this.trigger( 'error', 'F_EXCEED_SIZE' );
+                    return false;
                 }
+    
             });
+    
         });
     
         /**
@@ -3532,6 +3568,7 @@
     
                 // 已经重复了
                 if ( mapping[ hash ] ) {
+                    this.trigger( 'error', 'F_DUPLICATE' );
                     return false;
                 }
             });
@@ -3553,6 +3590,7 @@
     
         return api;
     });
+    
     /**
      * @fileOverview Runtime管理器，负责Runtime的选择, 连接
      */
@@ -3955,6 +3993,5 @@
     ], function( Base ) {
         return Base;
     });
-
     return require('base');
 });

@@ -44,9 +44,9 @@ define([
          * 文件MIMETYPE类型，与文件类型的对应关系请参考[http://t.cn/z8ZnFny](http://t.cn/z8ZnFny)
          * @property type
          * @type {string}
-         * @default 'image/png'
+         * @default 'application'
          */
-        this.type = source.type || 'image/png';
+        this.type = source.type || 'application';
 
         /**
          * 文件最后修改日期
