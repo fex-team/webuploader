@@ -9,89 +9,92 @@
 (function( root, factory ) {
     var modules = {},
 
-    // 简单不完全实现https://github.com/amdjs/amdjs-api/wiki/require
-    require2 = function( deps, callback ) {
-        var args, len, i;
+        // 内部require, 简单不完全实现。
+        // https://github.com/amdjs/amdjs-api/wiki/require
+        require2 = function( deps, callback ) {
+            var args, len, i;
 
-        // 如果deps不是数组，则直接返回指定module
-        if ( typeof deps === 'string' ) {
-            return getModule( deps );
-        } else {
-            args = [];
-            for( len = deps.length, i = 0; i < len; i++ ) {
-                args.push( getModule( deps[ i ] ) );
+            // 如果deps不是数组，则直接返回指定module
+            if ( typeof deps === 'string' ) {
+                return getModule( deps );
+            } else {
+                args = [];
+                for( len = deps.length, i = 0; i < len; i++ ) {
+                    args.push( getModule( deps[ i ] ) );
+                }
+
+                return callback.apply( null, args );
+            }
+        },
+
+        // 内部define，暂时不支持不指定id.
+        define2 = function( id, deps, factory ) {
+            if ( arguments.length === 2 ) {
+                factory = deps;
+                deps = null;
             }
 
-            return callback.apply( null, args );
-        }
-    },
+            require2( deps || [], function() {
+                setModule( id, factory, arguments );
+            });
+        },
 
-    // 内部的define，暂时不支持不指定id.
-    define2 = function( id, deps, factory ) {
-        if ( arguments.length === 2 ) {
-            factory = deps;
-            deps = null;
-        }
+        // 设置module, 兼容CommonJs写法。
+        setModule = function( id, factory, args ) {
+            var module = {
+                    exports: factory
+                },
+                returned;
 
-        require2( deps || [], function() {
-            setModule( id, factory, arguments );
-        });
-    },
-
-    // 设置module, 兼容CommonJs写法。
-    setModule = function( id, factory, args ) {
-        var module = {
-                exports: factory
-            },
-            returned;
-
-        if ( typeof factory === 'function' ) {
-            args.length || (args = [ require2, module.exports, module ]);
-            returned = factory.apply( null, args );
-            returned !== undefined && (module.exports = returned);
-        }
-
-        modules[ id ] = module.exports;
-    },
-
-    // 根据id获取module
-    getModule = function( id ) {
-        var module = modules[ id ] || root[ id ];
-
-        if ( !module ) {
-            throw new Error( '`' + id + '` is undefined' );
-        }
-
-        return module;
-    },
-
-    // 将所有modules，将路径ids装换成对象。
-    exportsTo = function( obj ) {
-        var key, host, parts, part, last, ucFirst;
-
-        // make the first character upper case.
-        ucFirst = function( str ) {
-            return str && (str.charAt( 0 ).toUpperCase() + str.substr( 1 ));
-        };
-
-        for ( key in modules ) {
-            host = obj;
-
-            if ( !modules.hasOwnProperty( key ) ) {
-                continue;
+            if ( typeof factory === 'function' ) {
+                args.length || (args = [ require2, module.exports, module ]);
+                returned = factory.apply( null, args );
+                returned !== undefined && (module.exports = returned);
             }
 
-            parts = key.split('/');
-            last = ucFirst( parts.pop() );
+            modules[ id ] = module.exports;
+        },
 
-            while( (part = ucFirst( parts.shift() )) ) {
-                host[ part ] = host[ part ] || {};
-                host = host[ part ];
+        // 根据id获取module
+        getModule = function( id ) {
+            var module = modules[ id ] || root[ id ];
+
+            if ( !module ) {
+                throw new Error( '`' + id + '` is undefined' );
             }
 
-            host[ last ] = modules[ key ];
-        }
-    };
+            return module;
+        },
+
+        // 将所有modules，将路径ids装换成对象。
+        exportsTo = function( obj ) {
+            var key, host, parts, part, last, ucFirst;
+
+            // make the first character upper case.
+            ucFirst = function( str ) {
+                return str && (str.charAt( 0 ).toUpperCase() + str.substr( 1 ));
+            };
+
+            for ( key in modules ) {
+                host = obj;
+
+                if ( !modules.hasOwnProperty( key ) ) {
+                    continue;
+                }
+
+                parts = key.split('/');
+                last = ucFirst( parts.pop() );
+
+                while( (part = ucFirst( parts.shift() )) ) {
+                    host[ part ] = host[ part ] || {};
+                    host = host[ part ];
+                }
+
+                host[ last ] = modules[ key ];
+            }
+        },
+
+        origin;
 
     if ( typeof module === 'object' && typeof module.exports === 'object' ) {
 
@@ -202,62 +205,6 @@
              * @property {jQuery|Zepto} $ 引用依赖的jQuery或者Zepto对象。
              */
             $: $,
-    
-            /**
-             * 创建一个[Deferred](http://api.jquery.com/category/deferred-object/)对象。
-             * 详细的Deferred用法说明，请参照jQuery的API文档。
-             *
-             * Deferred对象在钩子回掉函数中经常要用到，用来处理需要等待的异步操作。
-             *
-             *
-             * @method Deferred
-             * @grammar Base.Deferred() => Deferred
-             * @example
-             * // 在文件开始发送前做些异步操作。
-             * // WebUploader会等待此异步操作完成后，开始发送文件。
-             * Uploader.register({
-             *     'before-send-file': 'doSomthingAsync'
-             * }, {
-             *
-             *     doSomthingAsync: function() {
-             *         var deferred = Base.Deferred();
-             *
-             *         // 模拟一次异步操作。
-             *         setTimeout(deferred.resolve, 2000);
-             *
-             *         return deferred.promise();
-             *     }
-             * });
-             */
-            Deferred: $.Deferred,
-    
-            /**
-             * 判断传入的参数是否为一个promise对象。
-             * @method isPromise
-             * @grammar Base.isPromise( anything ) => Boolean
-             * @param  {*}  anything 检测对象。
-             * @return {Boolean}
-             * @example
-             * console.log( Base.isPromise() );    // => false
-             * console.log( Base.isPromise({ key: '123' }) );    // => false
-             * console.log( Base.isPromise( Base.Deferred().promise() ) );    // => true
-             *
-             * // Deferred也是一个Promise
-             * console.log( Base.isPromise( Base.Deferred() ) );    // => true
-             */
-            isPromise: function( anything ) {
-                return anything && typeof anything.then === 'function';
-            },
-    
-    
-            /**
-             * 返回一个promise，此promise在所有传入的promise都完成了后完成。
-             * 详细请查看[这里](http://api.jquery.com/jQuery.when/)。
-             *
-             * @method when
-             * @grammar Base.when( promise1[, promise2[, promise3...]] ) => Promise
-             */
-            when: $.when,
     
             /**
              * @description  简单的浏览器检查结果。
@@ -758,8 +705,8 @@
             stop: 'stop-upload',
             getFile: 'get-file',
             getFiles: 'get-files',
-            // addFile: 'add-file',
-            // addFiles: 'add-file',
+            addFile: 'add-file',
+            addFiles: 'add-file',
             removeFile: 'remove-file',
             skipFile: 'skip-file',
             retry: 'retry',
@@ -1279,6 +1226,7 @@
                 me.connectRuntime( opts, function() {
                     me.refresh();
                     me.exec( 'init', opts );
+                    me.trigger('ready');
                 });
     
                 $( window ).on( 'resize', function() {
@@ -1299,6 +1247,23 @@
                     width: width + 'px',
                     height: height + 'px'
                 }).offset( pos );
+            },
+    
+            enable: function() {
+                var btn = this.options.button;
+    
+                btn.removeClass('webuploader-pick-disable');
+                this.refresh();
+            },
+    
+            disable: function() {
+                var btn = this.options.button;
+    
+                this.getRuntime().getContainer().css({
+                    top: '-99999px'
+                });
+    
+                btn.addClass('webuploader-pick-disable');
             },
     
             destroy: function() {
@@ -1533,7 +1498,9 @@
     
         return Uploader.register({
             'add-btn': 'addButton',
-            'refresh': 'refresh'
+            refresh: 'refresh',
+            disable: 'disable',
+            enable: 'enable'
         }, {
     
             init: function( opts ) {
@@ -1594,6 +1561,18 @@
                 this.pickers.push( picker );
     
                 return deferred.promise();
+            },
+    
+            disable: function() {
+                $.each( this.pickers, function() {
+                    this.disable();
+                });
+            },
+    
+            enable: function() {
+                $.each( this.pickers, function() {
+                    this.enable();
+                });
             }
         });
     });

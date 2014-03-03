@@ -80,6 +80,10 @@
             label: '继续添加'
         });
 
+        uploader.on('ready', function() {
+            window.uploader = uploader;
+        });
+
         // 当有文件添加进来时执行，负责view的创建
         function addFile( file ) {
             var $li = $( '<li id="' + file.id + '">' +

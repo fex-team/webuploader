@@ -68,6 +68,7 @@ define([
             me.connectRuntime( opts, function() {
                 me.refresh();
                 me.exec( 'init', opts );
+                me.trigger('ready');
             });
 
             $( window ).on( 'resize', function() {
@@ -88,6 +89,23 @@ define([
                 width: width + 'px',
                 height: height + 'px'
             }).offset( pos );
+        },
+
+        enable: function() {
+            var btn = this.options.button;
+
+            btn.removeClass('webuploader-pick-disable');
+            this.refresh();
+        },
+
+        disable: function() {
+            var btn = this.options.button;
+
+            this.getRuntime().getContainer().css({
+                top: '-99999px'
+            });
+
+            btn.addClass('webuploader-pick-disable');
         },
 
         destroy: function() {

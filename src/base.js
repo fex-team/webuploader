@@ -69,62 +69,6 @@ define([
         $: $,
 
         /**
-         * 创建一个[Deferred](http://api.jquery.com/category/deferred-object/)对象。
-         * 详细的Deferred用法说明，请参照jQuery的API文档。
-         *
-         * Deferred对象在钩子回掉函数中经常要用到，用来处理需要等待的异步操作。
-         *
-         *
-         * @method Deferred
-         * @grammar Base.Deferred() => Deferred
-         * @example
-         * // 在文件开始发送前做些异步操作。
-         * // WebUploader会等待此异步操作完成后，开始发送文件。
-         * Uploader.register({
-         *     'before-send-file': 'doSomthingAsync'
-         * }, {
-         *
-         *     doSomthingAsync: function() {
-         *         var deferred = Base.Deferred();
-         *
-         *         // 模拟一次异步操作。
-         *         setTimeout(deferred.resolve, 2000);
-         *
-         *         return deferred.promise();
-         *     }
-         * });
-         */
-        Deferred: $.Deferred,
-
-        /**
-         * 判断传入的参数是否为一个promise对象。
-         * @method isPromise
-         * @grammar Base.isPromise( anything ) => Boolean
-         * @param  {*}  anything 检测对象。
-         * @return {Boolean}
-         * @example
-         * console.log( Base.isPromise() );    // => false
-         * console.log( Base.isPromise({ key: '123' }) );    // => false
-         * console.log( Base.isPromise( Base.Deferred().promise() ) );    // => true
-         *
-         * // Deferred也是一个Promise
-         * console.log( Base.isPromise( Base.Deferred() ) );    // => true
-         */
-        isPromise: function( anything ) {
-            return anything && typeof anything.then === 'function';
-        },
-
-
-        /**
-         * 返回一个promise，此promise在所有传入的promise都完成了后完成。
-         * 详细请查看[这里](http://api.jquery.com/jQuery.when/)。
-         *
-         * @method when
-         * @grammar Base.when( promise1[, promise2[, promise3...]] ) => Promise
-         */
-        when: $.when,
-
-        /**
          * @description  简单的浏览器检查结果。
          *
          * * `webkit`  webkit版本号，如果浏览器为非webkit内核，此属性为`undefined`。

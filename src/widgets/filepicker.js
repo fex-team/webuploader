@@ -52,7 +52,9 @@ define([
 
     return Uploader.register({
         'add-btn': 'addButton',
-        'refresh': 'refresh'
+        refresh: 'refresh',
+        disable: 'disable',
+        enable: 'enable'
     }, {
 
         init: function( opts ) {
@@ -113,6 +115,18 @@ define([
             this.pickers.push( picker );
 
             return deferred.promise();
+        },
+
+        disable: function() {
+            $.each( this.pickers, function() {
+                this.disable();
+            });
+        },
+
+        enable: function() {
+            $.each( this.pickers, function() {
+                this.enable();
+            });
         }
     });
 });
