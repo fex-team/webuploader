@@ -264,6 +264,24 @@
                         <a class="" href="#WebUploader_Base_formatSize">formatSize</a>
                     </li>
                     
+                    
+
+                    <li class="method">
+                        <a class="" href="#WebUploader_Base_Deferred">Deferred</a>
+                    </li>
+                    
+                    
+
+                    <li class="method">
+                        <a class="" href="#WebUploader_Base_isPromise">isPromise</a>
+                    </li>
+                    
+                    
+
+                    <li class="method">
+                        <a class="" href="#WebUploader_Base_when">when</a>
+                    </li>
+                    
                 </ul>
             </li>
         
@@ -677,6 +695,43 @@
                 
             </span>
             <p>文件上传请求的参数表，每次发送都会发送此对象中的参数。</p>
+
+            
+        </li>
+        
+        <li>
+            <span class="meta">
+                <code>fileVal</code>
+                 {Object} 
+                 [可选] 
+                 [默认值：&#39;file&#39;] 
+            </span>
+            <p>设置文件上传域的name。</p>
+
+            
+        </li>
+        
+        <li>
+            <span class="meta">
+                <code>method</code>
+                 {Object} 
+                 [可选] 
+                 [默认值：&#39;POST&#39;] 
+            </span>
+            <p>文件上传方式，<code>POST</code>或者<code>GET</code>。</p>
+
+            
+        </li>
+        
+        <li>
+            <span class="meta">
+                <code>sendAsBinary</code>
+                 {Object} 
+                 [可选] 
+                 [默认值：false] 
+            </span>
+            <p>是否已二进制的流的方式发送文件，这样整个上传内容<code>php://input</code>都为文件内容，
+其他参数在$_GET数组中。</p>
 
             
         </li>
@@ -1920,6 +1975,131 @@ Date URL在IE6/7中不支持，所以不用调用此方法了，直接显示一�
 <span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span> <span class="nx">Base</span><span class="p">.</span><span class="nx">formatSize</span><span class="p">(</span> <span class="mi">1024</span> <span class="o">*</span> <span class="mi">1024</span> <span class="o">*</span> <span class="mi">1024</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="p">[</span><span class="s1">&#39;B&#39;</span><span class="p">,</span> <span class="s1">&#39;KB&#39;</span><span class="p">,</span> <span class="s1">&#39;MB&#39;</span><span class="p">]</span> <span class="p">)</span> <span class="p">);</span>    <span class="c1">// =&gt; 1024MB</span>
 </code></pre></div>
 
+
+    
+</article>
+
+
+
+
+<article class="clearfix method">
+    <h3 id="WebUploader_Base_Deferred"  >Deferred
+        
+    </h3>
+    
+
+    
+
+    
+    <ul class="signature">
+        
+        <li>Base.Deferred() 
+            <span class="return">⇒  Deferred</span>
+            
+        </li>
+    </ul>
+    
+    
+    
+
+    <p>创建一个<a href="http://api.jquery.com/category/deferred-object/">Deferred</a>对象。
+详细的Deferred用法说明，请参照jQuery的API文档。</p>
+<p>Deferred对象在钩子回掉函数中经常要用到，用来处理需要等待的异步操作。</p>
+
+    
+        
+<div class="highlight"><pre><code class="javascript"><span class="c1">// 在文件开始发送前做些异步操作。</span>
+<span class="c1">// WebUploader会等待此异步操作完成后，开始发送文件。</span>
+<span class="nx">Uploader</span><span class="p">.</span><span class="nx">register</span><span class="p">({</span>
+    <span class="s1">&#39;before-send-file&#39;</span><span class="o">:</span> <span class="s1">&#39;doSomthingAsync&#39;</span>
+<span class="p">},</span> <span class="p">{</span>
+
+    <span class="nx">doSomthingAsync</span><span class="o">:</span> <span class="kd">function</span><span class="p">()</span> <span class="p">{</span>
+        <span class="kd">var</span> <span class="nx">deferred</span> <span class="o">=</span> <span class="nx">Base</span><span class="p">.</span><span class="nx">Deferred</span><span class="p">();</span>
+
+        <span class="c1">// 模拟一次异步操作。</span>
+        <span class="nx">setTimeout</span><span class="p">(</span><span class="nx">deferred</span><span class="p">.</span><span class="nx">resolve</span><span class="p">,</span> <span class="mi">2000</span><span class="p">);</span>
+
+        <span class="k">return</span> <span class="nx">deferred</span><span class="p">.</span><span class="nx">promise</span><span class="p">();</span>
+    <span class="p">}</span>
+<span class="p">});</span>
+</code></pre></div>
+
+
+    
+</article>
+
+
+
+
+<article class="clearfix method">
+    <h3 id="WebUploader_Base_isPromise"  >isPromise
+        
+    </h3>
+    
+
+    
+
+    
+    <ul class="signature">
+        
+        <li>Base.isPromise( anything ) 
+            <span class="return">⇒  Boolean</span>
+            
+        </li>
+    </ul>
+    
+    
+        <p>参数: </p>
+        <ul class="params-list"><li><span class="meta"><code>anything</code> {*}</span><p>检测对象。</p>
+</li></ul>
+    
+    
+        <p>返回值: </p>
+        <ul class="params-list"><li><span class="meta"> {Boolean}</span></li></ul>
+    
+
+    <p>判断传入的参数是否为一个promise对象。</p>
+
+    
+        
+<div class="highlight"><pre><code class="javascript"><span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span> <span class="nx">Base</span><span class="p">.</span><span class="nx">isPromise</span><span class="p">()</span> <span class="p">);</span>    <span class="c1">// =&gt; false</span>
+<span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span> <span class="nx">Base</span><span class="p">.</span><span class="nx">isPromise</span><span class="p">({</span> <span class="nx">key</span><span class="o">:</span> <span class="s1">&#39;123&#39;</span> <span class="p">})</span> <span class="p">);</span>    <span class="c1">// =&gt; false</span>
+<span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span> <span class="nx">Base</span><span class="p">.</span><span class="nx">isPromise</span><span class="p">(</span> <span class="nx">Base</span><span class="p">.</span><span class="nx">Deferred</span><span class="p">().</span><span class="nx">promise</span><span class="p">()</span> <span class="p">)</span> <span class="p">);</span>    <span class="c1">// =&gt; true</span>
+
+<span class="c1">// Deferred也是一个Promise</span>
+<span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span> <span class="nx">Base</span><span class="p">.</span><span class="nx">isPromise</span><span class="p">(</span> <span class="nx">Base</span><span class="p">.</span><span class="nx">Deferred</span><span class="p">()</span> <span class="p">)</span> <span class="p">);</span>    <span class="c1">// =&gt; true</span>
+</code></pre></div>
+
+
+    
+</article>
+
+
+
+
+<article class="clearfix method">
+    <h3 id="WebUploader_Base_when"  >when
+        
+    </h3>
+    
+
+    
+
+    
+    <ul class="signature">
+        
+        <li>Base.when( promise1[, promise2[, promise3...]] ) 
+            <span class="return">⇒  Promise</span>
+            
+        </li>
+    </ul>
+    
+    
+    
+
+    <p>返回一个promise，此promise在所有传入的promise都完成了后完成。
+详细请查看<a href="http://api.jquery.com/jQuery.when/">这里</a>。</p>
 
     
 </article>
