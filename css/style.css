@@ -498,3 +498,9 @@ body {
         background-position: 17px 0;
     }
 }
+
+a.travis {
+  position: relative;
+  top: -4px;
+  right: 15px;
+}
