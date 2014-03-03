@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>WebUploader test units.</title>
+  <link rel="stylesheet" href="./Qunit/qunit-1.14.0.css">
+  <link rel="stylesheet" type="text/css" href="../css/webuploader.css" />
+</head>
+<body>
+  <div id="qunit"></div>
+  <div id="qunit-fixture"></div>
+  <script src="./jquery-1.10.1.min.js"></script>
+  <script src="./Qunit/qunit-1.14.0.js"></script>
+  <script src="./Qunit/qunit-1.14.0.js"></script>
+  <script src="./require.js"></script>
+<script type="text/javascript">
+//<![CDATA[
+(function($) {
+    var units;
+
+
+    units = [
+        'base'
+    ];
+
+
+    requirejs.config({
+        baseUrl: './units',
+
+        paths: {
+            webuploader: '../../src'
+        }
+    });
+
+
+    QUnit.config.autostart = false;
+    requirejs(units, function() {
+        QUnit.start();
+    });
+
+})(jQuery);
+//]]>
+</script>
+</body>
+</html>

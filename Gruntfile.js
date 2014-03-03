@@ -157,7 +157,34 @@ module.exports = function(grunt) {
                 repo: 'https://github.com/gmuteam/webuploader.git'
             },
             src: ['**/*']
-        }
+        },
+
+        qunit: {
+            all: {
+                options: {
+                    urls: [
+                        'http://0.0.0.0:8000/test/index.html'
+                    ]
+                }
+            }
+        },
+
+        connect: {
+            server: {
+                options: {
+                    port: 8000,
+                    base: '.'
+                }
+            }/*,
+
+            keepalive: {
+                options: {
+                    port: 8000,
+                    base: '.',
+                    keepalive: true
+                }
+            }*/
+        },
     });
 
     // 负责报告文件大小
@@ -177,6 +204,9 @@ module.exports = function(grunt) {
 
     grunt.loadNpmTasks('grunt-contrib-copy');
 
+    grunt.loadNpmTasks('grunt-contrib-qunit');
+    grunt.loadNpmTasks('grunt-contrib-connect');
+
     // 加载build目录下的所有task
     grunt.loadTasks( 'build/tasks' );
 
@@ -184,4 +214,5 @@ module.exports = function(grunt) {
     grunt.registerTask( 'default', [ 'jsbint:all', 'dist' ] );
     grunt.registerTask( 'dist', [ 'build', 'uglify', 'copy' ] );
     grunt.registerTask( 'deploy', [ 'doc', 'jekyll', 'gh-pages' ] );
+    grunt.registerTask( 'test', [ 'connect', 'qunit' ] );
 };
