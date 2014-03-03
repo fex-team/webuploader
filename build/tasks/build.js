@@ -41,7 +41,7 @@ module.exports = function( grunt ) {
                 }
             }),
             dest = this.data.dest,
-            config;
+            config, flag;
 
         config = {
 
@@ -111,24 +111,27 @@ module.exports = function( grunt ) {
 
             // Write concatenated source to file
             grunt.file.write( dest, arr.join( sep ) );
+
+            process.nextTick(function() {
+                // requirejs有bug, callback不一定会执行，目前调试的结果是
+                // prim的promise实现有问题。
+                if ( flag ) return;
+                grunt.log.ok( "File '" + dest + "' created." );
+                done();
+                flag = true;
+            });
         };
 
-        var domain = require('domain');
-
-        var d = domain.create();
-        d.on('error', function() {
-            console.error('Caught error!', er);
+        requirejs.optimize( config, function( response ) {
+            // requirejs有bug, callback不一定会执行，目前调试的结果是
+            // prim的promise实现有问题。
+            if ( flag ) return;
+            grunt.verbose.writeln( response );
+            grunt.log.ok( "File '" + name + "' created." );
+            done();
+            flag = true;
+        }, function( err ) {
+            done( err );
         });
-
-        d.run(function() {
-            requirejs.optimize( config, function( response ) {
-                grunt.verbose.writeln( response );
-                grunt.log.ok( "File '" + name + "' created." );
-                done();
-            }, function( err ) {
-                done( err );
-            });
-        });
-
     });
 };

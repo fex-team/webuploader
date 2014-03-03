@@ -11,7 +11,7 @@ define([
 
             isPromise: function( anything ) {
                 return anything && typeof anything.then === 'function';
-            },
+            }
         };
 
     return $.extend( Base, api ) && api;
