@@ -11,7 +11,7 @@
 
         // 内部require, 简单不完全实现。
         // https://github.com/amdjs/amdjs-api/wiki/require
-        require2 = function( deps, callback ) {
+        _require = function( deps, callback ) {
             var args, len, i;
 
             // 如果deps不是数组，则直接返回指定module
@@ -28,13 +28,13 @@
         },
 
         // 内部define，暂时不支持不指定id.
-        define2 = function( id, deps, factory ) {
+        _define = function( id, deps, factory ) {
             if ( arguments.length === 2 ) {
                 factory = deps;
                 deps = null;
             }
 
-            require2( deps || [], function() {
+            _require( deps || [], function() {
                 setModule( id, factory, arguments );
             });
         },
@@ -47,7 +47,7 @@
                 returned;
 
             if ( typeof factory === 'function' ) {
-                args.length || (args = [ require2, module.exports, module ]);
+                args.length || (args = [ _require, module.exports, module ]);
                 returned = factory.apply( null, args );
                 returned !== undefined && (module.exports = returned);
             }
@@ -99,7 +99,7 @@
     if ( typeof module === 'object' && typeof module.exports === 'object' ) {
 
         // For CommonJS and CommonJS-like environments where a proper window is present,
-        module.exports = factory( root, define2, require2 );
+        module.exports = factory( root, _define, _require );
         exportsTo( module.exports );
     } else if ( typeof define === 'function' && define.amd ) {
 
@@ -113,7 +113,7 @@
         // Browser globals case. Just assign the
         // result to a property on the global.
         origin = root.WebUploader;
-        root.WebUploader = factory( root, define2, require2 );
+        root.WebUploader = factory( root, _define, _require );
         exportsTo( root.WebUploader );
         root.WebUploader.noConflict = function() {
             root.WebUploader = origin;
