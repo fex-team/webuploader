@@ -140,6 +140,12 @@
                     
 
                     <li class="method">
+                        <a class="" href="#WebUploader_Uploader_reset">reset</a>
+                    </li>
+                    
+                    
+
+                    <li class="method">
                         <a class="" href="#WebUploader_Uploader_predictRuntmeType">predictRuntmeType</a>
                     </li>
                     
@@ -861,7 +867,7 @@
 </li></ul>
                 
             </td>
-            <td><p>某个文件开始上传前触发。</p>
+            <td><p>某个文件开始上传前触发，一个文件只会触发一次。</p>
 </td>
         </tr>
         
@@ -873,7 +879,7 @@
 </li></ul>
                 
             </td>
-            <td><p>但请求再发送前触发。</p>
+            <td><p>当某个文件的分块在发送前触发，主要用来询问是否要添加附带参数，大文件在开起分片上传的前提下此事件可能会触发多次。</p>
 </td>
         </tr>
         
@@ -1251,6 +1257,40 @@ Date URL在IE6/7中不支持，所以不用调用此方法了，直接显示一�
 <div class="highlight"><pre><code class="javascript"><span class="kd">function</span> <span class="nx">retry</span><span class="p">()</span> <span class="p">{</span>
     <span class="nx">uploader</span><span class="p">.</span><span class="nx">retry</span><span class="p">();</span>
 <span class="p">}</span>
+</code></pre></div>
+
+
+    
+</article>
+
+
+
+
+<article class="clearfix method">
+    <h3 id="WebUploader_Uploader_reset"  >reset
+        
+    </h3>
+    
+
+    
+
+    
+    <ul class="signature">
+        
+        <li>reset() 
+            <span class="return">⇒  undefined</span>
+            
+        </li>
+    </ul>
+    
+    
+    
+
+    <p>重置uploader。目前只重置了队列。</p>
+
+    
+        
+<div class="highlight"><pre><code class="javascript"><span class="nx">uploader</span><span class="p">.</span><span class="nx">reset</span><span class="p">();</span>
 </code></pre></div>
 
 
