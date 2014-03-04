@@ -72,6 +72,9 @@ module.exports = function( grunt ) {
                     compiled = options.process( compiled, _path );
                 }
 
+                // 调整缩进
+                compiled = compiled.replace( /(^|\r\n|\r|\n)/g, '$1    ')
+
                 return compiled;
             },
 
