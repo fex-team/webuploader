@@ -31,9 +31,9 @@ commentIssueId: 82
 
 直接下载本站默认打包版本，下载包中包含`源码版本`和`压缩版本`。
 
-<a class="btn btn-success" href="https://github.com/gmuteam/webuploader/releases/download/v0.1.0/webuploader-0.1.0-dist.zip">下载1.0版本</a>
+<a class="btn btn-success" href="https://github.com/fex-team/webuploader/releases/download/v0.1.0/webuploader-0.1.0-dist.zip">下载1.0版本</a>
 
-或者直接使用由[staticfile](http://www.staticfile.org/)提供的cdn版本，或者下载[Git项目包](https://github.com/gmuteam/webuploader/zipball/master)。
+或者直接使用由[staticfile](http://www.staticfile.org/)提供的cdn版本，或者下载[Git项目包](https://github.com/fex-team/webuploader/zipball/master)。
 
 ```html
 // SWF文件，当使用Flash运行时需要引入。
@@ -68,14 +68,14 @@ commentIssueId: 82
 3. grunt (`npm install grunt-cli -g`)
 
 ### 编译代码
-1. 克隆 [webuploader git仓库](https://github.com/gmuteam/webuploader)，`git clone https://github.com/gmuteam/webuploader.git`。
+1. 克隆 [webuploader git仓库](https://github.com/fex-team/webuploader)，`git clone https://github.com/fex-team/webuploader.git`。
 2. 安装node依赖，`npm install`。
 3. 执行`grunt dist`，此动作会在dist目录下面创建合并版本的js, 包括通过`uglify`压缩的min版本。
 
 ### 配置
 打开webuploader仓库根目录下面的`Gruntfile.js`文件, 代码合并有`concat`task来完成。找到`concat`配置项。
 
-如下面的例子演示了如何去掉html5部分的代码。**配置时不用考虑js依赖，gmuteam优化了concat工具，依赖的js将自动被添加进来。**
+如下面的例子演示了如何去掉html5部分的代码。**配置时不用考虑js依赖，fex-team优化了concat工具，依赖的js将自动被添加进来。**
 
 ```javascript
 flashonly: {
