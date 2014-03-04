@@ -20,7 +20,8 @@ define([
         'get-stats': 'getStats',
         'get-files': 'getFiles',
         'remove-file': 'removeFile',
-        'retry': 'retry'
+        'retry': 'retry',
+        'reset': 'reset'
     }, {
 
         init: function( opts ) {
@@ -201,6 +202,19 @@ define([
             }
 
             me.request('start-upload');
+        },
+
+        /**
+         * @method reset
+         * @grammar reset() => undefined
+         * @description 重置uploader。目前只重置了队列。
+         * @for  Uploader
+         * @example
+         * uploader.reset();
+         */
+        reset: function() {
+            this.queue = new Queue();
+            this.stats = this.queue.stats;
         }
     });
 
