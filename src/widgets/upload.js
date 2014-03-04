@@ -361,7 +361,7 @@ define([
         /**
          * @event uploadStart
          * @param {File} file File对象
-         * @description 某个文件开始上传前触发。
+         * @description 某个文件开始上传前触发，一个文件只会触发一次。
          * @for  Uploader
          */
         _prepareNextFile: function() {
@@ -459,7 +459,7 @@ define([
          * @event uploadBeforeSend
          * @param {Object} object
          * @param {Object} data 默认的上传参数，可以扩展此对象来控制上传参数。
-         * @description 但请求再发送前触发。
+         * @description 当某个文件的分块在发送前触发，主要用来询问是否要添加附带参数，大文件在开起分片上传的前提下此事件可能会触发多次。
          * @for  Uploader
          */
 
