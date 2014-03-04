@@ -59,7 +59,7 @@ jQuery(function() {
         for (var i = 0; i < data.length; i++) {
             var cuser = data[i].user.login;
             var cuserlink = 'https://www.github.com/' + data[i].user.login;
-            var clink = 'https://github.com/gmuteam/webuploader/issues/' + issueId + '#issuecomment-' + data[i].url.substring(data[i].url.lastIndexOf('/') + 1);
+            var clink = 'https://github.com/fex-team/webuploader/issues/' + issueId + '#issuecomment-' + data[i].url.substring(data[i].url.lastIndexOf('/') + 1);
             var cbody = data[i].body_html;
             var cavatarlink = data[i].user.avatar_url;
             var cdate = formatDate( data[i].created_at );
@@ -67,7 +67,7 @@ jQuery(function() {
         }
     }
 
-    $.ajax('https://api.github.com/repos/gmuteam/webuploader/issues/' + issueId + '/comments?per_page=100', {
+    $.ajax('https://api.github.com/repos/fex-team/webuploader/issues/' + issueId + '/comments?per_page=100', {
         headers: {
             Accept: 'application/vnd.github.full+json'
         },
