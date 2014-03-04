@@ -6,12 +6,7 @@ module.exports = function(grunt) {
 
         build: {
             options: {
-                banner: '/*! WebUploader <%= pkg.version %> */\n',
-
-                // 调整缩进
-                process: function( src, filepath ) {
-                    return src.replace( /(^|\r\n|\r|\n)/g, '$1    ');
-                }
+                banner: '/*! WebUploader <%= pkg.version %> */\n'
             },
 
             all: {
@@ -88,7 +83,7 @@ module.exports = function(grunt) {
 
             dist: {
                 files: ['src/**/*.js', 'Gruntfile.js'],
-                tasks: [ 'dist'],
+                tasks: ['dist'],
             },
 
             doc: {
@@ -175,7 +170,8 @@ module.exports = function(grunt) {
                     port: 8000,
                     base: '.'
                 }
-            }/*,
+            }
+            /*,
 
             keepalive: {
                 options: {
@@ -187,32 +183,12 @@ module.exports = function(grunt) {
         },
     });
 
-    // 负责报告文件大小
-    grunt.loadNpmTasks( 'grunt-size' );
-
-    // 负责代码规范检测
-    grunt.loadNpmTasks( 'grunt-jsbint' );
-
-    // 负责监听文件变化
-    grunt.loadNpmTasks( 'grunt-contrib-watch' );
-
-    grunt.loadNpmTasks( 'grunt-contrib-uglify' );
-
-    grunt.loadNpmTasks('grunt-jekyll');
-
-    grunt.loadNpmTasks('grunt-gh-pages');
-
-    grunt.loadNpmTasks('grunt-contrib-copy');
-
-    grunt.loadNpmTasks('grunt-contrib-qunit');
-    grunt.loadNpmTasks('grunt-contrib-connect');
-
-    // 加载build目录下的所有task
-    grunt.loadTasks( 'build/tasks' );
+    require('load-grunt-tasks')(grunt);
+    grunt.loadTasks('build/tasks');    // 加载build目录下的所有task
 
     // Default task(s).
-    grunt.registerTask( 'default', [ 'jsbint:all', 'dist' ] );
-    grunt.registerTask( 'dist', [ 'build', 'uglify', 'copy' ] );
-    grunt.registerTask( 'deploy', [ 'doc', 'jekyll', 'gh-pages' ] );
-    grunt.registerTask( 'test', [ 'connect', 'qunit' ] );
+    grunt.registerTask('default', ['jsbint:all', 'dist']);
+    grunt.registerTask('dist', ['build', 'uglify', 'copy']);
+    grunt.registerTask('deploy', ['doc', 'jekyll', 'gh-pages']);
+    grunt.registerTask('test', ['connect', 'qunit']);
 };
