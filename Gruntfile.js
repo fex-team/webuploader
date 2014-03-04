@@ -154,7 +154,7 @@ module.exports = function(grunt) {
             options: {
                 message: '程序自动提交，源码请查看tree/master/jekyll目录',
                 base: 'pages',
-                repo: 'https://github.com/gmuteam/webuploader.git'
+                repo: 'https://github.com/fex-team/webuploader.git'
             },
             src: ['**/*']
         },
