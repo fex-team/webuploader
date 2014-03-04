@@ -691,7 +691,8 @@
             getRuntimeType: 'get-runtime-type',
             refresh: 'refresh',
             disable: 'disable',
-            enable: 'enable'
+            enable: 'enable',
+            reset: 'reset'
         }, function( fn, command ) {
             Uploader.prototype[ fn ] = function() {
                 return this.request( command, arguments );
@@ -797,11 +798,7 @@
             },
     
             // widgets/widget.js将补充此方法的详细文档。
-            request: Base.noop,
-    
-            reset: function() {
-                // @todo
-            }
+            request: Base.noop
         });
     
         /**
@@ -1511,12 +1508,9 @@
                 }
     
                 deferred = Base.Deferred();
-    
-                if ( typeof pick === 'string' ) {
-                    pick = {
-                        id: pick
-                    };
-                }
+                $.isPlainObject( pick ) || (pick = {
+                    id: pick
+                });
     
                 options = $.extend({}, pick, {
                     accept: $.isPlainObject( accept ) ? [ accept ] : accept,
@@ -2140,7 +2134,8 @@
             'get-stats': 'getStats',
             'get-files': 'getFiles',
             'remove-file': 'removeFile',
-            'retry': 'retry'
+            'retry': 'retry',
+            'reset': 'reset'
         }, {
     
             init: function( opts ) {
@@ -2321,6 +2316,19 @@
                 }
     
                 me.request('start-upload');
+            },
+    
+            /**
+             * @method reset
+             * @grammar reset() => undefined
+             * @description 重置uploader。目前只重置了队列。
+             * @for  Uploader
+             * @example
+             * uploader.reset();
+             */
+            reset: function() {
+                this.queue = new Queue();
+                this.stats = this.queue.stats;
             }
         });
     

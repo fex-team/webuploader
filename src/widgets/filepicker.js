@@ -91,12 +91,9 @@ define([
             }
 
             deferred = Base.Deferred();
-
-            if ( typeof pick === 'string' ) {
-                pick = {
-                    id: pick
-                };
-            }
+            $.isPlainObject( pick ) || (pick = {
+                id: pick
+            });
 
             options = $.extend({}, pick, {
                 accept: $.isPlainObject( accept ) ? [ accept ] : accept,

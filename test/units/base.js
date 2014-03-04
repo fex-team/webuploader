@@ -2,7 +2,7 @@ define([
     'webuploader/base'
 ], function( Base ) {
 
-    module('Test Base');
+    module('Base');
 
     test( 'Test dollar', 1, function() {
         ok( Base.$, 'ok' );

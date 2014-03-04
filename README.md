@@ -1,8 +1,5 @@
-WebUploader 文件上传
+WebUploader 文件上传 [![Build Status](https://secure.travis-ci.org/fex-team/webuploader.png?branch=master)](http://travis-ci.org/fex-team/webuploader) [![Built with Grunt](https://cdn.gruntjs.com/builtwith.png)](http://gruntjs.com/)
 ========
-
-##Build State
-[![Build Status](https://secure.travis-ci.org/fex-team/webuploader.png?branch=master)](https://travis-ci.org/fex-team/webuploader)
 
 WebUploader是一个简单的以HTML5为主，FLASH为辅的现代文件上传组件。在现代的浏览器里面能充分发挥HTML5的优势，同时又不摒弃主流IE浏览器，延用原来的FLASH运行时，兼容IE6+。两套运行时，同样的调用方式，可供用户任意选用。
 

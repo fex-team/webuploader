@@ -49,7 +49,8 @@ define([
         getRuntimeType: 'get-runtime-type',
         refresh: 'refresh',
         disable: 'disable',
-        enable: 'enable'
+        enable: 'enable',
+        reset: 'reset'
     }, function( fn, command ) {
         Uploader.prototype[ fn ] = function() {
             return this.request( command, arguments );
@@ -155,11 +156,7 @@ define([
         },
 
         // widgets/widget.js将补充此方法的详细文档。
-        request: Base.noop,
-
-        reset: function() {
-            // @todo
-        }
+        request: Base.noop
     });
 
     /**
