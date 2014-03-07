@@ -91,12 +91,13 @@
             }
         },
 
+        _WebUploader = factory( root, _define, _require ),
         origin;
 
     if ( typeof module === 'object' && typeof module.exports === 'object' ) {
 
         // For CommonJS and CommonJS-like environments where a proper window is present,
-        module.exports = factory( root, _define, _require );
+        module.exports = _WebUploader;
         exportsTo( module.exports );
     } else if ( typeof define === 'function' && define.amd ) {
 
@@ -104,13 +105,13 @@
         // in another project. That other project will only
         // see this AMD call, not the internal modules in
         // the closure below.
-        define([], factory );
+        define([], _WebUploader );
     } else {
 
         // Browser globals case. Just assign the
         // result to a property on the global.
         origin = root.WebUploader;
-        root.WebUploader = factory( root, _define, _require );
+        root.WebUploader = _WebUploader;
         exportsTo( root.WebUploader );
         root.WebUploader.noConflict = function() {
             root.WebUploader = origin;

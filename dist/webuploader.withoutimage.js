@@ -94,12 +94,13 @@
             }
         },
 
+        _WebUploader = factory( root, _define, _require ),
         origin;
 
     if ( typeof module === 'object' && typeof module.exports === 'object' ) {
 
         // For CommonJS and CommonJS-like environments where a proper window is present,
-        module.exports = factory( root, _define, _require );
+        module.exports = _WebUploader;
         exportsTo( module.exports );
     } else if ( typeof define === 'function' && define.amd ) {
 
@@ -107,20 +108,19 @@
         // in another project. That other project will only
         // see this AMD call, not the internal modules in
         // the closure below.
-        define([], factory );
+        define([], _WebUploader );
     } else {
 
         // Browser globals case. Just assign the
         // result to a property on the global.
         origin = root.WebUploader;
-        root.WebUploader = factory( root, _define, _require );
+        root.WebUploader = _WebUploader;
         exportsTo( root.WebUploader );
         root.WebUploader.noConflict = function() {
             root.WebUploader = origin;
         };
     }
 })( this, function( window, define, require ) {
-
 
     /**
      * @fileOverview jQuery or Zepto
@@ -2875,7 +2875,7 @@
             /**
              * @event uploadStart
              * @param {File} file File对象
-             * @description 某个文件开始上传前触发。
+             * @description 某个文件开始上传前触发，一个文件只会触发一次。
              * @for  Uploader
              */
             _prepareNextFile: function() {
@@ -2973,7 +2973,7 @@
              * @event uploadBeforeSend
              * @param {Object} object
              * @param {Object} data 默认的上传参数，可以扩展此对象来控制上传参数。
-             * @description 但请求再发送前触发。
+             * @description 当某个文件的分块在发送前触发，主要用来询问是否要添加附带参数，大文件在开起分片上传的前提下此事件可能会触发多次。
              * @for  Uploader
              */
     
@@ -4309,5 +4309,6 @@
     ], function( Base ) {
         return Base;
     });
+
     return require('base');
 });
