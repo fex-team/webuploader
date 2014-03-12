@@ -94,28 +94,29 @@
             }
         },
 
-        _WebUploader = factory( root, _define, _require ),
+        exports = factory( root, _define, _require ),
         origin;
+
+    // exports every module.
+    exportsTo( exports );
 
     if ( typeof module === 'object' && typeof module.exports === 'object' ) {
 
         // For CommonJS and CommonJS-like environments where a proper window is present,
-        module.exports = _WebUploader;
-        exportsTo( module.exports );
+        module.exports = exports;
     } else if ( typeof define === 'function' && define.amd ) {
 
         // Allow using this built library as an AMD module
         // in another project. That other project will only
         // see this AMD call, not the internal modules in
         // the closure below.
-        define([], _WebUploader );
+        define([], exports );
     } else {
 
         // Browser globals case. Just assign the
         // result to a property on the global.
         origin = root.WebUploader;
-        root.WebUploader = _WebUploader;
-        exportsTo( root.WebUploader );
+        root.WebUploader = exports;
         root.WebUploader.noConflict = function() {
             root.WebUploader = origin;
         };
@@ -1622,6 +1623,7 @@
                 var me = this,
                     deferred = Base.Deferred(),
                     options = $.extend({}, {
+                        disableGlobalDnd: opts.disableGlobalDnd,
                         container: opts.dnd,
                         accept: opts.accept
                     }),
@@ -1639,6 +1641,7 @@
             }
         });
     });
+    
     /**
      * @fileOverview 错误信息
      */
