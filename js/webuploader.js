@@ -94,27 +94,29 @@
             }
         },
 
+        exports = factory( root, _define, _require ),
         origin;
+
+    // exports every module.
+    exportsTo( exports );
 
     if ( typeof module === 'object' && typeof module.exports === 'object' ) {
 
         // For CommonJS and CommonJS-like environments where a proper window is present,
-        module.exports = factory( root, _define, _require );
-        exportsTo( module.exports );
+        module.exports = exports;
     } else if ( typeof define === 'function' && define.amd ) {
 
         // Allow using this built library as an AMD module
         // in another project. That other project will only
         // see this AMD call, not the internal modules in
         // the closure below.
-        define([], factory );
+        define([], exports );
     } else {
 
         // Browser globals case. Just assign the
         // result to a property on the global.
         origin = root.WebUploader;
-        root.WebUploader = factory( root, _define, _require );
-        exportsTo( root.WebUploader );
+        root.WebUploader = exports;
         root.WebUploader.noConflict = function() {
             root.WebUploader = origin;
         };
@@ -2956,12 +2958,12 @@
     
     
             /**
-             * @property {Object} [formdata]
+             * @property {Object} [formData]
              * @namespace options
              * @for Uploader
              * @description 文件上传请求的参数表，每次发送都会发送此对象中的参数。
              */
-            formdata: null
+            formData: null
     
             /**
              * @property {Object} [fileVal='file']
@@ -3256,7 +3258,7 @@
             /**
              * @event uploadStart
              * @param {File} file File对象
-             * @description 某个文件开始上传前触发。
+             * @description 某个文件开始上传前触发，一个文件只会触发一次。
              * @for  Uploader
              */
             _prepareNextFile: function() {
@@ -3354,7 +3356,7 @@
              * @event uploadBeforeSend
              * @param {Object} object
              * @param {Object} data 默认的上传参数，可以扩展此对象来控制上传参数。
-             * @description 但请求再发送前触发。
+             * @description 当某个文件的分块在发送前触发，主要用来询问是否要添加附带参数，大文件在开起分片上传的前提下此事件可能会触发多次。
              * @for  Uploader
              */
     
