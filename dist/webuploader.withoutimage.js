@@ -2577,12 +2577,12 @@
     
     
             /**
-             * @property {Object} [formdata]
+             * @property {Object} [formData]
              * @namespace options
              * @for Uploader
              * @description 文件上传请求的参数表，每次发送都会发送此对象中的参数。
              */
-            formdata: null
+            formData: null
     
             /**
              * @property {Object} [fileVal='file']
