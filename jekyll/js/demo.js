@@ -61,7 +61,7 @@ jQuery(function() {
             id: '#filePicker',
             label: '点击选择图片'
         },
-        dnd: '#dndArea',
+        dnd: '#uploader',
         paste: document.body,
 
         accept: {
@@ -296,6 +296,7 @@ jQuery(function() {
         switch ( state ) {
             case 'pedding':
                 $placeHolder.removeClass( 'element-invisible' );
+                $queue.parent().removeClass('filled');
                 $queue.hide();
                 $statusBar.addClass( 'element-invisible' );
                 uploader.refresh();
@@ -304,6 +305,7 @@ jQuery(function() {
             case 'ready':
                 $placeHolder.addClass( 'element-invisible' );
                 $( '#filePicker2' ).removeClass( 'element-invisible');
+                $queue.parent().addClass('filled');
                 $queue.show();
                 $statusBar.removeClass('element-invisible');
                 uploader.refresh();
