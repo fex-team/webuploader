@@ -5,6 +5,15 @@
 
 #uploader .queueList {
     margin: 20px;
+    border: 3px dashed #e6e6e6;
+}
+#uploader .queueList.filled {
+    padding: 17px;
+    margin: 0;
+    border: 3px dashed transparent;
+}
+#uploader.webuploader-dnd-over .queueList {
+    border: 3px dashed #999999;
 }
 
 #uploader p {margin: 0;}
@@ -15,7 +24,6 @@
 }
 
 #uploader .placeholder {
-    border: 3px dashed #e6e6e6;
     min-height: 350px;
     padding-top: 178px;
     text-align: center;
@@ -57,10 +65,6 @@
 }
 #uploader .placeholder .flashTip a:hover {
     text-decoration: underline;
-}
-
-#uploader .placeholder.webuploader-dnd-over {
-    border-color: #999999;
 }
 
 #uploader .filelist {
