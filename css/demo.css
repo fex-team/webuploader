@@ -12,7 +12,7 @@
     margin: 0;
     border: 3px dashed transparent;
 }
-#uploader.webuploader-dnd-over .queueList {
+#uploader .queueList.webuploader-dnd-over {
     border: 3px dashed #999999;
 }
 
