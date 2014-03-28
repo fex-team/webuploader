@@ -27,6 +27,7 @@ define([
             var me = this,
                 deferred = Base.Deferred(),
                 options = $.extend({}, {
+                    disableGlobalDnd: opts.disableGlobalDnd,
                     container: opts.dnd,
                     accept: opts.accept
                 }),
