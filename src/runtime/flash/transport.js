@@ -35,7 +35,7 @@ define([
                     xhr.exec( 'append', k, v );
                 });
 
-                xhr.exec( 'appendBlob', opts.fileVar, blob.uid,
+                xhr.exec( 'appendBlob', opts.fileVal, blob.uid,
                         opts.filename || owner._formData.name || '' );
             }
 

@@ -32,7 +32,7 @@ define([
 
         // 跨域时，是否允许携带cookie, 只有html5 runtime才有效
         withCredentials: false,
-        fileVar: 'file',
+        fileVal: 'file',
         timeout: 2 * 60 * 1000,    // 2分钟
         formData: {},
         headers: {},
@@ -56,7 +56,7 @@ define([
             });
 
             me._blob = blob;
-            opts.fileVar = key || opts.fileVar;
+            opts.fileVal = key || opts.fileVal;
             opts.filename = filename || opts.filename;
         },
 

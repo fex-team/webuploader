@@ -2799,7 +2799,7 @@
     
             // 跨域时，是否允许携带cookie, 只有html5 runtime才有效
             withCredentials: false,
-            fileVar: 'file',
+            fileVal: 'file',
             timeout: 2 * 60 * 1000,    // 2分钟
             formData: {},
             headers: {},
@@ -2823,7 +2823,7 @@
                 });
     
                 me._blob = blob;
-                opts.fileVar = key || opts.fileVar;
+                opts.fileVal = key || opts.fileVal;
                 opts.filename = filename || opts.filename;
             },
     
@@ -5076,7 +5076,7 @@
                         formData.append( k, v );
                     });
     
-                    formData.append( opts.fileVar, blob.getSource(),
+                    formData.append( opts.fileVal, blob.getSource(),
                             opts.filename || owner._formData.name || '' );
                 }
     
@@ -5456,7 +5456,7 @@
                         xhr.exec( 'append', k, v );
                     });
     
-                    xhr.exec( 'appendBlob', opts.fileVar, blob.uid,
+                    xhr.exec( 'appendBlob', opts.fileVal, blob.uid,
                             opts.filename || owner._formData.name || '' );
                 }
     

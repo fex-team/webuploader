@@ -37,7 +37,7 @@ define([
                     formData.append( k, v );
                 });
 
-                formData.append( opts.fileVar, blob.getSource(),
+                formData.append( opts.fileVal, blob.getSource(),
                         opts.filename || owner._formData.name || '' );
             }
 
