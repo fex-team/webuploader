@@ -428,6 +428,7 @@
         };
     });
     /**
+     * 事件处理类，可以独立使用，也可以扩展给对象使用。
      * @fileOverview Mediator
      */
     define('mediator',[
@@ -858,7 +859,7 @@
                     return this._container;
                 }
     
-                parent = opts.container || $( document.body );
+                parent = $( opts.container || document.body );
                 container = $( document.createElement('div') );
     
                 container.attr( 'id', 'rt_' + this.uid );
@@ -866,8 +867,8 @@
                     position: 'absolute',
                     top: '0px',
                     left: '0px',
-                    bottom: '0px',
-                    right: '0px',
+                    width: '1px',
+                    height: '1px',
                     overflow: 'hidden'
                 });
     
@@ -939,37 +940,40 @@
         'runtime/runtime'
     ], function( Base, Mediator, Runtime ) {
     
-        var cache = (function() {
-                var obj = {};
+        var cache;
     
-                return {
-                    add: function( runtime ) {
-                        obj[ runtime.uid ] = runtime;
-                    },
+        cache = (function() {
+            var obj = {};
     
-                    get: function( ruid ) {
-                        var i;
+            return {
+                add: function( runtime ) {
+                    obj[ runtime.uid ] = runtime;
+                },
     
-                        if ( ruid ) {
-                            return obj[ ruid ];
-                        }
+                get: function( ruid, standalone ) {
+                    var i;
     
-                        for ( i in obj ) {
-                            return obj[ i ];
-                        }
-    
-                        return null;
-                    },
-    
-                    remove: function( runtime ) {
-                        delete obj[ runtime.uid ];
-                    },
-    
-                    has: function() {
-                        return !!this.get.apply( this, arguments );
+                    if ( ruid ) {
+                        return obj[ ruid ];
                     }
-                };
-            })();
+    
+                    for ( i in obj ) {
+                        // 有些类型不能重用，比如filepicker.
+                        if ( standalone && obj[ i ].__standalone ) {
+                            continue;
+                        }
+    
+                        return obj[ i ];
+                    }
+    
+                    return null;
+                },
+    
+                remove: function( runtime ) {
+                    delete obj[ runtime.uid ];
+                }
+            };
+        })();
     
         function RuntimeClient( component, standalone ) {
             var deferred = Base.Deferred(),
@@ -977,12 +981,16 @@
     
             this.uid = Base.guid('client_');
     
+            // 允许runtime没有初始化之前，注册一些方法在初始化后执行。
             this.runtimeReady = function( cb ) {
                 return deferred.done( cb );
             };
     
             this.connectRuntime = function( opts, cb ) {
+    
+                // already connected.
                 if ( runtime ) {
+                    throw new Error('already connected!');
                     return;
                 }
     
@@ -990,24 +998,27 @@
     
                 if ( typeof opts === 'string' && cache.get( opts ) ) {
                     runtime = cache.get( opts );
+                }
     
                 // 像filePicker只能独立存在，不能公用。
-                } else if ( !standalone && cache.has() ) {
-                    runtime = cache.get();
-                }
+                runtime = runtime || cache.get( null, standalone );
     
+                // 需要创建
                 if ( !runtime ) {
                     runtime = Runtime.create( opts, opts.runtimeOrder );
-                    cache.add( runtime );
-                    runtime.promise = deferred.promise();
+                    runtime.__promise = deferred.promise();
                     runtime.once( 'ready', deferred.resolve );
                     runtime.init();
-                    runtime.client = 1;
-                    return runtime;
+                    cache.add( runtime );
+                    runtime.__client = 1;
+                } else {
+                    // 来自cache
+                    Base.$.extend( runtime.options, opts );
+                    runtime.__promise.then( deferred.resolve );
+                    runtime.__client++;
                 }
     
-                runtime.promise.then( deferred.resolve );
-                runtime.client++;
+                standalone && (runtime.__standalone = standalone);
                 return runtime;
             };
     
@@ -1020,11 +1031,11 @@
                     return;
                 }
     
-                runtime.client--;
+                runtime.__client--;
     
-                if ( runtime.client <= 0 ) {
+                if ( runtime.__client <= 0 ) {
                     cache.remove( runtime );
-                    delete runtime.promise;
+                    delete runtime.__promise;
                     runtime.destroy();
                 }
     
@@ -1061,195 +1072,54 @@
         return RuntimeClient;
     });
     /**
-     * @fileOverview Blob
-     */
-    define('lib/blob',[
-        'base',
-        'runtime/client'
-    ], function( Base, RuntimeClient ) {
-    
-        function Blob( ruid, source ) {
-            var me = this;
-    
-            me.source = source;
-            me.ruid = ruid;
-    
-            RuntimeClient.call( me, 'Blob' );
-    
-            this.uid = source.uid || this.uid;
-            this.type = source.type || '';
-            this.size = source.size || 0;
-    
-            if ( ruid ) {
-                me.connectRuntime( ruid );
-            }
-        }
-    
-        Base.inherits( RuntimeClient, {
-            constructor: Blob,
-    
-            slice: function( start, end ) {
-                return this.exec( 'slice', start, end );
-            },
-    
-            getSource: function() {
-                return this.source;
-            }
-        });
-    
-        return Blob;
-    });
-    /**
-     * @fileOverview File
-     */
-    define('lib/file',[
-        'base',
-        'lib/blob'
-    ], function( Base, Blob ) {
-    
-        var uid = 0,
-            rExt = /\.([^.]+)$/;
-    
-        function File( ruid, file ) {
-            var ext;
-    
-            Blob.apply( this, arguments );
-            this.name = file.name || ('untitled' + uid++);
-            ext = rExt.exec( file.name ) ? RegExp.$1.toLowerCase() : '';
-    
-            if ( !this.type &&  ~'jpg,jpeg,png,gif,bmp'.indexOf( ext ) ) {
-                this.type = 'image/' + ext;
-            }
-    
-            this.ext = ext;
-            this.lastModifiedDate = file.lastModifiedDate ||
-                    (new Date()).toLocaleString();
-        }
-    
-        return Base.inherits( Blob, File );
-    });
-    
-    /**
      * @fileOverview 错误信息
      */
-    define('lib/filepicker',[
+    define('lib/dnd',[
         'base',
-        'runtime/client',
-        'lib/file'
-    ], function( Base, RuntimeClent, File ) {
+        'mediator',
+        'runtime/client'
+    ], function( Base, Mediator, RuntimeClent ) {
     
         var $ = Base.$;
     
-        function FilePicker( opts ) {
+        function DragAndDrop( opts ) {
+            opts = this.options = $.extend({}, DragAndDrop.options, opts );
     
-            opts = this.options = $.extend({}, FilePicker.options, opts );
-            opts.container = $( opts.id );
+            opts.container = $( opts.container );
     
             if ( !opts.container.length ) {
-                throw new Error('按钮指定错误');
+                return;
             }
     
-            opts.label = opts.label || opts.container.html() || ' ';
-            opts.button = $( opts.button || document.createElement('div') );
-            opts.button.html( opts.label );
-            opts.container.html( opts.button );
-    
-            RuntimeClent.call( this, 'FilePicker', true );
+            RuntimeClent.call( this, 'DragAndDrop' );
         }
     
-        FilePicker.options = {
-            button: null,
-            container: null,
-            label: null,
-            multiple: true,
-            accept: null
+        DragAndDrop.options = {
+            accept: null,
+            disableGlobalDnd: false
         };
     
         Base.inherits( RuntimeClent, {
-            constructor: FilePicker,
+            constructor: DragAndDrop,
     
             init: function() {
-                var me = this,
-                    opts = me.options,
-                    button = opts.button;
+                var me = this;
     
-                button.addClass('webuploader-pick');
-    
-                me.on( 'all', function( type ) {
-                    var files;
-    
-                    switch ( type ) {
-                        case 'mouseenter':
-                            button.addClass('webuploader-pick-hover');
-                            break;
-    
-                        case 'mouseleave':
-                            button.removeClass('webuploader-pick-hover');
-                            break;
-    
-                        case 'change':
-                            files = me.exec('getFiles');
-                            me.trigger( 'select', $.map( files, function( file ) {
-                                return new File( me.getRuid(), file );
-                            }) );
-                            break;
-                    }
-                });
-    
-                me.connectRuntime( opts, function() {
-                    me.refresh();
-                    me.exec( 'init', opts );
+                me.connectRuntime( me.options, function() {
+                    me.exec('init');
                     me.trigger('ready');
                 });
-    
-                $( window ).on( 'resize', function() {
-                    me.refresh();
-                });
-            },
-    
-            refresh: function() {
-                var shimContainer = this.getRuntime().getContainer(),
-                    button = this.options.button,
-                    width = button.outerWidth(),
-                    height = button.outerHeight(),
-                    pos = button.offset();
-    
-                width && height && shimContainer.css({
-                    bottom: 'auto',
-                    right: 'auto',
-                    width: width + 'px',
-                    height: height + 'px'
-                }).offset( pos );
-            },
-    
-            enable: function() {
-                var btn = this.options.button;
-    
-                btn.removeClass('webuploader-pick-disable');
-                this.refresh();
-            },
-    
-            disable: function() {
-                var btn = this.options.button;
-    
-                this.getRuntime().getContainer().css({
-                    top: '-99999px'
-                });
-    
-                btn.addClass('webuploader-pick-disable');
             },
     
             destroy: function() {
-                if ( this.runtime ) {
-                    this.exec('destroy');
-                    this.disconnectRuntime();
-                }
+                this.disconnectRuntime();
             }
         });
     
-        return FilePicker;
-    });
+        Mediator.installTo( DragAndDrop.prototype );
     
+        return DragAndDrop;
+    });
     /**
      * @fileOverview 组件基类。
      */
@@ -1418,184 +1288,6 @@
         return Widget;
     });
     /**
-     * @fileOverview 文件选择相关
-     */
-    define('widgets/filepicker',[
-        'base',
-        'uploader',
-        'lib/filepicker',
-        'widgets/widget'
-    ], function( Base, Uploader, FilePicker ) {
-        var $ = Base.$;
-    
-        $.extend( Uploader.options, {
-    
-            /**
-             * @property {Selector | Object} [pick=undefined]
-             * @namespace options
-             * @for Uploader
-             * @description 指定选择文件的按钮容器，不指定则不创建按钮。
-             *
-             * * `id` {Seletor} 指定选择文件的按钮容器，不指定则不创建按钮。
-             * * `label` {String} 指定按钮文字。不指定时优先从指定的容器中看是否自带文字。
-             * * `multiple` {Boolean} 是否开起同时选择多个文件能力。
-             */
-            pick: null,
-    
-            /**
-             * @property {Arroy} [accept=null]
-             * @namespace options
-             * @for Uploader
-             * @description 指定接受哪些类型的文件。 由于目前还有ext转mimeType表，所以这里需要分开指定。
-             *
-             * * `title` {String} 文字描述
-             * * `extensions` {String} 允许的文件后缀，不带点，多个用逗号分割。
-             * * `mimeTypes` {String} 多个用逗号分割。
-             *
-             * 如：
-             *
-             * ```
-             * {
-             *     title: 'Images',
-             *     extensions: 'gif,jpg,jpeg,bmp,png',
-             *     mimeTypes: 'image/*'
-             * }
-             * ```
-             */
-            accept: null/*{
-                title: 'Images',
-                extensions: 'gif,jpg,jpeg,bmp,png',
-                mimeTypes: 'image/*'
-            }*/
-        });
-    
-        return Uploader.register({
-            'add-btn': 'addButton',
-            refresh: 'refresh',
-            disable: 'disable',
-            enable: 'enable'
-        }, {
-    
-            init: function( opts ) {
-                this.pickers = [];
-                return opts.pick && this.addButton( opts.pick );
-            },
-    
-            refresh: function() {
-                $.each( this.pickers, function() {
-                    this.refresh();
-                });
-            },
-    
-            /**
-             * @method addButton
-             * @for Uploader
-             * @grammar addButton( pick ) => Promise
-             * @description
-             * 添加文件选择按钮，如果一个按钮不够，需要调用此方法来添加。参数跟[options.pick](#WebUploader:Uploader:options)一致。
-             * @example
-             * uploader.addButton({
-             *     id: '#btnContainer',
-             *     label: '选择文件'
-             * });
-             */
-            addButton: function( pick ) {
-                var me = this,
-                    opts = me.options,
-                    accept = opts.accept,
-                    options, picker, deferred;
-    
-                if ( !pick ) {
-                    return;
-                }
-    
-                deferred = Base.Deferred();
-                $.isPlainObject( pick ) || (pick = {
-                    id: pick
-                });
-    
-                options = $.extend({}, pick, {
-                    accept: $.isPlainObject( accept ) ? [ accept ] : accept,
-                    swf: opts.swf,
-                    runtimeOrder: opts.runtimeOrder
-                });
-    
-                picker = new FilePicker( options );
-    
-                picker.once( 'ready', deferred.resolve );
-                picker.on( 'select', function( files ) {
-                    me.owner.request( 'add-file', [ files ]);
-                });
-                picker.init();
-    
-                this.pickers.push( picker );
-    
-                return deferred.promise();
-            },
-    
-            disable: function() {
-                $.each( this.pickers, function() {
-                    this.disable();
-                });
-            },
-    
-            enable: function() {
-                $.each( this.pickers, function() {
-                    this.enable();
-                });
-            }
-        });
-    });
-    /**
-     * @fileOverview 错误信息
-     */
-    define('lib/dnd',[
-        'base',
-        'mediator',
-        'runtime/client'
-    ], function( Base, Mediator, RuntimeClent ) {
-    
-        var $ = Base.$;
-    
-        function DragAndDrop( opts ) {
-            opts = this.options = $.extend({}, DragAndDrop.options, opts );
-    
-            opts.container = $( opts.container );
-    
-            if ( !opts.container.length ) {
-                return;
-            }
-    
-            RuntimeClent.call( this, 'DragAndDrop' );
-        }
-    
-        DragAndDrop.options = {
-            accept: null,
-            disableGlobalDnd: false
-        };
-    
-        Base.inherits( RuntimeClent, {
-            constructor: DragAndDrop,
-    
-            init: function() {
-                var me = this;
-    
-                me.connectRuntime( me.options, function() {
-                    me.exec('init');
-                    me.trigger('ready');
-                });
-            },
-    
-            destroy: function() {
-                this.disconnectRuntime();
-            }
-        });
-    
-        Mediator.installTo( DragAndDrop.prototype );
-    
-        return DragAndDrop;
-    });
-    /**
      * @fileOverview DragAndDrop Widget。
      */
     define('widgets/filednd',[
@@ -1724,6 +1416,326 @@
                 paste.init();
     
                 return deferred.promise();
+            }
+        });
+    });
+    /**
+     * @fileOverview Blob
+     */
+    define('lib/blob',[
+        'base',
+        'runtime/client'
+    ], function( Base, RuntimeClient ) {
+    
+        function Blob( ruid, source ) {
+            var me = this;
+    
+            me.source = source;
+            me.ruid = ruid;
+    
+            RuntimeClient.call( me, 'Blob' );
+    
+            this.uid = source.uid || this.uid;
+            this.type = source.type || '';
+            this.size = source.size || 0;
+    
+            if ( ruid ) {
+                me.connectRuntime( ruid );
+            }
+        }
+    
+        Base.inherits( RuntimeClient, {
+            constructor: Blob,
+    
+            slice: function( start, end ) {
+                return this.exec( 'slice', start, end );
+            },
+    
+            getSource: function() {
+                return this.source;
+            }
+        });
+    
+        return Blob;
+    });
+    /**
+     * @fileOverview File
+     */
+    define('lib/file',[
+        'base',
+        'lib/blob'
+    ], function( Base, Blob ) {
+    
+        var uid = 0,
+            rExt = /\.([^.]+)$/;
+    
+        function File( ruid, file ) {
+            var ext;
+    
+            Blob.apply( this, arguments );
+            this.name = file.name || ('untitled' + uid++);
+            ext = rExt.exec( file.name ) ? RegExp.$1.toLowerCase() : '';
+    
+            if ( !this.type &&  ~'jpg,jpeg,png,gif,bmp'.indexOf( ext ) ) {
+                this.type = 'image/' + ext;
+            }
+    
+            this.ext = ext;
+            this.lastModifiedDate = file.lastModifiedDate ||
+                    (new Date()).toLocaleString();
+        }
+    
+        return Base.inherits( Blob, File );
+    });
+    
+    /**
+     * @fileOverview 错误信息
+     */
+    define('lib/filepicker',[
+        'base',
+        'runtime/client',
+        'lib/file'
+    ], function( Base, RuntimeClent, File ) {
+    
+        var $ = Base.$;
+    
+        function FilePicker( opts ) {
+    
+            opts = this.options = $.extend({}, FilePicker.options, opts );
+            opts.container = $( opts.id );
+    
+            if ( !opts.container.length ) {
+                throw new Error('按钮指定错误');
+            }
+    
+            opts.label = opts.label || opts.container.html() || ' ';
+            opts.button = $( opts.button || document.createElement('div') );
+            opts.button.html( opts.label );
+            opts.container.html( opts.button );
+    
+            RuntimeClent.call( this, 'FilePicker', true );
+        }
+    
+        FilePicker.options = {
+            button: null,
+            container: null,
+            label: null,
+            multiple: true,
+            accept: null,
+            name: 'file'
+        };
+    
+        Base.inherits( RuntimeClent, {
+            constructor: FilePicker,
+    
+            init: function() {
+                var me = this,
+                    opts = me.options,
+                    button = opts.button;
+    
+                button.addClass('webuploader-pick');
+    
+                me.on( 'all', function( type ) {
+                    var files;
+    
+                    switch ( type ) {
+                        case 'mouseenter':
+                            button.addClass('webuploader-pick-hover');
+                            break;
+    
+                        case 'mouseleave':
+                            button.removeClass('webuploader-pick-hover');
+                            break;
+    
+                        case 'change':
+                            files = me.exec('getFiles');
+                            me.trigger( 'select', $.map( files, function( file ) {
+                                return new File( me.getRuid(), file );
+                            }) );
+                            break;
+                    }
+                });
+    
+                me.connectRuntime( opts, function() {
+                    me.refresh();
+                    me.exec( 'init', opts );
+                    me.trigger('ready');
+                });
+    
+                $( window ).on( 'resize', function() {
+                    me.refresh();
+                });
+            },
+    
+            refresh: function() {
+                var shimContainer = this.getRuntime().getContainer(),
+                    button = this.options.button,
+                    width = button.outerWidth(),
+                    height = button.outerHeight(),
+                    pos = button.offset();
+    
+                width && height && shimContainer.css({
+                    bottom: 'auto',
+                    right: 'auto',
+                    width: width + 'px',
+                    height: height + 'px'
+                }).offset( pos );
+            },
+    
+            enable: function() {
+                var btn = this.options.button;
+    
+                btn.removeClass('webuploader-pick-disable');
+                this.refresh();
+            },
+    
+            disable: function() {
+                var btn = this.options.button;
+    
+                this.getRuntime().getContainer().css({
+                    top: '-99999px'
+                });
+    
+                btn.addClass('webuploader-pick-disable');
+            },
+    
+            destroy: function() {
+                if ( this.runtime ) {
+                    this.exec('destroy');
+                    this.disconnectRuntime();
+                }
+            }
+        });
+    
+        return FilePicker;
+    });
+    
+    /**
+     * @fileOverview 文件选择相关
+     */
+    define('widgets/filepicker',[
+        'base',
+        'uploader',
+        'lib/filepicker',
+        'widgets/widget'
+    ], function( Base, Uploader, FilePicker ) {
+        var $ = Base.$;
+    
+        $.extend( Uploader.options, {
+    
+            /**
+             * @property {Selector | Object} [pick=undefined]
+             * @namespace options
+             * @for Uploader
+             * @description 指定选择文件的按钮容器，不指定则不创建按钮。
+             *
+             * * `id` {Seletor} 指定选择文件的按钮容器，不指定则不创建按钮。
+             * * `label` {String} 指定按钮文字。不指定时优先从指定的容器中看是否自带文字。
+             * * `multiple` {Boolean} 是否开起同时选择多个文件能力。
+             */
+            pick: null,
+    
+            /**
+             * @property {Arroy} [accept=null]
+             * @namespace options
+             * @for Uploader
+             * @description 指定接受哪些类型的文件。 由于目前还有ext转mimeType表，所以这里需要分开指定。
+             *
+             * * `title` {String} 文字描述
+             * * `extensions` {String} 允许的文件后缀，不带点，多个用逗号分割。
+             * * `mimeTypes` {String} 多个用逗号分割。
+             *
+             * 如：
+             *
+             * ```
+             * {
+             *     title: 'Images',
+             *     extensions: 'gif,jpg,jpeg,bmp,png',
+             *     mimeTypes: 'image/*'
+             * }
+             * ```
+             */
+            accept: null/*{
+                title: 'Images',
+                extensions: 'gif,jpg,jpeg,bmp,png',
+                mimeTypes: 'image/*'
+            }*/
+        });
+    
+        return Uploader.register({
+            'add-btn': 'addButton',
+            refresh: 'refresh',
+            disable: 'disable',
+            enable: 'enable'
+        }, {
+    
+            init: function( opts ) {
+                this.pickers = [];
+                return opts.pick && this.addButton( opts.pick );
+            },
+    
+            refresh: function() {
+                $.each( this.pickers, function() {
+                    this.refresh();
+                });
+            },
+    
+            /**
+             * @method addButton
+             * @for Uploader
+             * @grammar addButton( pick ) => Promise
+             * @description
+             * 添加文件选择按钮，如果一个按钮不够，需要调用此方法来添加。参数跟[options.pick](#WebUploader:Uploader:options)一致。
+             * @example
+             * uploader.addButton({
+             *     id: '#btnContainer',
+             *     label: '选择文件'
+             * });
+             */
+            addButton: function( pick ) {
+                var me = this,
+                    opts = me.options,
+                    accept = opts.accept,
+                    options, picker, deferred;
+    
+                if ( !pick ) {
+                    return;
+                }
+    
+                deferred = Base.Deferred();
+                $.isPlainObject( pick ) || (pick = {
+                    id: pick
+                });
+    
+                options = $.extend({}, pick, {
+                    accept: $.isPlainObject( accept ) ? [ accept ] : accept,
+                    swf: opts.swf,
+                    runtimeOrder: opts.runtimeOrder
+                });
+    
+                picker = new FilePicker( options );
+    
+                picker.once( 'ready', deferred.resolve );
+                picker.on( 'select', function( files ) {
+                    me.owner.request( 'add-file', [ files ]);
+                });
+                picker.init();
+    
+                this.pickers.push( picker );
+    
+                return deferred.promise();
+            },
+    
+            disable: function() {
+                $.each( this.pickers, function() {
+                    this.disable();
+                });
+            },
+    
+            enable: function() {
+                $.each( this.pickers, function() {
+                    this.enable();
+                });
             }
         });
     });
@@ -2124,8 +2136,10 @@
         'uploader',
         'queue',
         'file',
+        'lib/file',
+        'runtime/client',
         'widgets/widget'
-    ], function( Base, Uploader, Queue, WUFile ) {
+    ], function( Base, Uploader, Queue, WUFile, File, RuntimeClient ) {
     
         var $ = Base.$,
             rExt = /\.\w+$/,
@@ -2143,7 +2157,8 @@
         }, {
     
             init: function( opts ) {
-                var len, i, item, arr, accept;
+                var me = this,
+                    deferred, len, i, item, arr, accept, runtime;
     
                 if ( $.isPlainObject( opts.accept ) ) {
                     opts.accept = [ opts.accept ];
@@ -2164,12 +2179,45 @@
                                 .replace( /\*/g, '.*' ) + '$';
                     }
     
-                    this.accept = new RegExp( accept, 'i' );
+                    me.accept = new RegExp( accept, 'i' );
                 }
     
-                this.queue = new Queue();
-                this.stats = this.queue.stats;
+                me.queue = new Queue();
+                me.stats = me.queue.stats;
+    
+                if ( this.request('predict-runtime-type') !== 'html5' ) {
+                    return;
+                }
+    
+                deferred = Base.Deferred();
+                runtime = new RuntimeClient( 'Placeholder' );
+                runtime.connectRuntime({
+                    runtimeOrder: 'html5'
+                }, function() {
+                    me._ruid = runtime.getRuid();
+                    deferred.resolve();
+                });
+                return deferred.promise();
             },
+    
+    
+            // 为了支持外部直接添加一个原生File对象。
+            _wrapFile: function( file ) {
+                if ( !(file instanceof WUFile) ) {
+    
+                    if ( !(file instanceof File) ) {
+                        if ( !this._ruid ) {
+                            throw new Error('Can\'t add external files.');
+                        }
+                        file = new File( this._ruid, file );
+                    }
+    
+                    file = new WUFile( file );
+                }
+    
+                return file;
+            },
+    
     
             /**
              * @event beforeFileQueued
@@ -2185,7 +2233,6 @@
              * @for  Uploader
              */
     
-    
             _addFile: function( file ) {
                 var me = this;
     
@@ -2196,9 +2243,7 @@
                     return;
                 }
     
-                if ( !(file instanceof WUFile) ) {
-                    file = new WUFile( file );
-                }
+                file = me._wrapFile( file );
     
                 if ( !me.owner.trigger( 'beforeFileQueued', file ) ) {
                     return;
@@ -3462,12 +3507,14 @@
     
         });
     
+        // 注册Components
         Html5Runtime.register = function( name, component ) {
             var klass = components[ name ] = Base.inherits( CompBase, component );
             return klass;
         };
     
         // 注册html5运行时。
+        // 只有在支持的前提下注册。
         if ( window.Blob && window.FileReader && window.DataView ) {
             Runtime.addRuntime( type, Html5Runtime );
         }
@@ -4025,7 +4072,7 @@
                 return me.flashExec.apply( client, arguments );
             };
     
-            function hander( evt, obj ) {
+            function handler( evt, obj ) {
                 var type = evt.type || evt,
                     parts, uid;
     
@@ -4050,7 +4097,7 @@
     
                 // 为了能捕获得到。
                 setTimeout(function() {
-                    hander.apply( null, args );
+                    handler.apply( null, args );
                 }, 1 );
             };
     
@@ -4291,9 +4338,9 @@
         'uploader',
     
         // widgets
-        'widgets/filepicker',
         'widgets/filednd',
         'widgets/filepaste',
+        'widgets/filepicker',
         'widgets/queue',
         'widgets/runtime',
         'widgets/upload',

@@ -454,6 +454,7 @@
         return _;
     });
     /**
+     * 事件处理类，可以独立使用，也可以扩展给对象使用。
      * @fileOverview Mediator
      */
     define('mediator',[
@@ -884,7 +885,7 @@
                     return this._container;
                 }
     
-                parent = opts.container || $( document.body );
+                parent = $( opts.container || document.body );
                 container = $( document.createElement('div') );
     
                 container.attr( 'id', 'rt_' + this.uid );
@@ -892,8 +893,8 @@
                     position: 'absolute',
                     top: '0px',
                     left: '0px',
-                    bottom: '0px',
-                    right: '0px',
+                    width: '1px',
+                    height: '1px',
                     overflow: 'hidden'
                 });
     
@@ -965,37 +966,40 @@
         'runtime/runtime'
     ], function( Base, Mediator, Runtime ) {
     
-        var cache = (function() {
-                var obj = {};
+        var cache;
     
-                return {
-                    add: function( runtime ) {
-                        obj[ runtime.uid ] = runtime;
-                    },
+        cache = (function() {
+            var obj = {};
     
-                    get: function( ruid ) {
-                        var i;
+            return {
+                add: function( runtime ) {
+                    obj[ runtime.uid ] = runtime;
+                },
     
-                        if ( ruid ) {
-                            return obj[ ruid ];
-                        }
+                get: function( ruid, standalone ) {
+                    var i;
     
-                        for ( i in obj ) {
-                            return obj[ i ];
-                        }
-    
-                        return null;
-                    },
-    
-                    remove: function( runtime ) {
-                        delete obj[ runtime.uid ];
-                    },
-    
-                    has: function() {
-                        return !!this.get.apply( this, arguments );
+                    if ( ruid ) {
+                        return obj[ ruid ];
                     }
-                };
-            })();
+    
+                    for ( i in obj ) {
+                        // 有些类型不能重用，比如filepicker.
+                        if ( standalone && obj[ i ].__standalone ) {
+                            continue;
+                        }
+    
+                        return obj[ i ];
+                    }
+    
+                    return null;
+                },
+    
+                remove: function( runtime ) {
+                    delete obj[ runtime.uid ];
+                }
+            };
+        })();
     
         function RuntimeClient( component, standalone ) {
             var deferred = Base.Deferred(),
@@ -1003,12 +1007,16 @@
     
             this.uid = Base.guid('client_');
     
+            // 允许runtime没有初始化之前，注册一些方法在初始化后执行。
             this.runtimeReady = function( cb ) {
                 return deferred.done( cb );
             };
     
             this.connectRuntime = function( opts, cb ) {
+    
+                // already connected.
                 if ( runtime ) {
+                    throw new Error('already connected!');
                     return;
                 }
     
@@ -1016,24 +1024,27 @@
     
                 if ( typeof opts === 'string' && cache.get( opts ) ) {
                     runtime = cache.get( opts );
+                }
     
                 // 像filePicker只能独立存在，不能公用。
-                } else if ( !standalone && cache.has() ) {
-                    runtime = cache.get();
-                }
+                runtime = runtime || cache.get( null, standalone );
     
+                // 需要创建
                 if ( !runtime ) {
                     runtime = Runtime.create( opts, opts.runtimeOrder );
-                    cache.add( runtime );
-                    runtime.promise = deferred.promise();
+                    runtime.__promise = deferred.promise();
                     runtime.once( 'ready', deferred.resolve );
                     runtime.init();
-                    runtime.client = 1;
-                    return runtime;
+                    cache.add( runtime );
+                    runtime.__client = 1;
+                } else {
+                    // 来自cache
+                    Base.$.extend( runtime.options, opts );
+                    runtime.__promise.then( deferred.resolve );
+                    runtime.__client++;
                 }
     
-                runtime.promise.then( deferred.resolve );
-                runtime.client++;
+                standalone && (runtime.__standalone = standalone);
                 return runtime;
             };
     
@@ -1046,11 +1057,11 @@
                     return;
                 }
     
-                runtime.client--;
+                runtime.__client--;
     
-                if ( runtime.client <= 0 ) {
+                if ( runtime.__client <= 0 ) {
                     cache.remove( runtime );
-                    delete runtime.promise;
+                    delete runtime.__promise;
                     runtime.destroy();
                 }
     
@@ -1188,7 +1199,8 @@
             container: null,
             label: null,
             multiple: true,
-            accept: null
+            accept: null,
+            name: 'file'
         };
     
         Base.inherits( RuntimeClent, {
@@ -2324,8 +2336,10 @@
         'uploader',
         'queue',
         'file',
+        'lib/file',
+        'runtime/client',
         'widgets/widget'
-    ], function( Base, Uploader, Queue, WUFile ) {
+    ], function( Base, Uploader, Queue, WUFile, File, RuntimeClient ) {
     
         var $ = Base.$,
             rExt = /\.\w+$/,
@@ -2343,7 +2357,8 @@
         }, {
     
             init: function( opts ) {
-                var len, i, item, arr, accept;
+                var me = this,
+                    deferred, len, i, item, arr, accept, runtime;
     
                 if ( $.isPlainObject( opts.accept ) ) {
                     opts.accept = [ opts.accept ];
@@ -2364,12 +2379,45 @@
                                 .replace( /\*/g, '.*' ) + '$';
                     }
     
-                    this.accept = new RegExp( accept, 'i' );
+                    me.accept = new RegExp( accept, 'i' );
                 }
     
-                this.queue = new Queue();
-                this.stats = this.queue.stats;
+                me.queue = new Queue();
+                me.stats = me.queue.stats;
+    
+                if ( this.request('predict-runtime-type') !== 'html5' ) {
+                    return;
+                }
+    
+                deferred = Base.Deferred();
+                runtime = new RuntimeClient( 'Placeholder' );
+                runtime.connectRuntime({
+                    runtimeOrder: 'html5'
+                }, function() {
+                    me._ruid = runtime.getRuid();
+                    deferred.resolve();
+                });
+                return deferred.promise();
             },
+    
+    
+            // 为了支持外部直接添加一个原生File对象。
+            _wrapFile: function( file ) {
+                if ( !(file instanceof WUFile) ) {
+    
+                    if ( !(file instanceof File) ) {
+                        if ( !this._ruid ) {
+                            throw new Error('Can\'t add external files.');
+                        }
+                        file = new File( this._ruid, file );
+                    }
+    
+                    file = new WUFile( file );
+                }
+    
+                return file;
+            },
+    
     
             /**
              * @event beforeFileQueued
@@ -2385,7 +2433,6 @@
              * @for  Uploader
              */
     
-    
             _addFile: function( file ) {
                 var me = this;
     
@@ -2396,9 +2443,7 @@
                     return;
                 }
     
-                if ( !(file instanceof WUFile) ) {
-                    file = new WUFile( file );
-                }
+                file = me._wrapFile( file );
     
                 if ( !me.owner.trigger( 'beforeFileQueued', file ) ) {
                     return;
@@ -3672,7 +3717,7 @@
                 return me.flashExec.apply( client, arguments );
             };
     
-            function hander( evt, obj ) {
+            function handler( evt, obj ) {
                 var type = evt.type || evt,
                     parts, uid;
     
@@ -3697,7 +3742,7 @@
     
                 // 为了能捕获得到。
                 setTimeout(function() {
-                    hander.apply( null, args );
+                    handler.apply( null, args );
                 }, 1 );
             };
     

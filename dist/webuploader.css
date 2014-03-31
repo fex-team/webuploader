@@ -1,3 +1,6 @@
+.webuploader-container {
+	position: relative;
+}
 .webuploader-pick {
 	position: relative;
 	display: inline-block;
