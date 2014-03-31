@@ -37,7 +37,7 @@ define([
                 return this._container;
             }
 
-            parent = opts.container || $( document.body );
+            parent = $( opts.container || document.body );
             container = $( document.createElement('div') );
 
             container.attr( 'id', 'rt_' + this.uid );
@@ -45,8 +45,8 @@ define([
                 position: 'absolute',
                 top: '0px',
                 left: '0px',
-                bottom: '0px',
-                right: '0px',
+                width: '1px',
+                height: '1px',
                 overflow: 'hidden'
             });
 

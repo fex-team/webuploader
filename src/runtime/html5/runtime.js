@@ -55,12 +55,14 @@ define([
 
     });
 
+    // 注册Components
     Html5Runtime.register = function( name, component ) {
         var klass = components[ name ] = Base.inherits( CompBase, component );
         return klass;
     };
 
     // 注册html5运行时。
+    // 只有在支持的前提下注册。
     if ( window.Blob && window.FileReader && window.DataView ) {
         Runtime.addRuntime( type, Html5Runtime );
     }

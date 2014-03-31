@@ -1,4 +1,5 @@
 /**
+ * 事件处理类，可以独立使用，也可以扩展给对象使用。
  * @fileOverview Mediator
  */
 define([

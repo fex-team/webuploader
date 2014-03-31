@@ -31,7 +31,8 @@ define([
         container: null,
         label: null,
         multiple: true,
-        accept: null
+        accept: null,
+        name: 'file'
     };
 
     Base.inherits( RuntimeClent, {

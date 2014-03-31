@@ -65,7 +65,7 @@ define([
             return me.flashExec.apply( client, arguments );
         };
 
-        function hander( evt, obj ) {
+        function handler( evt, obj ) {
             var type = evt.type || evt,
                 parts, uid;
 
@@ -90,7 +90,7 @@ define([
 
             // 为了能捕获得到。
             setTimeout(function() {
-                hander.apply( null, args );
+                handler.apply( null, args );
             }, 1 );
         };
 

@@ -6,8 +6,10 @@ define([
     '../uploader',
     '../queue',
     '../file',
+    '../lib/file',
+    '../runtime/client',
     './widget'
-], function( Base, Uploader, Queue, WUFile ) {
+], function( Base, Uploader, Queue, WUFile, File, RuntimeClient ) {
 
     var $ = Base.$,
         rExt = /\.\w+$/,
@@ -25,7 +27,8 @@ define([
     }, {
 
         init: function( opts ) {
-            var len, i, item, arr, accept;
+            var me = this,
+                deferred, len, i, item, arr, accept, runtime;
 
             if ( $.isPlainObject( opts.accept ) ) {
                 opts.accept = [ opts.accept ];
@@ -46,12 +49,37 @@ define([
                             .replace( /\*/g, '.*' ) + '$';
                 }
 
-                this.accept = new RegExp( accept, 'i' );
+                me.accept = new RegExp( accept, 'i' );
             }
 
-            this.queue = new Queue();
-            this.stats = this.queue.stats;
+            me.queue = new Queue();
+            me.stats = me.queue.stats;
+
+            if ( this.request('predict-runtime-type') !== 'html5' ) {
+                return;
+            }
+
+            deferred = Base.Deferred();
+            runtime = new RuntimeClient( 'Placeholder' );
+            runtime.connectRuntime({
+                runtimeOrder: 'html5'
+            }, function() {
+                me._ruid = runtime.getRuid();
+                deferred.resolve();
+            });
+            return deferred.promise();
         },
+
+
+        // 为了支持外部直接添加一个原生File对象。
+        _wrapFile: function( file ) {
+            if ( !this._ruid ) {
+                throw new Error('Can\t add external files.');
+            }
+
+            return new File( this._ruid, file );
+        },
+
 
         /**
          * @event beforeFileQueued
@@ -67,7 +95,6 @@ define([
          * @for  Uploader
          */
 
-
         _addFile: function( file ) {
             var me = this;
 
@@ -79,6 +106,9 @@ define([
             }
 
             if ( !(file instanceof WUFile) ) {
+                // 确保是lib/File对象
+                file = (file instanceof File) || me._wrapFile( file );
+
                 file = new WUFile( file );
             }
 

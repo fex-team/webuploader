@@ -7,37 +7,41 @@ define([
     './runtime'
 ], function( Base, Mediator, Runtime ) {
 
-    var cache = (function() {
-            var obj = {};
+    var cache;
 
-            return {
-                add: function( runtime ) {
-                    obj[ runtime.uid ] = runtime;
-                },
+    cache = (function() {
+        var obj = {};
 
-                get: function( ruid ) {
-                    var i;
+        return {
+            add: function( runtime ) {
+                obj[ runtime.uid ] = runtime;
+            },
 
-                    if ( ruid ) {
-                        return obj[ ruid ];
-                    }
+            get: function( ruid, standalone ) {
+                var i;
 
-                    for ( i in obj ) {
-                        return obj[ i ];
-                    }
-
-                    return null;
-                },
-
-                remove: function( runtime ) {
-                    delete obj[ runtime.uid ];
-                },
-
-                has: function() {
-                    return !!this.get.apply( this, arguments );
+                if ( ruid ) {
+                    return obj[ ruid ];
                 }
-            };
-        })();
+
+                for ( i in obj ) {
+
+                    // 有些类型不能重用，比如filepicker.
+                    if ( standalone && obj[ i ].__standalone ) {
+                        continue;
+                    }
+
+                    return obj[ i ];
+                }
+
+                return null;
+            },
+
+            remove: function( runtime ) {
+                delete obj[ runtime.uid ];
+            }
+        };
+    })();
 
     function RuntimeClient( component, standalone ) {
         var deferred = Base.Deferred(),
@@ -45,12 +49,16 @@ define([
 
         this.uid = Base.guid('client_');
 
+        // 允许runtime没有初始化之前，注册一些方法在初始化后执行。
         this.runtimeReady = function( cb ) {
             return deferred.done( cb );
         };
 
         this.connectRuntime = function( opts, cb ) {
+
+            // already connected.
             if ( runtime ) {
+                throw new Error('already connected!');
                 return;
             }
 
@@ -58,24 +66,31 @@ define([
 
             if ( typeof opts === 'string' && cache.get( opts ) ) {
                 runtime = cache.get( opts );
+            }
 
             // 像filePicker只能独立存在，不能公用。
-            } else if ( !standalone && cache.has() ) {
-                runtime = cache.get();
-            }
+            runtime = runtime || cache.get( null, standalone );
 
+            // 需要创建
             if ( !runtime ) {
                 runtime = Runtime.create( opts, opts.runtimeOrder );
-                cache.add( runtime );
-                runtime.promise = deferred.promise();
+                runtime.__promise = deferred.promise();
                 runtime.once( 'ready', deferred.resolve );
                 runtime.init();
-                runtime.client = 1;
+                cache.add( runtime );
+                runtime.__client = 1;
                 return runtime;
+            } else {
+
+                // 来自cache
+                Base.$.extend( runtime.options, opts );
             }
 
-            runtime.promise.then( deferred.resolve );
-            runtime.client++;
+            // 标记runtime为独占
+            standalone && (runtime.__standalone = true);
+
+            runtime.__promise.then( deferred.resolve );
+            runtime.__client++;
             return runtime;
         };
 
@@ -88,11 +103,11 @@ define([
                 return;
             }
 
-            runtime.client--;
+            runtime.__client--;
 
-            if ( runtime.client <= 0 ) {
+            if ( runtime.__client <= 0 ) {
                 cache.remove( runtime );
-                delete runtime.promise;
+                delete runtime.__promise;
                 runtime.destroy();
             }
 
