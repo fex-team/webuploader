@@ -6,9 +6,9 @@ define([
     '../uploader',
 
     // widgets
-    '../widgets/filepicker',
     '../widgets/filednd',
     '../widgets/filepaste',
+    '../widgets/filepicker',
     '../widgets/queue',
     '../widgets/runtime',
     '../widgets/upload',

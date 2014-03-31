@@ -25,7 +25,6 @@ define([
                 }
 
                 for ( i in obj ) {
-
                     // 有些类型不能重用，比如filepicker.
                     if ( standalone && obj[ i ].__standalone ) {
                         continue;
@@ -79,18 +78,14 @@ define([
                 runtime.init();
                 cache.add( runtime );
                 runtime.__client = 1;
-                return runtime;
             } else {
-
                 // 来自cache
                 Base.$.extend( runtime.options, opts );
+                runtime.__promise.then( deferred.resolve );
+                runtime.__client++;
             }
 
-            // 标记runtime为独占
-            standalone && (runtime.__standalone = true);
-
-            runtime.__promise.then( deferred.resolve );
-            runtime.__client++;
+            standalone && (runtime.__standalone = standalone);
             return runtime;
         };
 

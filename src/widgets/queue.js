@@ -73,11 +73,19 @@ define([
 
         // 为了支持外部直接添加一个原生File对象。
         _wrapFile: function( file ) {
-            if ( !this._ruid ) {
-                throw new Error('Can\t add external files.');
+            if ( !(file instanceof WUFile) ) {
+
+                if ( !(file instanceof File) ) {
+                    if ( !this._ruid ) {
+                        throw new Error('Can\'t add external files.');
+                    }
+                    file = new File( this._ruid, file );
+                }
+
+                file = new WUFile( file );
             }
 
-            return new File( this._ruid, file );
+            return file;
         },
 
 
@@ -105,12 +113,7 @@ define([
                 return;
             }
 
-            if ( !(file instanceof WUFile) ) {
-                // 确保是lib/File对象
-                file = (file instanceof File) || me._wrapFile( file );
-
-                file = new WUFile( file );
-            }
+            file = me._wrapFile( file );
 
             if ( !me.owner.trigger( 'beforeFileQueued', file ) ) {
                 return;
