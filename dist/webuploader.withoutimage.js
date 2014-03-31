@@ -3566,7 +3566,7 @@
                 elem.on( 'dragleave', this.dragLeaveHandler );
                 elem.on( 'drop', this.dropHandler );
     
-                if ( !this.options.disableGlobalDnd ) {
+                if ( this.options.disableGlobalDnd ) {
                     $( document ).on( 'dragover', this.dragOverHandler );
                     $( document ).on( 'drop', this.dropHandler );
                 }
