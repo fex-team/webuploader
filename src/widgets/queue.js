@@ -16,6 +16,7 @@ define([
         Status = WUFile.Status;
 
     return Uploader.register({
+        'sort-files': 'sortFiles',
         'add-file': 'addFiles',
         'get-file': 'getFile',
         'fetch-file': 'fetchFile',
@@ -236,6 +237,16 @@ define([
             }
 
             me.request('start-upload');
+        },
+
+        /**
+         * @method 排序队列中的文件，在上传之前调整可以控制上传顺序。
+         * @grammar sort( fn ) => undefined
+         * @description
+         * @for  Uploader
+         */
+        sortFiles: function() {
+            return this.queue.sort.apply( this.queue, arguments );
         },
 
         /**

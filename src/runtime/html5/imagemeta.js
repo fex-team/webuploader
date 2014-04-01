@@ -4,7 +4,9 @@
  * Uint8Array, FileReader, BlobBuilder, atob, ArrayBuffer
  * @fileOverview Image控件
  */
-define(function() {
+define([
+    './util'
+], function( Util ) {
 
     var api;
 
@@ -115,6 +117,14 @@ define(function() {
 
             return buf1.buffer;
         }
+    };
+
+    Util.parseMeta = function() {
+        return api.parse.apply( api, arguments );
+    };
+
+    Util.updateImageHead = function() {
+        return api.updateImageHead.apply( api, arguments );
     };
 
     return api;

@@ -705,6 +705,7 @@
             getFiles: 'get-files',
             addFile: 'add-file',
             addFiles: 'add-file',
+            sort: 'sort-files',
             removeFile: 'remove-file',
             skipFile: 'skip-file',
             retry: 'retry',
@@ -815,6 +816,12 @@
     
                 if ( $.isFunction( this[ name ] ) &&
                         this[ name ].apply( this, args ) === false ) {
+                    return false;
+                }
+    
+                // 广播所有uploader的事件。
+                if ( Mediator.trigger.apply( Mediator,
+                        [ this, type ].concat( args ) ) === false ) {
                     return false;
                 }
     
@@ -1509,7 +1516,7 @@
     
             // 如果没有指定mimetype, 但是知道文件后缀。
             if ( !this.type &&  ~'jpg,jpeg,png,gif,bmp'.indexOf( ext ) ) {
-                this.type = 'image/' + ext;
+                this.type = 'image/' + (ext === 'jpg' ? 'jpeg' : ext);
             }
     
             this.ext = ext;
@@ -2066,6 +2073,18 @@
             },
     
             /**
+             * 对队列进行排序，能够控制文件上传顺序。
+             * @grammar sort( fn ) => undefined
+             * @method sort
+             * @param {Function} fn 排序方法
+             */
+            sort: function( fn ) {
+                if ( typeof fn === 'function' ) {
+                    this._queue.sort( fn );
+                }
+            },
+    
+            /**
              * 获取指定类型的文件列表, 列表中每一个成员为[File](#WebUploader:File)对象。
              * @grammar getFiles( [status1[, status2 ...]] ) => Array
              * @method getFiles
@@ -2178,6 +2197,7 @@
             Status = WUFile.Status;
     
         return Uploader.register({
+            'sort-files': 'sortFiles',
             'add-file': 'addFiles',
             'get-file': 'getFile',
             'fetch-file': 'fetchFile',
@@ -2398,6 +2418,16 @@
                 }
     
                 me.request('start-upload');
+            },
+    
+            /**
+             * @method 排序队列中的文件，在上传之前调整可以控制上传顺序。
+             * @grammar sort( fn ) => undefined
+             * @description
+             * @for  Uploader
+             */
+            sortFiles: function() {
+                return this.queue.sort.apply( this.queue, arguments );
             },
     
             /**
@@ -3913,7 +3943,7 @@
                     xhr = this._initAjax(),
                     blob = owner._blob,
                     server = opts.server,
-                    formData, binary;
+                    formData, binary, fr;
     
                 if ( opts.sendAsBinary ) {
                     server += (/\?/.test( server ) ? '&' : '?') +
@@ -3938,8 +3968,29 @@
                 }
     
                 this._setRequestHeader( xhr, opts.headers );
-                binary && xhr.overrideMimeType('application/octet-stream');
-                xhr.send( binary || formData );
+    
+                if ( binary ) {
+                    xhr.overrideMimeType('application/octet-stream');
+    
+                    // android直接发送blob会导致服务端接收到的是空文件。
+                    // bug详情。
+                    // https://code.google.com/p/android/issues/detail?id=39882
+                    // 所以先用fileReader读取出来再通过arraybuffer的方式发送。
+                    if ( Base.os.android ) {
+                        fr = new FileReader();
+    
+                        fr.onload = function() {
+                            xhr.send( this.result );
+                            fr = fr.onload = null;
+                        };
+    
+                        fr.readAsArrayBuffer( binary );
+                    } else {
+                        xhr.send( binary );
+                    }
+                } else {
+                    xhr.send( formData );
+                }
             },
     
             getResponse: function() {
@@ -4390,5 +4441,10 @@
     ], function( Base ) {
         return Base;
     });
-    return require('base');
+    define('webuploader',[
+        'preset/withoutimage'
+    ], function( preset ) {
+        return preset;
+    });
+    return require('webuploader');
 });

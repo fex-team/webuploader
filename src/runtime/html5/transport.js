@@ -24,7 +24,7 @@ define([
                 xhr = this._initAjax(),
                 blob = owner._blob,
                 server = opts.server,
-                formData, binary;
+                formData, binary, fr;
 
             if ( opts.sendAsBinary ) {
                 server += (/\?/.test( server ) ? '&' : '?') +
@@ -49,8 +49,29 @@ define([
             }
 
             this._setRequestHeader( xhr, opts.headers );
-            binary && xhr.overrideMimeType('application/octet-stream');
-            xhr.send( binary || formData );
+
+            if ( binary ) {
+                xhr.overrideMimeType('application/octet-stream');
+
+                // android直接发送blob会导致服务端接收到的是空文件。
+                // bug详情。
+                // https://code.google.com/p/android/issues/detail?id=39882
+                // 所以先用fileReader读取出来再通过arraybuffer的方式发送。
+                if ( Base.os.android ) {
+                    fr = new FileReader();
+
+                    fr.onload = function() {
+                        xhr.send( this.result );
+                        fr = fr.onload = null;
+                    };
+
+                    fr.readAsArrayBuffer( binary );
+                } else {
+                    xhr.send( binary );
+                }
+            } else {
+                xhr.send( formData );
+            }
         },
 
         getResponse: function() {

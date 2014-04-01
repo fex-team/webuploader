@@ -39,6 +39,7 @@ define([
         getFiles: 'get-files',
         addFile: 'add-file',
         addFiles: 'add-file',
+        sort: 'sort-files',
         removeFile: 'remove-file',
         skipFile: 'skip-file',
         retry: 'retry',
@@ -149,6 +150,12 @@ define([
 
             if ( $.isFunction( this[ name ] ) &&
                     this[ name ].apply( this, args ) === false ) {
+                return false;
+            }
+
+            // 广播所有uploader的事件。
+            if ( Mediator.trigger.apply( Mediator,
+                    [ this, type ].concat( args ) ) === false ) {
                 return false;
             }
 

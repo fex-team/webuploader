@@ -23,6 +23,7 @@ define([
     '../runtime/html5/filepaste',
     '../runtime/html5/filepicker',
     '../runtime/html5/imagemeta/exif',
+    '../runtime/html5/androidpatch',
     '../runtime/html5/image',
     '../runtime/html5/transport',
 

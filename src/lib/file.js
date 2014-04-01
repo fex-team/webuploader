@@ -29,7 +29,7 @@ define([
 
         // 如果没有指定mimetype, 但是知道文件后缀。
         if ( !this.type &&  ~'jpg,jpeg,png,gif,bmp'.indexOf( ext ) ) {
-            this.type = 'image/' + ext;
+            this.type = 'image/' + (ext === 'jpg' ? 'jpeg' : ext);
         }
 
         this.ext = ext;

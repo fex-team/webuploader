@@ -4,9 +4,8 @@
 define([
     '../../base',
     './runtime',
-    './util',
-    './imagemeta'
-], function( Base, Html5Runtime, Util, ImageMeta ) {
+    './util'
+], function( Base, Html5Runtime, Util ) {
 
     var BLANK = 'data:image/gif;base64,R0lGODlhAQABAAD/ACwAAAAAAQABAAACADs%3D';
 
@@ -29,7 +28,7 @@ define([
 
                 // 读取meta信息。
                 if ( !me._metas && 'image/jpeg' === me.type ) {
-                    ImageMeta.parse( me._blob, function( error, ret ) {
+                    Util.parseMeta( me._blob, function( error, ret ) {
                         me._metas = ret;
                         me.owner.trigger('load');
                     });
@@ -79,13 +78,14 @@ define([
                 canvas = this._canvas;
 
                 if ( type === 'image/jpeg' ) {
-                    blob = canvas.toDataURL( 'image/jpeg', opts.quality / 100 );
+                    blob = Util.canvasToDataUrl( canvas, 'image/jpeg',
+                            opts.quality );
 
                     if ( opts.preserveHeaders && this._metas &&
                             this._metas.imageHead ) {
 
                         blob = Util.dataURL2ArrayBuffer( blob );
-                        blob = ImageMeta.updateImageHead( blob,
+                        blob = Util.updateImageHead( blob,
                                 this._metas.imageHead );
                         blob = Util.arrayBufferToBlob( blob, type );
                         return blob;
@@ -106,7 +106,7 @@ define([
             type = type || this.type;
 
             if ( type === 'image/jpeg' ) {
-                return this._canvas.toDataURL( type, opts.quality / 100 );
+                return Util.canvasToDataUrl( this._canvas, type, opts.quality );
             } else {
                 return this._canvas.toDataURL( type );
             }

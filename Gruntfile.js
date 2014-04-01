@@ -33,6 +33,18 @@ module.exports = function(grunt) {
             withoutimage: {
                 preset: 'withoutimage',
                 dest: "dist/webuploader.withoutimage.js",
+            },
+
+            // 自己配置的实例
+            // glob语法。
+            custom: {
+                preset: "custom",
+                cwd: "src",
+                src: [
+                    'widgets/**/*.js',
+                    'runtime/html5/**/*.js'
+                ],
+                dest: "dist/webuploader.custom.js"
             }
         },
 
@@ -55,6 +67,9 @@ module.exports = function(grunt) {
                 }, {
                     src: 'dist/webuploader.withoutimage.js',
                     dest: 'dist/webuploader.withoutimage.min.js'
+                }, {
+                    src: 'dist/webuploader.custom.js',
+                    dest: 'dist/webuploader.custom.min.js'
                 }]
             }
         },

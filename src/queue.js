@@ -108,6 +108,18 @@ define([
         },
 
         /**
+         * 对队列进行排序，能够控制文件上传顺序。
+         * @grammar sort( fn ) => undefined
+         * @method sort
+         * @param {Function} fn 排序方法
+         */
+        sort: function( fn ) {
+            if ( typeof fn === 'function' ) {
+                this._queue.sort( fn );
+            }
+        },
+
+        /**
          * 获取指定类型的文件列表, 列表中每一个成员为[File](#WebUploader:File)对象。
          * @grammar getFiles( [status1[, status2 ...]] ) => Array
          * @method getFiles

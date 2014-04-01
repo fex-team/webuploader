@@ -41,7 +41,7 @@ module.exports = function( grunt ) {
                 }
             }),
             dest = this.data.dest,
-            config, flag;
+            config, flag, custom;
 
         config = {
 
@@ -83,7 +83,7 @@ module.exports = function( grunt ) {
         };
 
         options = grunt.util._.extend( options, this.data );
-        config.name = 'preset/'+this.data.preset;
+        config.name = 'webuploader';
 
         if ( options.builtin.dollar ) {
             config.rawText.dollar = 'define([\n' +
@@ -99,6 +99,37 @@ module.exports = function( grunt ) {
                     '], function( $ ) {\n' +
                     '    return $;\n' +
                     '});';
+        }
+
+        if ( this.data.preset === 'custom' ) {
+            custom = [];
+
+            this.files.forEach(function( file ) {
+                var files = file.src,
+                    cwd = file.cwd || '';
+
+                files.filter(function( filepath ) {
+
+                    filepath = path.join( cwd, filepath );
+                    // Warn on and remove invalid source files (if nonull was set).
+                    if (!grunt.file.exists(filepath)) {
+                        grunt.log.warn('Source file "' + filepath + '" not found.');
+                        return false;
+                    } else {
+                        return true;
+                    }
+                }).forEach(function( filepath ) {
+                    custom.push( '\'' + filepath.replace( /\.\w+$/, '' ) + '\'' );
+                });
+            });
+
+            custom.unshift('\'./base\'');
+            custom = 'define([\n    ' + custom.join(',\n    ') + '\n], function() {\n    return Base;\n});';
+            config.rawText.webuploader = custom;
+        } else {
+            config.rawText.webuploader = 'define([\n    ' + ['\'./preset/' +
+                    this.data.preset +'\''].join(',\n    ') +
+                    '\n], function( preset ) {\n    return preset;\n});';
         }
 
         // 处理最终输出
