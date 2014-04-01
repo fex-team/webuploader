@@ -65,9 +65,14 @@ module.exports = function(grunt) {
                 dest: 'jekyll/js/webuploader.js',
             },
 
-            dist: {
+            css: {
                 src: 'css/webuploader.css',
                 dest: 'dist/webuploader.css'
+            },
+
+            css2: {
+                src: 'css/webuploader.css',
+                dest: 'jekyll/css/webuploader.css'
             }
         },
 
