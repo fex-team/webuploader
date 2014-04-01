@@ -19,11 +19,8 @@ define([
                 arr, i, len, mouseHandler;
 
             input.attr( 'type', 'file' );
-
-            input.css({
-                position: 'absolute',
-                clip: 'rect(1px,1px,1px,1px)'
-            });
+            input.attr( 'name', opts.name );
+            input.addClass('webuploader-element-invisible');
 
             lable.on( 'click', function() {
                 input.trigger('click');

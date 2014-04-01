@@ -58,7 +58,6 @@ define([
             // already connected.
             if ( runtime ) {
                 throw new Error('already connected!');
-                return;
             }
 
             deferred.done( cb );

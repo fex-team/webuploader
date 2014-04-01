@@ -1,4 +1,6 @@
 /**
+ * 为了统一化Flash的File和HTML5的File而存在。
+ * 以至于要调用Flash里面的File，也可以像调用HTML5版本的File一下。
  * @fileOverview File
  */
 define([
@@ -6,7 +8,7 @@ define([
     './blob'
 ], function( Base, Blob ) {
 
-    var uid = 0,
+    var uid = 1,
         rExt = /\.([^.]+)$/;
 
     function File( ruid, file ) {
@@ -16,6 +18,16 @@ define([
         this.name = file.name || ('untitled' + uid++);
         ext = rExt.exec( file.name ) ? RegExp.$1.toLowerCase() : '';
 
+        // todo 支持其他类型文件的转换。
+
+        // 如果有mimetype, 但是文件名里面没有找出后缀规律
+        if ( !ext && this.type ) {
+            ext = /\/(jpg|jpeg|png|gif|bmp)$/i.exec( this.type ) ?
+                    RegExp.$1.toLowerCase() : '';
+            this.name += '.' + ext;
+        }
+
+        // 如果没有指定mimetype, 但是知道文件后缀。
         if ( !this.type &&  ~'jpg,jpeg,png,gif,bmp'.indexOf( ext ) ) {
             this.type = 'image/' + ext;
         }

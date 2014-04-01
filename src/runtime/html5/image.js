@@ -2,10 +2,11 @@
  * @fileOverview Image
  */
 define([
+    '../../base',
     './runtime',
     './util',
     './imagemeta'
-], function( Html5Runtime, Util, ImageMeta ) {
+], function( Base, Html5Runtime, Util, ImageMeta ) {
 
     var BLANK = 'data:image/gif;base64,R0lGODlhAQABAAD/ACwAAAAAAQABAAACADs%3D';
 
@@ -27,7 +28,7 @@ define([
                 };
 
                 // 读取meta信息。
-                if ( !me._metas && ~'image/jpegimage/jpg'.indexOf( me.type ) ) {
+                if ( !me._metas && 'image/jpeg' === me.type ) {
                     ImageMeta.parse( me._blob, function( error, ret ) {
                         me._metas = ret;
                         me.owner.trigger('load');
@@ -251,101 +252,126 @@ define([
             }
         },
 
-        _renderImageToCanvas: function( canvas, img, x, y, w, h ) {
-            canvas.getContext('2d').drawImage( img, x, y, w, h );
-        }
+        // https://github.com/stomita/ios-imagefile-megapixel/
+        // blob/master/src/megapix-image.js
+        _renderImageToCanvas: (function() {
 
-        /*_renderImageToCanvas: (function() {
-            var subsampled, vertSquashRatio;
+            // 如果不是ios6, 不需要这么复杂！
+            if ( !Base.os.ios || ~~Base.os.ios !== 6  ) {
+                return function( canvas, img, x, y, w, h ) {
+                    canvas.getContext('2d').drawImage( img, x, y, w, h );
+                };
+            }
 
-            // Detect subsampling in loaded image.
-            // In iOS, larger images than 2M pixels may be subsampled in rendering.
-            function detectSubsampling(img) {
+            /**
+             * Detect subsampling in loaded image.
+             * In iOS, larger images than 2M pixels may be
+             * subsampled in rendering.
+             */
+            function detectSubsampling( img ) {
                 var iw = img.naturalWidth,
-                    ih = img.naturalHeight;
-                if (iw * ih > 1024 * 1024) { // subsampling may happen over megapixel image
-                    var canvas = document.createElement('canvas');
+                    ih = img.naturalHeight,
+                    canvas, ctx;
+
+                // subsampling may happen overmegapixel image
+                if ( iw * ih > 1024 * 1024 ) {
+                    canvas = document.createElement('canvas');
                     canvas.width = canvas.height = 1;
-                    var ctx = canvas.getContext('2d');
-                    ctx.drawImage(img, -iw + 1, 0);
+                    ctx = canvas.getContext('2d');
+                    ctx.drawImage( img, -iw + 1, 0 );
+
                     // subsampled image becomes half smaller in rendering size.
-                    // check alpha channel value to confirm image is covering edge pixel or not.
-                    // if alpha value is 0 image is not covering, hence subsampled.
-                    return ctx.getImageData(0, 0, 1, 1).data[3] === 0;
+                    // check alpha channel value to confirm image is covering
+                    // edge pixel or not. if alpha value is 0
+                    // image is not covering, hence subsampled.
+                    return ctx.getImageData( 0, 0, 1, 1 ).data[ 3 ] === 0;
                 } else {
                     return false;
                 }
             }
 
 
-            // Detecting vertical squash in loaded image.
-            // Fixes a bug which squash image vertically while drawing into canvas for some images.
-            function detectVerticalSquash(img, iw, ih) {
-                var canvas = document.createElement('canvas');
+            /**
+             * Detecting vertical squash in loaded image.
+             * Fixes a bug which squash image vertically while drawing into
+             * canvas for some images.
+             */
+            function detectVerticalSquash( img, iw, ih ) {
+                var canvas = document.createElement('canvas'),
+                    ctx = canvas.getContext('2d'),
+                    sy = 0,
+                    ey = ih,
+                    py = ih,
+                    data, alpha, ratio;
+
+
                 canvas.width = 1;
                 canvas.height = ih;
-                var ctx = canvas.getContext('2d');
-                ctx.drawImage(img, 0, 0);
-                var data = ctx.getImageData(0, 0, 1, ih).data;
-                // search image edge pixel position in case it is squashed vertically.
-                var sy = 0;
-                var ey = ih;
-                var py = ih;
-                while (py > sy) {
-                    var alpha = data[(py - 1) * 4 + 3];
-                    if (alpha === 0) {
+                ctx.drawImage( img, 0, 0 );
+                data = ctx.getImageData( 0, 0, 1, ih ).data;
+
+                // search image edge pixel position in case
+                // it is squashed vertically.
+                while ( py > sy ) {
+                    alpha = data[ (py - 1) * 4 + 3 ];
+
+                    if ( alpha === 0 ) {
                         ey = py;
                     } else {
                         sy = py;
                     }
+
                     py = (ey + sy) >> 1;
                 }
-                var ratio = (py / ih);
+
+                ratio = (py / ih);
                 return (ratio === 0) ? 1 : ratio;
             }
 
-            return function( canvas, img, x, y, w, h ) {
+            return function( canvas, img, x, y, width, height ) {
+                var iw = img.naturalWidth,
+                    ih = img.naturalHeight,
+                    ctx = canvas.getContext('2d'),
+                    subsampled = detectSubsampling( img ),
+                    doSquash = this.type === 'image/jpeg',
+                    d = 1024,
+                    sy = 0,
+                    dy = 0,
+                    tmpCanvas, tmpCtx, vertSquashRatio, dw, dh, sx, dx;
 
-
-                var iw = img.naturalWidth, ih = img.naturalHeight;
-                var width = w, height = h;
-                var ctx = canvas.getContext('2d');
-                ctx.save();
-
-                subsampled = typeof subsampled === 'undefined' ? detectSubsampling( img ) : subsampled;
                 if ( subsampled ) {
                     iw /= 2;
                     ih /= 2;
                 }
 
-                var d = 1024; // size of tiling canvas
-                var tmpCanvas = document.createElement('canvas');
+                ctx.save();
+                tmpCanvas = document.createElement('canvas');
                 tmpCanvas.width = tmpCanvas.height = d;
-                var tmpCtx = tmpCanvas.getContext('2d');
 
-                vertSquashRatio = vertSquashRatio || detectVerticalSquash(img, iw, ih);
-                console.log( vertSquashRatio );
+                tmpCtx = tmpCanvas.getContext('2d');
+                vertSquashRatio = doSquash ?
+                        detectVerticalSquash( img, iw, ih ) : 1;
 
-                var dw = Math.ceil(d * width / iw);
-                var dh = Math.ceil(d * height / ih / vertSquashRatio);
-                var sy = 0;
-                var dy = 0;
-                while (sy < ih) {
-                  var sx = 0;
-                  var dx = 0;
-                  while (sx < iw) {
-                    tmpCtx.clearRect(0, 0, d, d);
-                    tmpCtx.drawImage(img, x - sx, y - sy );
-                    ctx.drawImage(tmpCanvas, 0, 0, d, d, dx, dy, dw, dh);
-                    sx += d;
-                    dx += dw;
-                  }
-                  sy += d;
-                  dy += dh;
+                dw = Math.ceil( d * width / iw );
+                dh = Math.ceil( d * height / ih / vertSquashRatio );
+
+                while ( sy < ih ) {
+                    sx = 0;
+                    dx = 0;
+                    while ( sx < iw ) {
+                        tmpCtx.clearRect( 0, 0, d, d );
+                        tmpCtx.drawImage( img, -sx, -sy );
+                        ctx.drawImage( tmpCanvas, 0, 0, d, d,
+                                x + dx, y + dy, dw, dh );
+                        sx += d;
+                        dx += dw;
+                    }
+                    sy += d;
+                    dy += dh;
                 }
                 ctx.restore();
                 tmpCanvas = tmpCtx = null;
             };
-        })()*/
+        })()
     });
 });

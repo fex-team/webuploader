@@ -55,12 +55,13 @@ define([
             me.queue = new Queue();
             me.stats = me.queue.stats;
 
+            // 如果当前不是html5运行时，那就算了。
             if ( this.request('predict-runtime-type') !== 'html5' ) {
                 return;
             }
 
             deferred = Base.Deferred();
-            runtime = new RuntimeClient( 'Placeholder' );
+            runtime = new RuntimeClient('Placeholder');
             runtime.connectRuntime({
                 runtimeOrder: 'html5'
             }, function() {
