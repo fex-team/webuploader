@@ -43,10 +43,10 @@
             supportTransition = (function(){
                 var s = document.createElement('p').style,
                     r = 'transition' in s ||
-                          'WebkitTransition' in s ||
-                          'MozTransition' in s ||
-                          'msTransition' in s ||
-                          'OTransition' in s;
+                            'WebkitTransition' in s ||
+                            'MozTransition' in s ||
+                            'msTransition' in s ||
+                            'OTransition' in s;
                 s = null;
                 return r;
             })(),
@@ -69,6 +69,9 @@
             server: '../server/fileupload.php',
             // server: 'http://liaoxuezhi.fe.baidu.com/webupload/fileupload.php',
             // server: 'http://www.2betop.net/fileupload.php',
+
+            // 禁掉全局的拖拽功能。这样不会出现图片拖进页面的时候，把图片打开。
+            disableGlobalDnd: true,
             fileNumLimit: 300,
             fileSizeLimit: 200 * 1024 * 1024,    // 200 M
             fileSingleSizeLimit: 50 * 1024 * 1024    // 50 M

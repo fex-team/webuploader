@@ -242,6 +242,27 @@
             })( navigator.userAgent ),
     
             /**
+             * @description  操作系统检查结果。
+             *
+             * * `android`  如果在android浏览器环境下，此值为对应的android版本号，否则为`undefined`。
+             * * `ios` 如果在ios浏览器环境下，此值为对应的ios版本号，否则为`undefined`。
+             * @property {Object} [os]
+             */
+            os: (function( ua ) {
+                var ret = {},
+    
+                    // osx = !!ua.match( /\(Macintosh\; Intel / ),
+                    android = ua.match( /(?:Android);?[\s\/]+([\d.]+)?/ ),
+                    ios = ua.match( /(?:iPad|iPod|iPhone).*OS\s([\d_]+)/ );
+    
+                // osx && (ret.osx = true);
+                android && (ret.android = parseFloat( android[ 1 ] ));
+                ios && (ret.ios = parseFloat( ios[ 1 ].replace( /_/g, '.' ) ));
+    
+                return ret;
+            })( navigator.userAgent ),
+    
+            /**
              * 实现类与类之间的继承。
              * @method inherits
              * @grammar Base.inherits( super ) => child
@@ -1017,7 +1038,6 @@
                 // already connected.
                 if ( runtime ) {
                     throw new Error('already connected!');
-                    return;
                 }
     
                 deferred.done( cb );
@@ -1137,6 +1157,8 @@
         return Blob;
     });
     /**
+     * 为了统一化Flash的File和HTML5的File而存在。
+     * 以至于要调用Flash里面的File，也可以像调用HTML5版本的File一下。
      * @fileOverview File
      */
     define('lib/file',[
@@ -1144,7 +1166,7 @@
         'lib/blob'
     ], function( Base, Blob ) {
     
-        var uid = 0,
+        var uid = 1,
             rExt = /\.([^.]+)$/;
     
         function File( ruid, file ) {
@@ -1154,6 +1176,16 @@
             this.name = file.name || ('untitled' + uid++);
             ext = rExt.exec( file.name ) ? RegExp.$1.toLowerCase() : '';
     
+            // todo 支持其他类型文件的转换。
+    
+            // 如果有mimetype, 但是文件名里面没有找出后缀规律
+            if ( !ext && this.type ) {
+                ext = /\/(jpg|jpeg|png|gif|bmp)$/i.exec( this.type ) ?
+                        RegExp.$1.toLowerCase() : '';
+                this.name += '.' + ext;
+            }
+    
+            // 如果没有指定mimetype, 但是知道文件后缀。
             if ( !this.type &&  ~'jpg,jpeg,png,gif,bmp'.indexOf( ext ) ) {
                 this.type = 'image/' + ext;
             }
@@ -2385,12 +2417,13 @@
                 me.queue = new Queue();
                 me.stats = me.queue.stats;
     
+                // 如果当前不是html5运行时，那就算了。
                 if ( this.request('predict-runtime-type') !== 'html5' ) {
                     return;
                 }
     
                 deferred = Base.Deferred();
-                runtime = new RuntimeClient( 'Placeholder' );
+                runtime = new RuntimeClient('Placeholder');
                 runtime.connectRuntime({
                     runtimeOrder: 'html5'
                 }, function() {
