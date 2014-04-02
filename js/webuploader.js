@@ -1564,8 +1564,8 @@
         var $ = Base.$;
     
         function FilePicker( opts ) {
-    
             opts = this.options = $.extend({}, FilePicker.options, opts );
+    
             opts.container = $( opts.id );
     
             if ( !opts.container.length ) {
@@ -4396,7 +4396,7 @@
     
             // imagemeat会复写这个方法，如果用户选择加载那个文件了的话。
             parseMeta: function( blob, callback ) {
-                callback( false, {} );
+                callback( false, {});
             },
     
             // imagemeat会复写这个方法，如果用户选择加载那个文件了的话。
@@ -5146,8 +5146,8 @@
                     /* Pass 1: process rows. */
                     var dataOff=0;
                     var i;
-                    const I8 = 8;
-                    const I64 = 64;
+                    var I8 = 8;
+                    var I64 = 64;
                     for (i=0; i<I8; ++i)
                     {
                         d0 = data[dataOff];
@@ -5382,9 +5382,9 @@
                     var EOB = HTAC[0x00];
                     var M16zeroes = HTAC[0xF0];
                     var pos;
-                    const I16 = 16;
-                    const I63 = 63;
-                    const I64 = 64;
+                    var I16 = 16;
+                    var I63 = 63;
+                    var I64 = 64;
                     var DU_DCT = fDCTQuant(CDU, fdtbl);
                     //ZigZag reorder
                     for (var j=0;j<I64;++j) {
@@ -5605,11 +5605,11 @@
         'runtime/html5/util',
         'runtime/html5/jpegencoder',
         'base'
-    ], function( Util, JPEGEncoder, Base ) {
+    ], function( Util, encoder, Base ) {
         var origin = Util.canvasToDataUrl;
     
         Util.canvasToDataUrl = function( canvas, type, quality ) {
-            var ret, ctx, w, h;
+            var ctx, w, h;
     
             // 只有在android环境下才修复
             if ( Base.os.android && type === 'image/jpeg' ) {
@@ -5617,11 +5617,11 @@
                 h = canvas.height;
                 ctx = canvas.getContext('2d');
     
-                return JPEGEncoder.encode( ctx.getImageData( 0, 0, w, h ), quality );
+                return encoder.encode( ctx.getImageData( 0, 0, w, h ), quality );
             }
     
             return origin.apply( null, arguments );
-        }
+        };
     });
     /**
      * @fileOverview Image
@@ -6363,7 +6363,16 @@
     
         return FlashRuntime.register( 'FilePicker', {
             init: function( opts ) {
-                var copy = $.extend({}, opts );
+                var copy = $.extend({}, opts ),
+                    len, i;
+    
+                // 修复Flash再没有设置title的情况下无法弹出flash文件选择框的bug.
+                len = copy.accept && copy.accept.length;
+                for (  i = 0; i < len; i++ ) {
+                    if ( !copy.accept[ i ].title ) {
+                        copy.accept[ i ].title = 'Files';
+                    }
+                }
     
                 delete copy.button;
                 delete copy.container;
