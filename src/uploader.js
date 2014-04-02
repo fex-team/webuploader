@@ -139,23 +139,22 @@ define([
                 name = 'on' + type.substring( 0, 1 ).toUpperCase() +
                     type.substring( 1 );
 
-            if ( Mediator.trigger.apply( this, arguments ) === false ) {
-                return false;
-            }
+            if (
+                    // 调用通过on方法注册的handler.
+                    Mediator.trigger.apply( this, arguments ) === false ||
 
-            if ( $.isFunction( opts[ name ] ) &&
-                    opts[ name ].apply( this, args ) === false ) {
-                return false;
-            }
+                    // 调用opts.onEvent
+                    $.isFunction( opts[ name ] ) &&
+                    opts[ name ].apply( this, args ) === false ||
 
-            if ( $.isFunction( this[ name ] ) &&
-                    this[ name ].apply( this, args ) === false ) {
-                return false;
-            }
+                    // 调用this.onEvent
+                    $.isFunction( this[ name ] ) &&
+                    this[ name ].apply( this, args ) === false ||
 
-            // 广播所有uploader的事件。
-            if ( Mediator.trigger.apply( Mediator,
+                    // 广播所有uploader的事件。
+                    Mediator.trigger.apply( Mediator,
                     [ this, type ].concat( args ) ) === false ) {
+
                 return false;
             }
 
