@@ -71,7 +71,7 @@ define([
                 me = this,
                 ruid = me.getRuid(),
                 parentElem = me.elem.parent().get( 0 ),
-                items, files, dataTransfer, file, i, len, canAccessFolder;
+                items, files, dataTransfer, file, item, i, len, canAccessFolder;
 
             // 只处理框内的。
             if ( parentElem && !$.contains( parentElem, e.target ) ) {
@@ -87,11 +87,13 @@ define([
 
             for ( i = 0, len = files.length; i < len; i++ ) {
                 file = files[ i ];
-                if ( file.type ) {
-                    results.push( file );
-                } else if ( !file.type && canAccessFolder ) {
+                item = items[ i ];
+
+                if ( canAccessFolder && item.webkitGetAsEntry().isDirectory ) {
                     promises.push( this._traverseDirectoryTree(
-                            items[ i ].webkitGetAsEntry(), results ) );
+                            item.webkitGetAsEntry(), results ) );
+                } else {
+                    results.push( file );
                 }
             }
 
@@ -112,8 +114,8 @@ define([
 
             if ( entry.isFile ) {
                 entry.file(function( file ) {
-                    file.type && results.push( file );
-                    deferred.resolve( true );
+                    results.push( file );
+                    deferred.resolve();
                 });
             } else if ( entry.isDirectory ) {
                 entry.createReader().readEntries(function( entries ) {
@@ -129,7 +131,7 @@ define([
 
                     Base.when.apply( Base, promises ).then(function() {
                         results.push.apply( results, arr );
-                        deferred.resolve( true );
+                        deferred.resolve();
                     }, deferred.reject );
                 });
             }

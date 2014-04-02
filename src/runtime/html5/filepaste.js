@@ -36,17 +36,15 @@ define([
         _pasteHander: function( e ) {
             var allowed = [],
                 ruid = this.getRuid(),
-                files, file, blob, i, len;
+                items, item, blob, i, len;
 
             e = e.originalEvent || e;
+            items = e.clipboardData.items;
 
-            files = e.clipboardData.items;
+            for ( i = 0, len = items.length; i < len; i++ ) {
+                item = items[ i ];
 
-            for ( i = 0, len = files.length; i < len; i++ ) {
-                file = files[ i ];
-
-                if ( !file.type || !(blob = file.getAsFile()) ||
-                        blob.size < 6 ) {
+                if ( item.kind !== 'file' || !(blob = item.getAsFile()) ) {
                     continue;
                 }
 
