@@ -140,6 +140,12 @@
                     
 
                     <li class="method">
+                        <a class="" href="#WebUploader_Uploader_">排序队列中的文件，在上传之前调整可以控制上传顺序。</a>
+                    </li>
+                    
+                    
+
+                    <li class="method">
                         <a class="" href="#WebUploader_Uploader_reset">reset</a>
                     </li>
                     
@@ -208,6 +214,12 @@
 
                     <li class="property">
                         <a class="" href="#WebUploader_Base_browser">browser</a>
+                    </li>
+                    
+                    
+
+                    <li class="property">
+                        <a class="" href="#WebUploader_Base_os">os</a>
                     </li>
                     
                     
@@ -410,6 +422,12 @@
 
                     <li class="method">
                         <a class="" href="#WebUploader_Queue_fetch">fetch</a>
+                    </li>
+                    
+                    
+
+                    <li class="method">
+                        <a class="" href="#WebUploader_Queue_sort">sort</a>
                     </li>
                     
                     
@@ -1267,6 +1285,33 @@ Date URL在IE6/7中不支持，所以不用调用此方法了，直接显示一�
 
 
 <article class="clearfix method">
+    <h3 id="WebUploader_Uploader_"  >排序队列中的文件，在上传之前调整可以控制上传顺序。
+        
+    </h3>
+    
+
+    
+
+    
+    <ul class="signature">
+        
+        <li>sort( fn ) 
+            <span class="return">⇒  undefined</span>
+            
+        </li>
+    </ul>
+    
+    
+    
+
+    
+    
+</article>
+
+
+
+
+<article class="clearfix method">
     <h3 id="WebUploader_Uploader_reset"  >reset
         
     </h3>
@@ -1582,6 +1627,30 @@ Date URL在IE6/7中不支持，所以不用调用此方法了，直接显示一�
 <li><code>firefox</code>  firefox浏览器版本号，如果浏览器为非firefox，此属性为<code>undefined</code>。</li>
 <li><code>safari</code>  safari浏览器版本号，如果浏览器为非safari，此属性为<code>undefined</code>。</li>
 <li><code>opera</code>  opera浏览器版本号，如果浏览器为非opera，此属性为<code>undefined</code>。</li>
+</ul>
+
+    
+</article>
+
+
+
+
+<article class="clearfix property">
+    <h3 id="WebUploader_Base_os"  >os
+        
+    </h3>
+    
+
+    
+
+    
+    
+    
+
+    <p>操作系统检查结果。</p>
+<ul>
+<li><code>android</code>  如果在android浏览器环境下，此值为对应的android版本号，否则为<code>undefined</code>。</li>
+<li><code>ios</code> 如果在ios浏览器环境下，此值为对应的ios版本号，否则为<code>undefined</code>。</li>
 </ul>
 
     
@@ -2644,6 +2713,38 @@ Date URL在IE6/7中不支持，所以不用调用此方法了，直接显示一�
     
 
     <p>从队列中取出一个指定状态的文件。</p>
+
+    
+</article>
+
+
+
+
+<article class="clearfix method">
+    <h3 id="WebUploader_Queue_sort"  >sort
+        
+    </h3>
+    
+
+    
+
+    
+    <ul class="signature">
+        
+        <li>sort( fn ) 
+            <span class="return">⇒  undefined</span>
+            
+        </li>
+    </ul>
+    
+    
+        <p>参数: </p>
+        <ul class="params-list"><li><span class="meta"><code>fn</code> {Function}</span><p>排序方法</p>
+</li></ul>
+    
+    
+
+    <p>对队列进行排序，能够控制文件上传顺序。</p>
 
     
 </article>
