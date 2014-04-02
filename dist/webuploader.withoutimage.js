@@ -2420,9 +2420,9 @@
             },
     
             /**
-             * @method 排序队列中的文件，在上传之前调整可以控制上传顺序。
+             * @method sort
              * @grammar sort( fn ) => undefined
-             * @description
+             * @description 排序队列中的文件，在上传之前调整可以控制上传顺序。
              * @for  Uploader
              */
             sortFiles: function() {
