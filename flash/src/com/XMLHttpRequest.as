@@ -222,6 +222,8 @@ package com
 				
 			}
 			
+			// Uploader.log(["here", getResponse()]);
+			
 			removeEventListeners(e.target);	
 			_readyState = XMLHttpRequest.DONE;
 			dispatchEvent(new Event(Event.COMPLETE));

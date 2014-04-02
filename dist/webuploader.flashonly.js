@@ -2928,10 +2928,11 @@
     
             while ( index < chunks ) {
                 len = Math.min( chunkSize, total - start );
+    
                 pending.push({
                     file: file,
                     start: start,
-                    end: start + len,
+                    end: chunkSize ? (start + len) : total,
                     total: total,
                     chunks: chunks,
                     chunk: index++
@@ -3335,7 +3336,8 @@
                     file = block.file,
                     tr = new Transport( opts ),
                     data = $.extend({}, opts.formData ),
-                    headers = $.extend({}, opts.headers );
+                    headers = $.extend({}, opts.headers ),
+                    requestAccept, ret;
     
                 block.transport = tr;
     
@@ -3368,29 +3370,11 @@
                     owner.trigger( 'uploadProgress', file, totalPercent || 0 );
                 });
     
-                // 尝试重试，然后广播文件上传出错。
-                tr.on( 'error', function( type ) {
-                    block.retried = block.retried || 0;
+                // 用来询问，是否返回的结果是有错误的。
+                requestAccept = function( reject ) {
+                    var fn;
     
-                    // 自动重试
-                    if ( block.chunks > 1 && ~'http,abort'.indexOf( type ) &&
-                            block.retried < opts.chunkRetry ) {
-    
-                        block.retried++;
-                        tr.send();
-    
-                    } else {
-                        file.setStatus( Status.ERROR, type );
-                        owner.trigger( 'uploadError', file, type );
-                        owner.trigger( 'uploadComplete', file );
-                    }
-                });
-    
-                // 上传成功
-                tr.on( 'load', function() {
-                    var ret = tr.getResponseAsJson() || {},
-                        reject, fn;
-    
+                    ret = tr.getResponseAsJson() || {};
                     ret._raw = tr.getResponse();
                     fn = function( value ) {
                         reject = value;
@@ -3401,9 +3385,39 @@
                         reject = reject || 'server';
                     }
     
+                    return reject;
+                };
+    
+                // 尝试重试，然后广播文件上传出错。
+                tr.on( 'error', function( type, flag ) {
+                    block.retried = block.retried || 0;
+    
+                    // 自动重试
+                    if ( block.chunks > 1 && ~'http,abort'.indexOf( type ) &&
+                            block.retried < opts.chunkRetry ) {
+    
+                        block.retried++;
+                        tr.send();
+    
+                    } else {
+    
+                        // http status 500 ~ 600
+                        if ( !flag && type === 'server' ) {
+                            type = requestAccept( type );
+                        }
+    
+                        file.setStatus( Status.ERROR, type );
+                        owner.trigger( 'uploadError', file, type );
+                        owner.trigger( 'uploadComplete', file );
+                    }
+                });
+    
+                // 上传成功
+                tr.on( 'load', function() {
+    
                     // 如果非预期，转向上传出错。
-                    if ( reject ) {
-                        tr.trigger( 'error', reject );
+                    if ( requestAccept() ) {
+                        tr.trigger( 'error', reject, true );
                         return;
                     }
     
@@ -4038,22 +4052,27 @@
                 });
     
                 xhr.on( 'load', function() {
-                    var status = xhr.exec('getStatus');
+                    var status = xhr.exec('getStatus'),
+                        err = '';
     
                     xhr.off();
                     me._xhr = null;
     
-                    if ( status === 200 ) {
+                    if ( status >= 200 && status < 300 ) {
                         me._response = xhr.exec('getResponse');
                         me._responseJson = xhr.exec('getResponseAsJson');
-                        return me.trigger('load');
+                    } else if ( status >= 500 && status < 600 ) {
+                        me._response = xhr.exec('getResponse');
+                        me._responseJson = xhr.exec('getResponseAsJson');
+                        err = 'server';
+                    } else {
+                        err = 'http';
                     }
     
-                    me._status = status;
                     xhr.destroy();
                     xhr = null;
     
-                    return me.trigger( 'error', 'http' );
+                    return err ? me.trigger( 'error', err ) : me.trigger( 'load' );
                 });
     
                 xhr.on( 'error', function() {

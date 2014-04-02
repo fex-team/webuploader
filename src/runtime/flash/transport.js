@@ -81,22 +81,27 @@ define([
             });
 
             xhr.on( 'load', function() {
-                var status = xhr.exec('getStatus');
+                var status = xhr.exec('getStatus'),
+                    err = '';
 
                 xhr.off();
                 me._xhr = null;
 
-                if ( status === 200 ) {
+                if ( status >= 200 && status < 300 ) {
                     me._response = xhr.exec('getResponse');
                     me._responseJson = xhr.exec('getResponseAsJson');
-                    return me.trigger('load');
+                } else if ( status >= 500 && status < 600 ) {
+                    me._response = xhr.exec('getResponse');
+                    me._responseJson = xhr.exec('getResponseAsJson');
+                    err = 'server';
+                } else {
+                    err = 'http';
                 }
 
-                me._status = status;
                 xhr.destroy();
                 xhr = null;
 
-                return me.trigger( 'error', 'http' );
+                return err ? me.trigger( 'error', err ) : me.trigger( 'load' );
             });
 
             xhr.on( 'error', function() {

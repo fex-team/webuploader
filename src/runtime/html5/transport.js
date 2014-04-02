@@ -131,15 +131,16 @@ define([
                 xhr.upload.onprogress = noop;
                 xhr.onreadystatechange = noop;
                 me._xhr = null;
+                me._status = xhr.status;
 
-                // 只考虑200的情况
-                if ( xhr.status === 200 ) {
+                if ( xhr.status >= 200 && xhr.status < 300 ) {
                     me._response = xhr.responseText;
                     return me.trigger('load');
+                } else if ( xhr.status >=500 && xhr.status < 600 ) {
+                    me._response = xhr.responseText;
+                    return me.trigger( 'error', 'server' );
                 }
 
-                me._status = xhr.status;
-                xhr = null;
 
                 return me.trigger( 'error', me._status ? 'http' : 'abort' );
             };
