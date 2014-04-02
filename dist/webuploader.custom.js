@@ -4250,8 +4250,8 @@
                     /* Pass 1: process rows. */
                     var dataOff=0;
                     var i;
-                    const I8 = 8;
-                    const I64 = 64;
+                    var I8 = 8;
+                    var I64 = 64;
                     for (i=0; i<I8; ++i)
                     {
                         d0 = data[dataOff];
@@ -4486,9 +4486,9 @@
                     var EOB = HTAC[0x00];
                     var M16zeroes = HTAC[0xF0];
                     var pos;
-                    const I16 = 16;
-                    const I63 = 63;
-                    const I64 = 64;
+                    var I16 = 16;
+                    var I63 = 63;
+                    var I64 = 64;
                     var DU_DCT = fDCTQuant(CDU, fdtbl);
                     //ZigZag reorder
                     for (var j=0;j<I64;++j) {
