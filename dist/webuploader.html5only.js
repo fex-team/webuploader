@@ -1564,8 +1564,8 @@
         var $ = Base.$;
     
         function FilePicker( opts ) {
-    
             opts = this.options = $.extend({}, FilePicker.options, opts );
+    
             opts.container = $( opts.id );
     
             if ( !opts.container.length ) {
@@ -4396,7 +4396,7 @@
     
             // imagemeat会复写这个方法，如果用户选择加载那个文件了的话。
             parseMeta: function( blob, callback ) {
-                callback( false, {} );
+                callback( false, {});
             },
     
             // imagemeat会复写这个方法，如果用户选择加载那个文件了的话。

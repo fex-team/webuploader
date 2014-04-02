@@ -97,7 +97,7 @@ define([
 
         // imagemeat会复写这个方法，如果用户选择加载那个文件了的话。
         parseMeta: function( blob, callback ) {
-            callback( false, {} );
+            callback( false, {});
         },
 
         // imagemeat会复写这个方法，如果用户选择加载那个文件了的话。

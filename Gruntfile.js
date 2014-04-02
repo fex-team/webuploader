@@ -123,7 +123,10 @@ module.exports = function(grunt) {
                 jshintrc: '.jshintrc'
             },
 
-            all: ['src/**/*.js']
+            all: [
+                'src/**/*.js',
+                '!src/runtime/html5/jpegencoder.js'
+            ]
         },
 
         size: {

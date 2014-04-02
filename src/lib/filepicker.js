@@ -10,8 +10,8 @@ define([
     var $ = Base.$;
 
     function FilePicker( opts ) {
-
         opts = this.options = $.extend({}, FilePicker.options, opts );
+
         opts.container = $( opts.id );
 
         if ( !opts.container.length ) {

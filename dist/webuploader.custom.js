@@ -1538,8 +1538,8 @@
         var $ = Base.$;
     
         function FilePicker( opts ) {
-    
             opts = this.options = $.extend({}, FilePicker.options, opts );
+    
             opts.container = $( opts.id );
     
             if ( !opts.container.length ) {
@@ -3941,7 +3941,7 @@
     
             // imagemeat会复写这个方法，如果用户选择加载那个文件了的话。
             parseMeta: function( blob, callback ) {
-                callback( false, {} );
+                callback( false, {});
             },
     
             // imagemeat会复写这个方法，如果用户选择加载那个文件了的话。
@@ -4709,11 +4709,11 @@
         'runtime/html5/util',
         'runtime/html5/jpegencoder',
         'base'
-    ], function( Util, JPEGEncoder, Base ) {
+    ], function( Util, encoder, Base ) {
         var origin = Util.canvasToDataUrl;
     
         Util.canvasToDataUrl = function( canvas, type, quality ) {
-            var ret, ctx, w, h;
+            var ctx, w, h;
     
             // 只有在android环境下才修复
             if ( Base.os.android && type === 'image/jpeg' ) {
@@ -4721,11 +4721,11 @@
                 h = canvas.height;
                 ctx = canvas.getContext('2d');
     
-                return JPEGEncoder.encode( ctx.getImageData( 0, 0, w, h ), quality );
+                return encoder.encode( ctx.getImageData( 0, 0, w, h ), quality );
             }
     
             return origin.apply( null, arguments );
-        }
+        };
     });
     /**
      * @fileOverview Runtime管理器，负责Runtime的选择, 连接

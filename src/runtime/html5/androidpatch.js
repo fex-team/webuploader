@@ -5,11 +5,11 @@ define([
     './util',
     './jpegencoder',
     '../../base'
-], function( Util, JPEGEncoder, Base ) {
+], function( Util, encoder, Base ) {
     var origin = Util.canvasToDataUrl;
 
     Util.canvasToDataUrl = function( canvas, type, quality ) {
-        var ret, ctx, w, h;
+        var ctx, w, h;
 
         // 只有在android环境下才修复
         if ( Base.os.android && type === 'image/jpeg' ) {
@@ -17,9 +17,9 @@ define([
             h = canvas.height;
             ctx = canvas.getContext('2d');
 
-            return JPEGEncoder.encode( ctx.getImageData( 0, 0, w, h ), quality );
+            return encoder.encode( ctx.getImageData( 0, 0, w, h ), quality );
         }
 
         return origin.apply( null, arguments );
-    }
+    };
 });
