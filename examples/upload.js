@@ -54,6 +54,11 @@
             // WebUploader实例
             uploader;
 
+        if ( !WebUploader.Uploader.support() ) {
+            alert( 'Web Uploader 不支持您的浏览器！');
+            throw new Error( 'WebUploader does not support the browser you are using.' );
+        }
+
         // 实例化
         uploader = WebUploader.create({
             pick: {
