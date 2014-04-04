@@ -153,27 +153,19 @@
 
 <h3 id="toc_5">配置</h3>
 
-<p>打开webuploader仓库根目录下面的<code>Gruntfile.js</code>文件, 代码合并有<code>concat</code>task来完成。找到<code>concat</code>配置项。</p>
+<p>打开webuploader仓库根目录下面的<code>Gruntfile.js</code>文件, 代码合并有<code>build</code>task来完成。找到<code>build</code>配置项。</p>
 
-<p>如下面的例子演示了如何去掉html5部分的代码。<strong>配置时不用考虑js依赖，fex-team优化了concat工具，依赖的js将自动被添加进来。</strong></p>
-<div class="highlight"><pre><code class="javascript language-javascript" data-lang="javascript"><span class="nx">flashonly</span><span class="o">:</span> <span class="p">{</span>
-    <span class="nx">cwd</span><span class="o">:</span> <span class="s1">&#39;src&#39;</span><span class="p">,</span>
-
+<p>Gruntfile.js已经配置了一个自定义合并的demo. 打包只支持HTML5的版本。</p>
+<div class="highlight"><pre><code class="javascript language-javascript" data-lang="javascript"><span class="c1">// 自己配置的实例</span>
+<span class="c1">// glob语法。</span>
+<span class="nx">custom</span><span class="o">:</span> <span class="p">{</span>
+    <span class="nx">preset</span><span class="o">:</span> <span class="s2">&quot;custom&quot;</span><span class="p">,</span>
+    <span class="nx">cwd</span><span class="o">:</span> <span class="s2">&quot;src&quot;</span><span class="p">,</span>
     <span class="nx">src</span><span class="o">:</span> <span class="p">[</span>
-
-        <span class="c1">// 在这里配置文件组合，</span>
-        <span class="s1">&#39;widgets/filepicker.js&#39;</span><span class="p">,</span>
-        <span class="s1">&#39;**/*.js&#39;</span><span class="p">,</span>
-
-        <span class="c1">// 去掉html5的实现代码</span>
-        <span class="s1">&#39;!runtime/html5/**/*.js&#39;</span><span class="p">,</span>
-
-        <span class="s1">&#39;!jq-bridge.js&#39;</span><span class="p">,</span>
-        <span class="s1">&#39;!promise.js&#39;</span>
+        <span class="s1">&#39;widgets/**/*.js&#39;</span><span class="p">,</span>
+        <span class="s1">&#39;runtime/html5/**/*.js&#39;</span>
     <span class="p">],</span>
-
-
-    <span class="nx">dest</span><span class="o">:</span> <span class="s1">&#39;dist/webuploader.flashonly.js&#39;</span>
+    <span class="nx">dest</span><span class="o">:</span> <span class="s2">&quot;dist/webuploader.custom.js&quot;</span>
 <span class="p">}</span>
 </code></pre></div>
             </div>
