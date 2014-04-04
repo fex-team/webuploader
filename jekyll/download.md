@@ -31,7 +31,7 @@ commentIssueId: 82
 
 直接下载本站默认打包版本，下载包中包含`源码版本`和`压缩版本`。
 
-<a class="btn btn-success" href="https://github.com/fex-team/webuploader/releases/download/v0.1.0/webuploader-0.1.0-dist.zip">下载1.0版本</a>
+<a class="btn btn-success" href="https://github.com/fex-team/webuploader/releases/download/v0.1.1/webuploader-dist-0.1.1.zip">下载1.1版本</a>
 
 或者直接使用由[staticfile](http://www.staticfile.org/)提供的cdn版本，或者下载[Git项目包](https://github.com/fex-team/webuploader/zipball/master)。
 
