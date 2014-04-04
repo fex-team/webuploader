@@ -73,28 +73,20 @@ commentIssueId: 82
 3. 执行`grunt dist`，此动作会在dist目录下面创建合并版本的js, 包括通过`uglify`压缩的min版本。
 
 ### 配置
-打开webuploader仓库根目录下面的`Gruntfile.js`文件, 代码合并有`concat`task来完成。找到`concat`配置项。
+打开webuploader仓库根目录下面的`Gruntfile.js`文件, 代码合并有`build`task来完成。找到`build`配置项。
 
-如下面的例子演示了如何去掉html5部分的代码。**配置时不用考虑js依赖，fex-team优化了concat工具，依赖的js将自动被添加进来。**
+Gruntfile.js已经配置了一个自定义合并的demo. 打包只支持HTML5的版本。
 
 ```javascript
-flashonly: {
-    cwd: 'src',
-
+// 自己配置的实例
+// glob语法。
+custom: {
+    preset: "custom",
+    cwd: "src",
     src: [
-
-        // 在这里配置文件组合，
-        'widgets/filepicker.js',
-        '**/*.js',
-
-        // 去掉html5的实现代码
-        '!runtime/html5/**/*.js',
-
-        '!jq-bridge.js',
-        '!promise.js'
+        'widgets/**/*.js',
+        'runtime/html5/**/*.js'
     ],
-
-
-    dest: 'dist/webuploader.flashonly.js'
+    dest: "dist/webuploader.custom.js"
 }
 ```
