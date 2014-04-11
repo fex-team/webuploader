@@ -20,6 +20,8 @@ function convert( name, _path, contents ) {
         return m1 + m3.replace( rDeps, function( m, m1, m2 ) {
             m2 = path.join( dir, m2 );
             m2 = path.relative( root, m2 );
+
+            m2 = m2.replace(/\\/g, '/');
             return m1 + m2 + m1;
         }) + ']';
     });
