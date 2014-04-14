@@ -3388,10 +3388,11 @@
     
                 // 上传成功
                 tr.on( 'load', function() {
+                    var reason;
     
                     // 如果非预期，转向上传出错。
-                    if ( requestAccept() ) {
-                        tr.trigger( 'error', reject, true );
+                    if ( (reason = requestAccept()) ) {
+                        tr.trigger( 'error', reason, true );
                         return;
                     }
     
@@ -4722,7 +4723,7 @@
                     if ( xhr.status >= 200 && xhr.status < 300 ) {
                         me._response = xhr.responseText;
                         return me.trigger('load');
-                    } else if ( xhr.status >=500 && xhr.status < 600 ) {
+                    } else if ( xhr.status >= 500 && xhr.status < 600 ) {
                         me._response = xhr.responseText;
                         return me.trigger( 'error', 'server' );
                     }
