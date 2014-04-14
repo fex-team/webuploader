@@ -192,8 +192,8 @@ define([
         }
 
         uploader.on( 'beforeFileQueued', function( file ) {
-            var hash = hashString( file.name + file.size +
-                    file.lastModifiedDate );
+            var hash = file.__hash || (file.__hash = hashString( file.name +
+                    file.size + file.lastModifiedDate ));
 
             // 已经重复了
             if ( mapping[ hash ] ) {
@@ -203,17 +203,15 @@ define([
         });
 
         uploader.on( 'fileQueued', function( file ) {
-            var hash = hashString( file.name + file.size +
-                    file.lastModifiedDate );
+            var hash = file.__hash;
 
-            mapping[ hash ] = true;
+            hash && mapping[ hash ] = true;
         });
 
         uploader.on( 'fileDequeued', function( file ) {
-            var hash = hashString( file.name + file.size +
-                    file.lastModifiedDate );
+            var hash = file.__hash;
 
-            delete mapping[ hash ];
+            hash && (delete mapping[ hash ]);
         });
     });
 
