@@ -41,8 +41,17 @@ module.exports = function(grunt) {
                 preset: "custom",
                 cwd: "src",
                 src: [
-                    'widgets/**/*.js',
-                    'runtime/html5/**/*.js'
+                    'widgets/filepicker.js',
+                    'widgets/image.js',
+                    'widgets/queue.js',
+                    'widgets/runtime.js',
+                    'widgets/upload.js',
+
+                    'runtime/html5/blob.js',
+                    'runtime/html5/filepicker.js',
+                    'runtime/html5/imagemeta/exif.js',
+                    'runtime/html5/image.js',
+                    'runtime/html5/transport.js'
                 ],
                 dest: "dist/webuploader.custom.js"
             }

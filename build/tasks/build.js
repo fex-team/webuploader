@@ -42,6 +42,7 @@ module.exports = function( grunt ) {
                     promise: false
                 }
             }),
+            pkg = grunt.config.get('pkg'),
             dest = this.data.dest,
             config, flag, custom;
 
@@ -75,7 +76,11 @@ module.exports = function( grunt ) {
                 }
 
                 // 调整缩进
-                compiled = compiled.replace( /(^|\r\n|\r|\n)/g, '$1    ')
+                compiled = compiled.replace( /(^|\r\n|\r|\n)/g, '$1    ');
+
+                compiled = compiled.replace(/@version@/g, function() {
+                    return pkg.version;
+                });
 
                 return compiled;
             },
@@ -126,7 +131,7 @@ module.exports = function( grunt ) {
             });
 
             custom.unshift('\'./base\'');
-            custom = 'define([\n    ' + custom.join(',\n    ') + '\n], function() {\n    return Base;\n});';
+            custom = 'define([\n    ' + custom.join(',\n    ') + '\n], function( Base ) {\n    return Base;\n});';
             config.rawText.webuploader = custom;
         } else {
             config.rawText.webuploader = 'define([\n    ' + ['\'./preset/' +
