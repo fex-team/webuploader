@@ -136,7 +136,7 @@ define([
                 if ( xhr.status >= 200 && xhr.status < 300 ) {
                     me._response = xhr.responseText;
                     return me.trigger('load');
-                } else if ( xhr.status >=500 && xhr.status < 600 ) {
+                } else if ( xhr.status >= 500 && xhr.status < 600 ) {
                     me._response = xhr.responseText;
                     return me.trigger( 'error', 'server' );
                 }

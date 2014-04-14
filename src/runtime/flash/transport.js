@@ -101,7 +101,7 @@ define([
                 xhr.destroy();
                 xhr = null;
 
-                return err ? me.trigger( 'error', err ) : me.trigger( 'load' );
+                return err ? me.trigger( 'error', err ) : me.trigger('load');
             });
 
             xhr.on( 'error', function() {
