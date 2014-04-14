@@ -13,3 +13,4 @@ server/*
 /flash/html-template
 /.grunt
 /jekyll/_site/
+/dist/*.zip
