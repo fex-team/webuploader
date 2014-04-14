@@ -205,7 +205,7 @@ define([
         uploader.on( 'fileQueued', function( file ) {
             var hash = file.__hash;
 
-            hash && mapping[ hash ] = true;
+            hash && (mapping[ hash ] = true);
         });
 
         uploader.on( 'fileDequeued', function( file ) {
