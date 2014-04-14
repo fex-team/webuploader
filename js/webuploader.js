@@ -1,4 +1,4 @@
-/*! WebUploader 0.1.0 */
+/*! WebUploader 0.1.2 */
 
 
 /**
@@ -201,7 +201,7 @@
             /**
              * @property {String} version 当前版本号。
              */
-            version: '@version@',
+            version: '0.1.2',
     
             /**
              * @property {jQuery|Zepto} $ 引用依赖的jQuery或者Zepto对象。
@@ -3595,10 +3595,11 @@
     
                 // 上传成功
                 tr.on( 'load', function() {
+                    var reason;
     
                     // 如果非预期，转向上传出错。
-                    if ( requestAccept() ) {
-                        tr.trigger( 'error', reject, true );
+                    if ( (reason = requestAccept()) ) {
+                        tr.trigger( 'error', reason, true );
                         return;
                     }
     
@@ -3854,8 +3855,8 @@
             }
     
             uploader.on( 'beforeFileQueued', function( file ) {
-                var hash = hashString( file.name + file.size +
-                        file.lastModifiedDate );
+                var hash = file.__hash || (file.__hash = hashString( file.name +
+                        file.size + file.lastModifiedDate ));
     
                 // 已经重复了
                 if ( mapping[ hash ] ) {
@@ -3865,17 +3866,15 @@
             });
     
             uploader.on( 'fileQueued', function( file ) {
-                var hash = hashString( file.name + file.size +
-                        file.lastModifiedDate );
+                var hash = file.__hash;
     
-                mapping[ hash ] = true;
+                hash && (mapping[ hash ] = true);
             });
     
             uploader.on( 'fileDequeued', function( file ) {
-                var hash = hashString( file.name + file.size +
-                        file.lastModifiedDate );
+                var hash = file.__hash;
     
-                delete mapping[ hash ];
+                hash && (delete mapping[ hash ]);
             });
         });
     
@@ -6152,7 +6151,7 @@
                     if ( xhr.status >= 200 && xhr.status < 300 ) {
                         me._response = xhr.responseText;
                         return me.trigger('load');
-                    } else if ( xhr.status >=500 && xhr.status < 600 ) {
+                    } else if ( xhr.status >= 500 && xhr.status < 600 ) {
                         me._response = xhr.responseText;
                         return me.trigger( 'error', 'server' );
                     }
@@ -6530,7 +6529,7 @@
                     xhr.destroy();
                     xhr = null;
     
-                    return err ? me.trigger( 'error', err ) : me.trigger( 'load' );
+                    return err ? me.trigger( 'error', err ) : me.trigger('load');
                 });
     
                 xhr.on( 'error', function() {
