@@ -4,11 +4,10 @@
  * @beta
  */
 define([
-    './base'
-], function( Base ) {
+    './dollar'
+], function( $ ) {
 
-    var $ = Base.$,
-        api;
+    var api;
 
     // 简单版Callbacks, 默认memory，可选once.
     function Callbacks( once ) {
@@ -259,7 +258,8 @@ define([
          */
         when: function( subordinate /* , ..., subordinateN */ ) {
             var i = 0,
-                resolveValues = Base.slice( arguments ),
+                slice = [].slice,
+                resolveValues = slice.call( arguments ),
                 length = resolveValues.length,
 
                 // the count of uncompleted subordinates
@@ -275,7 +275,7 @@ define([
                     return function( value ) {
                         contexts[ i ] = this;
                         values[ i ] = arguments.length > 1 ?
-                                Base.slice( arguments ) : value;
+                                slice.call( arguments ) : value;
 
                         if ( values === progressValues ) {
                             deferred.notifyWith( contexts, values );
@@ -317,5 +317,5 @@ define([
         }
     };
 
-    return $.extend( Base, api ) && api;
+    return api;
 });

@@ -139,6 +139,29 @@
         return _;
     });
     /**
+     * @fileOverview 使用jQuery的Promise
+     */
+    define('promise-third',[
+        'dollar'
+    ], function( $ ) {
+        return {
+            Deferred: $.Deferred,
+            when: $.when,
+    
+            isPromise: function( anything ) {
+                return anything && typeof anything.then === 'function';
+            }
+        };
+    });
+    /**
+     * @fileOverview Promise/A+
+     */
+    define('promise',[
+        'promise-third'
+    ], function( _ ) {
+        return _;
+    });
+    /**
      * @fileOverview 基础类方法。
      */
     
@@ -159,8 +182,9 @@
      * @title WebUploader API文档
      */
     define('base',[
-        'dollar'
-    ], function( $ ) {
+        'dollar',
+        'promise'
+    ], function( $, promise ) {
     
         var noop = function() {},
             call = Function.call;
@@ -207,6 +231,12 @@
              * @property {jQuery|Zepto} $ 引用依赖的jQuery或者Zepto对象。
              */
             $: $,
+    
+            Deferred: promise.Deferred,
+    
+            isPromise: promise.isPromise,
+    
+            when: promise.when,
     
             /**
              * @description  简单的浏览器检查结果。
@@ -447,32 +477,6 @@
                         unit;
             }
         };
-    });
-    /**
-     * @fileOverview 使用jQuery的Promise
-     */
-    define('promise-third',[
-        'base'
-    ], function( Base ) {
-        var $ = Base.$,
-            api = {
-                Deferred: $.Deferred,
-                when: $.when,
-    
-                isPromise: function( anything ) {
-                    return anything && typeof anything.then === 'function';
-                }
-            };
-    
-        return $.extend( Base, api ) && api;
-    });
-    /**
-     * @fileOverview Promise/A+
-     */
-    define('promise',[
-        'promise-third'
-    ], function( _ ) {
-        return _;
     });
     /**
      * 事件处理类，可以独立使用，也可以扩展给对象使用。
@@ -5411,8 +5415,6 @@
      */
     define('preset/html5only',[
         'base',
-        'promise',
-        'uploader',
     
         // widgets
         'widgets/filednd',

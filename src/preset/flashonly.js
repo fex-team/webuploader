@@ -3,8 +3,6 @@
  */
 define([
     '../base',
-    '../promise',
-    '../uploader',
 
     // widgets
     '../widgets/filepicker',

@@ -19,8 +19,9 @@
  * @title WebUploader API文档
  */
 define([
-    './dollar'
-], function( $ ) {
+    './dollar',
+    './promise'
+], function( $, promise ) {
 
     var noop = function() {},
         call = Function.call;
@@ -67,6 +68,12 @@ define([
          * @property {jQuery|Zepto} $ 引用依赖的jQuery或者Zepto对象。
          */
         $: $,
+
+        Deferred: promise.Deferred,
+
+        isPromise: promise.isPromise,
+
+        when: promise.when,
 
         /**
          * @description  简单的浏览器检查结果。

@@ -3,7 +3,6 @@
  */
 define([
     '../base',
-    '../uploader',
 
     // widgets
     '../widgets/filednd',
