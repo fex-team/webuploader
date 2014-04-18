@@ -51,6 +51,7 @@ module.exports = function(grunt) {
                     'runtime/html5/filepicker.js',
                     'runtime/html5/imagemeta/exif.js',
                     'runtime/html5/image.js',
+                    'runtime/html5/androidpatch.js',
                     'runtime/html5/transport.js'
                 ],
                 dest: "dist/webuploader.custom.js"
