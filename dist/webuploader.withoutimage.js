@@ -1638,8 +1638,12 @@
             refresh: function() {
                 var shimContainer = this.getRuntime().getContainer(),
                     button = this.options.button,
-                    width = button.outerWidth(),
-                    height = button.outerHeight(),
+                    width = button.outterWidth ?
+                            button.outerWidth() : button.width(),
+    
+                    height = button.outerHeight ?
+                            button.outerHeight() : button.height(),
+    
                     pos = button.offset();
     
                 width && height && shimContainer.css({
