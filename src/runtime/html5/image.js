@@ -78,6 +78,7 @@ define([
                 canvas = this._canvas;
 
                 if ( type === 'image/jpeg' ) {
+
                     blob = Util.canvasToDataUrl( canvas, 'image/jpeg',
                             opts.quality );
 
@@ -91,7 +92,7 @@ define([
                         return blob;
                     }
                 } else {
-                    blob = canvas.toDataURL( type );
+                    blob = Util.canvasToDataUrl( canvas, type );
                 }
 
                 blob = Util.dataURL2Blob( blob );

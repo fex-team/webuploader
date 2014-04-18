@@ -50,9 +50,7 @@ define([
 
             mimetype = parts[ 0 ].split(':')[ 1 ].split(';')[ 0 ];
 
-            return new Blob([ ab ], {
-                type: mimetype
-            });
+            return this.arrayBufferToBlob( ab, mimetype);
         },
 
         dataURL2ArrayBuffer: function( dataURI ) {
