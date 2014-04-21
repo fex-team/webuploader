@@ -492,6 +492,7 @@ define([
         /**
          * @event uploadSuccess
          * @param {File} file File对象
+         * @param {Object} response 服务端返回的数据
          * @description 当文件上传成功时触发。
          * @for  Uploader
          */
