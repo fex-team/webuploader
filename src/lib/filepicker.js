@@ -80,7 +80,7 @@ define([
         refresh: function() {
             var shimContainer = this.getRuntime().getContainer(),
                 button = this.options.button,
-                width = button.outterWidth ?
+                width = button.outerWidth ?
                         button.outerWidth() : button.width(),
 
                 height = button.outerHeight ?

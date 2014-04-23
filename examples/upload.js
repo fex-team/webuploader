@@ -65,12 +65,16 @@
                 id: '#filePicker',
                 label: '点击选择图片'
             },
+            formData: {
+                uid: 123
+            },
             dnd: '#dndArea',
             paste: '#uploader',
             swf: '../dist/Uploader.swf',
-            chunked: false,
+            chunked: true,
+            chunkedSize: 1 * 1024 * 10234,
             // runtimeOrder: 'flash',
-            sendAsBinary: true,
+            sendAsBinary: false,
             server: '../server/fileupload.php',
             // server: 'http://liaoxuezhi.fe.baidu.com/webupload/fileupload.php',
             // server: 'http://www.2betop.net/fileupload.php',

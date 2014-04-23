@@ -1290,7 +1290,7 @@
             refresh: function() {
                 var shimContainer = this.getRuntime().getContainer(),
                     button = this.options.button,
-                    width = button.outterWidth ?
+                    width = button.outerWidth ?
                             button.outerWidth() : button.width(),
     
                     height = button.outerHeight ?
@@ -3325,6 +3325,7 @@
             /**
              * @event uploadSuccess
              * @param {File} file File对象
+             * @param {Object} response 服务端返回的数据
              * @description 当文件上传成功时触发。
              * @for  Uploader
              */
