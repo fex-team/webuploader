@@ -72,7 +72,7 @@
             paste: '#uploader',
             swf: '../dist/Uploader.swf',
             chunked: true,
-            chunkedSize: 1 * 1024 * 10234,
+            chunkSize: 512 * 1024,
             // runtimeOrder: 'flash',
             sendAsBinary: false,
             server: '../server/fileupload.php',
