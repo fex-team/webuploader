@@ -1,11 +1,11 @@
 requirejs.config({
     baseUrl: '../../src',
     paths: {
-        jQuery: '../examples/jquery'
+        jquery: '../examples/jquery'
     }
 });
 
-require([ 'preset/all', 'jQuery' ], function( WebUploader ) {
+require([ 'jquery', 'preset/all' ], function( _, WebUploader ) {
     // 当domReady的时候开始初始化
     $(function() {
         var $wrap = $('#uploader'),
