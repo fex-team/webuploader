@@ -2141,21 +2141,30 @@
                 image.once( 'complete', function() {
                     var blob, size;
     
-                    blob = image.getAsBlob( opts.type );
-                    size = file.size;
+                    // 移动端 UC / qq 浏览器的无图模式下
+                    // ctx.getImageData 处理大图的时候会报 Exception
+                    // INDEX_SIZE_ERR: DOM Exception 1
+                    try {
+                        blob = image.getAsBlob( opts.type );
     
-                    // 如果压缩后，比原来还大则不用压缩后的。
-                    if ( blob.size < size ) {
-                        // file.source.destroy && file.source.destroy();
-                        file.source = blob;
-                        file.size = blob.size;
+                        size = file.size;
     
-                        file.trigger( 'resize', blob.size, size );
+                        // 如果压缩后，比原来还大则不用压缩后的。
+                        if ( blob.size < size ) {
+                            // file.source.destroy && file.source.destroy();
+                            file.source = blob;
+                            file.size = blob.size;
+    
+                            file.trigger( 'resize', blob.size, size );
+                        }
+    
+                        // 标记，避免重复压缩。
+                        file._compressed = true;
+                        deferred.resolve();
+                    } catch ( e ) {
+                        // 出错了直接继续，让其上传原始图片
+                        deferred.resolve();
                     }
-    
-                    // 标记，避免重复压缩。
-                    file._compressed = true;
-                    deferred.resolve( true );
                 });
     
                 file._info && image.info( file._info );
@@ -4081,7 +4090,7 @@
                     items, files, dataTransfer, file, item, i, len, canAccessFolder;
     
                 // 只处理框内的。
-                if ( parentElem && !$.contains( parentElem, e.target ) ) {
+                if ( parentElem && !$.contains( parentElem, e.currentTarget ) ) {
                     return false;
                 }
     
@@ -4094,7 +4103,7 @@
     
                 for ( i = 0, len = files.length; i < len; i++ ) {
                     file = files[ i ];
-                    item = items[ i ];
+                    item = items && items[ i ];
     
                     if ( canAccessFolder && item.webkitGetAsEntry().isDirectory ) {
                         promises.push( this._traverseDirectoryTree(
