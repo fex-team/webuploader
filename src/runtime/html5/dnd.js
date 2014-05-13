@@ -74,7 +74,7 @@ define([
                 items, files, dataTransfer, file, item, i, len, canAccessFolder;
 
             // 只处理框内的。
-            if ( parentElem && !$.contains( parentElem, e.target ) ) {
+            if ( parentElem && !$.contains( parentElem, e.currentTarget ) ) {
                 return false;
             }
 
@@ -87,7 +87,7 @@ define([
 
             for ( i = 0, len = files.length; i < len; i++ ) {
                 file = files[ i ];
-                item = items[ i ];
+                item = items && items[ i ];
 
                 if ( canAccessFolder && item.webkitGetAsEntry().isDirectory ) {
                     promises.push( this._traverseDirectoryTree(
