@@ -354,7 +354,7 @@ define([
                 };
 
                 // 文件可能还在prepare中，也有可能已经完全准备好了。
-                return isPromise( next ) ? next.then( done ) : done( next );
+                return isPromise( next ) ? next.pipe( done ) : done( next );
             }
         },
 
@@ -372,7 +372,6 @@ define([
                 promise;
 
             if ( file ) {
-
                 promise = me.request( 'before-send-file', file, function() {
 
                     // 有可能文件被skip掉了。文件被skip掉后，状态坑定不是Queued.

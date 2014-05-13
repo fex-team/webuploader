@@ -117,7 +117,7 @@ define([
 
                         // 很重要不能删除。删除了会死循环。
                         // 保证执行顺序。让callback总是在下一个tick中执行。
-                        .then(function() {
+                        .pipe(function() {
                             var deferred = Base.Deferred(),
                                 args = arguments;
 
@@ -127,7 +127,7 @@ define([
 
                             return deferred.promise();
                         })
-                        .then( callback || Base.noop );
+                        .pipe( callback || Base.noop );
             } else {
                 return rlts[ 0 ];
             }
