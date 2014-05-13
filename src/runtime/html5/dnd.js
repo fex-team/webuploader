@@ -98,6 +98,11 @@ define([
             }
 
             Base.when.apply( Base, promises ).done(function() {
+
+                if ( !results.length ) {
+                    return;
+                }
+
                 me.trigger( 'drop', $.map( results, function( file ) {
                     return new File( ruid, file );
                 }) );
