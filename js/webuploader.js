@@ -1295,7 +1295,7 @@
     
                             // 很重要不能删除。删除了会死循环。
                             // 保证执行顺序。让callback总是在下一个tick中执行。
-                            .then(function() {
+                            .pipe(function() {
                                 var deferred = Base.Deferred(),
                                     args = arguments;
     
@@ -1305,7 +1305,7 @@
     
                                 return deferred.promise();
                             })
-                            .then( callback || Base.noop );
+                            .pipe( callback || Base.noop );
                 } else {
                     return rlts[ 0 ];
                 }
@@ -3377,7 +3377,7 @@
                     };
     
                     // 文件可能还在prepare中，也有可能已经完全准备好了。
-                    return isPromise( next ) ? next.then( done ) : done( next );
+                    return isPromise( next ) ? next.pipe( done ) : done( next );
                 }
             },
     
@@ -3395,7 +3395,6 @@
                     promise;
     
                 if ( file ) {
-    
                     promise = me.request( 'before-send-file', file, function() {
     
                         // 有可能文件被skip掉了。文件被skip掉后，状态坑定不是Queued.
@@ -4114,6 +4113,11 @@
                 }
     
                 Base.when.apply( Base, promises ).done(function() {
+    
+                    if ( !results.length ) {
+                        return;
+                    }
+    
                     me.trigger( 'drop', $.map( results, function( file ) {
                         return new File( ruid, file );
                     }) );
