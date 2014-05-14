@@ -118,6 +118,7 @@ package com
 				_img = new JPEG( ba );
 				_img.extractHeaders();
 			}
+			
 			type = _info.type;
 			_ba = ba;
 		}
@@ -240,6 +241,9 @@ package com
 		
 		private function _encodeBitmapData( bd:BitmapData, type:String ):ByteArray {
 			var encoder:JPEGEncoder, ba:ByteArray;
+			
+			// todo 支持其他格式。
+			
 			if ( type === 'image/png' ) {
 				ba = bd.encode(bd.rect, new PNGEncoderOptions());
 			} else {
@@ -250,17 +254,16 @@ package com
 				encoder = new JPEGEncoder( quality );
 				ba = encoder.encode(bd);
 				
-				if (_img) {
+				if (_img && _img is JPEG) {
 					// strip off any headers that might be left by encoder, etc
 					_img.stripHeaders(ba);
+					
 					// restore the original headers if requested
 					if (preserveHeaders) {
 						_img.insertHeaders(ba);
 						_img.updateDimensions(bd.width, bd.height);
 					}
 				}
-				
-				type = 'image/jpeg';
 			}
 			
 			return ba;

@@ -43,7 +43,7 @@ define([
         _dragOverHandler: function( e ) {
             // 只处理框内的。
             var parentElem = this.elem.parent().get( 0 );
-            if ( parentElem && !$.contains( parentElem, e.target ) ) {
+            if ( parentElem && !$.contains( parentElem, e.currentTarget ) ) {
                 return false;
             }
 
