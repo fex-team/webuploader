@@ -18,7 +18,8 @@ define([
          * @description 指定选择文件的按钮容器，不指定则不创建按钮。
          *
          * * `id` {Seletor} 指定选择文件的按钮容器，不指定则不创建按钮。
-         * * `label` {String} 指定按钮文字。不指定时优先从指定的容器中看是否自带文字。
+         * * `label` {String} 请采用 `innerHTML` 代替
+         * * `innerHTML` {String} 指定按钮文字。不指定时优先从指定的容器中看是否自带文字。
          * * `multiple` {Boolean} 是否开起同时选择多个文件能力。
          */
         pick: null,
@@ -77,7 +78,7 @@ define([
          * @example
          * uploader.addButton({
          *     id: '#btnContainer',
-         *     label: '选择文件'
+         *     innerHTML: '选择文件'
          * });
          */
         addButton: function( pick ) {

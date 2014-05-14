@@ -18,9 +18,11 @@ define([
             throw new Error('按钮指定错误');
         }
 
-        opts.label = opts.label || opts.container.html() || ' ';
+        opts.innerHTML = opts.innerHTML || opts.label ||
+                opts.container.html() || '';
+
         opts.button = $( opts.button || document.createElement('div') );
-        opts.button.html( opts.label );
+        opts.button.html( opts.innerHTML );
         opts.container.html( opts.button );
 
         RuntimeClent.call( this, 'FilePicker', true );
@@ -30,6 +32,7 @@ define([
         button: null,
         container: null,
         label: null,
+        innerHTML: null,
         multiple: true,
         accept: null,
         name: 'file'
