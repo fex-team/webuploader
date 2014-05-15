@@ -1361,6 +1361,13 @@
          * @namespace options
          * @for Uploader
          */
+    
+        /**
+         * @event dndAccept
+         * @param {DataTransferItemList} items DataTransferItem
+         * @description 阻止此事件可以拒绝某些类型的文件拖入进来。目前只有 chrome 提供这样的 API，且只能通过 mime-type 验证。
+         * @for  Uploader
+         */
         return Uploader.register({
             init: function( opts ) {
     
@@ -1384,6 +1391,12 @@
                 dnd.on( 'drop', function( files ) {
                     me.request( 'add-file', [ files ]);
                 });
+    
+                // 检测文件是否全部允许添加。
+                dnd.on( 'accept', function( items ) {
+                    return me.owner.trigger( 'dndAccept', items );
+                });
+    
                 dnd.init();
     
                 return deferred.promise();
@@ -2606,7 +2619,8 @@
             'get-files': 'getFiles',
             'remove-file': 'removeFile',
             'retry': 'retry',
-            'reset': 'reset'
+            'reset': 'reset',
+            'accept-file': 'acceptFile'
         }, {
     
             init: function( opts ) {
@@ -2639,10 +2653,13 @@
                 me.stats = me.queue.stats;
     
                 // 如果当前不是html5运行时，那就算了。
+                // 不执行后续操作
                 if ( this.request('predict-runtime-type') !== 'html5' ) {
                     return;
                 }
     
+                // 创建一个 html5 运行时的 placeholder
+                // 以至于外部添加原生 File 对象的时候能正确包裹一下供 webuploader 使用。
                 deferred = Base.Deferred();
                 runtime = new RuntimeClient('Placeholder');
                 runtime.connectRuntime({
@@ -2672,6 +2689,16 @@
                 return file;
             },
     
+            // 判断文件是否可以被加入队列
+            acceptFile: function( file ) {
+                var invalid = !file || file.size < 6 || this.accept &&
+    
+                        // 如果名字中有后缀，才做后缀白名单处理。
+                        rExt.exec( file.name ) && !this.accept.test( file.name );
+    
+                return !invalid;
+            },
+    
     
             /**
              * @event beforeFileQueued
@@ -2690,10 +2717,7 @@
             _addFile: function( file ) {
                 var me = this;
     
-                if ( !file || file.size < 6 || me.accept &&
-    
-                        // 如果名字中有后缀，才做后缀白名单处理。
-                        rExt.exec( file.name ) && !me.accept.test( file.name ) ) {
+                if ( !me.acceptFile( file ) ) {
                     return;
                 }
     
@@ -2716,6 +2740,15 @@
              * @event filesQueued
              * @param {File} files 数组，内容为原始File(lib/File）对象。
              * @description 当一批文件添加进队列以后触发。
+             * @for  Uploader
+             */
+    
+            /**
+             * @method addFiles
+             * @grammar addFiles( file ) => undefined
+             * @grammar addFiles( [file1, file2 ...] ) => undefined
+             * @param {Array of File or File} [files] Files 对象 数组
+             * @description 添加文件到队列
              * @for  Uploader
              */
             addFiles: function( files ) {
@@ -4026,7 +4059,8 @@
         'lib/file'
     ], function( Base, Html5Runtime, File ) {
     
-        var $ = Base.$;
+        var $ = Base.$,
+            prefix = 'webuploader-dnd-';
     
         return Html5Runtime.register( 'DragAndDrop', {
             init: function() {
@@ -4050,11 +4084,29 @@
             },
     
             _dragEnterHandler: function( e ) {
-                this.dndOver = true;
-                this.elem.addClass('webuploader-dnd-over');
+                var me = this,
+                    denied = me._denied || false,
+                    items;
     
                 e = e.originalEvent || e;
-                e.dataTransfer.dropEffect = 'copy';
+    
+                if ( !me.dndOver ) {
+                    me.dndOver = true;
+    
+                    // 注意只有 chrome 支持。
+                    items = e.dataTransfer.items;
+    
+                    if ( items && items.length ) {
+                        me._denied = denied = !me.trigger( 'accept', items );
+                    }
+    
+                    me.elem.addClass( prefix + 'over' );
+                    me.elem[ denied ? 'addClass' :
+                            'removeClass' ]( prefix + 'denied' );
+                }
+    
+    
+                e.dataTransfer.dropEffect = denied ? 'none' : 'copy';
     
                 return false;
             },
@@ -4066,6 +4118,7 @@
                     return false;
                 }
     
+                clearTimeout( this._leaveTimer );
                 this._dragEnterHandler.call( this, e );
     
                 return false;
@@ -4073,31 +4126,47 @@
     
             _dragLeaveHandler: function() {
                 var me = this,
-                    handler = function() {
-                        if ( !me.dndOver ) {
-                            me.elem.removeClass('webuploader-dnd-over');
-                        }
-                    };
-                setTimeout( handler, 50 );
-                this.dndOver = false;
+                    handler;
     
+                handler = function() {
+                    me.dndOver = false;
+                    me.elem.removeClass( prefix + 'over ' + prefix + 'denied' );
+                };
+    
+                clearTimeout( me._leaveTimer );
+                me._leaveTimer = setTimeout( handler, 100 );
                 return false;
             },
     
             _dropHandler: function( e ) {
-                var results  = [],
-                    promises = [],
-                    me = this,
+                var me = this,
                     ruid = me.getRuid(),
-                    parentElem = me.elem.parent().get( 0 ),
-                    items, files, dataTransfer, file, item, i, len, canAccessFolder;
+                    parentElem = me.elem.parent().get( 0 );
     
                 // 只处理框内的。
                 if ( parentElem && !$.contains( parentElem, e.currentTarget ) ) {
                     return false;
                 }
     
+                me._getTansferFiles( e, function( results ) {
+                    me.trigger( 'drop', $.map( results, function( file ) {
+                        return new File( ruid, file );
+                    }) );
+                });
+    
+                me.dndOver = false;
+                me.elem.removeClass( prefix + 'over' );
+                return false;
+            },
+    
+            // 如果传入 callback 则去查看文件夹，否则只管当前文件夹。
+            _getTansferFiles: function( e, callback ) {
+                var results  = [],
+                    promises = [],
+                    items, files, dataTransfer, file, item, i, len, canAccessFolder;
+    
                 e = e.originalEvent || e;
+    
                 dataTransfer = e.dataTransfer;
                 items = dataTransfer.items;
                 files = dataTransfer.files;
@@ -4109,6 +4178,7 @@
                     item = items && items[ i ];
     
                     if ( canAccessFolder && item.webkitGetAsEntry().isDirectory ) {
+    
                         promises.push( this._traverseDirectoryTree(
                                 item.webkitGetAsEntry(), results ) );
                     } else {
@@ -4122,14 +4192,8 @@
                         return;
                     }
     
-                    me.trigger( 'drop', $.map( results, function( file ) {
-                        return new File( ruid, file );
-                    }) );
+                    callback( results );
                 });
-    
-                this.dndOver = false;
-                this.elem.removeClass('webuploader-dnd-over');
-                return false;
             },
     
             _traverseDirectoryTree: function( entry, results ) {
@@ -5142,40 +5206,12 @@
             // blob/master/src/megapix-image.js
             _renderImageToCanvas: (function() {
     
-                // 如果不是ios6, 不需要这么复杂！
-                if ( !Base.os.ios || ~~Base.os.ios !== 6  ) {
+                // 如果不是ios, 不需要这么复杂！
+                if ( !Base.os.ios ) {
                     return function( canvas, img, x, y, w, h ) {
                         canvas.getContext('2d').drawImage( img, x, y, w, h );
                     };
                 }
-    
-                /**
-                 * Detect subsampling in loaded image.
-                 * In iOS, larger images than 2M pixels may be
-                 * subsampled in rendering.
-                 */
-                function detectSubsampling( img ) {
-                    var iw = img.naturalWidth,
-                        ih = img.naturalHeight,
-                        canvas, ctx;
-    
-                    // subsampling may happen overmegapixel image
-                    if ( iw * ih > 1024 * 1024 ) {
-                        canvas = document.createElement('canvas');
-                        canvas.width = canvas.height = 1;
-                        ctx = canvas.getContext('2d');
-                        ctx.drawImage( img, -iw + 1, 0 );
-    
-                        // subsampled image becomes half smaller in rendering size.
-                        // check alpha channel value to confirm image is covering
-                        // edge pixel or not. if alpha value is 0
-                        // image is not covering, hence subsampled.
-                        return ctx.getImageData( 0, 0, 1, 1 ).data[ 3 ] === 0;
-                    } else {
-                        return false;
-                    }
-                }
-    
     
                 /**
                  * Detecting vertical squash in loaded image.
@@ -5213,6 +5249,49 @@
                     ratio = (py / ih);
                     return (ratio === 0) ? 1 : ratio;
                 }
+    
+                // fix ie7 bug
+                // http://stackoverflow.com/questions/11929099/
+                // html5-canvas-drawimage-ratio-bug-ios
+                if ( Base.os.ios >= 7 ) {
+                    return function( canvas, img, x, y, w, h ) {
+                        var iw = img.naturalWidth,
+                            ih = img.naturalHeight,
+                            vertSquashRatio = detectVerticalSquash( img, iw, ih );
+    
+                        return canvas.getContext('2d').drawImage( img, 0, 0,
+                            iw * vertSquashRatio, ih * vertSquashRatio,
+                            x, y, w, h );
+                    };
+                }
+    
+                /**
+                 * Detect subsampling in loaded image.
+                 * In iOS, larger images than 2M pixels may be
+                 * subsampled in rendering.
+                 */
+                function detectSubsampling( img ) {
+                    var iw = img.naturalWidth,
+                        ih = img.naturalHeight,
+                        canvas, ctx;
+    
+                    // subsampling may happen overmegapixel image
+                    if ( iw * ih > 1024 * 1024 ) {
+                        canvas = document.createElement('canvas');
+                        canvas.width = canvas.height = 1;
+                        ctx = canvas.getContext('2d');
+                        ctx.drawImage( img, -iw + 1, 0 );
+    
+                        // subsampled image becomes half smaller in rendering size.
+                        // check alpha channel value to confirm image is covering
+                        // edge pixel or not. if alpha value is 0
+                        // image is not covering, hence subsampled.
+                        return ctx.getImageData( 0, 0, 1, 1 ).data[ 3 ] === 0;
+                    } else {
+                        return false;
+                    }
+                }
+    
     
                 return function( canvas, img, x, y, width, height ) {
                     var iw = img.naturalWidth,

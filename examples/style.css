@@ -75,6 +75,7 @@ table {
 
 .element-invisible {
     position: absolute !important;
+    clip: rect(1px 1px 1px 1px); /* IE6, IE7 */
     clip: rect(1px,1px,1px,1px);
 }
 
@@ -124,6 +125,10 @@ table {
 
 #uploader .placeholder.webuploader-dnd-over {
     border-color: #999999;
+}
+
+#uploader .placeholder.webuploader-dnd-over.webuploader-dnd-denied {
+    border-color: red;
 }
 
 #uploader .filelist {

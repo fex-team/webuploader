@@ -79,6 +79,12 @@ styles:
                     
 
                     <li class="method">
+                        <a class="" href="#WebUploader_Uploader_addFiles">addFiles</a>
+                    </li>
+                    
+                    
+
+                    <li class="method">
                         <a class="" href="#WebUploader_Uploader_removeFile">removeFile</a>
                     </li>
                     
@@ -764,6 +770,18 @@ var uploader = WebUploader.Uploader({
 
         
         <tr>
+            <td><code>dndAccept</code></td>
+            <td class="events-tb-desc">
+                
+                <ul class="params-list"><li><span class="meta"><code>items</code> {DataTransferItemList}</span><p>DataTransferItem</p>
+</li></ul>
+                
+            </td>
+            <td><p>阻止此事件可以拒绝某些类型的文件拖入进来。目前只有 chrome 提供这样的 API，且只能通过 mime-type 验证。</p>
+</td>
+        </tr>
+        
+        <tr>
             <td><code>beforeFileQueued</code></td>
             <td class="events-tb-desc">
                 
@@ -1119,6 +1137,42 @@ uploader.on( 'fileQueued', function( file ) {
 });
 {% endhighlight %}
 
+
+    
+</article>
+
+
+
+
+<article class="clearfix method">
+    <h3 id="WebUploader_Uploader_addFiles"  >addFiles
+        
+    </h3>
+    
+
+    
+
+    
+    <ul class="signature">
+        
+        <li>addFiles( file ) 
+            <span class="return">⇒  undefined</span>
+            
+        </li>
+        <li>addFiles( [file1, file2 ...] ) 
+            <span class="return">⇒  undefined</span>
+            
+        </li>
+    </ul>
+    
+    
+        <p>参数: </p>
+        <ul class="params-list"><li><span class="meta"><code>files</code> {Array of File or File} [可选]</span><p>Files 对象 数组</p>
+</li></ul>
+    
+    
+
+    <p>添加文件到队列</p>
 
     
 </article>
