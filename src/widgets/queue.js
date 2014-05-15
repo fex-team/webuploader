@@ -24,7 +24,8 @@ define([
         'get-files': 'getFiles',
         'remove-file': 'removeFile',
         'retry': 'retry',
-        'reset': 'reset'
+        'reset': 'reset',
+        'accept-file': 'acceptFile'
     }, {
 
         init: function( opts ) {
@@ -57,10 +58,13 @@ define([
             me.stats = me.queue.stats;
 
             // 如果当前不是html5运行时，那就算了。
+            // 不执行后续操作
             if ( this.request('predict-runtime-type') !== 'html5' ) {
                 return;
             }
 
+            // 创建一个 html5 运行时的 placeholder
+            // 以至于外部添加原生 File 对象的时候能正确包裹一下供 webuploader 使用。
             deferred = Base.Deferred();
             runtime = new RuntimeClient('Placeholder');
             runtime.connectRuntime({
@@ -90,6 +94,16 @@ define([
             return file;
         },
 
+        // 判断文件是否可以被加入队列
+        acceptFile: function( file ) {
+            var invalid = !file || file.size < 6 || this.accept &&
+
+                    // 如果名字中有后缀，才做后缀白名单处理。
+                    rExt.exec( file.name ) && !this.accept.test( file.name );
+
+            return !invalid;
+        },
+
 
         /**
          * @event beforeFileQueued
@@ -108,10 +122,7 @@ define([
         _addFile: function( file ) {
             var me = this;
 
-            if ( !file || file.size < 6 || me.accept &&
-
-                    // 如果名字中有后缀，才做后缀白名单处理。
-                    rExt.exec( file.name ) && !me.accept.test( file.name ) ) {
+            if ( !me.acceptFile( file ) ) {
                 return;
             }
 
@@ -134,6 +145,15 @@ define([
          * @event filesQueued
          * @param {File} files 数组，内容为原始File(lib/File）对象。
          * @description 当一批文件添加进队列以后触发。
+         * @for  Uploader
+         */
+
+        /**
+         * @method addFiles
+         * @grammar addFiles( file ) => undefined
+         * @grammar addFiles( [file1, file2 ...] ) => undefined
+         * @param {Array of File or File} [files] Files 对象 数组
+         * @description 添加文件到队列
          * @for  Uploader
          */
         addFiles: function( files ) {

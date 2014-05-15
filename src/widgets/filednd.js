@@ -39,6 +39,12 @@ define([
             dnd.on( 'drop', function( files ) {
                 me.request( 'add-file', [ files ]);
             });
+
+            // 检测文件是否全部允许添加。
+            dnd.on( 'accept', function( items ) {
+                return me.owner.trigger( 'dndAccept', items );
+            });
+
             dnd.init();
 
             return deferred.promise();
