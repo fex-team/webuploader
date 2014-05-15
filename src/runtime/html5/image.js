@@ -257,40 +257,12 @@ define([
         // blob/master/src/megapix-image.js
         _renderImageToCanvas: (function() {
 
-            // 如果不是ios6, 不需要这么复杂！
-            if ( !Base.os.ios || ~~Base.os.ios !== 6  ) {
+            // 如果不是ios, 不需要这么复杂！
+            if ( !Base.os.ios ) {
                 return function( canvas, img, x, y, w, h ) {
                     canvas.getContext('2d').drawImage( img, x, y, w, h );
                 };
             }
-
-            /**
-             * Detect subsampling in loaded image.
-             * In iOS, larger images than 2M pixels may be
-             * subsampled in rendering.
-             */
-            function detectSubsampling( img ) {
-                var iw = img.naturalWidth,
-                    ih = img.naturalHeight,
-                    canvas, ctx;
-
-                // subsampling may happen overmegapixel image
-                if ( iw * ih > 1024 * 1024 ) {
-                    canvas = document.createElement('canvas');
-                    canvas.width = canvas.height = 1;
-                    ctx = canvas.getContext('2d');
-                    ctx.drawImage( img, -iw + 1, 0 );
-
-                    // subsampled image becomes half smaller in rendering size.
-                    // check alpha channel value to confirm image is covering
-                    // edge pixel or not. if alpha value is 0
-                    // image is not covering, hence subsampled.
-                    return ctx.getImageData( 0, 0, 1, 1 ).data[ 3 ] === 0;
-                } else {
-                    return false;
-                }
-            }
-
 
             /**
              * Detecting vertical squash in loaded image.
@@ -328,6 +300,49 @@ define([
                 ratio = (py / ih);
                 return (ratio === 0) ? 1 : ratio;
             }
+
+            // fix ie7 bug
+            // http://stackoverflow.com/questions/11929099/
+            // html5-canvas-drawimage-ratio-bug-ios
+            if ( Base.os.ios >= 7 ) {
+                return function( canvas, img, x, y, w, h ) {
+                    var iw = img.naturalWidth,
+                        ih = img.naturalHeight,
+                        vertSquashRatio = detectVerticalSquash( img, iw, ih );
+
+                    return canvas.getContext('2d').drawImage( img, 0, 0,
+                        iw * vertSquashRatio, ih * vertSquashRatio,
+                        x, y, w, h );
+                };
+            }
+
+            /**
+             * Detect subsampling in loaded image.
+             * In iOS, larger images than 2M pixels may be
+             * subsampled in rendering.
+             */
+            function detectSubsampling( img ) {
+                var iw = img.naturalWidth,
+                    ih = img.naturalHeight,
+                    canvas, ctx;
+
+                // subsampling may happen overmegapixel image
+                if ( iw * ih > 1024 * 1024 ) {
+                    canvas = document.createElement('canvas');
+                    canvas.width = canvas.height = 1;
+                    ctx = canvas.getContext('2d');
+                    ctx.drawImage( img, -iw + 1, 0 );
+
+                    // subsampled image becomes half smaller in rendering size.
+                    // check alpha channel value to confirm image is covering
+                    // edge pixel or not. if alpha value is 0
+                    // image is not covering, hence subsampled.
+                    return ctx.getImageData( 0, 0, 1, 1 ).data[ 3 ] === 0;
+                } else {
+                    return false;
+                }
+            }
+
 
             return function( canvas, img, x, y, width, height ) {
                 var iw = img.naturalWidth,

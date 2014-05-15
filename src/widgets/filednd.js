@@ -16,6 +16,13 @@ define([
      * @namespace options
      * @for Uploader
      */
+
+    /**
+     * @event dndAccept
+     * @param {DataTransferItemList} items DataTransferItem
+     * @description 阻止此事件可以拒绝某些类型的文件拖入进来。目前只有 chrome 提供这样的 API，且只能通过 mime-type 验证。
+     * @for  Uploader
+     */
     return Uploader.register({
         init: function( opts ) {
 
