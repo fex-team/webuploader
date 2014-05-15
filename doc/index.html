@@ -533,7 +533,8 @@
             <p>指定选择文件的按钮容器，不指定则不创建按钮。</p>
 <ul>
 <li><code>id</code> {Seletor} 指定选择文件的按钮容器，不指定则不创建按钮。</li>
-<li><code>label</code> {String} 指定按钮文字。不指定时优先从指定的容器中看是否自带文字。</li>
+<li><code>label</code> {String} 请采用 <code>innerHTML</code> 代替</li>
+<li><code>innerHTML</code> {String} 指定按钮文字。不指定时优先从指定的容器中看是否自带文字。</li>
 <li><code>multiple</code> {Boolean} 是否开起同时选择多个文件能力。</li>
 </ul>
 
@@ -1094,7 +1095,7 @@
         
 <div class="highlight"><pre><code class="javascript"><span class="nx">uploader</span><span class="p">.</span><span class="nx">addButton</span><span class="p">({</span>
     <span class="nx">id</span><span class="o">:</span> <span class="s1">&#39;#btnContainer&#39;</span><span class="p">,</span>
-    <span class="nx">label</span><span class="o">:</span> <span class="s1">&#39;选择文件&#39;</span>
+    <span class="nx">innerHTML</span><span class="o">:</span> <span class="s1">&#39;选择文件&#39;</span>
 <span class="p">});</span>
 </code></pre></div>
 
