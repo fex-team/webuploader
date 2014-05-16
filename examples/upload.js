@@ -39,7 +39,51 @@
 
             // 所有文件的进度信息，key为file id
             percentages = {},
+            // 判断浏览器是否支持图片的base64
+            isSupportBase64 = ( function() {
+                var data = new Image();
+                var support = true;
+                data.onload = data.onerror = function() {
+                    if( this.width != 1 || this.height != 1 ) {
+                        support = false;
+                    }
+                }
+                data.src = "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///ywAAAAAAQABAAACAUwAOw==";
+                return support;
+            } )(),
 
+            // 检测是否已经安装flash，检测flash的版本
+            flashVersion = ( function() {
+                var flashVer = NaN;
+                var ua = navigator.userAgent;
+
+                if ( window.ActiveXObject ) {
+                    var swf = new ActiveXObject( 'ShockwaveFlash.ShockwaveFlash' );
+
+                    if ( swf ) {
+                        flashVer = Number( swf.GetVariable( '$version' ).split(' ')[ 1 ].replace(/\,/g, '.').replace( /^(\d+\.\d+).*$/, '$1') );
+                    }
+                }
+                else {
+                    if ( navigator.plugins && navigator.plugins.length > 0 ) {
+                        var swf = navigator.plugins[ 'Shockwave Flash' ];
+
+                        if ( swf ) {
+                            var arr = swf.description.split(' ');
+                            for ( var i = 0, len = arr.length; i < len; i++ ) {
+                                var ver = Number( arr[ i ] );
+
+                                if ( !isNaN( ver ) ) {
+                                    flashVer = ver;
+                                    break;
+                                }
+                            }
+                        }
+                    }
+                }
+
+                return flashVer;
+            } )(),
             supportTransition = (function(){
                 var s = document.createElement('p').style,
                     r = 'transition' in s ||
@@ -55,6 +99,12 @@
             uploader;
 
         if ( !WebUploader.Uploader.support() ) {
+            // if ( isNaN( flashVersion ) || flashVersion < 11 ) {
+            //     if ( confirm( '您尚未安装flash播放器或当前flash player 的版本过低于 11，请升级!' ) ) {
+            //         // 做自己的处理，比如跳转到http://get.adobe.com/cn/flashplayer
+            //     }
+            //     return;
+            // }
             alert( 'Web Uploader 不支持您的浏览器！');
             throw new Error( 'WebUploader does not support the browser you are using.' );
         }
@@ -98,10 +148,10 @@
             var denied = false,
                 len = items.length,
                 i = 0,
-                unAllowed = 'text/plain;text/javascript';
-
+                // 修改js类型
+                unAllowed = 'text/plain;application/javascript ';
+            
             for ( ; i < len; i++ ) {
-
                 // 如果在列表里面
                 if ( ~unAllowed.indexOf( items[ i ].type ) ) {
                     denied = true;
@@ -176,7 +226,10 @@
                         $wrap.text( '不能预览' );
                         return;
                     }
-
+                    if( !isSupportBase64 ) {
+                        // 针对不支持base64的浏览器单独处理
+                        // src = 'http://f9.topit.me/9/dd/6d/11206448174286ddd9l.jpg';
+                    }
                     var img = $('<img src="'+src+'">');
                     $wrap.empty().append( img );
                 }, thumbnailWidth, thumbnailHeight );
