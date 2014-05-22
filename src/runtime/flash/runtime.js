@@ -134,7 +134,7 @@ define([
             html = '<object id="' + this.uid + '" type="application/' +
                     'x-shockwave-flash" data="' +  opts.swf + '" ';
 
-            if ( Base.isIE ) {
+            if ( Base.browser.ie ) {
                 html += 'classid="clsid:d27cdb6e-ae6d-11cf-96b8-444553540000" ';
             }
 
