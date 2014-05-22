@@ -256,7 +256,8 @@
                     chrome = ua.match( /Chrome\/([\d.]+)/ ) ||
                         ua.match( /CriOS\/([\d.]+)/ ),
     
-                    ie = ua.match( /MSIE\s([\d.]+)/ ),
+                    ie = ua.match( /MSIE\s([\d\.]+)/ ) ||
+                        ua.match(/(?:trident)(?:.*rv:([\w.]+))?/i),
                     firefox = ua.match( /Firefox\/([\d.]+)/ ),
                     safari = ua.match( /Safari\/([\d.]+)/ ),
                     opera = ua.match( /OPR\/([\d.]+)/ );
@@ -1270,7 +1271,7 @@
                     len = widgets.length,
                     rlts = [],
                     dfds = [],
-                    widget, rlt;
+                    widget, rlt, promise, key;
     
                 args = isArrayLike( args ) ? args : [ args ];
     
@@ -1291,11 +1292,12 @@
     
                 // 如果有callback，则用异步方式。
                 if ( callback || dfds.length ) {
-                    return Base.when.apply( Base, dfds )
+                    promise = Base.when.apply( Base, dfds );
+                    key = promise.pipe ? 'pipe' : 'then';
     
-                            // 很重要不能删除。删除了会死循环。
-                            // 保证执行顺序。让callback总是在下一个tick中执行。
-                            .pipe(function() {
+                    // 很重要不能删除。删除了会死循环。
+                    // 保证执行顺序。让callback总是在下一个tick中执行。
+                    return promise[ key ](function() {
                                 var deferred = Base.Deferred(),
                                     args = arguments;
     
@@ -1304,8 +1306,7 @@
                                 }, 1 );
     
                                 return deferred.promise();
-                            })
-                            .pipe( callback || Base.noop );
+                            })[ key ]( callback || Base.noop );
                 } else {
                     return rlts[ 0 ];
                 }
@@ -2975,7 +2976,7 @@
     
             /**
              * @event uploadFinished
-             * @description 当文件上传结束时触发。
+             * @description 当所有文件上传结束时触发。
              * @for  Uploader
              */
             _tick: function() {
@@ -3050,7 +3051,9 @@
                     };
     
                     // 文件可能还在prepare中，也有可能已经完全准备好了。
-                    return isPromise( next ) ? next.pipe( done ) : done( next );
+                    return isPromise( next ) ?
+                            next[ next.pipe ? 'pipe' : 'then']( done ) :
+                            done( next );
                 }
             },
     
@@ -3417,11 +3420,11 @@
                 return;
             }
     
-            uploader.on( 'beforeFileQueued', function() {
+            uploader.on( 'beforeFileQueued', function( file ) {
     
                 if ( count >= max && flag ) {
                     flag = false;
-                    this.trigger( 'error', 'Q_EXCEED_NUM_LIMIT', max );
+                    this.trigger( 'error', 'Q_EXCEED_NUM_LIMIT', max, file );
                     setTimeout(function() {
                         flag = true;
                     }, 1 );
@@ -3466,7 +3469,7 @@
     
                 if ( invalid && flag ) {
                     flag = false;
-                    this.trigger( 'error', 'Q_EXCEED_SIZE_LIMIT', max );
+                    this.trigger( 'error', 'Q_EXCEED_SIZE_LIMIT', max, file );
                     setTimeout(function() {
                         flag = true;
                     }, 1 );
@@ -3507,7 +3510,7 @@
     
                 if ( file.size > max ) {
                     file.setStatus( WUFile.Status.INVALID, 'exceed_size' );
-                    this.trigger( 'error', 'F_EXCEED_SIZE' );
+                    this.trigger( 'error', 'F_EXCEED_SIZE', file );
                     return false;
                 }
     
@@ -3550,7 +3553,7 @@
     
                 // 已经重复了
                 if ( mapping[ hash ] ) {
-                    this.trigger( 'error', 'F_DUPLICATE' );
+                    this.trigger( 'error', 'F_DUPLICATE', file );
                     return false;
                 }
             });
@@ -4342,7 +4345,7 @@
                 html = '<object id="' + this.uid + '" type="application/' +
                         'x-shockwave-flash" data="' +  opts.swf + '" ';
     
-                if ( Base.isIE ) {
+                if ( Base.browser.ie ) {
                     html += 'classid="clsid:d27cdb6e-ae6d-11cf-96b8-444553540000" ';
                 }
     
