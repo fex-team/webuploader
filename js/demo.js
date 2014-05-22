@@ -55,6 +55,11 @@ jQuery(function() {
         // WebUploader实例
         uploader;
 
+    if ( !WebUploader.Uploader.support() ) {
+        alert( 'Web Uploader 不支持您的浏览器！如果你使用的是IE浏览器，请尝试升级 flash 播放器');
+        throw new Error( 'WebUploader does not support the browser you are using.' );
+    }
+
     // 实例化
     uploader = WebUploader.create({
         pick: {
