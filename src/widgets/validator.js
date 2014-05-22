@@ -64,11 +64,11 @@ define([
             return;
         }
 
-        uploader.on( 'beforeFileQueued', function() {
+        uploader.on( 'beforeFileQueued', function( file ) {
 
             if ( count >= max && flag ) {
                 flag = false;
-                this.trigger( 'error', 'Q_EXCEED_NUM_LIMIT', max );
+                this.trigger( 'error', 'Q_EXCEED_NUM_LIMIT', max, file );
                 setTimeout(function() {
                     flag = true;
                 }, 1 );
@@ -113,7 +113,7 @@ define([
 
             if ( invalid && flag ) {
                 flag = false;
-                this.trigger( 'error', 'Q_EXCEED_SIZE_LIMIT', max );
+                this.trigger( 'error', 'Q_EXCEED_SIZE_LIMIT', max, file );
                 setTimeout(function() {
                     flag = true;
                 }, 1 );
@@ -154,7 +154,7 @@ define([
 
             if ( file.size > max ) {
                 file.setStatus( WUFile.Status.INVALID, 'exceed_size' );
-                this.trigger( 'error', 'F_EXCEED_SIZE' );
+                this.trigger( 'error', 'F_EXCEED_SIZE', file );
                 return false;
             }
 
@@ -197,7 +197,7 @@ define([
 
             // 已经重复了
             if ( mapping[ hash ] ) {
-                this.trigger( 'error', 'F_DUPLICATE' );
+                this.trigger( 'error', 'F_DUPLICATE', file );
                 return false;
             }
         });
