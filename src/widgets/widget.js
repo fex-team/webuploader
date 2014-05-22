@@ -92,7 +92,7 @@ define([
                 len = widgets.length,
                 rlts = [],
                 dfds = [],
-                widget, rlt;
+                widget, rlt, promise, key;
 
             args = isArrayLike( args ) ? args : [ args ];
 
@@ -113,11 +113,12 @@ define([
 
             // 如果有callback，则用异步方式。
             if ( callback || dfds.length ) {
-                return Base.when.apply( Base, dfds )
+                promise = Base.when.apply( Base, dfds );
+                key = promise.pipe ? 'pipe' : 'then';
 
-                        // 很重要不能删除。删除了会死循环。
-                        // 保证执行顺序。让callback总是在下一个tick中执行。
-                        .pipe(function() {
+                // 很重要不能删除。删除了会死循环。
+                // 保证执行顺序。让callback总是在下一个tick中执行。
+                return promise[ key ](function() {
                             var deferred = Base.Deferred(),
                                 args = arguments;
 
@@ -126,8 +127,7 @@ define([
                             }, 1 );
 
                             return deferred.promise();
-                        })
-                        .pipe( callback || Base.noop );
+                        })[ key ]( callback || Base.noop );
             } else {
                 return rlts[ 0 ];
             }

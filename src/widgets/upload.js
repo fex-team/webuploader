@@ -354,7 +354,9 @@ define([
                 };
 
                 // 文件可能还在prepare中，也有可能已经完全准备好了。
-                return isPromise( next ) ? next.pipe( done ) : done( next );
+                return isPromise( next ) ?
+                        next[ next.pipe ? 'pipe' : 'then']( done ) :
+                        done( next );
             }
         },
 
