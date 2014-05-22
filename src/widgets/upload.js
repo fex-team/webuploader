@@ -279,7 +279,7 @@ define([
 
         /**
          * @event uploadFinished
-         * @description 当文件上传结束时触发。
+         * @description 当所有文件上传结束时触发。
          * @for  Uploader
          */
         _tick: function() {
