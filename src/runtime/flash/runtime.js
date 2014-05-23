@@ -175,7 +175,7 @@ define([
         return component;
     };
 
-    if ( getFlashVersion() >= 11.3 ) {
+    if ( getFlashVersion() >= 11.4 ) {
         Runtime.addRuntime( type, FlashRuntime );
     }
 
