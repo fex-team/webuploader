@@ -150,7 +150,7 @@
                 i = 0,
                 // 修改js类型
                 unAllowed = 'text/plain;application/javascript ';
-            
+
             for ( ; i < len; i++ ) {
                 // 如果在列表里面
                 if ( ~unAllowed.indexOf( items[ i ].type ) ) {
@@ -222,16 +222,30 @@
                 // @todo lazyload
                 $wrap.text( '预览中' );
                 uploader.makeThumb( file, function( error, src ) {
+                    var img;
+
                     if ( error ) {
                         $wrap.text( '不能预览' );
                         return;
                     }
-                    if( !isSupportBase64 ) {
-                        // 针对不支持base64的浏览器单独处理
-                        // src = 'http://f9.topit.me/9/dd/6d/11206448174286ddd9l.jpg';
+
+                    if( isSupportBase64 ) {
+                        img = $('<img src="'+src+'">');
+                        $wrap.empty().append( img );
+                    } else {
+                        $.ajax('../server/preview.php', {
+                            method: 'POST',
+                            data: src,
+                            dataType:'json'
+                        }).done(function( response ) {
+                            if (response.result) {
+                                img = $('<img src="'+response.result+'">');
+                                $wrap.empty().append( img );
+                            } else {
+                                $wrap.text("预览出错");
+                            }
+                        });
                     }
-                    var img = $('<img src="'+src+'">');
-                    $wrap.empty().append( img );
                 }, thumbnailWidth, thumbnailHeight );
 
                 percentages[ file.id ] = [ file.size, 0 ];

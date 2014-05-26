@@ -4,6 +4,7 @@
 /node_modules
 /doc
 server/*
+!server/preview.php
 !server/fileupload.php
 !server/fileupload2.php
 !server/crossdomain.xml

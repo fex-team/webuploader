@@ -9,6 +9,10 @@
  * Contributing: http://www.plupload.com/contributing
  */
 
+#!! 注意
+#!! 此文件只是个示例，不要用于真正的产品之中。
+#!! 不保证代码安全性。
+
 #!! IMPORTANT:
 #!! this file is just an example, it doesn't incorporate any security checks and
 #!! is not recommended to be used in production environment as it is. Be sure to
@@ -47,7 +51,7 @@ if ( !empty($_REQUEST[ 'debug' ]) ) {
 @set_time_limit(5 * 60);
 
 // Uncomment this one to fake upload time
-usleep(5000);
+// usleep(5000);
 
 // Settings
 // $targetDir = ini_get("upload_tmp_dir") . DIRECTORY_SEPARATOR . "plupload";
@@ -75,13 +79,6 @@ if (isset($_REQUEST["name"])) {
     $fileName = $_FILES["file"]["name"];
 } else {
     $fileName = uniqid("file_");
-}
-
-$md5File = @file('md5list.txt', FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES);
-$md5File = $md5File ? $md5File : array();
-
-if (isset($_REQUEST["md5"]) && array_search($_REQUEST["md5"], $md5File ) !== FALSE ) {
-    die('{"jsonrpc" : "2.0", "result" : null, "id" : "id", "exist": 1}');
 }
 
 $filePath = $targetDir . DIRECTORY_SEPARATOR . $fileName;
