@@ -1635,8 +1635,12 @@
                         case 'change':
                             files = me.exec('getFiles');
                             me.trigger( 'select', $.map( files, function( file ) {
-                                return new File( me.getRuid(), file );
-                            }) );
+                                file = new File( me.getRuid(), file );
+    
+                                // 记录来源。
+                                file._refer = opts.container;
+                                return file;
+                            }), opts.container );
                             break;
                     }
                 });

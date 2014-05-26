@@ -1635,8 +1635,12 @@
                         case 'change':
                             files = me.exec('getFiles');
                             me.trigger( 'select', $.map( files, function( file ) {
-                                return new File( me.getRuid(), file );
-                            }) );
+                                file = new File( me.getRuid(), file );
+    
+                                // 记录来源。
+                                file._refer = opts.container;
+                                return file;
+                            }), opts.container );
                             break;
                     }
                 });
@@ -2002,6 +2006,8 @@
     
                 // 为空的话则保留原有图片格式。
                 // 否则强制转换成指定的类型。
+                // IE 8下面 base64 大小不能超过 32K 否则预览失败，而非 jpeg 编码的图片很可
+                // 能会超过 32k, 所以这里设置成预览的时候都是 image/jpeg
                 type: 'image/jpeg'
             },
     
