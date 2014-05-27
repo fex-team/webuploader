@@ -7,7 +7,7 @@ WebUploader是一个简单的以HTML5为主，FLASH为辅的现代文件上传�
 
 官网： http://fex-team.github.io/webuploader
 
-**求关注，求 star! 你的 star 数是我最大的动力，谢谢！**
+**求关注，求 star! 你的 star 是我最大的动力，谢谢！**
 
 欢迎各种讨论：https://github.com/fex-team/webuploader/issues
 
