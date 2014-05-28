@@ -2358,13 +2358,16 @@
             _addFile: function( file ) {
                 var me = this;
     
-                if ( !me.acceptFile( file ) ) {
+                file = me._wrapFile( file );
+    
+                // 不过类型判断允许不允许，先派送 `beforeFileQueued`
+                if ( !me.owner.trigger( 'beforeFileQueued', file ) ) {
                     return;
                 }
     
-                file = me._wrapFile( file );
-    
-                if ( !me.owner.trigger( 'beforeFileQueued', file ) ) {
+                // 类型不匹配，则派送错误事件，并返回。
+                if ( !me.acceptFile( file ) ) {
+                    me.owner.trigger( 'error', 'Q_TYPE_DENIED', file );
                     return;
                 }
     
