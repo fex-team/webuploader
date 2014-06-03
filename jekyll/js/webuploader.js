@@ -4389,6 +4389,7 @@
     
                     // reset input
                     clone = this.cloneNode( true );
+                    clone.value = null;
                     this.parentNode.replaceChild( clone, this );
     
                     input.off();
@@ -6647,7 +6648,9 @@
                     xhr = new RuntimeClient('XMLHttpRequest');
     
                 xhr.on( 'uploadprogress progress', function( e ) {
-                    return me.trigger( 'progress', e.loaded / e.total );
+                    var percent = e.loaded / e.total;
+                    percent = Math.min( 1, Math.max( 0, percent ) );
+                    return me.trigger( 'progress', percent );
                 });
     
                 xhr.on( 'load', function() {

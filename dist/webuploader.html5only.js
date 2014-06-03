@@ -4389,6 +4389,7 @@
     
                     // reset input
                     clone = this.cloneNode( true );
+                    clone.value = null;
                     this.parentNode.replaceChild( clone, this );
     
                     input.off();
