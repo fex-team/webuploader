@@ -1037,11 +1037,11 @@
         
 <div class="highlight"><pre><code class="javascript"><span class="c1">// 初始状态图片上传前不会压缩</span>
 <span class="kd">var</span> <span class="nx">uploader</span> <span class="o">=</span> <span class="k">new</span> <span class="nx">WebUploader</span><span class="p">.</span><span class="nx">Uploader</span><span class="p">({</span>
-    <span class="nx">resize</span><span class="o">:</span> <span class="kc">null</span><span class="p">;</span>
+    <span class="nx">compress</span><span class="o">:</span> <span class="kc">null</span><span class="p">;</span>
 <span class="p">});</span>
 
 <span class="c1">// 修改后图片上传前，尝试将图片压缩到1600 * 1600</span>
-<span class="nx">uploader</span><span class="p">.</span><span class="nx">options</span><span class="p">(</span> <span class="s1">&#39;resize&#39;</span><span class="p">,</span> <span class="p">{</span>
+<span class="nx">uploader</span><span class="p">.</span><span class="nx">option</span><span class="p">(</span> <span class="s1">&#39;compress&#39;</span><span class="p">,</span> <span class="p">{</span>
     <span class="nx">width</span><span class="o">:</span> <span class="mi">1600</span><span class="p">,</span>
     <span class="nx">height</span><span class="o">:</span> <span class="mi">1600</span>
 <span class="p">});</span>
