@@ -776,11 +776,11 @@
              *
              * // 初始状态图片上传前不会压缩
              * var uploader = new WebUploader.Uploader({
-             *     resize: null;
+             *     compress: null;
              * });
              *
              * // 修改后图片上传前，尝试将图片压缩到1600 * 1600
-             * uploader.options( 'resize', {
+             * uploader.option( 'compress', {
              *     width: 1600,
              *     height: 1600
              * });
@@ -4389,6 +4389,7 @@
     
                     // reset input
                     clone = this.cloneNode( true );
+                    clone.value = null;
                     this.parentNode.replaceChild( clone, this );
     
                     input.off();
@@ -6530,6 +6531,7 @@
                 }
     
                 delete copy.button;
+                delete copy.id;
                 delete copy.container;
     
                 this.flashExec( 'FilePicker', 'init', copy );
@@ -6646,7 +6648,9 @@
                     xhr = new RuntimeClient('XMLHttpRequest');
     
                 xhr.on( 'uploadprogress progress', function( e ) {
-                    return me.trigger( 'progress', e.loaded / e.total );
+                    var percent = e.loaded / e.total;
+                    percent = Math.min( 1, Math.max( 0, percent ) );
+                    return me.trigger( 'progress', percent );
                 });
     
                 xhr.on( 'load', function() {
