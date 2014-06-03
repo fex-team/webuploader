@@ -21,6 +21,7 @@ define([
             }
 
             delete copy.button;
+            delete copy.id;
             delete copy.container;
 
             this.flashExec( 'FilePicker', 'init', copy );
