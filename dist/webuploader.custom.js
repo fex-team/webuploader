@@ -776,11 +776,11 @@
              *
              * // 初始状态图片上传前不会压缩
              * var uploader = new WebUploader.Uploader({
-             *     resize: null;
+             *     compress: null;
              * });
              *
              * // 修改后图片上传前，尝试将图片压缩到1600 * 1600
-             * uploader.options( 'resize', {
+             * uploader.option( 'compress', {
              *     width: 1600,
              *     height: 1600
              * });
