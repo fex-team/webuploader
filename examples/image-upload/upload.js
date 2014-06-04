@@ -120,12 +120,12 @@
             },
             dnd: '#dndArea',
             paste: '#uploader',
-            swf: '../dist/Uploader.swf',
+            swf: '../../dist/Uploader.swf',
             chunked: false,
             chunkSize: 512 * 1024,
             // runtimeOrder: 'flash',
             sendAsBinary: true,
-            server: '../server/fileupload.php',
+            server: '../../server/fileupload.php',
             // server: 'http://liaoxuezhi.fe.baidu.com/webupload/fileupload.php',
             // server: 'http://www.2betop.net/fileupload.php',
             //
@@ -233,7 +233,7 @@
                         img = $('<img src="'+src+'">');
                         $wrap.empty().append( img );
                     } else {
-                        $.ajax('../server/preview.php', {
+                        $.ajax('../../server/preview.php', {
                             method: 'POST',
                             data: src,
                             dataType:'json'
@@ -360,6 +360,7 @@
             } );
 
             percent = total ? loaded / total : 0;
+
 
             spans.eq( 0 ).text( Math.round( percent * 100 ) + '%' );
             spans.eq( 1 ).css( 'width', Math.round( percent * 100 ) + '%' );

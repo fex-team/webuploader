@@ -29,10 +29,10 @@ define([
         crop: false,
 
         // 是否保留头部信息
-        preserveHeaders: true,
+        preserveHeaders: false,
 
         // 是否允许放大。
-        allowMagnify: true
+        allowMagnify: false
     };
 
     // 继承RuntimeClient.
@@ -76,6 +76,11 @@ define([
         resize: function() {
             var args = Base.slice( arguments );
             return this.exec.apply( this, [ 'resize' ].concat( args ) );
+        },
+
+        crop: function() {
+            var args = Base.slice( arguments );
+            return this.exec.apply( this, [ 'crop' ].concat( args ) );
         },
 
         getAsDataUrl: function( type ) {

@@ -63,7 +63,46 @@ define([
             this._resize( this._img, canvas, width, height );
             this._blob = null;    // 没用了，可以删掉了。
             this.modified = true;
-            this.owner.trigger('complete');
+            this.owner.trigger('complete', 'resize');
+        },
+
+        crop: function( x, y, w, h, s ) {
+            var cvs = this._canvas ||
+                    (this._canvas = document.createElement('canvas')),
+                opts = this.options,
+                img = this._img,
+                iw = img.naturalWidth,
+                ih = img.naturalHeight,
+                orientation = this.getOrientation(),
+                tmp;
+
+            s = s || 1;
+
+            // todo 解决 orientation 的问题。
+            // values that require 90 degree rotation
+            // if ( ~[ 5, 6, 7, 8 ].indexOf( orientation ) ) {
+
+            //     switch ( orientation ) {
+            //         case 6:
+            //             tmp = x;
+            //             x = y;
+            //             y = iw * s - tmp - w;
+            //             console.log(ih * s, tmp, w)
+            //             break;
+            //     }
+
+            //     (w ^= h, h ^= w, w ^= h);
+            // }
+
+            cvs.width = w;
+            cvs.height = h;
+
+            opts.preserveHeaders || this._rotate2Orientaion( cvs, orientation );
+            this._renderImageToCanvas( cvs, img, -x, -y, iw * s, ih * s );
+
+            this._blob = null;    // 没用了，可以删掉了。
+            this.modified = true;
+            this.owner.trigger('complete', 'crop');
         },
 
         getAsBlob: function( type ) {
@@ -79,8 +118,7 @@ define([
 
                 if ( type === 'image/jpeg' ) {
 
-                    blob = Util.canvasToDataUrl( canvas, 'image/jpeg',
-                            opts.quality );
+                    blob = Util.canvasToDataUrl( canvas, type, opts.quality );
 
                     if ( opts.preserveHeaders && this._metas &&
                             this._metas.imageHead ) {
@@ -260,7 +298,12 @@ define([
             // 如果不是ios, 不需要这么复杂！
             if ( !Base.os.ios ) {
                 return function( canvas, img, x, y, w, h ) {
-                    canvas.getContext('2d').drawImage( img, x, y, w, h );
+                    var args = Base.slice( arguments, 1 ),
+                        ctx = canvas.getContext('2d');
+
+                    console.log( args );
+
+                    ctx.drawImage.apply( ctx, args );
                 };
             }
 

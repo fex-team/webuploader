@@ -1670,10 +1670,10 @@
             crop: false,
     
             // 是否保留头部信息
-            preserveHeaders: true,
+            preserveHeaders: false,
     
             // 是否允许放大。
-            allowMagnify: true
+            allowMagnify: false
         };
     
         // 继承RuntimeClient.
@@ -1717,6 +1717,11 @@
             resize: function() {
                 var args = Base.slice( arguments );
                 return this.exec.apply( this, [ 'resize' ].concat( args ) );
+            },
+    
+            crop: function() {
+                var args = Base.slice( arguments );
+                return this.exec.apply( this, [ 'crop' ].concat( args ) );
             },
     
             getAsDataUrl: function( type ) {
@@ -1793,9 +1798,6 @@
              *     // 是否允许裁剪。
              *     crop: true,
              *
-             *     // 是否保留头部meta信息。
-             *     preserveHeaders: false,
-             *
              *     // 为空的话则保留原有图片格式。
              *     // 否则强制转换成指定的类型。
              *     type: 'image/jpeg'
@@ -1864,13 +1866,15 @@
              * 生成缩略图，此过程为异步，所以需要传入`callback`。
              * 通常情况在图片加入队里后调用此方法来生成预览图以增强交互效果。
              *
+             * 当 width 或者 height 的值介于 0 - 1 时，被当成百分比使用。
+             *
              * `callback`中可以接收到两个参数。
              * * 第一个为error，如果生成缩略图有错误，此error将为真。
              * * 第二个为ret, 缩略图的Data URL值。
              *
              * **注意**
              * Date URL在IE6/7中不支持，所以不用调用此方法了，直接显示一张暂不支持预览图片好了。
-             *
+             * 也可以借助服务端，将 base64 数据传给服务端，生成一个临时文件供预览。
              *
              * @method makeThumb
              * @grammar makeThumb( file, callback ) => undefined
@@ -1916,11 +1920,26 @@
                 image = new Image( opts );
     
                 image.once( 'load', function() {
+                    var ret;
+    
                     file._info = file._info || image.info();
                     file._meta = file._meta || image.meta();
+    
+                    // 如果 width 的值介于 0 - 1
+                    // 说明设置的是百分比。
+                    if ( width <= 1 && width > 0 ) {
+                        width = file._info.width * width;
+                    }
+    
+                    // 同样的规则应用于 height
+                    if ( height <= 1 && height > 0 ) {
+                        height = file._info.height * height;
+                    }
+    
                     image.resize( width, height );
                 });
     
+                // 当 resize 完后
                 image.once( 'complete', function() {
                     cb( false, image.getAsDataUrl( opts.type ) );
                     image.destroy();
@@ -1963,9 +1982,24 @@
                 });
                 image.once( 'error', deferred.reject );
                 image.once( 'load', function() {
+                    var width = opts.width,
+                        height = opts.height;
+    
                     file._info = file._info || image.info();
                     file._meta = file._meta || image.meta();
-                    image.resize( opts.width, opts.height );
+    
+                    // 如果 width 的值介于 0 - 1
+                    // 说明设置的是百分比。
+                    if ( width <= 1 && width > 0 ) {
+                        width = file._info.width * width;
+                    }
+    
+                    // 同样的规则应用于 height
+                    if ( height <= 1 && height > 0 ) {
+                        height = file._info.height * height;
+                    }
+    
+                    image.resize( width, height );
                 });
     
                 image.once( 'complete', function() {

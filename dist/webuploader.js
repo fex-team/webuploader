@@ -1864,10 +1864,10 @@
             crop: false,
     
             // 是否保留头部信息
-            preserveHeaders: true,
+            preserveHeaders: false,
     
             // 是否允许放大。
-            allowMagnify: true
+            allowMagnify: false
         };
     
         // 继承RuntimeClient.
@@ -1911,6 +1911,11 @@
             resize: function() {
                 var args = Base.slice( arguments );
                 return this.exec.apply( this, [ 'resize' ].concat( args ) );
+            },
+    
+            crop: function() {
+                var args = Base.slice( arguments );
+                return this.exec.apply( this, [ 'crop' ].concat( args ) );
             },
     
             getAsDataUrl: function( type ) {
@@ -1987,9 +1992,6 @@
              *     // 是否允许裁剪。
              *     crop: true,
              *
-             *     // 是否保留头部meta信息。
-             *     preserveHeaders: false,
-             *
              *     // 为空的话则保留原有图片格式。
              *     // 否则强制转换成指定的类型。
              *     type: 'image/jpeg'
@@ -2058,13 +2060,15 @@
              * 生成缩略图，此过程为异步，所以需要传入`callback`。
              * 通常情况在图片加入队里后调用此方法来生成预览图以增强交互效果。
              *
+             * 当 width 或者 height 的值介于 0 - 1 时，被当成百分比使用。
+             *
              * `callback`中可以接收到两个参数。
              * * 第一个为error，如果生成缩略图有错误，此error将为真。
              * * 第二个为ret, 缩略图的Data URL值。
              *
              * **注意**
              * Date URL在IE6/7中不支持，所以不用调用此方法了，直接显示一张暂不支持预览图片好了。
-             *
+             * 也可以借助服务端，将 base64 数据传给服务端，生成一个临时文件供预览。
              *
              * @method makeThumb
              * @grammar makeThumb( file, callback ) => undefined
@@ -2110,11 +2114,26 @@
                 image = new Image( opts );
     
                 image.once( 'load', function() {
+                    var ret;
+    
                     file._info = file._info || image.info();
                     file._meta = file._meta || image.meta();
+    
+                    // 如果 width 的值介于 0 - 1
+                    // 说明设置的是百分比。
+                    if ( width <= 1 && width > 0 ) {
+                        width = file._info.width * width;
+                    }
+    
+                    // 同样的规则应用于 height
+                    if ( height <= 1 && height > 0 ) {
+                        height = file._info.height * height;
+                    }
+    
                     image.resize( width, height );
                 });
     
+                // 当 resize 完后
                 image.once( 'complete', function() {
                     cb( false, image.getAsDataUrl( opts.type ) );
                     image.destroy();
@@ -2157,9 +2176,24 @@
                 });
                 image.once( 'error', deferred.reject );
                 image.once( 'load', function() {
+                    var width = opts.width,
+                        height = opts.height;
+    
                     file._info = file._info || image.info();
                     file._meta = file._meta || image.meta();
-                    image.resize( opts.width, opts.height );
+    
+                    // 如果 width 的值介于 0 - 1
+                    // 说明设置的是百分比。
+                    if ( width <= 1 && width > 0 ) {
+                        width = file._info.width * width;
+                    }
+    
+                    // 同样的规则应用于 height
+                    if ( height <= 1 && height > 0 ) {
+                        height = file._info.height * height;
+                    }
+    
+                    image.resize( width, height );
                 });
     
                 image.once( 'complete', function() {
@@ -5827,7 +5861,46 @@
                 this._resize( this._img, canvas, width, height );
                 this._blob = null;    // 没用了，可以删掉了。
                 this.modified = true;
-                this.owner.trigger('complete');
+                this.owner.trigger('complete', 'resize');
+            },
+    
+            crop: function( x, y, w, h, s ) {
+                var cvs = this._canvas ||
+                        (this._canvas = document.createElement('canvas')),
+                    opts = this.options,
+                    img = this._img,
+                    iw = img.naturalWidth,
+                    ih = img.naturalHeight,
+                    orientation = this.getOrientation(),
+                    tmp;
+    
+                s = s || 1;
+    
+                // todo 解决 orientation 的问题。
+                // values that require 90 degree rotation
+                // if ( ~[ 5, 6, 7, 8 ].indexOf( orientation ) ) {
+    
+                //     switch ( orientation ) {
+                //         case 6:
+                //             tmp = x;
+                //             x = y;
+                //             y = iw * s - tmp - w;
+                //             console.log(ih * s, tmp, w)
+                //             break;
+                //     }
+    
+                //     (w ^= h, h ^= w, w ^= h);
+                // }
+    
+                cvs.width = w;
+                cvs.height = h;
+    
+                opts.preserveHeaders || this._rotate2Orientaion( cvs, orientation );
+                this._renderImageToCanvas( cvs, img, -x, -y, iw * s, ih * s );
+    
+                this._blob = null;    // 没用了，可以删掉了。
+                this.modified = true;
+                this.owner.trigger('complete', 'crop');
             },
     
             getAsBlob: function( type ) {
@@ -5843,8 +5916,7 @@
     
                     if ( type === 'image/jpeg' ) {
     
-                        blob = Util.canvasToDataUrl( canvas, 'image/jpeg',
-                                opts.quality );
+                        blob = Util.canvasToDataUrl( canvas, type, opts.quality );
     
                         if ( opts.preserveHeaders && this._metas &&
                                 this._metas.imageHead ) {
@@ -6024,7 +6096,12 @@
                 // 如果不是ios, 不需要这么复杂！
                 if ( !Base.os.ios ) {
                     return function( canvas, img, x, y, w, h ) {
-                        canvas.getContext('2d').drawImage( img, x, y, w, h );
+                        var args = Base.slice( arguments, 1 ),
+                            ctx = canvas.getContext('2d');
+    
+                        console.log( args );
+    
+                        ctx.drawImage.apply( ctx, args );
                     };
                 }
     
