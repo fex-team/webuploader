@@ -1,0 +1,21 @@
+# built in symbols that must always be preserved
+_start1
+malloc
+free
+memcpy
+memmove
+flascc_uiTickProc
+_sync_synchronize
+
+# symbols for C++ exception handling
+_Unwind_SjLj_Register
+_Unwind_SjLj_Resume
+_Unwind_SjLj_Unregister
+_Unwind_SjLj_RaiseException
+
+# symbols from libm.a
+__muldi3
+
+# symbols for the GLUT based examples
+_avm2_glut_keyhandler
+glutMainLoopBody

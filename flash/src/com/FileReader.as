@@ -130,7 +130,8 @@ package com
 					}
 				});
 			} else if (buffer.fileRef) {
-				buffer.fileRef.addEventListener(ProgressEvent.PROGRESS, onProgress);
+                _blob.setLoading(true);
+                buffer.fileRef.addEventListener(ProgressEvent.PROGRESS, onProgress);
 				buffer.fileRef.addEventListener(Event.COMPLETE, onComplete);
 				buffer.fileRef.addEventListener(IOErrorEvent.IO_ERROR, onIOError);
 				buffer.fileRef.load();
@@ -193,7 +194,8 @@ package com
 		
 		
 		private function _removeAllEventListeners(target:*) : void {
-			target.removeEventListener(ProgressEvent.PROGRESS, onProgress);
+            _blob.setLoading(false);
+            target.removeEventListener(ProgressEvent.PROGRESS, onProgress);
 			target.removeEventListener(Event.COMPLETE, onComplete);
 			target.removeEventListener(IOErrorEvent.IO_ERROR, onIOError);
 		}

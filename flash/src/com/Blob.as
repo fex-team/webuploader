@@ -166,6 +166,14 @@ package com
 		{
 			return false; // Blob as a rule contains only part of the source
 		}
+
+        private var _isLoading:Boolean =false;
+        public function isLoading() : Boolean {
+            return _isLoading;
+        }
+        public function setLoading(val:Boolean):void {
+            _isLoading = val;
+        }
 		
 		
 		public function getFileRef() : FileReference {
