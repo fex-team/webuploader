@@ -1145,7 +1145,7 @@
             RuntimeClient.call( me, 'Blob' );
     
             this.uid = source.uid || this.uid;
-            this.type = source.type || '';
+            this.type = source.type || 'application/octet-stream';
             this.size = source.size || 0;
     
             if ( ruid ) {
@@ -1183,27 +1183,28 @@
         function File( ruid, file ) {
             var ext;
     
-            Blob.apply( this, arguments );
             this.name = file.name || ('untitled' + uid++);
             ext = rExt.exec( file.name ) ? RegExp.$1.toLowerCase() : '';
     
             // todo 支持其他类型文件的转换。
     
             // 如果有mimetype, 但是文件名里面没有找出后缀规律
-            if ( !ext && this.type ) {
-                ext = /\/(jpg|jpeg|png|gif|bmp)$/i.exec( this.type ) ?
+            if ( !ext && file.type ) {
+                ext = /\/(jpg|jpeg|png|gif|bmp)$/i.exec( file.type ) ?
                         RegExp.$1.toLowerCase() : '';
                 this.name += '.' + ext;
             }
     
             // 如果没有指定mimetype, 但是知道文件后缀。
-            if ( !this.type &&  ~'jpg,jpeg,png,gif,bmp'.indexOf( ext ) ) {
-                this.type = 'image/' + (ext === 'jpg' ? 'jpeg' : ext);
+            if ( !file.type && ~'jpg,jpeg,png,gif,bmp'.indexOf( ext ) ) {
+                this.type = file.type = 'image/' + (ext === 'jpg' ? 'jpeg' : ext);
             }
     
             this.ext = ext;
             this.lastModifiedDate = file.lastModifiedDate ||
                     (new Date()).toLocaleString();
+    
+            Blob.apply( this, arguments );
         }
     
         return Base.inherits( Blob, File );
@@ -2615,7 +2616,9 @@
                 me.owner.trigger( 'filesQueued', files );
     
                 if ( me.options.auto ) {
-                    me.request('start-upload');
+                    setTimeout(function() {
+                        me.request('start-upload');
+                    }, 20);
                 }
             },
     
