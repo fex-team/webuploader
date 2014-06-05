@@ -42,7 +42,8 @@ define([
             this._setRequestHeader( xhr, opts.headers );
             xhr.exec( 'send', {
                 method: opts.method,
-                url: server
+                url: server,
+                mimeType: 'application/octet-stream'
             }, binary );
         },
 

@@ -173,7 +173,9 @@ define([
             me.owner.trigger( 'filesQueued', files );
 
             if ( me.options.auto ) {
-                me.request('start-upload');
+                setTimeout(function() {
+                    me.request('start-upload');
+                }, 20);
             }
         },
 

@@ -15,7 +15,7 @@ define([
         RuntimeClient.call( me, 'Blob' );
 
         this.uid = source.uid || this.uid;
-        this.type = source.type || '';
+        this.type = source.type || 'application/octet-stream';
         this.size = source.size || 0;
 
         if ( ruid ) {
