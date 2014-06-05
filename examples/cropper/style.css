@@ -1,0 +1,92 @@
+/* ----------------Reset Css--------------------- */
+html, body, div, span, applet, object, iframe, h1, h2, h3, h4, h5, h6, p, blockquote, pre,
+a, abbr, acronym, address, big, cite, code, del, dfn, em, img, ins, kbd, q, s, samp,
+small, strike, strong, sub, sup, tt, var, b, u, i, center, dl, dt, dd, ol, ul, li,
+fieldset, form, label, legend, table, caption, tbody, tfoot, thead, tr, th, td,
+article, aside, canvas, details, figcaption, figure, footer, header, hgroup, menu, nav, section, summary,
+time, mark, audio, video, input  {
+    margin: 0;
+    padding: 0;
+    border: none;
+    outline: 0;
+    font-size: 100%;
+    font: inherit;
+    vertical-align: baseline;
+}
+
+html, body, form, fieldset, p, div, h1, h2, h3, h4, h5, h6 {
+    -webkit-text-size-adjust: none;
+}
+
+article, aside, details, figcaption, figure, footer, header, hgroup, menu, nav, section {
+    display: block;
+}
+
+body {
+    font-family: arial, sans-serif;
+}
+
+ol, ul {
+    list-style: none;
+}
+
+blockquote, q {
+    quotes: none;
+}
+
+blockquote:before, blockquote:after, q:before, q:after {
+    content: '';
+    content: none;
+}
+
+ins {
+    text-decoration: none;
+}
+
+del {
+    text-decoration: line-through;
+}
+
+table {
+    border-collapse: collapse;
+    border-spacing: 0;
+}
+
+/* ------------ */
+#wrapper {
+    width: 980px;
+    margin: 0 auto;
+
+    margin: 1em;
+    width: auto;
+}
+
+.img-preview {
+    width: 160px;
+    height: 90px;
+    margin-top: 1em;
+    border: 1px solid #ccc;
+}
+
+.cropper-wraper {
+    position: relative;
+}
+
+.upload-btn {
+    background: #ffffff;
+    border: 1px solid #cfcfcf;
+    color: #565656;
+    padding: 10px 18px;
+    display: inline-block;
+    border-radius: 3px;
+    margin-left: 10px;
+    cursor: pointer;
+    font-size: 14px;
+
+    position: absolute;
+    right: 1em;
+    bottom: 2em;
+}
+.upload-btn:hover {
+    background: #f0f0f0;
+}
