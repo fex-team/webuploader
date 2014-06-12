@@ -54,36 +54,23 @@
 
             // 检测是否已经安装flash，检测flash的版本
             flashVersion = ( function() {
-                var flashVer = NaN;
-                var ua = navigator.userAgent;
+                var version;
 
-                if ( window.ActiveXObject ) {
-                    var swf = new ActiveXObject( 'ShockwaveFlash.ShockwaveFlash' );
-
-                    if ( swf ) {
-                        flashVer = Number( swf.GetVariable( '$version' ).split(' ')[ 1 ].replace(/\,/g, '.').replace( /^(\d+\.\d+).*$/, '$1') );
+                try {
+                    version = navigator.plugins[ 'Shockwave Flash' ];
+                    version = version.description;
+                } catch ( ex ) {
+                    try {
+                        version = new ActiveXObject('ShockwaveFlash.ShockwaveFlash')
+                                .GetVariable('$version');
+                    } catch ( ex2 ) {
+                        version = '0.0';
                     }
                 }
-                else {
-                    if ( navigator.plugins && navigator.plugins.length > 0 ) {
-                        var swf = navigator.plugins[ 'Shockwave Flash' ];
-
-                        if ( swf ) {
-                            var arr = swf.description.split(' ');
-                            for ( var i = 0, len = arr.length; i < len; i++ ) {
-                                var ver = Number( arr[ i ] );
-
-                                if ( !isNaN( ver ) ) {
-                                    flashVer = ver;
-                                    break;
-                                }
-                            }
-                        }
-                    }
-                }
-
-                return flashVer;
+                version = version.match( /\d+/g );
+                return parseFloat( version[ 0 ] + '.' + version[ 1 ], 10 );
             } )(),
+
             supportTransition = (function(){
                 var s = document.createElement('p').style,
                     r = 'transition' in s ||
@@ -98,15 +85,56 @@
             // WebUploader实例
             uploader;
 
-        if ( !WebUploader.Uploader.support() ) {
-            // if ( isNaN( flashVersion ) || flashVersion < 11 ) {
-            //     if ( confirm( '您尚未安装flash播放器或当前flash player 的版本过低于 11，请升级!' ) ) {
-            //         // 做自己的处理，比如跳转到http://get.adobe.com/cn/flashplayer
-            //     }
-            //     return;
-            // }
+        if ( !WebUploader.Uploader.support('flash') /*&& WebUploader.browser.ie*/ ) {
+
+            // flash 安装了但是版本过低。
+            if (flashVersion) {
+                (function(container) {
+                    window['expressinstallcallback'] = function( state ) {
+                        switch(state) {
+                            case 'Download.Cancelled':
+                                alert('您取消了更新！')
+                                break;
+
+                            case 'Download.Failed':
+                                alert('安装失败')
+                                break;
+
+                            default:
+                                alert('安装已成功，请刷新！');
+                                break;
+                        }
+                        delete window['expressinstallcallback'];
+                    };
+
+                    var swf = './expressInstall.swf';
+                    // insert flash object
+                    var html = '<object type="application/' +
+                            'x-shockwave-flash" data="' +  swf + '" ';
+
+                    if (WebUploader.browser.ie) {
+                        html += 'classid="clsid:d27cdb6e-ae6d-11cf-96b8-444553540000" ';
+                    }
+
+                    html += 'width="100%" height="100%" style="outline:0">'  +
+                        '<param name="movie" value="' + swf + '" />' +
+                        '<param name="wmode" value="transparent" />' +
+                        '<param name="allowscriptaccess" value="always" />' +
+                    '</object>';
+
+                    container.html(html);
+
+                })($wrap);
+
+            // 压根就没有安转。
+            } else {
+                $wrap.html('<a href="http://www.adobe.com/go/getflashplayer" target="_blank" border="0"><img alt="get flash player" src="http://www.adobe.com/macromedia/style_guide/images/160x41_Get_Flash_Player.jpg" /></a>');
+            }
+
+            return;
+        } else if (!WebUploader.Uploader.support()) {
             alert( 'Web Uploader 不支持您的浏览器！');
-            throw new Error( 'WebUploader does not support the browser you are using.' );
+            return;
         }
 
         // 实例化
@@ -118,12 +146,17 @@
             formData: {
                 uid: 123
             },
+            accept: {
+                title: 'Android',
+                extensions: 'apk',
+                mimeTypes: 'application/vnd'
+            },
             dnd: '#dndArea',
             paste: '#uploader',
             swf: '../../dist/Uploader.swf',
             chunked: false,
             chunkSize: 512 * 1024,
-            // runtimeOrder: 'flash',
+            runtimeOrder: 'flash',
             sendAsBinary: true,
             server: '../../server/fileupload.php',
             // server: 'http://liaoxuezhi.fe.baidu.com/webupload/fileupload.php',
