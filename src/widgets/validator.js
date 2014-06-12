@@ -57,7 +57,7 @@ define([
         var uploader = this,
             opts = uploader.options,
             count = 0,
-            max = opts.fileNumLimit >> 0,
+            max = parseInt( opts.fileNumLimit, 10 ),
             flag = true;
 
         if ( !max ) {
