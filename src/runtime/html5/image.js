@@ -301,8 +301,6 @@ define([
                     var args = Base.slice( arguments, 1 ),
                         ctx = canvas.getContext('2d');
 
-                    console.log( args );
-
                     ctx.drawImage.apply( ctx, args );
                 };
             }

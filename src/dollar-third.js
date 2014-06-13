@@ -2,5 +2,11 @@
  * @fileOverview jQuery or Zepto
  */
 define(function() {
-    return window.jQuery || window.Zepto;
+    var $ = window.jQuery || window.Zepto;
+
+    if ( !$ ) {
+        throw new Error('jQuery or Zepto not found!');
+    }
+
+    return $;
 });
