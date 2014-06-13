@@ -5,7 +5,7 @@ requirejs.config({
     }
 });
 
-require([ 'jQuery', 'webuploader.flashonly' ], function( _, WebUploader ) {
+require([ 'webuploader.flashonly' ], function( WebUploader ) {
     // 当domReady的时候开始初始化
     $(function() {
         var $wrap = $('#uploader'),
