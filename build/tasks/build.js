@@ -147,6 +147,11 @@ module.exports = function( grunt ) {
                 sep = '\n\n';
 
             banner && arr.push( banner );
+
+            if ( options.builtin.dollar ) {
+                compiled = compiled.replace('define([ \'jQuery\' ], exports );', 'define([], exports);');
+            }
+
             arr.push(compiled);
             footer && arr.push( footer );
 

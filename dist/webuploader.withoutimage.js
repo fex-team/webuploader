@@ -1,4 +1,4 @@
-/*! WebUploader 0.1.2 */
+/*! WebUploader 0.1.4 */
 
 
 /**
@@ -110,7 +110,7 @@
         // in another project. That other project will only
         // see this AMD call, not the internal modules in
         // the closure below.
-        define([], exports );
+        define([ 'jQuery' ], exports );
     } else {
 
         // Browser globals case. Just assign the
@@ -128,7 +128,13 @@
      * @fileOverview jQuery or Zepto
      */
     define('dollar-third',[],function() {
-        return window.jQuery || window.Zepto;
+        var $ = window.jQuery || window.Zepto;
+    
+        if ( !$ ) {
+            throw new Error('jQuery or Zepto not found!');
+        }
+    
+        return $;
     });
     /**
      * @fileOverview Dom 操作相关
@@ -225,7 +231,7 @@
             /**
              * @property {String} version 当前版本号。
              */
-            version: '0.1.2',
+            version: '0.1.4',
     
             /**
              * @property {jQuery|Zepto} $ 引用依赖的jQuery或者Zepto对象。

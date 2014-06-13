@@ -146,18 +146,11 @@
             formData: {
                 uid: 123
             },
-            accept: {
-                title: 'Android',
-                extensions: 'apk',
-                mimeTypes: 'application/vnd'
-            },
             dnd: '#dndArea',
             paste: '#uploader',
             swf: '../../dist/Uploader.swf',
             chunked: false,
             chunkSize: 512 * 1024,
-            runtimeOrder: 'flash',
-            sendAsBinary: true,
             server: '../../server/fileupload.php',
             // server: 'http://liaoxuezhi.fe.baidu.com/webupload/fileupload.php',
             // server: 'http://www.2betop.net/fileupload.php',

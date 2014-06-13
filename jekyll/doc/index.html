@@ -552,9 +552,6 @@ var uploader = WebUploader.Uploader({
     // 是否允许裁剪。
     crop: true,
 
-    // 是否保留头部meta信息。
-    preserveHeaders: false,
-
     // 为空的话则保留原有图片格式。
     // 否则强制转换成指定的类型。
     type: 'image/jpeg'
@@ -1112,13 +1109,15 @@ uploader.addButton({
 
     <p>生成缩略图，此过程为异步，所以需要传入<code>callback</code>。
 通常情况在图片加入队里后调用此方法来生成预览图以增强交互效果。</p>
+<p>当 width 或者 height 的值介于 0 - 1 时，被当成百分比使用。</p>
 <p><code>callback</code>中可以接收到两个参数。</p>
 <ul>
 <li>第一个为error，如果生成缩略图有错误，此error将为真。</li>
 <li>第二个为ret, 缩略图的Data URL值。</li>
 </ul>
 <p><strong>注意</strong>
-Date URL在IE6/7中不支持，所以不用调用此方法了，直接显示一张暂不支持预览图片好了。</p>
+Date URL在IE6/7中不支持，所以不用调用此方法了，直接显示一张暂不支持预览图片好了。
+也可以借助服务端，将 base64 数据传给服务端，生成一个临时文件供预览。</p>
 
     
         

@@ -4,6 +4,7 @@ requirejs.config({
         jQuery: '../examples/image-upload/jquery'
     }
 });
+
 require([ 'jQuery', 'webuploader.flashonly' ], function( _, WebUploader ) {
     // 当domReady的时候开始初始化
     $(function() {

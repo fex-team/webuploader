@@ -37,9 +37,13 @@ module.exports = function(grunt) {
 
             // 自己配置的实例
             // glob语法。
+            // 移动端方案，请搭配 zepto 使用。
             custom: {
                 preset: "custom",
                 cwd: "src",
+                builtin: {
+                    promise: true
+                },
                 src: [
                     'widgets/filepicker.js',
                     'widgets/image.js',

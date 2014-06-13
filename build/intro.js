@@ -89,31 +89,34 @@
 
                 host[ last ] = modules[ key ];
             }
+
+            return obj;
         },
 
-        exports = factory( root, _define, _require ),
-        origin;
+        makeExprot = function() {
+            // exports every module.
+            return exportsTo( factory( root, _define, _require ) );
+        },
 
-    // exports every module.
-    exportsTo( exports );
+        origin;
 
     if ( typeof module === 'object' && typeof module.exports === 'object' ) {
 
         // For CommonJS and CommonJS-like environments where a proper window is present,
-        module.exports = exports;
+        module.exports = makeExprot();
     } else if ( typeof define === 'function' && define.amd ) {
 
         // Allow using this built library as an AMD module
         // in another project. That other project will only
         // see this AMD call, not the internal modules in
         // the closure below.
-        define([], exports );
+        define([ 'jQuery' ], makeExprot );
     } else {
 
         // Browser globals case. Just assign the
         // result to a property on the global.
         origin = root.WebUploader;
-        root.WebUploader = exports;
+        root.WebUploader = makeExprot();
         root.WebUploader.noConflict = function() {
             root.WebUploader = origin;
         };
