@@ -93,7 +93,9 @@
             return obj;
         },
 
-        makeExprot = function() {
+        makeExprot = function( dollar ) {
+            root.__dollar = dollar;
+
             // exports every module.
             return exportsTo( factory( root, _define, _require ) );
         },
