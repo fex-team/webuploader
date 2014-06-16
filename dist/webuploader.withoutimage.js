@@ -4500,7 +4500,7 @@
             },
     
             getResponse: function() {
-                return this._response;
+                return this._response ? unescape( this._response ) : '';
             },
     
             getResponseAsJson: function() {
