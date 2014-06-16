@@ -96,7 +96,9 @@
             return obj;
         },
 
-        makeExprot = function() {
+        makeExprot = function( dollar ) {
+            root.__dollar = dollar;
+
             // exports every module.
             return exportsTo( factory( root, _define, _require ) );
         },
@@ -131,7 +133,7 @@
      * @fileOverview jQuery or Zepto
      */
     define('dollar-third',[],function() {
-        var $ = window.jQuery || window.Zepto;
+        var $ = window.__dollar || window.jQuery || window.Zepto;
     
         if ( !$ ) {
             throw new Error('jQuery or Zepto not found!');
