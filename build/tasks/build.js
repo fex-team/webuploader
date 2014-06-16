@@ -168,6 +168,13 @@ module.exports = function( grunt ) {
             });
         };
 
+        if (options.fis) {
+            config.wrap = {
+                startFile: 'build/fis/intro.js',
+                endFile: 'build/fis/outro.js'
+            }
+        }
+
         requirejs.optimize( config, function( response ) {
             // requirejs有bug, callback不一定会执行，目前调试的结果是
             // prim的promise实现有问题。

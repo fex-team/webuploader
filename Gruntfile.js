@@ -59,6 +59,19 @@ module.exports = function(grunt) {
                     'runtime/html5/transport.js'
                 ],
                 dest: "dist/webuploader.custom.js"
+            },
+
+            fis: {
+                preset: 'all',
+                dest: "dist/webuploader.fis.js",
+
+                fis: true,
+
+                // 在没有jquery类似的库的前提下可以设置builtin,去除强行依赖。
+                builtin: {
+                    dollar: false,
+                    promise: false
+                }
             }
         },
 
