@@ -150,19 +150,34 @@ import com.utils.URLStreamProgress;
 			Uploader.compFactory.add(blob.uid, blob);
 			return blob.toObject();
 		}
+
+        public function _getResponse():String {
+            var ret:String;
+            if ( !_response ) {
+                return '';
+            }
+            _response.position = 0;
+            ret = _response.readUTFBytes(_response.length);
+
+            return ret;
+        }
 		
 		public function getResponse():String {
-			if ( !_response ) {
-				return '';
-			}
-			_response.position = 0;
-			return _response.readUTFBytes(_response.length);
+            return escape(_getResponse());
 		}
 		
 		public function getResponseAsJson() : Object
 		{
+            var ret:Object;
+
+            try {
+                var str:String = getResponse();
+                ret = com.adobe.serialization.json.JSON.decode(_getResponse());
+            } catch( e:Error ) {
+                ret = {};
+            }
 			
-			return com.adobe.serialization.json.JSON.decode( getResponse() );
+			return ret;
 		}
 		
 		
