@@ -220,12 +220,15 @@ define([
 
         compressImage: function( file ) {
             var opts = this.options.compress || this.options.resize,
-                compressSize = opts && opts.compressSize || 300 * 1024,
+                compressSize = opts && opts.compressSize || 0,
+                noCompressIfLarger = opts && opts.noCompressIfLarger || false,
                 image, deferred;
 
             file = this.request( 'get-file', file );
 
-            // 只预览图片格式。
+            // 只压缩 jpeg 图片格式。
+            // gif 可能会丢失针
+            // bmp png 基本上尺寸都不大，且压缩比比较小。
             if ( !opts || !~'image/jpeg,image/jpg'.indexOf( file.type ) ||
                     file.size < compressSize ||
                     file._compressed ) {
@@ -275,7 +278,7 @@ define([
                     size = file.size;
 
                     // 如果压缩后，比原来还大则不用压缩后的。
-                    if ( blob.size < size ) {
+                    if ( !noCompressIfLarger || blob.size < size ) {
                         // file.source.destroy && file.source.destroy();
                         file.source = blob;
                         file.size = blob.size;
