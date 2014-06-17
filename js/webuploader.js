@@ -96,7 +96,9 @@
             return obj;
         },
 
-        makeExprot = function() {
+        makeExprot = function( dollar ) {
+            root.__dollar = dollar;
+
             // exports every module.
             return exportsTo( factory( root, _define, _require ) );
         },
@@ -124,14 +126,14 @@
             root.WebUploader = origin;
         };
     }
-})( this, function( window, define, require ) {
+})( window, function( window, define, require ) {
 
 
     /**
      * @fileOverview jQuery or Zepto
      */
     define('dollar-third',[],function() {
-        var $ = window.jQuery || window.Zepto;
+        var $ = window.__dollar || window.jQuery || window.Zepto;
     
         if ( !$ ) {
             throw new Error('jQuery or Zepto not found!');
@@ -2046,7 +2048,14 @@
              *     crop: false,
              *
              *     // 是否保留头部meta信息。
-             *     preserveHeaders: true
+             *     preserveHeaders: true,
+             *
+             *     // 如果发现压缩后文件大小比原来还大，则使用原来图片
+             *     // 此属性可能会影响图片自动纠正功能
+             *     noCompressIfLarger: false,
+             *
+             *     // 单位字节，如果图片大小小于此值，不会采用压缩。
+             *     compressSize: 0
              * }
              * ```
              */
@@ -2163,12 +2172,15 @@
     
             compressImage: function( file ) {
                 var opts = this.options.compress || this.options.resize,
-                    compressSize = opts && opts.compressSize || 300 * 1024,
+                    compressSize = opts && opts.compressSize || 0,
+                    noCompressIfLarger = opts && opts.noCompressIfLarger || false,
                     image, deferred;
     
                 file = this.request( 'get-file', file );
     
-                // 只预览图片格式。
+                // 只压缩 jpeg 图片格式。
+                // gif 可能会丢失针
+                // bmp png 基本上尺寸都不大，且压缩比比较小。
                 if ( !opts || !~'image/jpeg,image/jpg'.indexOf( file.type ) ||
                         file.size < compressSize ||
                         file._compressed ) {
@@ -2218,7 +2230,7 @@
                         size = file.size;
     
                         // 如果压缩后，比原来还大则不用压缩后的。
-                        if ( blob.size < size ) {
+                        if ( !noCompressIfLarger || blob.size < size ) {
                             // file.source.destroy && file.source.destroy();
                             file.source = blob;
                             file.size = blob.size;
@@ -6710,7 +6722,7 @@
             },
     
             getResponse: function() {
-                return this._response;
+                return this._response ? unescape( this._response ) : '';
             },
     
             getResponseAsJson: function() {
