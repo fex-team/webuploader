@@ -103,7 +103,14 @@ define([
          *     crop: false,
          *
          *     // 是否保留头部meta信息。
-         *     preserveHeaders: true
+         *     preserveHeaders: true,
+         *
+         *     // 如果发现压缩后文件大小比原来还大，则使用原来图片
+         *     // 此属性可能会影响图片自动纠正功能
+         *     noCompressIfLarger: false,
+         *
+         *     // 单位字节，如果图片大小小于此值，不会采用压缩。
+         *     compressSize: 0
          * }
          * ```
          */
