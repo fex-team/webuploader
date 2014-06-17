@@ -629,7 +629,14 @@
     <span class="nx">crop</span><span class="o">:</span> <span class="kc">false</span><span class="p">,</span>
 
     <span class="c1">// 是否保留头部meta信息。</span>
-    <span class="nx">preserveHeaders</span><span class="o">:</span> <span class="kc">true</span>
+    <span class="nx">preserveHeaders</span><span class="o">:</span> <span class="kc">true</span><span class="p">,</span>
+
+    <span class="c1">// 如果发现压缩后文件大小比原来还大，则使用原来图片</span>
+    <span class="c1">// 此属性可能会影响图片自动纠正功能</span>
+    <span class="nx">noCompressIfLarger</span><span class="o">:</span> <span class="kc">false</span><span class="p">,</span>
+
+    <span class="c1">// 单位字节，如果图片大小小于此值，不会采用压缩。</span>
+    <span class="nx">compressSize</span><span class="o">:</span> <span class="mi">0</span>
 <span class="p">}</span>
 </code></pre></div>
 
