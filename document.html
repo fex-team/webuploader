@@ -174,7 +174,7 @@ Demo中使用的是<code>WebUploader.create</code>方法来初始化的，实际
         <td>在文件发送之前request，此时还没有分片（如果配置了分片的话），可以用来做文件整体md5验证。</td>
     </tr>
     <tr>
-        <td><code>before-file</code></td>
+        <td><code>before-send</code></td>
         <td>block: 分片对象</td>
         <td>在分片发送之前request，可以用来做分片验证，如果此分片已经上传成功了，可返回一个rejected promise来跳过此分片上传</td>
     </tr>
