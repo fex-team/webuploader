@@ -45,6 +45,7 @@ define([
         retry: 'retry',
         isInProgress: 'is-in-progress',
         makeThumb: 'make-thumb',
+        md5File: 'md5-file',
         getDimension: 'get-dimension',
         addButton: 'add-btn',
         getRuntimeType: 'get-runtime-type',
@@ -122,6 +123,7 @@ define([
 
             return {
                 successNum: stats.numOfSuccess,
+                progressNum: stats.numOfProgress,
 
                 // who care?
                 // queueFailNum: 0,

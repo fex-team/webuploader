@@ -63,7 +63,7 @@ define([
             this._resize( this._img, canvas, width, height );
             this._blob = null;    // 没用了，可以删掉了。
             this.modified = true;
-            this.owner.trigger('complete', 'resize');
+            this.owner.trigger( 'complete', 'resize' );
         },
 
         crop: function( x, y, w, h, s ) {
@@ -73,8 +73,7 @@ define([
                 img = this._img,
                 iw = img.naturalWidth,
                 ih = img.naturalHeight,
-                orientation = this.getOrientation(),
-                tmp;
+                orientation = this.getOrientation();
 
             s = s || 1;
 
@@ -102,7 +101,7 @@ define([
 
             this._blob = null;    // 没用了，可以删掉了。
             this.modified = true;
-            this.owner.trigger('complete', 'crop');
+            this.owner.trigger( 'complete', 'crop' );
         },
 
         getAsBlob: function( type ) {
@@ -297,7 +296,7 @@ define([
 
             // 如果不是ios, 不需要这么复杂！
             if ( !Base.os.ios ) {
-                return function( canvas, img, x, y, w, h ) {
+                return function( canvas ) {
                     var args = Base.slice( arguments, 1 ),
                         ctx = canvas.getContext('2d');
 
@@ -352,8 +351,8 @@ define([
                         vertSquashRatio = detectVerticalSquash( img, iw, ih );
 
                     return canvas.getContext('2d').drawImage( img, 0, 0,
-                        iw * vertSquashRatio, ih * vertSquashRatio,
-                        x, y, w, h );
+                            iw * vertSquashRatio, ih * vertSquashRatio,
+                            x, y, w, h );
                 };
             }
 

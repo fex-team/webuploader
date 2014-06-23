@@ -117,17 +117,21 @@ define([
                 key = promise.pipe ? 'pipe' : 'then';
 
                 // 很重要不能删除。删除了会死循环。
-                // 保证执行顺序。让callback总是在下一个tick中执行。
+                // 保证执行顺序。让callback总是在下一个 tick 中执行。
                 return promise[ key ](function() {
                             var deferred = Base.Deferred(),
                                 args = arguments;
 
+                            if ( args.length === 1 ) {
+                                args = args[ 0 ];
+                            }
+
                             setTimeout(function() {
-                                deferred.resolve.apply( deferred, args );
+                                deferred.resolve( args );
                             }, 1 );
 
                             return deferred.promise();
-                        })[ key ]( callback || Base.noop );
+                        })[ callback ? key : 'done' ]( callback || Base.noop );
             } else {
                 return rlts[ 0 ];
             }

@@ -18,17 +18,11 @@ define([
         ext = rExt.exec( file.name ) ? RegExp.$1.toLowerCase() : '';
 
         // todo 支持其他类型文件的转换。
-
-        // 如果有mimetype, 但是文件名里面没有找出后缀规律
+        // 如果有 mimetype, 但是文件名里面没有找出后缀规律
         if ( !ext && file.type ) {
             ext = /\/(jpg|jpeg|png|gif|bmp)$/i.exec( file.type ) ?
                     RegExp.$1.toLowerCase() : '';
             this.name += '.' + ext;
-        }
-
-        // 如果没有指定mimetype, 但是知道文件后缀。
-        if ( !file.type && ~'jpg,jpeg,png,gif,bmp'.indexOf( ext ) ) {
-            this.type = file.type = 'image/' + (ext === 'jpg' ? 'jpeg' : ext);
         }
 
         this.ext = ext;

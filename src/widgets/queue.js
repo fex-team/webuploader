@@ -175,7 +175,7 @@ define([
             if ( me.options.auto ) {
                 setTimeout(function() {
                     me.request('start-upload');
-                }, 20);
+                }, 20 );
             }
         },
 

@@ -25,6 +25,8 @@ define([
             elem.on( 'dragleave', this.dragLeaveHandler );
             elem.on( 'drop', this.dropHandler );
 
+            alert(3);
+
             if ( this.options.disableGlobalDnd ) {
                 $( document ).on( 'dragover', this.dragOverHandler );
                 $( document ).on( 'drop', this.dropHandler );
@@ -52,7 +54,6 @@ define([
                 me.elem[ denied ? 'addClass' :
                         'removeClass' ]( prefix + 'denied' );
             }
-
 
             e.dataTransfer.dropEffect = denied ? 'none' : 'copy';
 

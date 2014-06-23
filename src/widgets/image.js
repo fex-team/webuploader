@@ -188,8 +188,6 @@ define([
             image = new Image( opts );
 
             image.once( 'load', function() {
-                var ret;
-
                 file._info = file._info || image.info();
                 file._meta = file._meta || image.meta();
 
@@ -213,7 +211,7 @@ define([
                 image.destroy();
             });
 
-            image.once( 'error', function() {
+            image.once( 'error', function( reason ) {
                 cb( true );
                 image.destroy();
             });
