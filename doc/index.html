@@ -124,6 +124,12 @@
                     
 
                     <li class="method">
+                        <a class="" href="#WebUploader_Uploader_md5File">md5File</a>
+                    </li>
+                    
+                    
+
+                    <li class="method">
                         <a class="" href="#WebUploader_Uploader_addFiles">addFiles</a>
                     </li>
                     
@@ -1178,6 +1184,55 @@ Date URL在IE6/7中不支持，所以不用调用此方法了，直接显示一�
             <span class="nx">$li</span><span class="p">.</span><span class="nx">append</span><span class="p">(</span><span class="s1">&#39;&amp;lt;img alt=&quot;&quot; src=&quot;&#39;</span> <span class="o">+</span> <span class="nx">ret</span> <span class="o">+</span> <span class="s1">&#39;&quot; /&gt;&#39;</span><span class="p">);</span>
         <span class="p">}</span>
     <span class="p">});</span>
+
+<span class="p">});</span>
+</code></pre></div>
+
+
+    
+</article>
+
+
+
+
+<article class="clearfix method">
+    <h3 id="WebUploader_Uploader_md5File"  >md5File
+        
+    </h3>
+    
+
+    
+
+    
+    <ul class="signature">
+        
+        <li>md5File( file ) 
+            <span class="return">⇒  promise</span>
+            
+        </li>
+    </ul>
+    
+    
+    
+
+    <p>计算文件 md5 值，返回一个 promise 对象，可以监听 progress 进度。</p>
+
+    
+        
+<div class="highlight"><pre><code class="javascript"><span class="nx">uploader</span><span class="p">.</span><span class="nx">on</span><span class="p">(</span> <span class="s1">&#39;fileQueued&#39;</span><span class="p">,</span> <span class="kd">function</span><span class="p">(</span> <span class="nx">file</span> <span class="p">)</span> <span class="p">{</span>
+    <span class="kd">var</span> <span class="nx">$li</span> <span class="o">=</span> <span class="p">...;</span>
+
+    <span class="nx">uploader</span><span class="p">.</span><span class="nx">md5File</span><span class="p">(</span> <span class="nx">file</span> <span class="p">)</span>
+
+        <span class="c1">// 及时显示进度</span>
+        <span class="p">.</span><span class="nx">progress</span><span class="p">(</span><span class="kd">function</span><span class="p">(</span><span class="nx">percentage</span><span class="p">)</span> <span class="p">{</span>
+            <span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="s1">&#39;Percentage:&#39;</span><span class="p">,</span> <span class="nx">percentage</span><span class="p">);</span>
+        <span class="p">})</span>
+
+        <span class="c1">// 完成</span>
+        <span class="p">.</span><span class="nx">then</span><span class="p">(</span><span class="kd">function</span><span class="p">(</span><span class="nx">val</span><span class="p">)</span> <span class="p">{</span>
+            <span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="s1">&#39;md5 result:&#39;</span><span class="p">,</span> <span class="nx">val</span><span class="p">);</span>
+        <span class="p">});</span>
 
 <span class="p">});</span>
 </code></pre></div>
