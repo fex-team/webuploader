@@ -268,7 +268,7 @@
                         ua.match( /CriOS\/([\d.]+)/ ),
     
                     ie = ua.match( /MSIE\s([\d\.]+)/ ) ||
-                        ua.match(/(?:trident)(?:.*rv:([\w.]+))?/i),
+                        ua.match( /(?:trident)(?:.*rv:([\w.]+))?/i ),
                     firefox = ua.match( /Firefox\/([\d.]+)/ ),
                     safari = ua.match( /Safari\/([\d.]+)/ ),
                     opera = ua.match( /OPR\/([\d.]+)/ );
@@ -753,6 +753,7 @@
             retry: 'retry',
             isInProgress: 'is-in-progress',
             makeThumb: 'make-thumb',
+            md5File: 'md5-file',
             getDimension: 'get-dimension',
             addButton: 'add-btn',
             getRuntimeType: 'get-runtime-type',
@@ -830,6 +831,7 @@
     
                 return {
                     successNum: stats.numOfSuccess,
+                    progressNum: stats.numOfProgress,
     
                     // who care?
                     // queueFailNum: 0,
@@ -1152,12 +1154,17 @@
     
             me.source = source;
             me.ruid = ruid;
+            this.size = source.size || 0;
+    
+            // 如果没有指定 mimetype, 但是知道文件后缀。
+            if ( !source.type && ~'jpg,jpeg,png,gif,bmp'.indexOf( this.ext ) ) {
+                this.type = 'image/' + (this.ext === 'jpg' ? 'jpeg' : this.ext);
+            } else {
+                this.type = source.type || 'application/octet-stream';
+            }
     
             RuntimeClient.call( me, 'Blob' );
-    
             this.uid = source.uid || this.uid;
-            this.type = source.type || 'application/octet-stream';
-            this.size = source.size || 0;
     
             if ( ruid ) {
                 me.connectRuntime( ruid );
@@ -1198,17 +1205,11 @@
             ext = rExt.exec( file.name ) ? RegExp.$1.toLowerCase() : '';
     
             // todo 支持其他类型文件的转换。
-    
-            // 如果有mimetype, 但是文件名里面没有找出后缀规律
+            // 如果有 mimetype, 但是文件名里面没有找出后缀规律
             if ( !ext && file.type ) {
                 ext = /\/(jpg|jpeg|png|gif|bmp)$/i.exec( file.type ) ?
                         RegExp.$1.toLowerCase() : '';
                 this.name += '.' + ext;
-            }
-    
-            // 如果没有指定mimetype, 但是知道文件后缀。
-            if ( !file.type && ~'jpg,jpeg,png,gif,bmp'.indexOf( ext ) ) {
-                this.type = file.type = 'image/' + (ext === 'jpg' ? 'jpeg' : ext);
             }
     
             this.ext = ext;
@@ -1473,17 +1474,21 @@
                     key = promise.pipe ? 'pipe' : 'then';
     
                     // 很重要不能删除。删除了会死循环。
-                    // 保证执行顺序。让callback总是在下一个tick中执行。
+                    // 保证执行顺序。让callback总是在下一个 tick 中执行。
                     return promise[ key ](function() {
                                 var deferred = Base.Deferred(),
                                     args = arguments;
     
+                                if ( args.length === 1 ) {
+                                    args = args[ 0 ];
+                                }
+    
                                 setTimeout(function() {
-                                    deferred.resolve.apply( deferred, args );
+                                    deferred.resolve( args );
                                 }, 1 );
     
                                 return deferred.promise();
-                            })[ key ]( callback || Base.noop );
+                            })[ callback ? key : 'done' ]( callback || Base.noop );
                 } else {
                     return rlts[ 0 ];
                 }
@@ -1854,7 +1859,14 @@
              *     crop: false,
              *
              *     // 是否保留头部meta信息。
-             *     preserveHeaders: true
+             *     preserveHeaders: true,
+             *
+             *     // 如果发现压缩后文件大小比原来还大，则使用原来图片
+             *     // 此属性可能会影响图片自动纠正功能
+             *     noCompressIfLarger: false,
+             *
+             *     // 单位字节，如果图片大小小于此值，不会采用压缩。
+             *     compressSize: 0
              * }
              * ```
              */
@@ -1932,8 +1944,6 @@
                 image = new Image( opts );
     
                 image.once( 'load', function() {
-                    var ret;
-    
                     file._info = file._info || image.info();
                     file._meta = file._meta || image.meta();
     
@@ -1957,7 +1967,7 @@
                     image.destroy();
                 });
     
-                image.once( 'error', function() {
+                image.once( 'error', function( reason ) {
                     cb( true );
                     image.destroy();
                 });
@@ -1971,12 +1981,15 @@
     
             compressImage: function( file ) {
                 var opts = this.options.compress || this.options.resize,
-                    compressSize = opts && opts.compressSize || 300 * 1024,
+                    compressSize = opts && opts.compressSize || 0,
+                    noCompressIfLarger = opts && opts.noCompressIfLarger || false,
                     image, deferred;
     
                 file = this.request( 'get-file', file );
     
-                // 只预览图片格式。
+                // 只压缩 jpeg 图片格式。
+                // gif 可能会丢失针
+                // bmp png 基本上尺寸都不大，且压缩比比较小。
                 if ( !opts || !~'image/jpeg,image/jpg'.indexOf( file.type ) ||
                         file.size < compressSize ||
                         file._compressed ) {
@@ -2026,7 +2039,7 @@
                         size = file.size;
     
                         // 如果压缩后，比原来还大则不用压缩后的。
-                        if ( blob.size < size ) {
+                        if ( !noCompressIfLarger || blob.size < size ) {
                             // file.source.destroy && file.source.destroy();
                             file.source = blob;
                             file.size = blob.size;
@@ -2629,7 +2642,7 @@
                 if ( me.options.auto ) {
                     setTimeout(function() {
                         me.request('start-upload');
-                    }, 20);
+                    }, 20 );
                 }
             },
     
@@ -3279,7 +3292,7 @@
     
                     // 文件可能还在prepare中，也有可能已经完全准备好了。
                     return isPromise( next ) ?
-                            next[ next.pipe ? 'pipe' : 'then']( done ) :
+                            next[ next.pipe ? 'pipe' : 'then' ]( done ) :
                             done( next );
                 }
             },
