@@ -110,6 +110,8 @@ var Uploader = (function() {
                 // 禁掉上传前压缩功能，因为会手动裁剪。
                 compress: false,
 
+                // fileSingleSizeLimit: 2 * 1024 * 1024,
+
                 server: '../../server/fileupload.php',
                 swf: '../../dist/Uploader.swf',
                 fileNumLimit: 1,

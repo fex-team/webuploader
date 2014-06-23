@@ -152,6 +152,7 @@
             chunked: false,
             chunkSize: 512 * 1024,
             server: '../../server/fileupload.php',
+            // runtimeOrder: 'flash',
             // server: 'http://liaoxuezhi.fe.baidu.com/webupload/fileupload.php',
             // server: 'http://www.2betop.net/fileupload.php',
             //
@@ -166,7 +167,7 @@
             disableGlobalDnd: true,
             fileNumLimit: 300,
             fileSizeLimit: 200 * 1024 * 1024,    // 200 M
-            fileSingleSizeLimit: 50 * 1024 * 1024    // 50 M
+            fileSingleSizeLimit: 2 * 1024 * 1024    // 50 M
         });
 
         // 拖拽时不接受 js, txt 文件。
