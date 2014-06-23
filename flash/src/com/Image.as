@@ -22,7 +22,8 @@ package com
 	import flash.display.PNGEncoderOptions;
 	import flash.events.Event;
 	import flash.events.IOErrorEvent;
-	import flash.geom.Matrix;
+import flash.events.ProgressEvent;
+import flash.geom.Matrix;
 	import flash.system.System;
 	import flash.utils.ByteArray;
 	
@@ -54,8 +55,10 @@ package com
 		}
 		
 		public function loadFromBlob( blob:* = null ):void {
-			var fr:FileReader; 
-			
+			var fr:FileReader;
+
+            
+
 			if (typeof blob === 'string') {
 				blob = Uploader.compFactory.get(blob);
 			}
@@ -66,10 +69,10 @@ package com
 			}
 			
 			fr = new FileReader;
-			
-			fr.addEventListener(OProgressEvent.PROGRESS, function(e:OProgressEvent) : void {
-				dispatchEvent(e);
-			});
+
+            fr.addEventListener(ProgressEvent.PROGRESS, function(e:ProgressEvent) : void {
+                dispatchEvent(new OProgressEvent(OProgressEvent.PROGRESS, e.bytesLoaded, e.bytesTotal));
+            });
 			
 			fr.addEventListener(Event.COMPLETE, function(e:Event) : void {
 				fr.removeAllEventsListeners();
