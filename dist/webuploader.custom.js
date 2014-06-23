@@ -3053,6 +3053,7 @@
              * uploader.reset();
              */
             reset: function() {
+                this.trigger('reset');
                 this.queue = new Queue();
                 this.stats = this.queue.stats;
             }

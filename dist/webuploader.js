@@ -2944,6 +2944,7 @@
              * uploader.reset();
              */
             reset: function() {
+                this.trigger('reset');
                 this.queue = new Queue();
                 this.stats = this.queue.stats;
             }
@@ -3875,7 +3876,7 @@
                 count--;
             });
     
-            uploader.on( 'uploadFinished', function() {
+            uploader.on( 'uploadFinished reset', function() {
                 count = 0;
             });
         });
@@ -3920,7 +3921,7 @@
                 count -= file.size;
             });
     
-            uploader.on( 'uploadFinished', function() {
+            uploader.on( 'uploadFinished reset', function() {
                 count = 0;
             });
         });
@@ -4002,6 +4003,10 @@
                 var hash = file.__hash;
     
                 hash && (delete mapping[ hash ]);
+            });
+    
+            uploader.on('reset', function() {
+                mapping = {};
             });
         });
     
