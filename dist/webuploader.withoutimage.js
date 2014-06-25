@@ -3810,14 +3810,24 @@
             _dropHandler: function( e ) {
                 var me = this,
                     ruid = me.getRuid(),
-                    parentElem = me.elem.parent().get( 0 );
+                    parentElem = me.elem.parent().get( 0 ),
+                    dataTransfer, data;
     
                 // 只处理框内的。
                 if ( parentElem && !$.contains( parentElem, e.currentTarget ) ) {
                     return false;
                 }
     
-                me._getTansferFiles( e, function( results ) {
+                e = e.originalEvent || e;
+                dataTransfer = e.dataTransfer;
+    
+                // 如果是页面拖拽，不阻止事件。
+                data = dataTransfer.getData('text/html');
+                if (data) {
+                    return;
+                }
+    
+                me._getTansferFiles( dataTransfer, function( results ) {
                     me.trigger( 'drop', $.map( results, function( file ) {
                         return new File( ruid, file );
                     }) );
@@ -3829,14 +3839,11 @@
             },
     
             // 如果传入 callback 则去查看文件夹，否则只管当前文件夹。
-            _getTansferFiles: function( e, callback ) {
+            _getTansferFiles: function( dataTransfer, callback ) {
                 var results  = [],
                     promises = [],
-                    items, files, dataTransfer, file, item, i, len, canAccessFolder;
+                    items, files, file, item, i, len, canAccessFolder;
     
-                e = e.originalEvent || e;
-    
-                dataTransfer = e.dataTransfer;
                 items = dataTransfer.items;
                 files = dataTransfer.files;
     
