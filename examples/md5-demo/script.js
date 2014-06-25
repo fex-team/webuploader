@@ -14,7 +14,7 @@
             var start =  +new Date();
 
             // 返回的是 promise 对象
-            this.md5File(file)
+            this.md5File(file, 0, 1 * 1024 * 1024)
 
                 // 可以用来监听进度
                 .progress(function(percentage) {
@@ -26,7 +26,7 @@
                     // console.log('md5:', ret);
                     
                     var end = +new Date();
-                    log('HTML5: md5 ' + file.name + ' cost ' + (end - start) + 'ms');
+                    log('HTML5: md5 ' + file.name + ' cost ' + (end - start) + 'ms get value: ' + ret);
                 });
         });
 
@@ -38,7 +38,7 @@
             var start =  +new Date();
 
             // 返回的是 promise 对象
-            this.md5File(file)
+            this.md5File(file, 0, 1 * 1024 * 1024)
 
                 // 可以用来监听进度
                 .progress(function(percentage) {
@@ -50,7 +50,7 @@
                     // console.log('md5:', ret);
                     
                     var end = +new Date();
-                    log('Flash: md5 ' + file.name + ' cost ' + (end - start) + 'ms');
+                    log('Flash: md5 ' + file.name + ' cost ' + (end - start) + 'ms get value: ' + ret);
                 });
         });
     });
