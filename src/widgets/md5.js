@@ -65,6 +65,7 @@ define([
                 end = end || 0;
                 start < 0 && (start = blob.size + start);
                 end < 0 && (end = blob.size + end);
+                end = Math.min(end, blob.size);
                 blob = blob.slice(start, end);
             }
 
