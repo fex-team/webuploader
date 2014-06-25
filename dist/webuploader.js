@@ -4055,8 +4055,9 @@
         'base',
         'uploader',
         'lib/md5',
+        'lib/blob',
         'widgets/widget'
-    ], function( Base, Uploader, Md5 ) {
+    ], function( Base, Uploader, Md5, Blob ) {
     
         return Uploader.register({
             'md5-file': 'md5Blob'
@@ -4068,7 +4069,7 @@
              *
              *
              * @method md5File
-             * @grammar md5File( file ) => promise
+             * @grammar md5File( file[, start[, end]] ) => promise
              * @for Uploader
              * @example
              *
@@ -4089,9 +4090,12 @@
              *
              * });
              */
-            md5Blob: function( file ) {
+            md5Blob: function( file, start, end ) {
                 var md5 = new Md5(),
-                    deferred = Base.Deferred();
+                    deferred = Base.Deferred(),
+                    blob = (file instanceof Blob) ? file : file.source;
+    
+                debugger;
     
                 md5.on( 'progress load', function( e ) {
                     e = e || {};
@@ -4106,7 +4110,16 @@
                     deferred.reject( reason );
                 });
     
-                md5.loadFromBlob( file.source );
+                if ( arguments.length > 1 ) {
+                    start = start || 0;
+                    end = end || 0;
+                    start < 0 && (start = blob.size + start);
+                    end < 0 && (end = blob.size + end);
+                    end = Math.min(end, blob.size);
+                    blob = blob.slice(start, end);
+                }
+    
+                md5.loadFromBlob( blob );
     
                 return deferred.promise();
             }
