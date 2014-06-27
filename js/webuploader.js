@@ -2944,6 +2944,7 @@
              * uploader.reset();
              */
             reset: function() {
+                this.owner.trigger('reset');
                 this.queue = new Queue();
                 this.stats = this.queue.stats;
             }
@@ -3875,7 +3876,7 @@
                 count--;
             });
     
-            uploader.on( 'uploadFinished', function() {
+            uploader.on( 'uploadFinished reset', function() {
                 count = 0;
             });
         });
@@ -3920,7 +3921,7 @@
                 count -= file.size;
             });
     
-            uploader.on( 'uploadFinished', function() {
+            uploader.on( 'uploadFinished reset', function() {
                 count = 0;
             });
         });
@@ -4003,6 +4004,10 @@
     
                 hash && (delete mapping[ hash ]);
             });
+    
+            uploader.on('reset', function() {
+                mapping = {};
+            });
         });
     
         return api;
@@ -4050,8 +4055,9 @@
         'base',
         'uploader',
         'lib/md5',
+        'lib/blob',
         'widgets/widget'
-    ], function( Base, Uploader, Md5 ) {
+    ], function( Base, Uploader, Md5, Blob ) {
     
         return Uploader.register({
             'md5-file': 'md5Blob'
@@ -4063,7 +4069,7 @@
              *
              *
              * @method md5File
-             * @grammar md5File( file ) => promise
+             * @grammar md5File( file[, start[, end]] ) => promise
              * @for Uploader
              * @example
              *
@@ -4084,9 +4090,12 @@
              *
              * });
              */
-            md5Blob: function( file ) {
+            md5Blob: function( file, start, end ) {
                 var md5 = new Md5(),
-                    deferred = Base.Deferred();
+                    deferred = Base.Deferred(),
+                    blob = (file instanceof Blob) ? file : file.source;
+    
+                debugger;
     
                 md5.on( 'progress load', function( e ) {
                     e = e || {};
@@ -4101,7 +4110,16 @@
                     deferred.reject( reason );
                 });
     
-                md5.loadFromBlob( file.source );
+                if ( arguments.length > 1 ) {
+                    start = start || 0;
+                    end = end || 0;
+                    start < 0 && (start = blob.size + start);
+                    end < 0 && (end = blob.size + end);
+                    end = Math.min(end, blob.size);
+                    blob = blob.slice(start, end);
+                }
+    
+                md5.loadFromBlob( blob );
     
                 return deferred.promise();
             }
@@ -4312,14 +4330,24 @@
             _dropHandler: function( e ) {
                 var me = this,
                     ruid = me.getRuid(),
-                    parentElem = me.elem.parent().get( 0 );
+                    parentElem = me.elem.parent().get( 0 ),
+                    dataTransfer, data;
     
                 // 只处理框内的。
                 if ( parentElem && !$.contains( parentElem, e.currentTarget ) ) {
                     return false;
                 }
     
-                me._getTansferFiles( e, function( results ) {
+                e = e.originalEvent || e;
+                dataTransfer = e.dataTransfer;
+    
+                // 如果是页面拖拽，不阻止事件。
+                data = dataTransfer.getData('text/html');
+                if (data) {
+                    return;
+                }
+    
+                me._getTansferFiles( dataTransfer, function( results ) {
                     me.trigger( 'drop', $.map( results, function( file ) {
                         return new File( ruid, file );
                     }) );
@@ -4331,14 +4359,11 @@
             },
     
             // 如果传入 callback 则去查看文件夹，否则只管当前文件夹。
-            _getTansferFiles: function( e, callback ) {
+            _getTansferFiles: function( dataTransfer, callback ) {
                 var results  = [],
                     promises = [],
-                    items, files, dataTransfer, file, item, i, len, canAccessFolder;
+                    items, files, file, item, i, len, canAccessFolder;
     
-                e = e.originalEvent || e;
-    
-                dataTransfer = e.dataTransfer;
                 items = dataTransfer.items;
                 files = dataTransfer.files;
     
