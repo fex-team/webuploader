@@ -110,6 +110,7 @@ define([
         /**
          * 获取文件统计信息。返回一个包含一下信息的对象。
          * * `successNum` 上传成功的文件数
+         * * `successNum` 上传中的文件数
          * * `uploadFailNum` 上传失败的文件数
          * * `cancelNum` 被删除的文件数
          * * `invalidNum` 无效的文件数

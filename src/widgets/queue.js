@@ -275,6 +275,12 @@ define([
         },
 
         /**
+         * @event reset
+         * @description 当 uploader 被重置的时候触发。
+         * @for  Uploader
+         */
+
+        /**
          * @method reset
          * @grammar reset() => undefined
          * @description 重置uploader。目前只重置了队列。

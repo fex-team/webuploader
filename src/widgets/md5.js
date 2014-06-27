@@ -43,9 +43,8 @@ define([
         md5Blob: function( file, start, end ) {
             var md5 = new Md5(),
                 deferred = Base.Deferred(),
-                blob = (file instanceof Blob) ? file : file.source;
-
-            debugger;
+                blob = (file instanceof Blob) ? file :
+                    this.request( 'get-file', file ).source;
 
             md5.on( 'progress load', function( e ) {
                 e = e || {};
