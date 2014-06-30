@@ -163,7 +163,7 @@ import com.utils.URLStreamProgress;
         }
 		
 		public function getResponse():String {
-            return escape(_getResponse());
+            return encodeURIComponent(_getResponse());
 		}
 		
 		public function getResponseAsJson() : Object
@@ -171,8 +171,13 @@ import com.utils.URLStreamProgress;
             var ret:Object;
 
             try {
-                var str:String = getResponse();
-                ret = com.adobe.serialization.json.JSON.decode(_getResponse());
+                var str:String = _getResponse();
+
+                if (!str || !str.match(/^\s*{/)) {
+                    return {};
+                }
+
+                ret = com.adobe.serialization.json.JSON.decode(str);
             } catch( e:Error ) {
                 ret = {};
             }
