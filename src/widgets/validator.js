@@ -41,8 +41,10 @@ define([
     Uploader.register({
         init: function() {
             var me = this;
-            $.each( validators, function() {
-                this.call( me.owner );
+            Base.nextTick(function() {
+                $.each( validators, function() {
+                    this.call( me.owner );
+                });
             });
         }
     });
