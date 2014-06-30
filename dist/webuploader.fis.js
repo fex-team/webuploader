@@ -7472,7 +7472,7 @@ return (function( root, factory ) {
             },
     
             getResponse: function() {
-                return this._response ? unescape( this._response ) : '';
+                return this._response || '';
             },
     
             getResponseAsJson: function() {
@@ -7520,7 +7520,8 @@ return (function( root, factory ) {
                     } else {
                         err = 'http';
                     }
-    
+                    
+                    me._response = decodeURIComponent(me._response);
                     xhr.destroy();
                     xhr = null;
     

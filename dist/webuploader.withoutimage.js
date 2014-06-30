@@ -4534,7 +4534,7 @@
             },
     
             getResponse: function() {
-                return this._response ? unescape( this._response ) : '';
+                return this._response || '';
             },
     
             getResponseAsJson: function() {
@@ -4582,7 +4582,8 @@
                     } else {
                         err = 'http';
                     }
-    
+                    
+                    me._response = decodeURIComponent(me._response);
                     xhr.destroy();
                     xhr = null;
     
