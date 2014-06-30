@@ -16,14 +16,14 @@ styles:
     
     <p>Web Uploader内部类的详细说明，以下提及的功能类，都可以在<code>WebUploader</code>这个变量中访问到。</p>
 <p>As you know, Web Uploader的每个文件都是用过<a href="https://github.com/amdjs/amdjs-api/wiki/AMD">AMD</a>规范中的<code>define</code>组织起来的, 每个Module都会有个module id.
-默认module id该文件的路径，而此路径将会转化成名字空间存放在WebUploader中。如：</p>
+默认module id为该文件的路径，而此路径将会转化成名字空间存放在WebUploader中。如：</p>
 <ul>
 <li>module <code>base</code>：WebUploader.Base</li>
 <li>module <code>file</code>: WebUploader.File</li>
 <li>module <code>lib/dnd</code>: WebUploader.Lib.Dnd</li>
 <li>module <code>runtime/html5/dnd</code>: WebUploader.Runtime.Html5.Dnd</li>
 </ul>
-<p>以下文档将可能省略<code>WebUploader</code>前缀。</p>
+<p>以下文档中对类的使用可能省略掉了<code>WebUploader</code>前缀。</p>
 
 </div>
 
@@ -483,6 +483,18 @@ var uploader = WebUploader.Uploader({
         
         <li>
             <span class="meta">
+                <code>disableGlobalDnd</code>
+                 {Selector} 
+                 [可选] 
+                 [默认值：false] 
+            </span>
+            <p>  是否禁掉整个页面的拖拽功能，如果不禁用，图片拖进来的时候会默认被浏览器打开。</p>
+
+            
+        </li>
+        
+        <li>
+            <span class="meta">
                 <code>paste</code>
                  {Selector} 
                  [可选] 
@@ -840,6 +852,15 @@ var uploader = WebUploader.Uploader({
         </tr>
         
         <tr>
+            <td><code>reset</code></td>
+            <td class="events-tb-desc">
+                
+            </td>
+            <td><p>当 uploader 被重置的时候触发。</p>
+</td>
+        </tr>
+        
+        <tr>
             <td><code>startUpload</code></td>
             <td class="events-tb-desc">
                 
@@ -883,6 +904,7 @@ var uploader = WebUploader.Uploader({
             <td class="events-tb-desc">
                 
                 <ul class="params-list"><li><span class="meta"><code>object</code> {Object}</span></li><li><span class="meta"><code>data</code> {Object}</span><p>默认的上传参数，可以扩展此对象来控制上传参数。</p>
+</li><li><span class="meta"><code>headers</code> {Object}</span><p>可以扩展此对象来控制上传头部。</p>
 </li></ul>
                 
             </td>
@@ -1046,6 +1068,7 @@ uploader.option( 'compress', {
     <p>获取文件统计信息。返回一个包含一下信息的对象。</p>
 <ul>
 <li><code>successNum</code> 上传成功的文件数</li>
+<li><code>successNum</code> 上传中的文件数</li>
 <li><code>uploadFailNum</code> 上传失败的文件数</li>
 <li><code>cancelNum</code> 被删除的文件数</li>
 <li><code>invalidNum</code> 无效的文件数</li>
@@ -1167,7 +1190,7 @@ uploader.on( 'fileQueued', function( file ) {
     
     <ul class="signature">
         
-        <li>md5File( file ) 
+        <li>md5File( file[, start[, end]] ) 
             <span class="return">⇒  promise</span>
             
         </li>
@@ -1903,7 +1926,7 @@ var doSomething = function() {
     
     
 
-    <p>引用Console.log如果存在的话，否则引用一个<a href="#WebUploader_Base_log">空函数loop</a>。</p>
+    <p>引用Console.log如果存在的话，否则引用一个<a href="#WebUploader_Base_noop">空函数noop</a>。</p>
 
     
 </article>

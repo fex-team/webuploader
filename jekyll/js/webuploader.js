@@ -1,4 +1,4 @@
-/*! WebUploader 0.1.4 */
+/*! WebUploader 0.1.5 */
 
 
 /**
@@ -180,7 +180,7 @@
      * Web Uploader内部类的详细说明，以下提及的功能类，都可以在`WebUploader`这个变量中访问到。
      *
      * As you know, Web Uploader的每个文件都是用过[AMD](https://github.com/amdjs/amdjs-api/wiki/AMD)规范中的`define`组织起来的, 每个Module都会有个module id.
-     * 默认module id该文件的路径，而此路径将会转化成名字空间存放在WebUploader中。如：
+     * 默认module id为该文件的路径，而此路径将会转化成名字空间存放在WebUploader中。如：
      *
      * * module `base`：WebUploader.Base
      * * module `file`: WebUploader.File
@@ -188,7 +188,7 @@
      * * module `runtime/html5/dnd`: WebUploader.Runtime.Html5.Dnd
      *
      *
-     * 以下文档将可能省略`WebUploader`前缀。
+     * 以下文档中对类的使用可能省略掉了`WebUploader`前缀。
      * @module WebUploader
      * @title WebUploader API文档
      */
@@ -236,7 +236,7 @@
             /**
              * @property {String} version 当前版本号。
              */
-            version: '0.1.4',
+            version: '0.1.5',
     
             /**
              * @property {jQuery|Zepto} $ 引用依赖的jQuery或者Zepto对象。
@@ -394,7 +394,7 @@
             bindFn: bindFn,
     
             /**
-             * 引用Console.log如果存在的话，否则引用一个[空函数loop](#WebUploader:Base.log)。
+             * 引用Console.log如果存在的话，否则引用一个[空函数noop](#WebUploader:Base.noop)。
              * @grammar Base.log( args... ) => undefined
              * @method log
              */
@@ -818,6 +818,7 @@
             /**
              * 获取文件统计信息。返回一个包含一下信息的对象。
              * * `successNum` 上传成功的文件数
+             * * `successNum` 上传中的文件数
              * * `uploadFailNum` 上传失败的文件数
              * * `cancelNum` 被删除的文件数
              * * `invalidNum` 无效的文件数
@@ -1376,6 +1377,12 @@
     
         /**
          * @property {Selector} [dnd=undefined]  指定Drag And Drop拖拽的容器，如果不指定，则不启动。
+         * @namespace options
+         * @for Uploader
+         */
+        
+        /**
+         * @property {Selector} [disableGlobalDnd=false]  是否禁掉整个页面的拖拽功能，如果不禁用，图片拖进来的时候会默认被浏览器打开。
          * @namespace options
          * @for Uploader
          */
@@ -2936,6 +2943,12 @@
             },
     
             /**
+             * @event reset
+             * @description 当 uploader 被重置的时候触发。
+             * @for  Uploader
+             */
+    
+            /**
              * @method reset
              * @grammar reset() => undefined
              * @description 重置uploader。目前只重置了队列。
@@ -3593,6 +3606,7 @@
              * @event uploadBeforeSend
              * @param {Object} object
              * @param {Object} data 默认的上传参数，可以扩展此对象来控制上传参数。
+             * @param {Object} headers 可以扩展此对象来控制上传头部。
              * @description 当某个文件的分块在发送前触发，主要用来询问是否要添加附带参数，大文件在开起分片上传的前提下此事件可能会触发多次。
              * @for  Uploader
              */
@@ -3832,8 +3846,10 @@
         Uploader.register({
             init: function() {
                 var me = this;
-                $.each( validators, function() {
-                    this.call( me.owner );
+                Base.nextTick(function() {
+                    $.each( validators, function() {
+                        this.call( me.owner );
+                    });
                 });
             }
         });
@@ -4093,9 +4109,8 @@
             md5Blob: function( file, start, end ) {
                 var md5 = new Md5(),
                     deferred = Base.Deferred(),
-                    blob = (file instanceof Blob) ? file : file.source;
-    
-                debugger;
+                    blob = (file instanceof Blob) ? file :
+                        this.request( 'get-file', file ).source;
     
                 md5.on( 'progress load', function( e ) {
                     e = e || {};
