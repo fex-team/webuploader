@@ -101,7 +101,7 @@ define([
                     err = 'http';
                 }
                 
-                me._response = decodeURIComponent(me._response);
+                me._response = decodeURIComponent( me._response );
                 xhr.destroy();
                 xhr = null;
 

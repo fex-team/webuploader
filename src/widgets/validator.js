@@ -216,7 +216,7 @@ define([
             hash && (delete mapping[ hash ]);
         });
 
-        uploader.on('reset', function() {
+        uploader.on( 'reset', function() {
             mapping = {};
         });
     });

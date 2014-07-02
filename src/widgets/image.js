@@ -212,7 +212,7 @@ define([
             });
 
             image.once( 'error', function( reason ) {
-                cb( true );
+                cb( reason || true );
                 image.destroy();
             });
 

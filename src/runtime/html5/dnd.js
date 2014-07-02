@@ -99,9 +99,9 @@ define([
             e = e.originalEvent || e;
             dataTransfer = e.dataTransfer;
 
-            // 如果是页面拖拽，不阻止事件。
+            // 如果是页面内拖拽，还不能处理，不阻止事件。
             data = dataTransfer.getData('text/html');
-            if (data) {
+            if ( data ) {
                 return;
             }
 
