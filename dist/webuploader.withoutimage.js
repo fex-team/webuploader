@@ -1814,34 +1814,42 @@
                 var me = this,
                     opts = me.options,
                     accept = opts.accept,
-                    options, picker, deferred;
+                    promises = [];
     
                 if ( !pick ) {
                     return;
                 }
-    
-                deferred = Base.Deferred();
+                
                 $.isPlainObject( pick ) || (pick = {
                     id: pick
                 });
     
-                options = $.extend({}, pick, {
-                    accept: $.isPlainObject( accept ) ? [ accept ] : accept,
-                    swf: opts.swf,
-                    runtimeOrder: opts.runtimeOrder
+                $( pick.id ).each(function() {
+                    var options, picker, deferred;
+    
+                    deferred = Base.Deferred();
+    
+                    options = $.extend({}, pick, {
+                        accept: $.isPlainObject( accept ) ? [ accept ] : accept,
+                        swf: opts.swf,
+                        runtimeOrder: opts.runtimeOrder,
+                        id: this
+                    });
+    
+                    picker = new FilePicker( options );
+    
+                    picker.once( 'ready', deferred.resolve );
+                    picker.on( 'select', function( files ) {
+                        me.owner.request( 'add-file', [ files ]);
+                    });
+                    picker.init();
+    
+                    me.pickers.push( picker );
+    
+                    promises.push( deferred.promise() );
                 });
     
-                picker = new FilePicker( options );
-    
-                picker.once( 'ready', deferred.resolve );
-                picker.on( 'select', function( files ) {
-                    me.owner.request( 'add-file', [ files ]);
-                });
-                picker.init();
-    
-                this.pickers.push( picker );
-    
-                return deferred.promise();
+                return Base.when.apply( Base, promises );
             },
     
             disable: function() {
@@ -3613,7 +3621,7 @@
                 hash && (delete mapping[ hash ]);
             });
     
-            uploader.on('reset', function() {
+            uploader.on( 'reset', function() {
                 mapping = {};
             });
         });
@@ -3837,9 +3845,9 @@
                 e = e.originalEvent || e;
                 dataTransfer = e.dataTransfer;
     
-                // 如果是页面拖拽，不阻止事件。
+                // 如果是页面内拖拽，还不能处理，不阻止事件。
                 data = dataTransfer.getData('text/html');
-                if (data) {
+                if ( data ) {
                     return;
                 }
     
@@ -4583,7 +4591,7 @@
                         err = 'http';
                     }
                     
-                    me._response = decodeURIComponent(me._response);
+                    me._response = decodeURIComponent( me._response );
                     xhr.destroy();
                     xhr = null;
     
