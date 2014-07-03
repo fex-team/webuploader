@@ -93,14 +93,14 @@ return (function( root, factory ) {
             return obj;
         },
 
-        makeExprot = function( dollar ) {
+        makeExport = function( dollar ) {
             root.__dollar = dollar;
 
             // exports every module.
             return exportsTo( factory( root, _define, _require ) );
         };
 
-    return makeExprot( jQuery );
+    return makeExport( jQuery );
 })( window, function( window, define, require ) {
 
 
