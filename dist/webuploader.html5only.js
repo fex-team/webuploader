@@ -4254,7 +4254,12 @@
                 dataTransfer = e.dataTransfer;
     
                 // 如果是页面内拖拽，还不能处理，不阻止事件。
-                data = dataTransfer.getData('text/html');
+                // 此处 ie11 下会报参数错误，
+                try {
+                    data = dataTransfer.getData('text/html');
+                } catch( err ) {
+                }
+    
                 if ( data ) {
                     return;
                 }
