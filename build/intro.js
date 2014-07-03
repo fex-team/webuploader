@@ -93,7 +93,7 @@
             return obj;
         },
 
-        makeExprot = function( dollar ) {
+        makeExport = function( dollar ) {
             root.__dollar = dollar;
 
             // exports every module.
@@ -105,20 +105,20 @@
     if ( typeof module === 'object' && typeof module.exports === 'object' ) {
 
         // For CommonJS and CommonJS-like environments where a proper window is present,
-        module.exports = makeExprot();
+        module.exports = makeExport();
     } else if ( typeof define === 'function' && define.amd ) {
 
         // Allow using this built library as an AMD module
         // in another project. That other project will only
         // see this AMD call, not the internal modules in
         // the closure below.
-        define([ 'jQuery' ], makeExprot );
+        define([ 'jQuery' ], makeExport );
     } else {
 
         // Browser globals case. Just assign the
         // result to a property on the global.
         origin = root.WebUploader;
-        root.WebUploader = makeExprot();
+        root.WebUploader = makeExport();
         root.WebUploader.noConflict = function() {
             root.WebUploader = origin;
         };
