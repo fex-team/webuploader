@@ -30,7 +30,7 @@ define([
                 }),
                 paste;
 
-            paste = new FilePaste( options );
+            this.paste = paste = new FilePaste( options );
 
             paste.once( 'ready', deferred.resolve );
             paste.on( 'paste', function( files ) {
@@ -39,6 +39,10 @@ define([
             paste.init();
 
             return deferred.promise();
+        },
+
+        destroy: function() {
+            this.paste && this.paste.destroy();
         }
     });
 });

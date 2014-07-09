@@ -52,15 +52,10 @@ define([
     });
 
     return Uploader.register({
-        'add-btn': 'addButton',
-        refresh: 'refresh',
-        disable: 'disable',
-        enable: 'enable'
-    }, {
 
         init: function( opts ) {
             this.pickers = [];
-            return opts.pick && this.addButton( opts.pick );
+            return opts.pick && this.addBtn( opts.pick );
         },
 
         refresh: function() {
@@ -81,7 +76,7 @@ define([
          *     innerHTML: '选择文件'
          * });
          */
-        addButton: function( pick ) {
+        addBtn: function( pick ) {
             var me = this,
                 opts = me.options,
                 accept = opts.accept,
@@ -133,6 +128,13 @@ define([
             $.each( this.pickers, function() {
                 this.enable();
             });
+        },
+
+        destroy: function() {
+            $.each( this.pickers, function() {
+                this.destroy();
+            });
+            this.pickers = null;
         }
     });
 });

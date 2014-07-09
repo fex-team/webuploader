@@ -25,12 +25,6 @@ define([
                 me.exec('init');
                 me.trigger('ready');
             });
-        },
-
-        destroy: function() {
-            this.exec('destroy');
-            this.disconnectRuntime();
-            this.off();
         }
     });
 

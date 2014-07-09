@@ -28,7 +28,7 @@ define([
         },
 
         destroy: function() {
-            // todo
+            this.flashExec( 'FilePicker', 'destroy' );
         }
     });
 });

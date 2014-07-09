@@ -10,8 +10,6 @@ define([
 ], function( Base, Uploader, Md5, Blob ) {
 
     return Uploader.register({
-        'md5-file': 'md5Blob'
-    }, {
 
 
         /**
@@ -40,7 +38,7 @@ define([
          *
          * });
          */
-        md5Blob: function( file, start, end ) {
+        md5File: function( file, start, end ) {
             var md5 = new Md5(),
                 deferred = Base.Deferred(),
                 blob = (file instanceof Blob) ? file :

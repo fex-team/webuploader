@@ -125,9 +125,6 @@ define([
     });
 
     return Uploader.register({
-        'make-thumb': 'makeThumb',
-        'before-send-file': 'compressImage'
-    }, {
 
 
         /**
@@ -223,7 +220,7 @@ define([
             });
         },
 
-        compressImage: function( file ) {
+        beforeSendFile: function( file ) {
             var opts = this.options.compress || this.options.resize,
                 compressSize = opts && opts.compressSize || 0,
                 noCompressIfLarger = opts && opts.noCompressIfLarger || false,

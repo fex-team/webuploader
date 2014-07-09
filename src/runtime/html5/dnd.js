@@ -189,8 +189,13 @@ define([
         destroy: function() {
             var elem = this.elem;
 
+            // 还没 init 就调用 destroy
+            if (!elem) {
+                return;
+            }
+            
             elem.off( 'dragenter', this.dragEnterHandler );
-            elem.off( 'dragover', this.dragEnterHandler );
+            elem.off( 'dragover', this.dragOverHandler );
             elem.off( 'dragleave', this.dragLeaveHandler );
             elem.off( 'drop', this.dropHandler );
 

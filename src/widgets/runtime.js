@@ -12,8 +12,6 @@ define([
     };
 
     return Uploader.register({
-        'predict-runtime-type': 'predictRuntmeType'
-    }, {
 
         init: function() {
             if ( !this.predictRuntmeType() ) {

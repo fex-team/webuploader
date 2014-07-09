@@ -132,11 +132,6 @@ define([
     }
 
     Uploader.register({
-        'start-upload': 'start',
-        'stop-upload': 'stop',
-        'skip-file': 'skipFile',
-        'is-in-progress': 'isInProgress'
-    }, {
 
         init: function() {
             var owner = this.owner;
@@ -177,7 +172,7 @@ define([
          * @method upload
          * @for  Uploader
          */
-        start: function() {
+        startUpload: function() {
             var me = this;
 
             // 移出invalid的文件
@@ -220,7 +215,7 @@ define([
          * @method stop
          * @for  Uploader
          */
-        stop: function( interrupt ) {
+        stopUpload: function( interrupt ) {
             var me = this;
 
             if ( me.runing === false ) {
@@ -247,7 +242,7 @@ define([
             return !!this.runing;
         },
 
-        getStats: function() {
+        _getStats: function() {
             return this.request('get-stats');
         },
 
@@ -307,7 +302,7 @@ define([
                 me._promise = isPromise( val ) ? val.always( fn ) : fn( val );
 
             // 没有要上传的了，且没有正在传输的了。
-            } else if ( !me.remaning && !me.getStats().numOfQueue ) {
+            } else if ( !me.remaning && !me._getStats().numOfQueue ) {
                 me.runing = false;
 
                 me._trigged || Base.nextTick(function() {
@@ -338,7 +333,7 @@ define([
             } else if ( me.runing ) {
 
                 // 如果缓存中有，则直接在缓存中取，没有则去queue中取。
-                if ( !me.pending.length && me.getStats().numOfQueue ) {
+                if ( !me.pending.length && me._getStats().numOfQueue ) {
                     me._prepareNextFile();
                 }
 

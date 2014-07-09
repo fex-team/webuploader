@@ -16,17 +16,6 @@ define([
         Status = WUFile.Status;
 
     return Uploader.register({
-        'sort-files': 'sortFiles',
-        'add-file': 'addFiles',
-        'get-file': 'getFile',
-        'fetch-file': 'fetchFile',
-        'get-stats': 'getStats',
-        'get-files': 'getFiles',
-        'remove-file': 'removeFile',
-        'retry': 'retry',
-        'reset': 'reset',
-        'accept-file': 'acceptFile'
-    }, {
 
         init: function( opts ) {
             var me = this,
@@ -66,7 +55,7 @@ define([
             // 创建一个 html5 运行时的 placeholder
             // 以至于外部添加原生 File 对象的时候能正确包裹一下供 webuploader 使用。
             deferred = Base.Deferred();
-            runtime = new RuntimeClient('Placeholder');
+            this.placeholder = runtime = new RuntimeClient('Placeholder');
             runtime.connectRuntime({
                 runtimeOrder: 'html5'
             }, function() {
@@ -159,7 +148,7 @@ define([
          * @description 添加文件到队列
          * @for  Uploader
          */
-        addFiles: function( files ) {
+        addFile: function( files ) {
             var me = this;
 
             if ( !files.length ) {
@@ -292,6 +281,11 @@ define([
             this.owner.trigger('reset');
             this.queue = new Queue();
             this.stats = this.queue.stats;
+        },
+
+        destroy: function() {
+            this.reset();
+            this.placeholder && this.placeholder.destroy();
         }
     });
 

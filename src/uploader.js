@@ -48,7 +48,7 @@ define([
         md5File: 'md5-file',
         getDimension: 'get-dimension',
         addButton: 'add-btn',
-        getRuntimeType: 'get-runtime-type',
+        predictRuntmeType: 'predict-runtme-type',
         refresh: 'refresh',
         disable: 'disable',
         enable: 'enable',
@@ -122,7 +122,7 @@ define([
             // return this._mgr.getStats.apply( this._mgr, arguments );
             var stats = this.request('get-stats');
 
-            return {
+            return stats ? {
                 successNum: stats.numOfSuccess,
                 progressNum: stats.numOfProgress,
 
@@ -132,7 +132,7 @@ define([
                 invalidNum: stats.numOfInvalid,
                 uploadFailNum: stats.numOfUploadFailed,
                 queueNum: stats.numOfQueue
-            };
+            } : {};
         },
 
         // 需要重写此方法来来支持opts.onEvent和instance.onEvent的处理器
@@ -162,6 +162,16 @@ define([
             }
 
             return true;
+        },
+
+        /**
+         * 销毁 webuploader 实例
+         * @method destroy
+         * @grammar destroy() => undefined
+         */
+        destroy: function() {
+            this.request( 'destroy', arguments );
+            this.off();
         },
 
         // widgets/widget.js将补充此方法的详细文档。

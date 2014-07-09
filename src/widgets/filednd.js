@@ -46,7 +46,7 @@ define([
                 }),
                 dnd;
 
-            dnd = new Dnd( options );
+            this.dnd = dnd = new Dnd( options );
 
             dnd.once( 'ready', deferred.resolve );
             dnd.on( 'drop', function( files ) {
@@ -61,6 +61,10 @@ define([
             dnd.init();
 
             return deferred.promise();
+        },
+
+        destroy: function() {
+            this.dnd && this.dnd.destroy();
         }
     });
 });
