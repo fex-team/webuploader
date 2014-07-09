@@ -3926,7 +3926,7 @@ return (function( root, factory ) {
                 count--;
             });
     
-            uploader.on( 'uploadFinished reset', function() {
+            uploader.on( 'reset', function() {
                 count = 0;
             });
         });
@@ -3971,7 +3971,7 @@ return (function( root, factory ) {
                 count -= file.size;
             });
     
-            uploader.on( 'uploadFinished reset', function() {
+            uploader.on( 'reset', function() {
                 count = 0;
             });
         });
