@@ -731,7 +731,7 @@ return (function( root, factory ) {
             md5File: 'md5-file',
             getDimension: 'get-dimension',
             addButton: 'add-btn',
-            getRuntimeType: 'get-runtime-type',
+            predictRuntmeType: 'predict-runtme-type',
             refresh: 'refresh',
             disable: 'disable',
             enable: 'enable',
@@ -805,7 +805,7 @@ return (function( root, factory ) {
                 // return this._mgr.getStats.apply( this._mgr, arguments );
                 var stats = this.request('get-stats');
     
-                return {
+                return stats ? {
                     successNum: stats.numOfSuccess,
                     progressNum: stats.numOfProgress,
     
@@ -815,7 +815,7 @@ return (function( root, factory ) {
                     invalidNum: stats.numOfInvalid,
                     uploadFailNum: stats.numOfUploadFailed,
                     queueNum: stats.numOfQueue
-                };
+                } : {};
             },
     
             // 需要重写此方法来来支持opts.onEvent和instance.onEvent的处理器
@@ -845,6 +845,16 @@ return (function( root, factory ) {
                 }
     
                 return true;
+            },
+    
+            /**
+             * 销毁 webuploader 实例
+             * @method destroy
+             * @grammar destroy() => undefined
+             */
+            destroy: function() {
+                this.request( 'destroy', arguments );
+                this.off();
             },
     
             // widgets/widget.js将补充此方法的详细文档。
@@ -922,6 +932,7 @@ return (function( root, factory ) {
                 parent.append( container );
                 parent.addClass('webuploader-container');
                 this._container = container;
+                this._parent = parent;
                 return container;
             },
     
@@ -929,10 +940,8 @@ return (function( root, factory ) {
             exec: Base.noop,
     
             destroy: function() {
-                if ( this._container ) {
-                    this._container.parentNode.removeChild( this.__container );
-                }
-    
+                this._container && this._container.remove();
+                this._parent && this._parent.removeClass('webuploader-container');
                 this.off();
             }
         });
@@ -1155,10 +1164,6 @@ return (function( root, factory ) {
                     me.exec('init');
                     me.trigger('ready');
                 });
-            },
-    
-            destroy: function() {
-                this.disconnectRuntime();
             }
         });
     
@@ -1176,6 +1181,7 @@ return (function( root, factory ) {
     
         var $ = Base.$,
             _init = Uploader.prototype._init,
+            _destroy = Uploader.prototype.destroy,
             IGNORE = {},
             widgetClass = [];
     
@@ -1257,7 +1263,7 @@ return (function( root, factory ) {
             request: function( apiName, args, callback ) {
                 var i = 0,
                     widgets = this._widgets,
-                    len = widgets.length,
+                    len = widgets && widgets.length,
                     rlts = [],
                     dfds = [],
                     widget, rlt, promise, key;
@@ -1303,36 +1309,94 @@ return (function( root, factory ) {
                 } else {
                     return rlts[ 0 ];
                 }
+            },
+    
+            destroy: function() {
+                _destroy.apply( this, arguments );
+                this._widgets = null;
             }
         });
     
         /**
          * 添加组件
-         * @param  {object} widgetProto 组件原型，构造函数通过constructor属性定义
-         * @param  {object} responseMap API名称与函数实现的映射
+         * @grammar Uploader.register(proto);
+         * @grammar Uploader.register(map, proto);
+         * @param  {object} responseMap API 名称与函数实现的映射
+         * @param  {object} proto 组件原型，构造函数通过 constructor 属性定义
+         * @method Uploader.register
+         * @for Uploader
          * @example
-         *     Uploader.register( {
-         *         init: function( options ) {},
-         *         makeThumb: function() {}
-         *     }, {
-         *         'make-thumb': 'makeThumb'
-         *     } );
+         * Uploader.register({
+         *     'make-thumb': 'makeThumb'
+         * }, {
+         *     init: function( options ) {},
+         *     makeThumb: function() {}
+         * });
+         *
+         * Uploader.register({
+         *     'make-thumb': function() {
+         *         
+         *     }
+         * });
          */
         Uploader.register = Widget.register = function( responseMap, widgetProto ) {
-            var map = { init: 'init' },
+            var map = { init: 'init', destroy: 'destroy', name: 'anonymous' },
                 klass;
     
             if ( arguments.length === 1 ) {
                 widgetProto = responseMap;
-                widgetProto.responseMap = map;
+    
+                // 自动生成 map 表。
+                $.each(widgetProto, function(key) {
+                    if ( key[0] === '_' || key === 'name' ) {
+                        key === 'name' && (map.name = widgetProto.name);
+                        return;
+                    }
+    
+                    map[key.replace(/[A-Z]/g, '-$&').toLowerCase()] = key;
+                });
+    
             } else {
-                widgetProto.responseMap = $.extend( map, responseMap );
+                map = $.extend( map, responseMap );
             }
     
+            widgetProto.responseMap = map;
             klass = Base.inherits( Widget, widgetProto );
+            klass._name = map.name;
             widgetClass.push( klass );
     
             return klass;
+        };
+    
+        /**
+         * 删除插件，只有在注册时指定了名字的才能被删除。
+         * @grammar Uploader.unRegister(name);
+         * @param  {string} name 组件名字
+         * @method Uploader.unRegister
+         * @for Uploader
+         * @example
+         *
+         * Uploader.register({
+         *     name: 'custom',
+         *     
+         *     'make-thumb': function() {
+         *         
+         *     }
+         * });
+         *
+         * Uploader.unRegister('custom');
+         */
+        Uploader.unRegister = Widget.unRegister = function( name ) {
+            if ( !name || name === 'anonymous' ) {
+                return;
+            }
+            
+            // 删除指定的插件。
+            for ( var i = widgetClass.length; i--; ) {
+                if ( widgetClass[i]._name === name ) {
+                    widgetClass.splice(i, 1)
+                }
+            }
         };
     
         return Widget;
@@ -1385,7 +1449,7 @@ return (function( root, factory ) {
                     }),
                     dnd;
     
-                dnd = new Dnd( options );
+                this.dnd = dnd = new Dnd( options );
     
                 dnd.once( 'ready', deferred.resolve );
                 dnd.on( 'drop', function( files ) {
@@ -1400,6 +1464,10 @@ return (function( root, factory ) {
                 dnd.init();
     
                 return deferred.promise();
+            },
+    
+            destroy: function() {
+                this.dnd && this.dnd.destroy();
             }
         });
     });
@@ -1431,12 +1499,6 @@ return (function( root, factory ) {
                     me.exec('init');
                     me.trigger('ready');
                 });
-            },
-    
-            destroy: function() {
-                this.exec('destroy');
-                this.disconnectRuntime();
-                this.off();
             }
         });
     
@@ -1476,7 +1538,7 @@ return (function( root, factory ) {
                     }),
                     paste;
     
-                paste = new FilePaste( options );
+                this.paste = paste = new FilePaste( options );
     
                 paste.once( 'ready', deferred.resolve );
                 paste.on( 'paste', function( files ) {
@@ -1485,6 +1547,10 @@ return (function( root, factory ) {
                 paste.init();
     
                 return deferred.promise();
+            },
+    
+            destroy: function() {
+                this.paste && this.paste.destroy();
             }
         });
     });
@@ -1650,9 +1716,8 @@ return (function( root, factory ) {
                     me.trigger('ready');
                 });
     
-                $( window ).on( 'resize', function() {
-                    me.refresh();
-                });
+                this._resizeHandler = Base.bindFn( this.refresh, this );
+                $( window ).on( 'resize', this._resizeHandler );
             },
     
             refresh: function() {
@@ -1692,10 +1757,10 @@ return (function( root, factory ) {
             },
     
             destroy: function() {
-                if ( this.runtime ) {
-                    this.exec('destroy');
-                    this.disconnectRuntime();
-                }
+                var btn = this.options.button;
+                $( window ).off( 'resize', this._resizeHandler );
+                btn.removeClass('webuploader-pick-disable webuploader-pick-hover ' +
+                    'webuploader-pick');
             }
         });
     
@@ -1756,15 +1821,10 @@ return (function( root, factory ) {
         });
     
         return Uploader.register({
-            'add-btn': 'addButton',
-            refresh: 'refresh',
-            disable: 'disable',
-            enable: 'enable'
-        }, {
     
             init: function( opts ) {
                 this.pickers = [];
-                return opts.pick && this.addButton( opts.pick );
+                return opts.pick && this.addBtn( opts.pick );
             },
     
             refresh: function() {
@@ -1785,7 +1845,7 @@ return (function( root, factory ) {
              *     innerHTML: '选择文件'
              * });
              */
-            addButton: function( pick ) {
+            addBtn: function( pick ) {
                 var me = this,
                     opts = me.options,
                     accept = opts.accept,
@@ -1837,6 +1897,13 @@ return (function( root, factory ) {
                 $.each( this.pickers, function() {
                     this.enable();
                 });
+            },
+    
+            destroy: function() {
+                $.each( this.pickers, function() {
+                    this.destroy();
+                });
+                this.pickers = null;
             }
         });
     });
@@ -2065,9 +2132,6 @@ return (function( root, factory ) {
         });
     
         return Uploader.register({
-            'make-thumb': 'makeThumb',
-            'before-send-file': 'compressImage'
-        }, {
     
     
             /**
@@ -2163,7 +2227,7 @@ return (function( root, factory ) {
                 });
             },
     
-            compressImage: function( file ) {
+            beforeSendFile: function( file ) {
                 var opts = this.options.compress || this.options.resize,
                     compressSize = opts && opts.compressSize || 0,
                     noCompressIfLarger = opts && opts.noCompressIfLarger || false,
@@ -2667,17 +2731,6 @@ return (function( root, factory ) {
             Status = WUFile.Status;
     
         return Uploader.register({
-            'sort-files': 'sortFiles',
-            'add-file': 'addFiles',
-            'get-file': 'getFile',
-            'fetch-file': 'fetchFile',
-            'get-stats': 'getStats',
-            'get-files': 'getFiles',
-            'remove-file': 'removeFile',
-            'retry': 'retry',
-            'reset': 'reset',
-            'accept-file': 'acceptFile'
-        }, {
     
             init: function( opts ) {
                 var me = this,
@@ -2717,7 +2770,7 @@ return (function( root, factory ) {
                 // 创建一个 html5 运行时的 placeholder
                 // 以至于外部添加原生 File 对象的时候能正确包裹一下供 webuploader 使用。
                 deferred = Base.Deferred();
-                runtime = new RuntimeClient('Placeholder');
+                this.placeholder = runtime = new RuntimeClient('Placeholder');
                 runtime.connectRuntime({
                     runtimeOrder: 'html5'
                 }, function() {
@@ -2810,7 +2863,7 @@ return (function( root, factory ) {
              * @description 添加文件到队列
              * @for  Uploader
              */
-            addFiles: function( files ) {
+            addFile: function( files ) {
                 var me = this;
     
                 if ( !files.length ) {
@@ -2943,6 +2996,11 @@ return (function( root, factory ) {
                 this.owner.trigger('reset');
                 this.queue = new Queue();
                 this.stats = this.queue.stats;
+            },
+    
+            destroy: function() {
+                this.reset();
+                this.placeholder && this.placeholder.destroy();
             }
         });
     
@@ -2961,8 +3019,6 @@ return (function( root, factory ) {
         };
     
         return Uploader.register({
-            'predict-runtime-type': 'predictRuntmeType'
-        }, {
     
             init: function() {
                 if ( !this.predictRuntmeType() ) {
@@ -3260,11 +3316,6 @@ return (function( root, factory ) {
         }
     
         Uploader.register({
-            'start-upload': 'start',
-            'stop-upload': 'stop',
-            'skip-file': 'skipFile',
-            'is-in-progress': 'isInProgress'
-        }, {
     
             init: function() {
                 var owner = this.owner;
@@ -3305,7 +3356,7 @@ return (function( root, factory ) {
              * @method upload
              * @for  Uploader
              */
-            start: function() {
+            startUpload: function() {
                 var me = this;
     
                 // 移出invalid的文件
@@ -3348,7 +3399,7 @@ return (function( root, factory ) {
              * @method stop
              * @for  Uploader
              */
-            stop: function( interrupt ) {
+            stopUpload: function( interrupt ) {
                 var me = this;
     
                 if ( me.runing === false ) {
@@ -3375,7 +3426,7 @@ return (function( root, factory ) {
                 return !!this.runing;
             },
     
-            getStats: function() {
+            _getStats: function() {
                 return this.request('get-stats');
             },
     
@@ -3435,7 +3486,7 @@ return (function( root, factory ) {
                     me._promise = isPromise( val ) ? val.always( fn ) : fn( val );
     
                 // 没有要上传的了，且没有正在传输的了。
-                } else if ( !me.remaning && !me.getStats().numOfQueue ) {
+                } else if ( !me.remaning && !me._getStats().numOfQueue ) {
                     me.runing = false;
     
                     me._trigged || Base.nextTick(function() {
@@ -3466,7 +3517,7 @@ return (function( root, factory ) {
                 } else if ( me.runing ) {
     
                     // 如果缓存中有，则直接在缓存中取，没有则去queue中取。
-                    if ( !me.pending.length && me.getStats().numOfQueue ) {
+                    if ( !me.pending.length && me._getStats().numOfQueue ) {
                         me._prepareNextFile();
                     }
     
@@ -4059,8 +4110,6 @@ return (function( root, factory ) {
     ], function( Base, Uploader, Md5, Blob ) {
     
         return Uploader.register({
-            'md5-file': 'md5Blob'
-        }, {
     
     
             /**
@@ -4089,7 +4138,7 @@ return (function( root, factory ) {
              *
              * });
              */
-            md5Blob: function( file, start, end ) {
+            md5File: function( file, start, end ) {
                 var md5 = new Md5(),
                     deferred = Base.Deferred(),
                     blob = (file instanceof Blob) ? file :
@@ -4429,8 +4478,13 @@ return (function( root, factory ) {
             destroy: function() {
                 var elem = this.elem;
     
+                // 还没 init 就调用 destroy
+                if (!elem) {
+                    return;
+                }
+                
                 elem.off( 'dragenter', this.dragEnterHandler );
-                elem.off( 'dragover', this.dragEnterHandler );
+                elem.off( 'dragover', this.dragOverHandler );
                 elem.off( 'dragleave', this.dragLeaveHandler );
                 elem.off( 'drop', this.dropHandler );
     
@@ -4525,19 +4579,19 @@ return (function( root, factory ) {
                     me = this,
                     owner = me.owner,
                     opts = me.options,
-                    lable = $( document.createElement('label') ),
-                    input = $( document.createElement('input') ),
+                    label = this.label = $( document.createElement('label') ),
+                    input =  this.input = $( document.createElement('input') ),
                     arr, i, len, mouseHandler;
     
                 input.attr( 'type', 'file' );
                 input.attr( 'name', opts.name );
                 input.addClass('webuploader-element-invisible');
     
-                lable.on( 'click', function() {
+                label.on( 'click', function() {
                     input.trigger('click');
                 });
     
-                lable.css({
+                label.css({
                     opacity: 0,
                     width: '100%',
                     height: '100%',
@@ -4562,7 +4616,7 @@ return (function( root, factory ) {
                 }
     
                 container.append( input );
-                container.append( lable );
+                container.append( label );
     
                 mouseHandler = function( e ) {
                     owner.trigger( e.type );
@@ -4586,7 +4640,7 @@ return (function( root, factory ) {
                     owner.trigger('change');
                 });
     
-                lable.on( 'mouseenter mouseleave', mouseHandler );
+                label.on( 'mouseenter mouseleave', mouseHandler );
     
             },
     
@@ -4596,7 +4650,8 @@ return (function( root, factory ) {
             },
     
             destroy: function() {
-                // todo
+                this.input.off();
+                this.label.off();
             }
         });
     });
@@ -7400,7 +7455,7 @@ return (function( root, factory ) {
             },
     
             destroy: function() {
-                // todo
+                this.flashExec( 'FilePicker', 'destroy' );
             }
         });
     });
