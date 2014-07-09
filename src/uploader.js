@@ -41,6 +41,7 @@ define([
         addFiles: 'add-file',
         sort: 'sort-files',
         removeFile: 'remove-file',
+        cancelFile: 'cancel-file',
         skipFile: 'skip-file',
         retry: 'retry',
         isInProgress: 'is-in-progress',

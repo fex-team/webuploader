@@ -172,13 +172,23 @@ define([
          * @method upload
          * @for  Uploader
          */
-        startUpload: function() {
+        startUpload: function(file) {
             var me = this;
 
             // 移出invalid的文件
             $.each( me.request( 'get-files', Status.INVALID ), function() {
                 me.request( 'remove-file', this );
             });
+
+            // 如果指定了开始某个文件，则只开始指定文件。
+            if ( file ) {
+                file = file.id ? file : me.request( 'get-file', file );
+                file.setStatus( Status.QUEUED );
+            } else {
+                $.each( me.request( 'get-files', Status.INITED ), function() {
+                    this.setStatus( Status.QUEUED );
+                });
+            }
 
             if ( me.runing ) {
                 return;
@@ -233,6 +243,37 @@ define([
         },
 
         /**
+         * @method cancelFile
+         * @grammar cancelFile( file ) => undefined
+         * @grammar cancelFile( id ) => undefined
+         * @param {File|id} file File对象或这File对象的id
+         * @description 标记文件状态为已取消, 同时将中断文件传输。
+         * @for  Uploader
+         * @example
+         *
+         * $li.on('click', '.remove-this', function() {
+         *     uploader.cancelFile( file );
+         * })
+         */
+        cancelFile: function( file ) {
+            file = file.id ? file : this.request( 'get-file', file );
+
+            // 如果正在上传。
+            file.blocks && $.each( file.blocks, function( _, v ) {
+                var _tr = v.transport;
+
+                if ( _tr ) {
+                    _tr.abort();
+                    _tr.destroy();
+                    delete v.transport;
+                }
+            });
+
+            file.setStatus( Status.CANCELLED );
+            me.owner.trigger( 'fileDequeued', file );
+        },
+
+        /**
          * 判断`Uplaode`r是否正在上传中。
          * @grammar isInProgress() => Boolean
          * @method isInProgress
@@ -253,7 +294,7 @@ define([
          * @for  Uploader
          */
         skipFile: function( file, status ) {
-            file = this.request( 'get-file', file );
+            file = file.id ? file : this.request( 'get-file', file );
 
             file.setStatus( status || Status.COMPLETE );
             file.skipped = true;

@@ -148,6 +148,7 @@ define([
         },
 
         destory: function() {
+            this.off();
             delete statusMap[ this.id ];
         }
     });
