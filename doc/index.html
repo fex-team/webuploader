@@ -112,6 +112,12 @@
                     
 
                     <li class="method">
+                        <a class="" href="#WebUploader_Uploader_destroy">destroy</a>
+                    </li>
+                    
+                    
+
+                    <li class="method">
                         <a class="" href="#WebUploader_Uploader_addButton">addButton</a>
                     </li>
                     
@@ -197,6 +203,18 @@
 
                     <li class="method">
                         <a class="" href="#WebUploader_Uploader_request">request</a>
+                    </li>
+                    
+                    
+
+                    <li class="method">
+                        <a class="" href="#WebUploader_Uploader_Uploader_register">Uploader.register</a>
+                    </li>
+                    
+                    
+
+                    <li class="method">
+                        <a class="" href="#WebUploader_Uploader_Uploader_unRegister">Uploader.unRegister</a>
                     </li>
                     
                 </ul>
@@ -1123,6 +1141,34 @@
 
 
 <article class="clearfix method">
+    <h3 id="WebUploader_Uploader_destroy"  >destroy
+        
+    </h3>
+    
+
+    
+
+    
+    <ul class="signature">
+        
+        <li>destroy() 
+            <span class="return">⇒  undefined</span>
+            
+        </li>
+    </ul>
+    
+    
+    
+
+    <p>销毁 webuploader 实例</p>
+
+    
+</article>
+
+
+
+
+<article class="clearfix method">
     <h3 id="WebUploader_Uploader_addButton"  >addButton
         
     </h3>
@@ -1657,6 +1703,106 @@ Date URL在IE6/7中不支持，所以不用调用此方法了，直接显示一�
     
 
     <p>发送命令。当传入<code>callback</code>或者<code>handler</code>中返回<code>promise</code>时。返回一个当所有<code>handler</code>中的promise都完成后完成的新<code>promise</code>。</p>
+
+    
+</article>
+
+
+
+
+<article class="clearfix method">
+    <h3 id="WebUploader_Uploader_Uploader_register"  >Uploader.register
+        
+    </h3>
+    
+
+    
+
+    
+    <ul class="signature">
+        
+        <li>Uploader.register(proto);
+            
+            
+        </li>
+        <li>Uploader.register(map, proto);
+            
+            
+        </li>
+    </ul>
+    
+    
+        <p>参数: </p>
+        <ul class="params-list"><li><span class="meta"><code>responseMap</code> {object}</span><p>API 名称与函数实现的映射</p>
+</li><li><span class="meta"><code>proto</code> {object}</span><p>组件原型，构造函数通过 constructor 属性定义</p>
+</li></ul>
+    
+    
+
+    <p>添加组件</p>
+
+    
+        
+<div class="highlight"><pre><code class="javascript"><span class="nx">Uploader</span><span class="p">.</span><span class="nx">register</span><span class="p">({</span>
+    <span class="s1">&#39;make-thumb&#39;</span><span class="o">:</span> <span class="s1">&#39;makeThumb&#39;</span>
+<span class="p">},</span> <span class="p">{</span>
+    <span class="nx">init</span><span class="o">:</span> <span class="kd">function</span><span class="p">(</span> <span class="nx">options</span> <span class="p">)</span> <span class="p">{},</span>
+    <span class="nx">makeThumb</span><span class="o">:</span> <span class="kd">function</span><span class="p">()</span> <span class="p">{}</span>
+<span class="p">});</span>
+
+<span class="nx">Uploader</span><span class="p">.</span><span class="nx">register</span><span class="p">({</span>
+    <span class="s1">&#39;make-thumb&#39;</span><span class="o">:</span> <span class="kd">function</span><span class="p">()</span> <span class="p">{</span>
+
+    <span class="p">}</span>
+<span class="p">});</span>
+</code></pre></div>
+
+
+    
+</article>
+
+
+
+
+<article class="clearfix method">
+    <h3 id="WebUploader_Uploader_Uploader_unRegister"  >Uploader.unRegister
+        
+    </h3>
+    
+
+    
+
+    
+    <ul class="signature">
+        
+        <li>Uploader.unRegister(name);
+            
+            
+        </li>
+    </ul>
+    
+    
+        <p>参数: </p>
+        <ul class="params-list"><li><span class="meta"><code>name</code> {string}</span><p>组件名字</p>
+</li></ul>
+    
+    
+
+    <p>删除插件，只有在注册时指定了名字的才能被删除。</p>
+
+    
+        
+<div class="highlight"><pre><code class="javascript"><span class="nx">Uploader</span><span class="p">.</span><span class="nx">register</span><span class="p">({</span>
+    <span class="nx">name</span><span class="o">:</span> <span class="s1">&#39;custom&#39;</span><span class="p">,</span>
+
+    <span class="s1">&#39;make-thumb&#39;</span><span class="o">:</span> <span class="kd">function</span><span class="p">()</span> <span class="p">{</span>
+
+    <span class="p">}</span>
+<span class="p">});</span>
+
+<span class="nx">Uploader</span><span class="p">.</span><span class="nx">unRegister</span><span class="p">(</span><span class="s1">&#39;custom&#39;</span><span class="p">);</span>
+</code></pre></div>
+
 
     
 </article>
