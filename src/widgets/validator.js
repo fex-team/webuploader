@@ -87,7 +87,7 @@ define([
             count--;
         });
 
-        uploader.on( 'uploadFinished reset', function() {
+        uploader.on( 'reset', function() {
             count = 0;
         });
     });
@@ -132,7 +132,7 @@ define([
             count -= file.size;
         });
 
-        uploader.on( 'uploadFinished reset', function() {
+        uploader.on( 'reset', function() {
             count = 0;
         });
     });
