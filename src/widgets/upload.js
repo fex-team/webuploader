@@ -179,7 +179,10 @@ define([
 
         /**
          * 开始上传。此方法可以从初始状态调用开始上传流程，也可以从暂停状态调用，继续上传流程。
+         *
+         * 可以指定开始某一个文件。
          * @grammar upload() => undefined
+         * @grammar upload( file | fileId) => undefined
          * @method upload
          * @for  Uploader
          */
@@ -252,8 +255,11 @@ define([
 
         /**
          * 暂停上传。第一个参数为是否中断上传当前正在上传的文件。
+         *
+         * 如果第一个参数是文件，则只暂停指定文件。
          * @grammar stop() => undefined
          * @grammar stop( true ) => undefined
+         * @grammar stop( file ) => undefined
          * @method stop
          * @for  Uploader
          */
