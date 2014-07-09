@@ -99,7 +99,23 @@ define([
             chunks = chunkSize ? Math.ceil( total / chunkSize ) : 1,
             start = 0,
             index = 0,
-            len;
+            len, api;
+
+        api = {
+            file: file,
+
+            has: function() {
+                return !!pending.length;
+            },
+
+            shift: function() {
+                return pending.shift();
+            },
+
+            unshift: function( block ) {
+                pending.unshift( block );
+            }
+        };
 
         while ( index < chunks ) {
             len = Math.min( chunkSize, total - start );
@@ -110,7 +126,8 @@ define([
                 end: chunkSize ? (start + len) : total,
                 total: total,
                 chunks: chunks,
-                chunk: index++
+                chunk: index++,
+                cuted: api
             });
             start += len;
         }
@@ -118,17 +135,7 @@ define([
         file.blocks = pending.concat();
         file.remaning = pending.length;
 
-        return {
-            file: file,
-
-            has: function() {
-                return !!pending.length;
-            },
-
-            fetch: function() {
-                return pending.shift();
-            }
-        };
+        return api;
     }
 
     Uploader.register({
@@ -141,14 +148,18 @@ define([
             // 记录当前正在传的数据，跟threads相关
             this.pool = [];
 
+            // 缓存分好片的文件。
+            this.stack = [];
+
             // 缓存即将上传的文件。
             this.pending = [];
 
-            // 跟踪还有多少分片没有完成上传。
+            // 跟踪还有多少分片在上传中但是没有完成上传。
             this.remaning = 0;
             this.__tick = Base.bindFn( this._tick, this );
 
             owner.on( 'uploadComplete', function( file ) {
+                
                 // 把其他块取消了。
                 file.blocks && $.each( file.blocks, function( _, v ) {
                     v.transport && (v.transport.abort(), v.transport.destroy());
@@ -183,7 +194,24 @@ define([
             // 如果指定了开始某个文件，则只开始指定文件。
             if ( file ) {
                 file = file.id ? file : me.request( 'get-file', file );
-                file.setStatus( Status.QUEUED );
+
+                if (file.getStatus() === Status.INTERRUPT) {
+                    $.each( me.pool, function( _, v ) {
+                    
+                        // 之前暂停过。
+                        if (v.file !== file) {
+                            return;
+                        }
+
+                        v.transport && v.transport.send();
+                    });
+                    
+                    file.setStatus( Status.QUEUED );
+                } else if (file.getStatus() === Status.PROGRESS) {
+                    return;
+                } else {
+                    file.setStatus( Status.QUEUED );
+                }
             } else {
                 $.each( me.request( 'get-files', Status.INITED ), function() {
                     this.setStatus( Status.QUEUED );
@@ -207,9 +235,13 @@ define([
                 }
             });
 
+            file || $.each( me.request( 'get-files', Status.INTERRUPT ), function() {
+                this.setStatus( Status.QUEUED );
+            });
+
             me._trigged = false;
-            me.owner.trigger('startUpload');
             Base.nextTick( me.__tick );
+            me.owner.trigger('startUpload');
         },
 
         /**
@@ -225,11 +257,40 @@ define([
          * @method stop
          * @for  Uploader
          */
-        stopUpload: function( interrupt ) {
+        stopUpload: function( file, interrupt ) {
             var me = this;
+
+            if (file === true) {
+                interrupt = file;
+                file = null;
+            }
 
             if ( me.runing === false ) {
                 return;
+            }
+
+            // 如果只是暂停某个文件。
+            if ( file ) {
+                file = file.id ? file : me.request( 'get-file', file );
+
+                if (file.getStatus() !== Status.PROGRESS) {
+                    return;
+                }
+
+                file.setStatus( Status.INTERRUPT );
+                $.each( me.pool, function( _, v ) {
+                    
+                    // 只 abort 指定的文件。
+                    if (v.file !== file) {
+                        return;
+                    }
+
+                    v.transport && v.transport.abort();
+                    v.cuted.unshift(v);
+                    me._popBlock(v);
+                });
+
+                return Base.nextTick( me.__tick );
             }
 
             me.runing = false;
@@ -270,7 +331,7 @@ define([
             });
 
             file.setStatus( Status.CANCELLED );
-            me.owner.trigger( 'fileDequeued', file );
+            this.owner.trigger( 'fileDequeued', file );
         },
 
         /**
@@ -353,22 +414,34 @@ define([
             }
         },
 
+        _getStack: function() {
+            var i, len, act;
+
+            for ( i = 0, len = this.stack.length; i < len; i++ ) {
+                act = this.stack[ i ];
+
+                if ( act.has() && act.file.getStatus() === Status.PROGRESS ) {
+                    return act;
+                }
+            }
+
+            return null;
+        },
+
         _nextBlock: function() {
             var me = this,
-                act = me._act,
                 opts = me.options,
-                next, done;
+                act, next, done;
 
             // 如果当前文件还有没有需要传输的，则直接返回剩下的。
-            if ( act && act.has() &&
-                    act.file.getStatus() === Status.PROGRESS ) {
+            if ( (act = this._getStack()) ) {
 
                 // 是否提前准备下一个文件
                 if ( opts.prepareNextFile && !me.pending.length ) {
                     me._prepareNextFile();
                 }
 
-                return act.fetch();
+                return act.shift();
 
             // 否则，如果正在运行，则准备下一个文件，并等待完成后返回下个分片。
             } else if ( me.runing ) {
@@ -385,8 +458,8 @@ define([
                     }
 
                     act = CuteFile( file, opts.chunked ? opts.chunkSize : 0 );
-                    me._act = act;
-                    return act.fetch();
+                    me.stack.push(act);
+                    return act.shift();
                 };
 
                 // 文件可能还在prepare中，也有可能已经完全准备好了。
