@@ -171,6 +171,14 @@ define([
             });
         },
 
+        reset: function() {
+            this.runing = false;
+            this.pool = [];
+            this.stack = [];
+            this.pending = [];
+            this.remaning = 0;
+        },
+
         /**
          * @event startUpload
          * @description 当开始上传流程时触发。
