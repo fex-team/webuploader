@@ -216,7 +216,8 @@ define([
                     file.setStatus( Status.QUEUED );
                 }
             } else {
-                $.each( me.request( 'get-files', Status.INITED ), function() {
+                $.each( me.request( 'get-files', [ Status.INITED,
+                        Status.INTERRUPT ] ), function() {
                     this.setStatus( Status.QUEUED );
                 });
             }
@@ -238,7 +239,8 @@ define([
                 }
             });
 
-            file || $.each( me.request( 'get-files', Status.INTERRUPT ), function() {
+            file || $.each( me.request( 'get-files',
+                    Status.INTERRUPT ), function() {
                 this.setStatus( Status.QUEUED );
             });
 
@@ -421,13 +423,19 @@ define([
         },
 
         _getStack: function() {
-            var i, len, act;
+            var i = 0,
+                act;
 
-            for ( i = 0, len = this.stack.length; i < len; i++ ) {
-                act = this.stack[ i ];
-
+            while ( (act = this.stack[ i++ ]) ) {
                 if ( act.has() && act.file.getStatus() === Status.PROGRESS ) {
                     return act;
+                } else if (!act.has() ||
+                        act.file.getStatus() !== Status.PROGRESS ||
+                        act.file.getStatus() !== Status.INTERRUPT ) {
+
+                    // 把已经处理完了的，或者，状态为非 progress（上传中）、
+                    // interupt（暂停中） 的移除。
+                    this.stack.splice( --i, 1 );
                 }
             }
 
