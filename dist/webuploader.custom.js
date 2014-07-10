@@ -3510,6 +3510,17 @@
                 });
             },
     
+            reset: function() {
+                this.request( 'stop-upload', true );
+                this.runing = false;
+                this.pool = [];
+                this.stack = [];
+                this.pending = [];
+                this.remaning = 0;
+                this._trigged = false;
+                this._promise = null;
+            },
+    
             /**
              * @event startUpload
              * @description 当开始上传流程时触发。
