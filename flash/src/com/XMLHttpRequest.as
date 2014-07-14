@@ -128,7 +128,7 @@ import com.utils.URLStreamProgress;
 			}
 						
 			if (blob && _options.method == 'POST') {
-				if (_multipart && blob.isFileRef() && Utils.isEmptyObj(_headers)) {
+				if (_multipart && blob.isFileRef() && Utils.isEmptyObj(_headers) && !_options.forceURLStream) {
                     _uploadFileRef(blob);
 				} else {
 					_preloadBlob(blob, _doURLStreamRequest);
