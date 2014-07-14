@@ -4762,6 +4762,7 @@
                 xhr.exec( 'send', {
                     method: opts.method,
                     url: server,
+                    forceURLStream: opts.forceURLStream,
                     mimeType: 'application/octet-stream'
                 }, binary );
             },
