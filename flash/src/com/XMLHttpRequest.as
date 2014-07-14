@@ -126,6 +126,8 @@ import com.utils.URLStreamProgress;
 					_blobName = blob.name;
 				} 
 			}
+
+            // Uploader.log(["forceUrlStream is : ", _options.forceURLStream]);
 						
 			if (blob && _options.method == 'POST') {
 				if (_multipart && blob.isFileRef() && Utils.isEmptyObj(_headers) && !_options.forceURLStream) {

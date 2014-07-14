@@ -81,10 +81,11 @@ jQuery(function() {
         disableGlobalDnd: true,
 
         chunked: true,
-        server: 'http://webuploader.duapp.com/server/fileupload.php',
+        // server: 'http://webuploader.duapp.com/server/fileupload.php',
+        server: 'http://2betop.net/fileupload.php',
         fileNumLimit: 300,
-        fileSizeLimit: 200 * 1024 * 1024,    // 200 M
-        fileSingleSizeLimit: 50 * 1024 * 1024    // 50 M
+        fileSizeLimit: 5 * 1024 * 1024,    // 200 M
+        fileSingleSizeLimit: 1 * 1024 * 1024    // 50 M
     });
 
     // 添加“添加文件”的按钮，
