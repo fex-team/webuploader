@@ -142,6 +142,11 @@ module.exports = function(grunt) {
             dev: {
                 files: 'src/**/*.js',
                 tasks: 'build:all'
+            },
+
+            flashonly: {
+                files: 'src/**/*.js',
+                tasks: 'build:flashonly'
             }
         },
 
