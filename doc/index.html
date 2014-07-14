@@ -190,6 +190,12 @@
                     
 
                     <li class="method">
+                        <a class="" href="#WebUploader_Uploader_cancelFile">cancelFile</a>
+                    </li>
+                    
+                    
+
+                    <li class="method">
                         <a class="" href="#WebUploader_Uploader_isInProgress">isInProgress</a>
                     </li>
                     
@@ -466,6 +472,12 @@
 
                     <li class="method">
                         <a class="" href="#WebUploader_Queue_getFiles">getFiles</a>
+                    </li>
+                    
+                    
+
+                    <li class="method">
+                        <a class="" href="#WebUploader_Queue_removeFile">removeFile</a>
                     </li>
                     
                 </ul>
@@ -1368,6 +1380,14 @@ Date URL在IE6/7中不支持，所以不用调用此方法了，直接显示一�
             <span class="return">⇒  undefined</span>
             
         </li>
+        <li>removeFile( file, true ) 
+            <span class="return">⇒  undefined</span>
+            
+        </li>
+        <li>removeFile( id, true ) 
+            <span class="return">⇒  undefined</span>
+            
+        </li>
     </ul>
     
     
@@ -1377,7 +1397,7 @@ Date URL在IE6/7中不支持，所以不用调用此方法了，直接显示一�
     
     
 
-    <p>移除某一文件。</p>
+    <p>移除某一文件, 默认只会标记文件状态为已取消，如果第二个参数为 <code>true</code> 则会从 queue 中移除。</p>
 
     
         
@@ -1577,12 +1597,17 @@ Date URL在IE6/7中不支持，所以不用调用此方法了，直接显示一�
             <span class="return">⇒  undefined</span>
             
         </li>
+        <li>upload( file | fileId) 
+            <span class="return">⇒  undefined</span>
+            
+        </li>
     </ul>
     
     
     
 
     <p>开始上传。此方法可以从初始状态调用开始上传流程，也可以从暂停状态调用，继续上传流程。</p>
+<p>可以指定开始某一个文件。</p>
 
     
 </article>
@@ -1609,12 +1634,61 @@ Date URL在IE6/7中不支持，所以不用调用此方法了，直接显示一�
             <span class="return">⇒  undefined</span>
             
         </li>
+        <li>stop( file ) 
+            <span class="return">⇒  undefined</span>
+            
+        </li>
     </ul>
     
     
     
 
     <p>暂停上传。第一个参数为是否中断上传当前正在上传的文件。</p>
+<p>如果第一个参数是文件，则只暂停指定文件。</p>
+
+    
+</article>
+
+
+
+
+<article class="clearfix method">
+    <h3 id="WebUploader_Uploader_cancelFile"  >cancelFile
+        
+    </h3>
+    
+
+    
+
+    
+    <ul class="signature">
+        
+        <li>cancelFile( file ) 
+            <span class="return">⇒  undefined</span>
+            
+        </li>
+        <li>cancelFile( id ) 
+            <span class="return">⇒  undefined</span>
+            
+        </li>
+    </ul>
+    
+    
+        <p>参数: </p>
+        <ul class="params-list"><li><span class="meta"><code>file</code> {File, id}</span><p>File对象或这File对象的id</p>
+</li></ul>
+    
+    
+
+    <p>标记文件状态为已取消, 同时将中断文件传输。</p>
+
+    
+        
+<div class="highlight"><pre><code class="javascript"><span class="nx">$li</span><span class="p">.</span><span class="nx">on</span><span class="p">(</span><span class="s1">&#39;click&#39;</span><span class="p">,</span> <span class="s1">&#39;.remove-this&#39;</span><span class="p">,</span> <span class="kd">function</span><span class="p">()</span> <span class="p">{</span>
+    <span class="nx">uploader</span><span class="p">.</span><span class="nx">cancelFile</span><span class="p">(</span> <span class="nx">file</span> <span class="p">);</span>
+<span class="p">})</span>
+</code></pre></div>
+
 
     
 </article>
@@ -2886,10 +2960,11 @@ Date URL在IE6/7中不支持，所以不用调用此方法了，直接显示一�
 <ul>
 <li><code>numOfQueue</code> 队列中的文件数。</li>
 <li><code>numOfSuccess</code> 上传成功的文件数</li>
-<li><code>numOfCancel</code> 被移除的文件数</li>
+<li><code>numOfCancel</code> 被取消的文件数</li>
 <li><code>numOfProgress</code> 正在上传中的文件数</li>
 <li><code>numOfUploadFailed</code> 上传错误的文件数。</li>
 <li><code>numOfInvalid</code> 无效的文件数。</li>
+<li><code>numofDeleted</code> 被移除的文件数。</li>
 </ul>
 
     
@@ -3066,6 +3141,37 @@ Date URL在IE6/7中不支持，所以不用调用此方法了，直接显示一�
     
 
     <p>获取指定类型的文件列表, 列表中每一个成员为<a href="#WebUploader_File">File</a>对象。</p>
+
+    
+</article>
+
+
+
+
+<article class="clearfix method">
+    <h3 id="WebUploader_Queue_removeFile"  >removeFile
+        
+    </h3>
+    
+
+    
+
+    
+    <ul class="signature">
+        
+        <li>removeFile( file ) 
+            <span class="return">⇒  Array</span>
+            
+        </li>
+    </ul>
+    
+    
+        <p>参数: </p>
+        <ul class="params-list"><li><span class="meta"><code>文件对象。</code> {File}</span></li></ul>
+    
+    
+
+    <p>在队列中删除文件。</p>
 
     
 </article>
