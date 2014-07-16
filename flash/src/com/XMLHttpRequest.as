@@ -130,7 +130,7 @@ import com.utils.URLStreamProgress;
             // Uploader.log(["forceUrlStream is : ", _options.forceURLStream]);
 						
 			if (blob && _options.method == 'POST') {
-				if (_multipart && blob.isFileRef() && Utils.isEmptyObj(_headers) && !_options.forceURLStream) {
+				if (_multipart && blob.isFileRef() && Utils.isEmptyObj(_headers) && (!meta.hasOwnProperty("forceURLStream") || !meta.forceURLStream)) {
                     _uploadFileRef(blob);
 				} else {
 					_preloadBlob(blob, _doURLStreamRequest);
