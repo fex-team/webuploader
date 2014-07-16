@@ -1,7 +1,7 @@
 requirejs.config({
     baseUrl: '../../dist',
     paths: {
-        jQuery: '../examples/image-upload/jquery'
+        jquery: '../examples/image-upload/jquery'
     }
 });
 
