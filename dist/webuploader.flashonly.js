@@ -2873,7 +2873,7 @@
         return Uploader.register({
     
             init: function() {
-                if ( !this.predictRuntmeType() ) {
+                if ( !this.predictRuntimeType() ) {
                     throw Error('Runtime Error');
                 }
             },
@@ -2884,7 +2884,7 @@
              * @method predictRuntmeType
              * @for  Uploader
              */
-            predictRuntmeType: function() {
+            predictRuntimeType: function() {
                 var orders = this.options.runtimeOrder || Runtime.orders,
                     type = this.type,
                     i, len;

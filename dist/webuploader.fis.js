@@ -3046,7 +3046,7 @@ return (function( root, factory ) {
         return Uploader.register({
     
             init: function() {
-                if ( !this.predictRuntmeType() ) {
+                if ( !this.predictRuntimeType() ) {
                     throw Error('Runtime Error');
                 }
             },
@@ -3057,7 +3057,7 @@ return (function( root, factory ) {
              * @method predictRuntmeType
              * @for  Uploader
              */
-            predictRuntmeType: function() {
+            predictRuntimeType: function() {
                 var orders = this.options.runtimeOrder || Runtime.orders,
                     type = this.type,
                     i, len;
@@ -7738,23 +7738,41 @@ return (function( root, factory ) {
     
                 xhr.on( 'load', function() {
                     var status = xhr.exec('getStatus'),
-                        err = '';
+                        readBody = false,
+                        err = '',
+                        p;
     
                     xhr.off();
                     me._xhr = null;
     
                     if ( status >= 200 && status < 300 ) {
-                        me._response = xhr.exec('getResponse');
-                        me._responseJson = xhr.exec('getResponseAsJson');
+                        readBody = true;
                     } else if ( status >= 500 && status < 600 ) {
-                        me._response = xhr.exec('getResponse');
-                        me._responseJson = xhr.exec('getResponseAsJson');
+                        readBody = true;
                         err = 'server';
                     } else {
                         err = 'http';
                     }
+    
+                    if ( readBody ) {
+                        me._response = xhr.exec('getResponse');
+                        me._response = decodeURIComponent( me._response );
+    
+                        // flash 处理可能存在 bug, 没辙只能靠 js 了
+                        try {
+                            me._responseJson = xhr.exec('getResponseAsJson');
+                        } catch ( error ) {
+                            p = window.JSON && window.JSON.parse || function( s ) {
+                                try {
+                                    return new Function('return ' + s).call();
+                                } catch ( err ) {
+                                    return {};
+                                }
+                            };
+                            me._responseJson  = p(me._response);
+                        }
+                    }
                     
-                    me._response = decodeURIComponent( me._response );
                     xhr.destroy();
                     xhr = null;
     
