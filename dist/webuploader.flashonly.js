@@ -115,7 +115,7 @@
         // in another project. That other project will only
         // see this AMD call, not the internal modules in
         // the closure below.
-        define([ 'jQuery' ], makeExport );
+        define([ 'jquery' ], makeExport );
     } else {
 
         // Browser globals case. Just assign the
