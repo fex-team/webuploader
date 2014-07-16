@@ -149,7 +149,7 @@ module.exports = function( grunt ) {
             banner && arr.push( banner );
 
             if ( options.builtin.dollar ) {
-                compiled = compiled.replace('define([ \'jQuery\' ], exports );', 'define([], exports);');
+                compiled = compiled.replace('define([ \'jquery\' ], exports );', 'define([], exports);');
             }
 
             arr.push(compiled);
