@@ -1596,7 +1596,8 @@
             this.size = source.size || 0;
     
             // 如果没有指定 mimetype, 但是知道文件后缀。
-            if ( !source.type && ~'jpg,jpeg,png,gif,bmp'.indexOf( this.ext ) ) {
+            if ( !source.type && this.ext &&
+                    ~'jpg,jpeg,png,gif,bmp'.indexOf( this.ext ) ) {
                 this.type = 'image/' + (this.ext === 'jpg' ? 'jpeg' : this.ext);
             } else {
                 this.type = source.type || 'application/octet-stream';
@@ -2384,9 +2385,9 @@
              * 文件MIMETYPE类型，与文件类型的对应关系请参考[http://t.cn/z8ZnFny](http://t.cn/z8ZnFny)
              * @property type
              * @type {string}
-             * @default 'application'
+             * @default 'application/octet-stream'
              */
-            this.type = source.type || 'application';
+            this.type = source.type || 'application/octet-stream';
     
             /**
              * 文件最后修改日期
