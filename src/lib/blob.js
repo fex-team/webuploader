@@ -14,7 +14,8 @@ define([
         this.size = source.size || 0;
 
         // 如果没有指定 mimetype, 但是知道文件后缀。
-        if ( !source.type && ~'jpg,jpeg,png,gif,bmp'.indexOf( this.ext ) ) {
+        if ( !source.type && this.ext &&
+                ~'jpg,jpeg,png,gif,bmp'.indexOf( this.ext ) ) {
             this.type = 'image/' + (this.ext === 'jpg' ? 'jpeg' : this.ext);
         } else {
             this.type = source.type || 'application/octet-stream';
