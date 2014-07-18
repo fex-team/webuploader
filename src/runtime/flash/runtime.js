@@ -33,7 +33,7 @@ define([
     function FlashRuntime() {
         var pool = {},
             clients = {},
-            destory = this.destory,
+            destroy = this.destroy,
             me = this,
             jsreciver = Base.guid('webuploader_');
 
@@ -96,9 +96,9 @@ define([
 
         this.jsreciver = jsreciver;
 
-        this.destory = function() {
+        this.destroy = function() {
             // @todo 删除池子中的所有实例
-            return destory && destory.apply( this, arguments );
+            return destroy && destroy.apply( this, arguments );
         };
 
         this.flashExec = function( comp, fn ) {

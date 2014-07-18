@@ -147,7 +147,7 @@ define([
             return this.source;
         },
 
-        destory: function() {
+        destroy: function() {
             this.off();
             delete statusMap[ this.id ];
         }
