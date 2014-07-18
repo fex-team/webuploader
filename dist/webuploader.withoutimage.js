@@ -2083,7 +2083,7 @@
                 return this.source;
             },
     
-            destory: function() {
+            destroy: function() {
                 this.off();
                 delete statusMap[ this.id ];
             }
@@ -3888,7 +3888,7 @@
         function Html5Runtime() {
             var pool = {},
                 me = this,
-                destory = this.destory;
+                destroy = this.destroy;
     
             Runtime.apply( me, arguments );
             me.type = type;
@@ -3911,9 +3911,9 @@
                 }
             };
     
-            me.destory = function() {
+            me.destroy = function() {
                 // @todo 删除池子中的所有实例
-                return destory && destory.apply( this, arguments );
+                return destroy && destroy.apply( this, arguments );
             };
         }
     
@@ -4536,7 +4536,7 @@
         function FlashRuntime() {
             var pool = {},
                 clients = {},
-                destory = this.destory,
+                destroy = this.destroy,
                 me = this,
                 jsreciver = Base.guid('webuploader_');
     
@@ -4599,9 +4599,9 @@
     
             this.jsreciver = jsreciver;
     
-            this.destory = function() {
+            this.destroy = function() {
                 // @todo 删除池子中的所有实例
-                return destory && destory.apply( this, arguments );
+                return destroy && destroy.apply( this, arguments );
             };
     
             this.flashExec = function( comp, fn ) {
