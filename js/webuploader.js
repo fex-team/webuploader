@@ -115,7 +115,7 @@
         // in another project. That other project will only
         // see this AMD call, not the internal modules in
         // the closure below.
-        define([ 'jQuery' ], makeExport );
+        define([ 'jquery' ], makeExport );
     } else {
 
         // Browser globals case. Just assign the
@@ -1596,7 +1596,8 @@
             this.size = source.size || 0;
     
             // 如果没有指定 mimetype, 但是知道文件后缀。
-            if ( !source.type && ~'jpg,jpeg,png,gif,bmp'.indexOf( this.ext ) ) {
+            if ( !source.type && this.ext &&
+                    ~'jpg,jpeg,png,gif,bmp'.indexOf( this.ext ) ) {
                 this.type = 'image/' + (this.ext === 'jpg' ? 'jpeg' : this.ext);
             } else {
                 this.type = source.type || 'application/octet-stream';
@@ -2384,9 +2385,9 @@
              * 文件MIMETYPE类型，与文件类型的对应关系请参考[http://t.cn/z8ZnFny](http://t.cn/z8ZnFny)
              * @property type
              * @type {string}
-             * @default 'application'
+             * @default 'application/octet-stream'
              */
-            this.type = source.type || 'application';
+            this.type = source.type || 'application/octet-stream';
     
             /**
              * 文件最后修改日期
@@ -2487,7 +2488,7 @@
                 return this.source;
             },
     
-            destory: function() {
+            destroy: function() {
                 this.off();
                 delete statusMap[ this.id ];
             }
@@ -4401,7 +4402,7 @@
         function Html5Runtime() {
             var pool = {},
                 me = this,
-                destory = this.destory;
+                destroy = this.destroy;
     
             Runtime.apply( me, arguments );
             me.type = type;
@@ -4424,9 +4425,9 @@
                 }
             };
     
-            me.destory = function() {
+            me.destroy = function() {
                 // @todo 删除池子中的所有实例
-                return destory && destory.apply( this, arguments );
+                return destroy && destroy.apply( this, arguments );
             };
         }
     
@@ -7466,7 +7467,7 @@
         function FlashRuntime() {
             var pool = {},
                 clients = {},
-                destory = this.destory,
+                destroy = this.destroy,
                 me = this,
                 jsreciver = Base.guid('webuploader_');
     
@@ -7529,9 +7530,9 @@
     
             this.jsreciver = jsreciver;
     
-            this.destory = function() {
+            this.destroy = function() {
                 // @todo 删除池子中的所有实例
-                return destory && destory.apply( this, arguments );
+                return destroy && destroy.apply( this, arguments );
             };
     
             this.flashExec = function( comp, fn ) {
