@@ -2282,7 +2282,7 @@
                 if ( existing ) {
                     delete this._map[ file.id ];
                     file.destroy();
-                    stats.numofDeleted++;
+                    this.stats.numofDeleted++;
                 }
             },
     
