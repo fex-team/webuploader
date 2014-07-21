@@ -51,7 +51,9 @@ define([
             this._setRequestHeader( xhr, opts.headers );
 
             if ( binary ) {
-                xhr.overrideMimeType('application/octet-stream');
+                // 强制设置成 content-type 为文件流。
+                xhr.overrideMimeType &&
+                        xhr.overrideMimeType('application/octet-stream');
 
                 // android直接发送blob会导致服务端接收到的是空文件。
                 // bug详情。
