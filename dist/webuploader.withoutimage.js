@@ -4384,7 +4384,9 @@
                 this._setRequestHeader( xhr, opts.headers );
     
                 if ( binary ) {
-                    xhr.overrideMimeType('application/octet-stream');
+                    // 强制设置成 content-type 为文件流。
+                    xhr.overrideMimeType &&
+                            xhr.overrideMimeType('application/octet-stream');
     
                     // android直接发送blob会导致服务端接收到的是空文件。
                     // bug详情。
@@ -4827,18 +4829,20 @@
                         me._response = decodeURIComponent( me._response );
     
                         // flash 处理可能存在 bug, 没辙只能靠 js 了
-                        try {
-                            me._responseJson = xhr.exec('getResponseAsJson');
-                        } catch ( error ) {
-                            p = window.JSON && window.JSON.parse || function( s ) {
-                                try {
-                                    return new Function('return ' + s).call();
-                                } catch ( err ) {
-                                    return {};
-                                }
-                            };
-                            me._responseJson  = p(me._response);
-                        }
+                        // try {
+                        //     me._responseJson = xhr.exec('getResponseAsJson');
+                        // } catch ( error ) {
+                            
+                        p = window.JSON && window.JSON.parse || function( s ) {
+                            try {
+                                return new Function('return ' + s).call();
+                            } catch ( err ) {
+                                return {};
+                            }
+                        };
+                        me._responseJson  = p(me._response);
+                            
+                        // }
                     }
                     
                     xhr.destroy();

@@ -4433,18 +4433,20 @@
                         me._response = decodeURIComponent( me._response );
     
                         // flash 处理可能存在 bug, 没辙只能靠 js 了
-                        try {
-                            me._responseJson = xhr.exec('getResponseAsJson');
-                        } catch ( error ) {
-                            p = window.JSON && window.JSON.parse || function( s ) {
-                                try {
-                                    return new Function('return ' + s).call();
-                                } catch ( err ) {
-                                    return {};
-                                }
-                            };
-                            me._responseJson  = p(me._response);
-                        }
+                        // try {
+                        //     me._responseJson = xhr.exec('getResponseAsJson');
+                        // } catch ( error ) {
+                            
+                        p = window.JSON && window.JSON.parse || function( s ) {
+                            try {
+                                return new Function('return ' + s).call();
+                            } catch ( err ) {
+                                return {};
+                            }
+                        };
+                        me._responseJson  = p(me._response);
+                            
+                        // }
                     }
                     
                     xhr.destroy();
