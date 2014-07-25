@@ -458,7 +458,8 @@
 
                 case 'confirm':
                     $progress.hide();
-                    $upload.text( '开始上传' ).addClass( 'disabled' );
+                    $( '#filePicker2' ).removeClass( 'element-invisible' );
+                    $upload.text( '开始上传' );
 
                     stats = uploader.getStats();
                     if ( stats.successNum && !stats.uploadFailNum ) {
