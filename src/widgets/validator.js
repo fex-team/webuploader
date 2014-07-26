@@ -165,7 +165,7 @@ define([
     });
 
     /**
-     * @property {int} [duplicate=undefined]
+     * @property {Boolean} [duplicate=undefined]
      * @namespace options
      * @for Uploader
      * @description 去重， 根据文件名字、文件大小和最后修改时间来生成hash Key.
