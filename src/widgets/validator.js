@@ -156,7 +156,7 @@ define([
 
             if ( file.size > max ) {
                 file.setStatus( WUFile.Status.INVALID, 'exceed_size' );
-                this.trigger( 'error', 'F_EXCEED_SIZE', file );
+                this.trigger( 'error', 'F_EXCEED_SIZE', max, file );
                 return false;
             }
 
