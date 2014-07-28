@@ -49,7 +49,7 @@ define([
         md5File: 'md5-file',
         getDimension: 'get-dimension',
         addButton: 'add-btn',
-        predictRuntmeType: 'predict-runtme-type',
+        predictRuntimeType: 'predict-runtime-type',
         refresh: 'refresh',
         disable: 'disable',
         enable: 'enable',

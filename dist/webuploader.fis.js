@@ -732,7 +732,7 @@ return (function( root, factory ) {
             md5File: 'md5-file',
             getDimension: 'get-dimension',
             addButton: 'add-btn',
-            predictRuntmeType: 'predict-runtme-type',
+            predictRuntimeType: 'predict-runtime-type',
             refresh: 'refresh',
             disable: 'disable',
             enable: 'enable',
@@ -3054,8 +3054,8 @@ return (function( root, factory ) {
     
             /**
              * 预测Uploader将采用哪个`Runtime`
-             * @grammar predictRuntmeType() => String
-             * @method predictRuntmeType
+             * @grammar predictRuntimeType() => String
+             * @method predictRuntimeType
              * @for  Uploader
              */
             predictRuntimeType: function() {

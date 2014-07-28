@@ -21,8 +21,8 @@ define([
 
         /**
          * 预测Uploader将采用哪个`Runtime`
-         * @grammar predictRuntmeType() => String
-         * @method predictRuntmeType
+         * @grammar predictRuntimeType() => String
+         * @method predictRuntimeType
          * @for  Uploader
          */
         predictRuntimeType: function() {
