@@ -757,7 +757,7 @@
             md5File: 'md5-file',
             getDimension: 'get-dimension',
             addButton: 'add-btn',
-            predictRuntmeType: 'predict-runtme-type',
+            predictRuntimeType: 'predict-runtime-type',
             refresh: 'refresh',
             disable: 'disable',
             enable: 'enable',
@@ -819,10 +819,10 @@
             /**
              * 获取文件统计信息。返回一个包含一下信息的对象。
              * * `successNum` 上传成功的文件数
-             * * `successNum` 上传中的文件数
-             * * `uploadFailNum` 上传失败的文件数
+             * * `progressNum` 上传中的文件数
              * * `cancelNum` 被删除的文件数
              * * `invalidNum` 无效的文件数
+             * * `uploadFailNum` 上传失败的文件数
              * * `queueNum` 还在队列中的文件数
              * @method getStats
              * @grammar getStats() => Object
@@ -3079,8 +3079,8 @@
     
             /**
              * 预测Uploader将采用哪个`Runtime`
-             * @grammar predictRuntmeType() => String
-             * @method predictRuntmeType
+             * @grammar predictRuntimeType() => String
+             * @method predictRuntimeType
              * @for  Uploader
              */
             predictRuntimeType: function() {
@@ -3296,12 +3296,12 @@
     
     
             /**
-             * @property {Object} [formData]
+             * @property {Object} [formData={}]
              * @namespace options
              * @for Uploader
              * @description 文件上传请求的参数表，每次发送都会发送此对象中的参数。
              */
-            formData: null
+            formData: {}
     
             /**
              * @property {Object} [fileVal='file']
@@ -4185,7 +4185,7 @@
     
                 if ( file.size > max ) {
                     file.setStatus( WUFile.Status.INVALID, 'exceed_size' );
-                    this.trigger( 'error', 'F_EXCEED_SIZE', file );
+                    this.trigger( 'error', 'F_EXCEED_SIZE', max, file );
                     return false;
                 }
     
@@ -4194,7 +4194,7 @@
         });
     
         /**
-         * @property {int} [duplicate=undefined]
+         * @property {Boolean} [duplicate=undefined]
          * @namespace options
          * @for Uploader
          * @description 去重， 根据文件名字、文件大小和最后修改时间来生成hash Key.
