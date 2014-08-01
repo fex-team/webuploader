@@ -20,6 +20,7 @@ define([
      *
      * * `Q_EXCEED_NUM_LIMIT` 在设置了`fileNumLimit`且尝试给`uploader`添加的文件数量超出这个值时派送。
      * * `Q_EXCEED_SIZE_LIMIT` 在设置了`Q_EXCEED_SIZE_LIMIT`且尝试给`uploader`添加的文件总大小超出这个值时派送。
+     * * `Q_TYPE_DENIED` 当文件类型不满足时触发。。
      * @for  Uploader
      */
 
@@ -103,7 +104,7 @@ define([
         var uploader = this,
             opts = uploader.options,
             count = 0,
-            max = opts.fileSizeLimit >> 0,
+            max = parseInt( opts.fileSizeLimit, 10 ),
             flag = true;
 
         if ( !max ) {
