@@ -4132,7 +4132,7 @@
             var uploader = this,
                 opts = uploader.options,
                 count = 0,
-                max = opts.fileSizeLimit >> 0,
+                max = opts.fileSizeLimit,
                 flag = true;
     
             if ( !max ) {
