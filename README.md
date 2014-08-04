@@ -5,13 +5,10 @@ WebUploader是一个简单的以HTML5为主，FLASH为辅的现代文件上传�
 
 支持大文件分片并发上传，极大的提高了文件上传效率。
 
-官网： http://fex.baidu.com/webuploader/
+- 官网： http://fex.baidu.com/webuploader/
+- ISSUES：https://github.com/fex-team/webuploader/issues
 
-**求关注，求 star! 你的 star 是我最大的动力，谢谢！**
-
-欢迎各种讨论：https://github.com/fex-team/webuploader/issues
-
-代码肯定存在很多不足需要优化的地方，欢迎大家提交 [pr](https://help.github.com/articles/using-pull-requests). **感谢**以下代码贡献者, 排名不分先后。
+代码肯定存在很多不足需要优化的地方，欢迎大家提交 [pr](https://help.github.com/articles/using-pull-requests)。**感谢**以下代码贡献者, 排名不分先后。
 
 [@zensh](https://github.com/zensh)，[@ushelp](https://github.com/ushelp)，[@duanlixin](https://github.com/duanlixin)。
 
