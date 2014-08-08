@@ -305,7 +305,7 @@ define([
                     }
 
                     v.transport && v.transport.abort();
-                    v.cuted.unshift(v);
+                    me._putback(v);
                     me._popBlock(v);
                 });
 
@@ -435,6 +435,17 @@ define([
                     me.owner.trigger('uploadFinished');
                 });
                 me._trigged = true;
+            }
+        },
+
+        _putback: function(block) {
+            var idx;
+
+            block.cuted.unshift(block);
+            idx = this.stack.indexOf(block.cuted);
+
+            if (!~idx) {
+                this.stack.unshift(block.cuted);
             }
         },
 
@@ -574,7 +585,7 @@ define([
                 
                 // 如果是中断，则还需要放回去。
                 if (file.getStatus() === Status.INTERRUPT) {
-                    block.cuted.unshift(block);
+                    me._putback(block);
                 }
 
                 return;
