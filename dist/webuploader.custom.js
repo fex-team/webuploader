@@ -3492,9 +3492,19 @@
         Uploader.register({
     
             init: function() {
-                var owner = this.owner;
+                var owner = this.owner,
+                    me = this;
     
                 this.runing = false;
+                this.progress = false;
+    
+                owner
+                    .on( 'startUpload', function() {
+                        me.progress = true;
+                    })
+                    .on( 'uploadFinished', function() {
+                        me.progress = false;
+                    });
     
                 // 记录当前正在传的数据，跟threads相关
                 this.pool = [];
@@ -3715,7 +3725,7 @@
              * @for  Uploader
              */
             isInProgress: function() {
-                return !!this.runing;
+                return !!this.progress;
             },
     
             _getStats: function() {
