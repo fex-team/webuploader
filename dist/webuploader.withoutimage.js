@@ -824,6 +824,7 @@
              * * `invalidNum` 无效的文件数
              * * `uploadFailNum` 上传失败的文件数
              * * `queueNum` 还在队列中的文件数
+             * * `interruptNum` 被暂停的文件数
              * @method getStats
              * @grammar getStats() => Object
              */
@@ -840,7 +841,8 @@
                     cancelNum: stats.numOfCancel,
                     invalidNum: stats.numOfInvalid,
                     uploadFailNum: stats.numOfUploadFailed,
-                    queueNum: stats.numOfQueue
+                    queueNum: stats.numOfQueue,
+                    interruptNum: stats.numofInterrupt
                 } : {};
             },
     
@@ -2157,7 +2159,8 @@
                 numOfProgress: 0,
                 numOfUploadFailed: 0,
                 numOfInvalid: 0,
-                numofDeleted: 0
+                numofDeleted: 0,
+                numofInterrupt: 0,
             };
     
             // 上传队列，仅包括等待上传的文件
@@ -2318,6 +2321,10 @@
                     case STATUS.INVALID:
                         stats.numOfInvalid--;
                         break;
+    
+                    case STATUS.INTERRUPT:
+                        stats.numofInterrupt--;
+                        break;
                 }
     
                 switch ( curStatus ) {
@@ -2344,6 +2351,10 @@
     
                     case STATUS.INVALID:
                         stats.numOfInvalid++;
+                        break;
+    
+                    case STATUS.INTERRUPT:
+                        stats.numofInterrupt++;
                         break;
                 }
             }
@@ -3057,8 +3068,7 @@
                         file.setStatus( Status.QUEUED );
                     }
                 } else {
-                    $.each( me.request( 'get-files', [ Status.INITED,
-                            Status.INTERRUPT ] ), function() {
+                    $.each( me.request( 'get-files', [ Status.INITED ] ), function() {
                         this.setStatus( Status.QUEUED );
                     });
                 }
@@ -3082,7 +3092,7 @@
     
                 file || $.each( me.request( 'get-files',
                         Status.INTERRUPT ), function() {
-                    this.setStatus( Status.QUEUED );
+                    this.setStatus( Status.PROGRESS );
                 });
     
                 me._trigged = false;
@@ -3122,7 +3132,8 @@
                 if ( file ) {
                     file = file.id ? file : me.request( 'get-file', file );
     
-                    if (file.getStatus() !== Status.PROGRESS) {
+                    if ( file.getStatus() !== Status.PROGRESS &&
+                            file.getStatus() !== Status.QUEUED ) {
                         return;
                     }
     
@@ -3143,6 +3154,10 @@
                 }
     
                 me.runing = false;
+    
+                if (this._promise && this._promise.file) {
+                    this._promise.file.setStatus( Status.INTERRUPT );
+                }
     
                 interrupt && $.each( me.pool, function( _, v ) {
                     v.transport && v.transport.abort();
@@ -3253,7 +3268,8 @@
                     me._promise = isPromise( val ) ? val.always( fn ) : fn( val );
     
                 // 没有要上传的了，且没有正在传输的了。
-                } else if ( !me.remaning && !me._getStats().numOfQueue ) {
+                } else if ( !me.remaning && !me._getStats().numOfQueue &&
+                    !me._getStats().numofInterrupt ) {
                     me.runing = false;
     
                     me._trigged || Base.nextTick(function() {
@@ -3271,7 +3287,7 @@
                     if ( act.has() && act.file.getStatus() === Status.PROGRESS ) {
                         return act;
                     } else if (!act.has() ||
-                            act.file.getStatus() !== Status.PROGRESS ||
+                            act.file.getStatus() !== Status.PROGRESS &&
                             act.file.getStatus() !== Status.INTERRUPT ) {
     
                         // 把已经处理完了的，或者，状态为非 progress（上传中）、
@@ -3286,7 +3302,7 @@
             _nextBlock: function() {
                 var me = this,
                     opts = me.options,
-                    act, next, done;
+                    act, next, done, preparing;
     
                 // 如果当前文件还有没有需要传输的，则直接返回剩下的。
                 if ( (act = this._getStack()) ) {
@@ -3311,16 +3327,21 @@
                         if ( !file ) {
                             return null;
                         }
-    
+                            
                         act = CuteFile( file, opts.chunked ? opts.chunkSize : 0 );
                         me.stack.push(act);
                         return act.shift();
                     };
     
                     // 文件可能还在prepare中，也有可能已经完全准备好了。
-                    return isPromise( next ) ?
-                            next[ next.pipe ? 'pipe' : 'then' ]( done ) :
-                            done( next );
+                    if ( isPromise( next) ) {
+                        preparing = next.file;
+                        next = next[ next.pipe ? 'pipe' : 'then' ]( done );
+                        next.file = preparing;
+                        return next;
+                    }
+    
+                    return done( next );
                 }
             },
     
@@ -3341,14 +3362,18 @@
                     promise = me.request( 'before-send-file', file, function() {
     
                         // 有可能文件被skip掉了。文件被skip掉后，状态坑定不是Queued.
-                        if ( file.getStatus() === Status.QUEUED ) {
-                            me.owner.trigger( 'uploadStart', file );
-                            file.setStatus( Status.PROGRESS );
+                        if ( file.getStatus() === Status.PROGRESS || 
+                            file.getStatus() === Status.INTERRUPT ) {
                             return file;
                         }
     
                         return me._finishFile( file );
                     });
+    
+                    me.owner.trigger( 'uploadStart', file );
+                    file.setStatus( Status.PROGRESS );
+    
+                    promise.file = file;
     
                     // 如果还在pending中，则替换成文件本身。
                     promise.done(function() {
@@ -3382,6 +3407,19 @@
                 var me = this,
                     file = block.file,
                     promise;
+    
+                // 有可能在 before-send-file 的 promise 期间改变了文件状态。
+                // 如：暂停，取消
+                // 我们不能中断 promise, 但是可以在 promise 完后，不做上传操作。
+                if ( file.getStatus() !== Status.PROGRESS ) {
+                    
+                    // 如果是中断，则还需要放回去。
+                    if (file.getStatus() === Status.INTERRUPT) {
+                        block.cuted.unshift(block);
+                    }
+    
+                    return;
+                }
     
                 me.pool.push( block );
                 me.remaning++;
@@ -3644,6 +3682,7 @@
          *
          * * `Q_EXCEED_NUM_LIMIT` 在设置了`fileNumLimit`且尝试给`uploader`添加的文件数量超出这个值时派送。
          * * `Q_EXCEED_SIZE_LIMIT` 在设置了`Q_EXCEED_SIZE_LIMIT`且尝试给`uploader`添加的文件总大小超出这个值时派送。
+         * * `Q_TYPE_DENIED` 当文件类型不满足时触发。。
          * @for  Uploader
          */
     
@@ -3727,7 +3766,7 @@
             var uploader = this,
                 opts = uploader.options,
                 count = 0,
-                max = opts.fileSizeLimit >> 0,
+                max = parseInt( opts.fileSizeLimit, 10 ),
                 flag = true;
     
             if ( !max ) {
