@@ -116,6 +116,7 @@ define([
          * * `invalidNum` 无效的文件数
          * * `uploadFailNum` 上传失败的文件数
          * * `queueNum` 还在队列中的文件数
+         * * `interruptNum` 被暂停的文件数
          * @method getStats
          * @grammar getStats() => Object
          */
@@ -132,7 +133,8 @@ define([
                 cancelNum: stats.numOfCancel,
                 invalidNum: stats.numOfInvalid,
                 uploadFailNum: stats.numOfUploadFailed,
-                queueNum: stats.numOfQueue
+                queueNum: stats.numOfQueue,
+                interruptNum: stats.numofInterrupt
             } : {};
         },
 

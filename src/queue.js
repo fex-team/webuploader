@@ -35,7 +35,8 @@ define([
             numOfProgress: 0,
             numOfUploadFailed: 0,
             numOfInvalid: 0,
-            numofDeleted: 0
+            numofDeleted: 0,
+            numofInterrupt: 0,
         };
 
         // 上传队列，仅包括等待上传的文件
@@ -196,6 +197,10 @@ define([
                 case STATUS.INVALID:
                     stats.numOfInvalid--;
                     break;
+
+                case STATUS.INTERRUPT:
+                    stats.numofInterrupt--;
+                    break;
             }
 
             switch ( curStatus ) {
@@ -222,6 +227,10 @@ define([
 
                 case STATUS.INVALID:
                     stats.numOfInvalid++;
+                    break;
+
+                case STATUS.INTERRUPT:
+                    stats.numofInterrupt++;
                     break;
             }
         }
