@@ -694,6 +694,18 @@
         
         <li>
             <span class="meta">
+                <code>auto</code>
+                 {Boolean} 
+                 [可选] 
+                 [默认值：false] 
+            </span>
+            <p>设置为 true 后，不需要手动调用上传，有文件选择即开始上传。</p>
+
+            
+        </li>
+        
+        <li>
+            <span class="meta">
                 <code>prepareNextFile</code>
                  {Boolean} 
                  [可选] 
@@ -1059,6 +1071,7 @@
 <ul>
 <li><code>Q_EXCEED_NUM_LIMIT</code> 在设置了<code>fileNumLimit</code>且尝试给<code>uploader</code>添加的文件数量超出这个值时派送。</li>
 <li><code>Q_EXCEED_SIZE_LIMIT</code> 在设置了<code>Q_EXCEED_SIZE_LIMIT</code>且尝试给<code>uploader</code>添加的文件总大小超出这个值时派送。</li>
+<li><code>Q_TYPE_DENIED</code> 当文件类型不满足时触发。。</li>
 </ul>
 </td>
         </tr>
@@ -1144,6 +1157,7 @@
 <li><code>invalidNum</code> 无效的文件数</li>
 <li><code>uploadFailNum</code> 上传失败的文件数</li>
 <li><code>queueNum</code> 还在队列中的文件数</li>
+<li><code>interruptNum</code> 被暂停的文件数</li>
 </ul>
 
     
