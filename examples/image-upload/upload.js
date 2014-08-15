@@ -85,7 +85,7 @@
             // WebUploader实例
             uploader;
 
-        if ( !WebUploader.Uploader.support('flash') /*&& WebUploader.browser.ie*/ ) {
+        if ( !WebUploader.Uploader.support('flash') && WebUploader.browser.ie ) {
 
             // flash 安装了但是版本过低。
             if (flashVersion) {
