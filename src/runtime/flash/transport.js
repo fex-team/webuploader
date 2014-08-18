@@ -118,7 +118,7 @@ define([
                             return {};
                         }
                     };
-                    me._responseJson  = p(me._response);
+                    me._responseJson  = me._response ? p(me._response) : {};
                         
                     // }
                 }
