@@ -12,6 +12,7 @@ define([
     '../widgets/runtime',
     '../widgets/upload',
     '../widgets/validator',
+    '../widgets/log',
 
     // runtimes
     // html5
