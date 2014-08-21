@@ -14,7 +14,6 @@ define([
     '../widgets/upload',
     '../widgets/validator',
     '../widgets/md5',
-    '../widgets/log',
 
     // runtimes
     // html5
