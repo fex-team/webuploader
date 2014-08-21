@@ -16,6 +16,7 @@ define([
         Status = WUFile.Status;
 
     return Uploader.register({
+        name: 'queue',
 
         init: function( opts ) {
             var me = this,

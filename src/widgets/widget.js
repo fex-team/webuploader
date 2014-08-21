@@ -75,13 +75,22 @@ define([
     // 扩展Uploader.
     $.extend( Uploader.prototype, {
 
+        /**
+         * @property {String | Array} [disableWidgets=undefined]
+         * @namespace options
+         * @for Uploader
+         * @description 默认所有 Uploader.register 了的 widget 都会被加载，如果禁用某一部分，请通过此 option 指定黑名单。
+         */
+
         // 覆写_init用来初始化widgets
         _init: function() {
             var me = this,
-                widgets = me._widgets = [];
+                widgets = me._widgets = [],
+                deactives = me.options.disableWidgets || '';
 
             $.each( widgetClass, function( _, klass ) {
-                widgets.push( new klass( me ) );
+                (!deactives || !~deactives.indexOf( klass._name )) &&
+                    widgets.push( new klass( me ) );
             });
 
             return _init.apply( me, arguments );

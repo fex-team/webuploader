@@ -52,6 +52,7 @@ define([
     });
 
     return Uploader.register({
+        name: 'picker',
 
         init: function( opts ) {
             this.pickers = [];

@@ -10,6 +10,7 @@ define([
 ], function( Base, Uploader, Md5, Blob ) {
 
     return Uploader.register({
+        name: 'md5',
 
 
         /**

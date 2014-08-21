@@ -139,6 +139,7 @@ define([
     }
 
     Uploader.register({
+        name: 'upload',
 
         init: function() {
             var owner = this.owner,

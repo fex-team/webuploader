@@ -40,6 +40,8 @@ define([
 
     // 在Uploader初始化的时候启动Validators的初始化
     Uploader.register({
+        name: 'validator',
+
         init: function() {
             var me = this;
             Base.nextTick(function() {

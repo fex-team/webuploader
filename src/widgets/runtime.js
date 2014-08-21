@@ -12,6 +12,7 @@ define([
     };
 
     return Uploader.register({
+        name: 'runtime',
 
         init: function() {
             if ( !this.predictRuntimeType() ) {

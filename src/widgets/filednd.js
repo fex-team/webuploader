@@ -30,6 +30,8 @@ define([
      * @for  Uploader
      */
     return Uploader.register({
+        name: 'dnd',
+        
         init: function( opts ) {
 
             if ( !opts.dnd ||

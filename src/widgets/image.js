@@ -126,6 +126,8 @@ define([
 
     return Uploader.register({
 
+        name: 'image',
+
 
         /**
          * 生成缩略图，此过程为异步，所以需要传入`callback`。

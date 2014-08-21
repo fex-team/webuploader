@@ -15,6 +15,8 @@ define([
      * @for Uploader
      */
     return Uploader.register({
+        name: 'paste',
+        
         init: function( opts ) {
 
             if ( !opts.paste ||
