@@ -12,6 +12,9 @@
     "html5",
     "flash"
   ],
+  "dependencies": {
+    "jquery": "1.9.1"
+  },
   "license": "BSD",
   "ignore": [
     "**/.*",
