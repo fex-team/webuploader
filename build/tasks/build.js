@@ -133,10 +133,13 @@ module.exports = function( grunt ) {
             custom.unshift('\'./base\'');
             custom = 'define([\n    ' + custom.join(',\n    ') + '\n], function( Base ) {\n    return Base;\n});';
             config.rawText.webuploader = custom;
-        } else {
+        } else if (this.data.preset) {
+
             config.rawText.webuploader = 'define([\n    ' + ['\'./preset/' +
                     this.data.preset +'\''].join(',\n    ') +
                     '\n], function( preset ) {\n    return preset;\n});';
+        } else {
+            config.name = this.data.name;
         }
 
         // 处理最终输出
