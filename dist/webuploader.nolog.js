@@ -4343,6 +4343,116 @@
     });
     
     /**
+     * @fileOverview Md5
+     */
+    define('lib/md5',[
+        'runtime/client',
+        'mediator'
+    ], function( RuntimeClient, Mediator ) {
+    
+        function Md5() {
+            RuntimeClient.call( this, 'Md5' );
+        }
+    
+        // 让 Md5 具备事件功能。
+        Mediator.installTo( Md5.prototype );
+    
+        Md5.prototype.loadFromBlob = function( blob ) {
+            var me = this;
+    
+            if ( me.getRuid() ) {
+                me.disconnectRuntime();
+            }
+    
+            // 连接到blob归属的同一个runtime.
+            me.connectRuntime( blob.ruid, function() {
+                me.exec('init');
+                me.exec( 'loadFromBlob', blob );
+            });
+        };
+    
+        Md5.prototype.getResult = function() {
+            return this.exec('getResult');
+        };
+    
+        return Md5;
+    });
+    /**
+     * @fileOverview 图片操作, 负责预览图片和上传前压缩图片
+     */
+    define('widgets/md5',[
+        'base',
+        'uploader',
+        'lib/md5',
+        'lib/blob',
+        'widgets/widget'
+    ], function( Base, Uploader, Md5, Blob ) {
+    
+        return Uploader.register({
+            name: 'md5',
+    
+    
+            /**
+             * 计算文件 md5 值，返回一个 promise 对象，可以监听 progress 进度。
+             *
+             *
+             * @method md5File
+             * @grammar md5File( file[, start[, end]] ) => promise
+             * @for Uploader
+             * @example
+             *
+             * uploader.on( 'fileQueued', function( file ) {
+             *     var $li = ...;
+             *
+             *     uploader.md5File( file )
+             *
+             *         // 及时显示进度
+             *         .progress(function(percentage) {
+             *             console.log('Percentage:', percentage);
+             *         })
+             *
+             *         // 完成
+             *         .then(function(val) {
+             *             console.log('md5 result:', val);
+             *         });
+             *
+             * });
+             */
+            md5File: function( file, start, end ) {
+                var md5 = new Md5(),
+                    deferred = Base.Deferred(),
+                    blob = (file instanceof Blob) ? file :
+                        this.request( 'get-file', file ).source;
+    
+                md5.on( 'progress load', function( e ) {
+                    e = e || {};
+                    deferred.notify( e.total ? e.loaded / e.total : 1 );
+                });
+    
+                md5.on( 'complete', function() {
+                    deferred.resolve( md5.getResult() );
+                });
+    
+                md5.on( 'error', function( reason ) {
+                    deferred.reject( reason );
+                });
+    
+                if ( arguments.length > 1 ) {
+                    start = start || 0;
+                    end = end || 0;
+                    start < 0 && (start = blob.size + start);
+                    end < 0 && (end = blob.size + end);
+                    end = Math.min( end, blob.size );
+                    blob = blob.slice( start, end );
+                }
+    
+                md5.loadFromBlob( blob );
+    
+                return deferred.promise();
+            }
+        });
+    });
+    /**
      * @fileOverview Runtime管理器，负责Runtime的选择, 连接
      */
     define('runtime/compbase',[],function() {
@@ -5373,6 +5483,808 @@
         return EXIF;
     });
     /**
+     * 这个方式性能不行，但是可以解决android里面的toDataUrl的bug
+     * android里面toDataUrl('image/jpege')得到的结果却是png.
+     *
+     * 所以这里没辙，只能借助这个工具
+     * @fileOverview jpeg encoder
+     */
+    define('runtime/html5/jpegencoder',[], function( require, exports, module ) {
+    
+        /*
+          Copyright (c) 2008, Adobe Systems Incorporated
+          All rights reserved.
+    
+          Redistribution and use in source and binary forms, with or without
+          modification, are permitted provided that the following conditions are
+          met:
+    
+          * Redistributions of source code must retain the above copyright notice,
+            this list of conditions and the following disclaimer.
+    
+          * Redistributions in binary form must reproduce the above copyright
+            notice, this list of conditions and the following disclaimer in the
+            documentation and/or other materials provided with the distribution.
+    
+          * Neither the name of Adobe Systems Incorporated nor the names of its
+            contributors may be used to endorse or promote products derived from
+            this software without specific prior written permission.
+    
+          THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS
+          IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO,
+          THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR
+          PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR
+          CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL,
+          EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO,
+          PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR
+          PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF
+          LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
+          NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+          SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+        */
+        /*
+        JPEG encoder ported to JavaScript and optimized by Andreas Ritter, www.bytestrom.eu, 11/2009
+    
+        Basic GUI blocking jpeg encoder
+        */
+    
+        function JPEGEncoder(quality) {
+          var self = this;
+            var fround = Math.round;
+            var ffloor = Math.floor;
+            var YTable = new Array(64);
+            var UVTable = new Array(64);
+            var fdtbl_Y = new Array(64);
+            var fdtbl_UV = new Array(64);
+            var YDC_HT;
+            var UVDC_HT;
+            var YAC_HT;
+            var UVAC_HT;
+    
+            var bitcode = new Array(65535);
+            var category = new Array(65535);
+            var outputfDCTQuant = new Array(64);
+            var DU = new Array(64);
+            var byteout = [];
+            var bytenew = 0;
+            var bytepos = 7;
+    
+            var YDU = new Array(64);
+            var UDU = new Array(64);
+            var VDU = new Array(64);
+            var clt = new Array(256);
+            var RGB_YUV_TABLE = new Array(2048);
+            var currentQuality;
+    
+            var ZigZag = [
+                     0, 1, 5, 6,14,15,27,28,
+                     2, 4, 7,13,16,26,29,42,
+                     3, 8,12,17,25,30,41,43,
+                     9,11,18,24,31,40,44,53,
+                    10,19,23,32,39,45,52,54,
+                    20,22,33,38,46,51,55,60,
+                    21,34,37,47,50,56,59,61,
+                    35,36,48,49,57,58,62,63
+                ];
+    
+            var std_dc_luminance_nrcodes = [0,0,1,5,1,1,1,1,1,1,0,0,0,0,0,0,0];
+            var std_dc_luminance_values = [0,1,2,3,4,5,6,7,8,9,10,11];
+            var std_ac_luminance_nrcodes = [0,0,2,1,3,3,2,4,3,5,5,4,4,0,0,1,0x7d];
+            var std_ac_luminance_values = [
+                    0x01,0x02,0x03,0x00,0x04,0x11,0x05,0x12,
+                    0x21,0x31,0x41,0x06,0x13,0x51,0x61,0x07,
+                    0x22,0x71,0x14,0x32,0x81,0x91,0xa1,0x08,
+                    0x23,0x42,0xb1,0xc1,0x15,0x52,0xd1,0xf0,
+                    0x24,0x33,0x62,0x72,0x82,0x09,0x0a,0x16,
+                    0x17,0x18,0x19,0x1a,0x25,0x26,0x27,0x28,
+                    0x29,0x2a,0x34,0x35,0x36,0x37,0x38,0x39,
+                    0x3a,0x43,0x44,0x45,0x46,0x47,0x48,0x49,
+                    0x4a,0x53,0x54,0x55,0x56,0x57,0x58,0x59,
+                    0x5a,0x63,0x64,0x65,0x66,0x67,0x68,0x69,
+                    0x6a,0x73,0x74,0x75,0x76,0x77,0x78,0x79,
+                    0x7a,0x83,0x84,0x85,0x86,0x87,0x88,0x89,
+                    0x8a,0x92,0x93,0x94,0x95,0x96,0x97,0x98,
+                    0x99,0x9a,0xa2,0xa3,0xa4,0xa5,0xa6,0xa7,
+                    0xa8,0xa9,0xaa,0xb2,0xb3,0xb4,0xb5,0xb6,
+                    0xb7,0xb8,0xb9,0xba,0xc2,0xc3,0xc4,0xc5,
+                    0xc6,0xc7,0xc8,0xc9,0xca,0xd2,0xd3,0xd4,
+                    0xd5,0xd6,0xd7,0xd8,0xd9,0xda,0xe1,0xe2,
+                    0xe3,0xe4,0xe5,0xe6,0xe7,0xe8,0xe9,0xea,
+                    0xf1,0xf2,0xf3,0xf4,0xf5,0xf6,0xf7,0xf8,
+                    0xf9,0xfa
+                ];
+    
+            var std_dc_chrominance_nrcodes = [0,0,3,1,1,1,1,1,1,1,1,1,0,0,0,0,0];
+            var std_dc_chrominance_values = [0,1,2,3,4,5,6,7,8,9,10,11];
+            var std_ac_chrominance_nrcodes = [0,0,2,1,2,4,4,3,4,7,5,4,4,0,1,2,0x77];
+            var std_ac_chrominance_values = [
+                    0x00,0x01,0x02,0x03,0x11,0x04,0x05,0x21,
+                    0x31,0x06,0x12,0x41,0x51,0x07,0x61,0x71,
+                    0x13,0x22,0x32,0x81,0x08,0x14,0x42,0x91,
+                    0xa1,0xb1,0xc1,0x09,0x23,0x33,0x52,0xf0,
+                    0x15,0x62,0x72,0xd1,0x0a,0x16,0x24,0x34,
+                    0xe1,0x25,0xf1,0x17,0x18,0x19,0x1a,0x26,
+                    0x27,0x28,0x29,0x2a,0x35,0x36,0x37,0x38,
+                    0x39,0x3a,0x43,0x44,0x45,0x46,0x47,0x48,
+                    0x49,0x4a,0x53,0x54,0x55,0x56,0x57,0x58,
+                    0x59,0x5a,0x63,0x64,0x65,0x66,0x67,0x68,
+                    0x69,0x6a,0x73,0x74,0x75,0x76,0x77,0x78,
+                    0x79,0x7a,0x82,0x83,0x84,0x85,0x86,0x87,
+                    0x88,0x89,0x8a,0x92,0x93,0x94,0x95,0x96,
+                    0x97,0x98,0x99,0x9a,0xa2,0xa3,0xa4,0xa5,
+                    0xa6,0xa7,0xa8,0xa9,0xaa,0xb2,0xb3,0xb4,
+                    0xb5,0xb6,0xb7,0xb8,0xb9,0xba,0xc2,0xc3,
+                    0xc4,0xc5,0xc6,0xc7,0xc8,0xc9,0xca,0xd2,
+                    0xd3,0xd4,0xd5,0xd6,0xd7,0xd8,0xd9,0xda,
+                    0xe2,0xe3,0xe4,0xe5,0xe6,0xe7,0xe8,0xe9,
+                    0xea,0xf2,0xf3,0xf4,0xf5,0xf6,0xf7,0xf8,
+                    0xf9,0xfa
+                ];
+    
+            function initQuantTables(sf){
+                    var YQT = [
+                        16, 11, 10, 16, 24, 40, 51, 61,
+                        12, 12, 14, 19, 26, 58, 60, 55,
+                        14, 13, 16, 24, 40, 57, 69, 56,
+                        14, 17, 22, 29, 51, 87, 80, 62,
+                        18, 22, 37, 56, 68,109,103, 77,
+                        24, 35, 55, 64, 81,104,113, 92,
+                        49, 64, 78, 87,103,121,120,101,
+                        72, 92, 95, 98,112,100,103, 99
+                    ];
+    
+                    for (var i = 0; i < 64; i++) {
+                        var t = ffloor((YQT[i]*sf+50)/100);
+                        if (t < 1) {
+                            t = 1;
+                        } else if (t > 255) {
+                            t = 255;
+                        }
+                        YTable[ZigZag[i]] = t;
+                    }
+                    var UVQT = [
+                        17, 18, 24, 47, 99, 99, 99, 99,
+                        18, 21, 26, 66, 99, 99, 99, 99,
+                        24, 26, 56, 99, 99, 99, 99, 99,
+                        47, 66, 99, 99, 99, 99, 99, 99,
+                        99, 99, 99, 99, 99, 99, 99, 99,
+                        99, 99, 99, 99, 99, 99, 99, 99,
+                        99, 99, 99, 99, 99, 99, 99, 99,
+                        99, 99, 99, 99, 99, 99, 99, 99
+                    ];
+                    for (var j = 0; j < 64; j++) {
+                        var u = ffloor((UVQT[j]*sf+50)/100);
+                        if (u < 1) {
+                            u = 1;
+                        } else if (u > 255) {
+                            u = 255;
+                        }
+                        UVTable[ZigZag[j]] = u;
+                    }
+                    var aasf = [
+                        1.0, 1.387039845, 1.306562965, 1.175875602,
+                        1.0, 0.785694958, 0.541196100, 0.275899379
+                    ];
+                    var k = 0;
+                    for (var row = 0; row < 8; row++)
+                    {
+                        for (var col = 0; col < 8; col++)
+                        {
+                            fdtbl_Y[k]  = (1.0 / (YTable [ZigZag[k]] * aasf[row] * aasf[col] * 8.0));
+                            fdtbl_UV[k] = (1.0 / (UVTable[ZigZag[k]] * aasf[row] * aasf[col] * 8.0));
+                            k++;
+                        }
+                    }
+                }
+    
+                function computeHuffmanTbl(nrcodes, std_table){
+                    var codevalue = 0;
+                    var pos_in_table = 0;
+                    var HT = new Array();
+                    for (var k = 1; k <= 16; k++) {
+                        for (var j = 1; j <= nrcodes[k]; j++) {
+                            HT[std_table[pos_in_table]] = [];
+                            HT[std_table[pos_in_table]][0] = codevalue;
+                            HT[std_table[pos_in_table]][1] = k;
+                            pos_in_table++;
+                            codevalue++;
+                        }
+                        codevalue*=2;
+                    }
+                    return HT;
+                }
+    
+                function initHuffmanTbl()
+                {
+                    YDC_HT = computeHuffmanTbl(std_dc_luminance_nrcodes,std_dc_luminance_values);
+                    UVDC_HT = computeHuffmanTbl(std_dc_chrominance_nrcodes,std_dc_chrominance_values);
+                    YAC_HT = computeHuffmanTbl(std_ac_luminance_nrcodes,std_ac_luminance_values);
+                    UVAC_HT = computeHuffmanTbl(std_ac_chrominance_nrcodes,std_ac_chrominance_values);
+                }
+    
+                function initCategoryNumber()
+                {
+                    var nrlower = 1;
+                    var nrupper = 2;
+                    for (var cat = 1; cat <= 15; cat++) {
+                        //Positive numbers
+                        for (var nr = nrlower; nr<nrupper; nr++) {
+                            category[32767+nr] = cat;
+                            bitcode[32767+nr] = [];
+                            bitcode[32767+nr][1] = cat;
+                            bitcode[32767+nr][0] = nr;
+                        }
+                        //Negative numbers
+                        for (var nrneg =-(nrupper-1); nrneg<=-nrlower; nrneg++) {
+                            category[32767+nrneg] = cat;
+                            bitcode[32767+nrneg] = [];
+                            bitcode[32767+nrneg][1] = cat;
+                            bitcode[32767+nrneg][0] = nrupper-1+nrneg;
+                        }
+                        nrlower <<= 1;
+                        nrupper <<= 1;
+                    }
+                }
+    
+                function initRGBYUVTable() {
+                    for(var i = 0; i < 256;i++) {
+                        RGB_YUV_TABLE[i]            =  19595 * i;
+                        RGB_YUV_TABLE[(i+ 256)>>0]  =  38470 * i;
+                        RGB_YUV_TABLE[(i+ 512)>>0]  =   7471 * i + 0x8000;
+                        RGB_YUV_TABLE[(i+ 768)>>0]  = -11059 * i;
+                        RGB_YUV_TABLE[(i+1024)>>0]  = -21709 * i;
+                        RGB_YUV_TABLE[(i+1280)>>0]  =  32768 * i + 0x807FFF;
+                        RGB_YUV_TABLE[(i+1536)>>0]  = -27439 * i;
+                        RGB_YUV_TABLE[(i+1792)>>0]  = - 5329 * i;
+                    }
+                }
+    
+                // IO functions
+                function writeBits(bs)
+                {
+                    var value = bs[0];
+                    var posval = bs[1]-1;
+                    while ( posval >= 0 ) {
+                        if (value & (1 << posval) ) {
+                            bytenew |= (1 << bytepos);
+                        }
+                        posval--;
+                        bytepos--;
+                        if (bytepos < 0) {
+                            if (bytenew == 0xFF) {
+                                writeByte(0xFF);
+                                writeByte(0);
+                            }
+                            else {
+                                writeByte(bytenew);
+                            }
+                            bytepos=7;
+                            bytenew=0;
+                        }
+                    }
+                }
+    
+                function writeByte(value)
+                {
+                    byteout.push(clt[value]); // write char directly instead of converting later
+                }
+    
+                function writeWord(value)
+                {
+                    writeByte((value>>8)&0xFF);
+                    writeByte((value   )&0xFF);
+                }
+    
+                // DCT & quantization core
+                function fDCTQuant(data, fdtbl)
+                {
+                    var d0, d1, d2, d3, d4, d5, d6, d7;
+                    /* Pass 1: process rows. */
+                    var dataOff=0;
+                    var i;
+                    var I8 = 8;
+                    var I64 = 64;
+                    for (i=0; i<I8; ++i)
+                    {
+                        d0 = data[dataOff];
+                        d1 = data[dataOff+1];
+                        d2 = data[dataOff+2];
+                        d3 = data[dataOff+3];
+                        d4 = data[dataOff+4];
+                        d5 = data[dataOff+5];
+                        d6 = data[dataOff+6];
+                        d7 = data[dataOff+7];
+    
+                        var tmp0 = d0 + d7;
+                        var tmp7 = d0 - d7;
+                        var tmp1 = d1 + d6;
+                        var tmp6 = d1 - d6;
+                        var tmp2 = d2 + d5;
+                        var tmp5 = d2 - d5;
+                        var tmp3 = d3 + d4;
+                        var tmp4 = d3 - d4;
+    
+                        /* Even part */
+                        var tmp10 = tmp0 + tmp3;    /* phase 2 */
+                        var tmp13 = tmp0 - tmp3;
+                        var tmp11 = tmp1 + tmp2;
+                        var tmp12 = tmp1 - tmp2;
+    
+                        data[dataOff] = tmp10 + tmp11; /* phase 3 */
+                        data[dataOff+4] = tmp10 - tmp11;
+    
+                        var z1 = (tmp12 + tmp13) * 0.707106781; /* c4 */
+                        data[dataOff+2] = tmp13 + z1; /* phase 5 */
+                        data[dataOff+6] = tmp13 - z1;
+    
+                        /* Odd part */
+                        tmp10 = tmp4 + tmp5; /* phase 2 */
+                        tmp11 = tmp5 + tmp6;
+                        tmp12 = tmp6 + tmp7;
+    
+                        /* The rotator is modified from fig 4-8 to avoid extra negations. */
+                        var z5 = (tmp10 - tmp12) * 0.382683433; /* c6 */
+                        var z2 = 0.541196100 * tmp10 + z5; /* c2-c6 */
+                        var z4 = 1.306562965 * tmp12 + z5; /* c2+c6 */
+                        var z3 = tmp11 * 0.707106781; /* c4 */
+    
+                        var z11 = tmp7 + z3;    /* phase 5 */
+                        var z13 = tmp7 - z3;
+    
+                        data[dataOff+5] = z13 + z2; /* phase 6 */
+                        data[dataOff+3] = z13 - z2;
+                        data[dataOff+1] = z11 + z4;
+                        data[dataOff+7] = z11 - z4;
+    
+                        dataOff += 8; /* advance pointer to next row */
+                    }
+    
+                    /* Pass 2: process columns. */
+                    dataOff = 0;
+                    for (i=0; i<I8; ++i)
+                    {
+                        d0 = data[dataOff];
+                        d1 = data[dataOff + 8];
+                        d2 = data[dataOff + 16];
+                        d3 = data[dataOff + 24];
+                        d4 = data[dataOff + 32];
+                        d5 = data[dataOff + 40];
+                        d6 = data[dataOff + 48];
+                        d7 = data[dataOff + 56];
+    
+                        var tmp0p2 = d0 + d7;
+                        var tmp7p2 = d0 - d7;
+                        var tmp1p2 = d1 + d6;
+                        var tmp6p2 = d1 - d6;
+                        var tmp2p2 = d2 + d5;
+                        var tmp5p2 = d2 - d5;
+                        var tmp3p2 = d3 + d4;
+                        var tmp4p2 = d3 - d4;
+    
+                        /* Even part */
+                        var tmp10p2 = tmp0p2 + tmp3p2;  /* phase 2 */
+                        var tmp13p2 = tmp0p2 - tmp3p2;
+                        var tmp11p2 = tmp1p2 + tmp2p2;
+                        var tmp12p2 = tmp1p2 - tmp2p2;
+    
+                        data[dataOff] = tmp10p2 + tmp11p2; /* phase 3 */
+                        data[dataOff+32] = tmp10p2 - tmp11p2;
+    
+                        var z1p2 = (tmp12p2 + tmp13p2) * 0.707106781; /* c4 */
+                        data[dataOff+16] = tmp13p2 + z1p2; /* phase 5 */
+                        data[dataOff+48] = tmp13p2 - z1p2;
+    
+                        /* Odd part */
+                        tmp10p2 = tmp4p2 + tmp5p2; /* phase 2 */
+                        tmp11p2 = tmp5p2 + tmp6p2;
+                        tmp12p2 = tmp6p2 + tmp7p2;
+    
+                        /* The rotator is modified from fig 4-8 to avoid extra negations. */
+                        var z5p2 = (tmp10p2 - tmp12p2) * 0.382683433; /* c6 */
+                        var z2p2 = 0.541196100 * tmp10p2 + z5p2; /* c2-c6 */
+                        var z4p2 = 1.306562965 * tmp12p2 + z5p2; /* c2+c6 */
+                        var z3p2 = tmp11p2 * 0.707106781; /* c4 */
+    
+                        var z11p2 = tmp7p2 + z3p2;  /* phase 5 */
+                        var z13p2 = tmp7p2 - z3p2;
+    
+                        data[dataOff+40] = z13p2 + z2p2; /* phase 6 */
+                        data[dataOff+24] = z13p2 - z2p2;
+                        data[dataOff+ 8] = z11p2 + z4p2;
+                        data[dataOff+56] = z11p2 - z4p2;
+    
+                        dataOff++; /* advance pointer to next column */
+                    }
+    
+                    // Quantize/descale the coefficients
+                    var fDCTQuant;
+                    for (i=0; i<I64; ++i)
+                    {
+                        // Apply the quantization and scaling factor & Round to nearest integer
+                        fDCTQuant = data[i]*fdtbl[i];
+                        outputfDCTQuant[i] = (fDCTQuant > 0.0) ? ((fDCTQuant + 0.5)|0) : ((fDCTQuant - 0.5)|0);
+                        //outputfDCTQuant[i] = fround(fDCTQuant);
+    
+                    }
+                    return outputfDCTQuant;
+                }
+    
+                function writeAPP0()
+                {
+                    writeWord(0xFFE0); // marker
+                    writeWord(16); // length
+                    writeByte(0x4A); // J
+                    writeByte(0x46); // F
+                    writeByte(0x49); // I
+                    writeByte(0x46); // F
+                    writeByte(0); // = "JFIF",'\0'
+                    writeByte(1); // versionhi
+                    writeByte(1); // versionlo
+                    writeByte(0); // xyunits
+                    writeWord(1); // xdensity
+                    writeWord(1); // ydensity
+                    writeByte(0); // thumbnwidth
+                    writeByte(0); // thumbnheight
+                }
+    
+                function writeSOF0(width, height)
+                {
+                    writeWord(0xFFC0); // marker
+                    writeWord(17);   // length, truecolor YUV JPG
+                    writeByte(8);    // precision
+                    writeWord(height);
+                    writeWord(width);
+                    writeByte(3);    // nrofcomponents
+                    writeByte(1);    // IdY
+                    writeByte(0x11); // HVY
+                    writeByte(0);    // QTY
+                    writeByte(2);    // IdU
+                    writeByte(0x11); // HVU
+                    writeByte(1);    // QTU
+                    writeByte(3);    // IdV
+                    writeByte(0x11); // HVV
+                    writeByte(1);    // QTV
+                }
+    
+                function writeDQT()
+                {
+                    writeWord(0xFFDB); // marker
+                    writeWord(132);    // length
+                    writeByte(0);
+                    for (var i=0; i<64; i++) {
+                        writeByte(YTable[i]);
+                    }
+                    writeByte(1);
+                    for (var j=0; j<64; j++) {
+                        writeByte(UVTable[j]);
+                    }
+                }
+    
+                function writeDHT()
+                {
+                    writeWord(0xFFC4); // marker
+                    writeWord(0x01A2); // length
+    
+                    writeByte(0); // HTYDCinfo
+                    for (var i=0; i<16; i++) {
+                        writeByte(std_dc_luminance_nrcodes[i+1]);
+                    }
+                    for (var j=0; j<=11; j++) {
+                        writeByte(std_dc_luminance_values[j]);
+                    }
+    
+                    writeByte(0x10); // HTYACinfo
+                    for (var k=0; k<16; k++) {
+                        writeByte(std_ac_luminance_nrcodes[k+1]);
+                    }
+                    for (var l=0; l<=161; l++) {
+                        writeByte(std_ac_luminance_values[l]);
+                    }
+    
+                    writeByte(1); // HTUDCinfo
+                    for (var m=0; m<16; m++) {
+                        writeByte(std_dc_chrominance_nrcodes[m+1]);
+                    }
+                    for (var n=0; n<=11; n++) {
+                        writeByte(std_dc_chrominance_values[n]);
+                    }
+    
+                    writeByte(0x11); // HTUACinfo
+                    for (var o=0; o<16; o++) {
+                        writeByte(std_ac_chrominance_nrcodes[o+1]);
+                    }
+                    for (var p=0; p<=161; p++) {
+                        writeByte(std_ac_chrominance_values[p]);
+                    }
+                }
+    
+                function writeSOS()
+                {
+                    writeWord(0xFFDA); // marker
+                    writeWord(12); // length
+                    writeByte(3); // nrofcomponents
+                    writeByte(1); // IdY
+                    writeByte(0); // HTY
+                    writeByte(2); // IdU
+                    writeByte(0x11); // HTU
+                    writeByte(3); // IdV
+                    writeByte(0x11); // HTV
+                    writeByte(0); // Ss
+                    writeByte(0x3f); // Se
+                    writeByte(0); // Bf
+                }
+    
+                function processDU(CDU, fdtbl, DC, HTDC, HTAC){
+                    var EOB = HTAC[0x00];
+                    var M16zeroes = HTAC[0xF0];
+                    var pos;
+                    var I16 = 16;
+                    var I63 = 63;
+                    var I64 = 64;
+                    var DU_DCT = fDCTQuant(CDU, fdtbl);
+                    //ZigZag reorder
+                    for (var j=0;j<I64;++j) {
+                        DU[ZigZag[j]]=DU_DCT[j];
+                    }
+                    var Diff = DU[0] - DC; DC = DU[0];
+                    //Encode DC
+                    if (Diff==0) {
+                        writeBits(HTDC[0]); // Diff might be 0
+                    } else {
+                        pos = 32767+Diff;
+                        writeBits(HTDC[category[pos]]);
+                        writeBits(bitcode[pos]);
+                    }
+                    //Encode ACs
+                    var end0pos = 63; // was const... which is crazy
+                    for (; (end0pos>0)&&(DU[end0pos]==0); end0pos--) {};
+                    //end0pos = first element in reverse order !=0
+                    if ( end0pos == 0) {
+                        writeBits(EOB);
+                        return DC;
+                    }
+                    var i = 1;
+                    var lng;
+                    while ( i <= end0pos ) {
+                        var startpos = i;
+                        for (; (DU[i]==0) && (i<=end0pos); ++i) {}
+                        var nrzeroes = i-startpos;
+                        if ( nrzeroes >= I16 ) {
+                            lng = nrzeroes>>4;
+                            for (var nrmarker=1; nrmarker <= lng; ++nrmarker)
+                                writeBits(M16zeroes);
+                            nrzeroes = nrzeroes&0xF;
+                        }
+                        pos = 32767+DU[i];
+                        writeBits(HTAC[(nrzeroes<<4)+category[pos]]);
+                        writeBits(bitcode[pos]);
+                        i++;
+                    }
+                    if ( end0pos != I63 ) {
+                        writeBits(EOB);
+                    }
+                    return DC;
+                }
+    
+                function initCharLookupTable(){
+                    var sfcc = String.fromCharCode;
+                    for(var i=0; i < 256; i++){ ///// ACHTUNG // 255
+                        clt[i] = sfcc(i);
+                    }
+                }
+    
+                this.encode = function(image,quality) // image data object
+                {
+                    // var time_start = new Date().getTime();
+    
+                    if(quality) setQuality(quality);
+    
+                    // Initialize bit writer
+                    byteout = new Array();
+                    bytenew=0;
+                    bytepos=7;
+    
+                    // Add JPEG headers
+                    writeWord(0xFFD8); // SOI
+                    writeAPP0();
+                    writeDQT();
+                    writeSOF0(image.width,image.height);
+                    writeDHT();
+                    writeSOS();
+    
+    
+                    // Encode 8x8 macroblocks
+                    var DCY=0;
+                    var DCU=0;
+                    var DCV=0;
+    
+                    bytenew=0;
+                    bytepos=7;
+    
+    
+                    this.encode.displayName = "_encode_";
+    
+                    var imageData = image.data;
+                    var width = image.width;
+                    var height = image.height;
+    
+                    var quadWidth = width*4;
+                    var tripleWidth = width*3;
+    
+                    var x, y = 0;
+                    var r, g, b;
+                    var start,p, col,row,pos;
+                    while(y < height){
+                        x = 0;
+                        while(x < quadWidth){
+                        start = quadWidth * y + x;
+                        p = start;
+                        col = -1;
+                        row = 0;
+    
+                        for(pos=0; pos < 64; pos++){
+                            row = pos >> 3;// /8
+                            col = ( pos & 7 ) * 4; // %8
+                            p = start + ( row * quadWidth ) + col;
+    
+                            if(y+row >= height){ // padding bottom
+                                p-= (quadWidth*(y+1+row-height));
+                            }
+    
+                            if(x+col >= quadWidth){ // padding right
+                                p-= ((x+col) - quadWidth +4)
+                            }
+    
+                            r = imageData[ p++ ];
+                            g = imageData[ p++ ];
+                            b = imageData[ p++ ];
+    
+    
+                            /* // calculate YUV values dynamically
+                            YDU[pos]=((( 0.29900)*r+( 0.58700)*g+( 0.11400)*b))-128; //-0x80
+                            UDU[pos]=(((-0.16874)*r+(-0.33126)*g+( 0.50000)*b));
+                            VDU[pos]=((( 0.50000)*r+(-0.41869)*g+(-0.08131)*b));
+                            */
+    
+                            // use lookup table (slightly faster)
+                            YDU[pos] = ((RGB_YUV_TABLE[r]             + RGB_YUV_TABLE[(g +  256)>>0] + RGB_YUV_TABLE[(b +  512)>>0]) >> 16)-128;
+                            UDU[pos] = ((RGB_YUV_TABLE[(r +  768)>>0] + RGB_YUV_TABLE[(g + 1024)>>0] + RGB_YUV_TABLE[(b + 1280)>>0]) >> 16)-128;
+                            VDU[pos] = ((RGB_YUV_TABLE[(r + 1280)>>0] + RGB_YUV_TABLE[(g + 1536)>>0] + RGB_YUV_TABLE[(b + 1792)>>0]) >> 16)-128;
+    
+                        }
+    
+                        DCY = processDU(YDU, fdtbl_Y, DCY, YDC_HT, YAC_HT);
+                        DCU = processDU(UDU, fdtbl_UV, DCU, UVDC_HT, UVAC_HT);
+                        DCV = processDU(VDU, fdtbl_UV, DCV, UVDC_HT, UVAC_HT);
+                        x+=32;
+                        }
+                        y+=8;
+                    }
+    
+    
+                    ////////////////////////////////////////////////////////////////
+    
+                    // Do the bit alignment of the EOI marker
+                    if ( bytepos >= 0 ) {
+                        var fillbits = [];
+                        fillbits[1] = bytepos+1;
+                        fillbits[0] = (1<<(bytepos+1))-1;
+                        writeBits(fillbits);
+                    }
+    
+                    writeWord(0xFFD9); //EOI
+    
+                    var jpegDataUri = 'data:image/jpeg;base64,' + btoa(byteout.join(''));
+    
+                    byteout = [];
+    
+                    // benchmarking
+                    // var duration = new Date().getTime() - time_start;
+                    // console.log('Encoding time: '+ currentQuality + 'ms');
+                    //
+    
+                    return jpegDataUri
+            }
+    
+            function setQuality(quality){
+                if (quality <= 0) {
+                    quality = 1;
+                }
+                if (quality > 100) {
+                    quality = 100;
+                }
+    
+                if(currentQuality == quality) return // don't recalc if unchanged
+    
+                var sf = 0;
+                if (quality < 50) {
+                    sf = Math.floor(5000 / quality);
+                } else {
+                    sf = Math.floor(200 - quality*2);
+                }
+    
+                initQuantTables(sf);
+                currentQuality = quality;
+                // console.log('Quality set to: '+quality +'%');
+            }
+    
+            function init(){
+                // var time_start = new Date().getTime();
+                if(!quality) quality = 50;
+                // Create tables
+                initCharLookupTable()
+                initHuffmanTbl();
+                initCategoryNumber();
+                initRGBYUVTable();
+    
+                setQuality(quality);
+                // var duration = new Date().getTime() - time_start;
+                // console.log('Initialization '+ duration + 'ms');
+            }
+    
+            init();
+    
+        };
+    
+        JPEGEncoder.encode = function( data, quality ) {
+            var encoder = new JPEGEncoder( quality );
+    
+            return encoder.encode( data );
+        }
+    
+        return JPEGEncoder;
+    });
+    /**
+     * @fileOverview Fix android canvas.toDataUrl bug.
+     */
+    define('runtime/html5/androidpatch',[
+        'runtime/html5/util',
+        'runtime/html5/jpegencoder',
+        'base'
+    ], function( Util, encoder, Base ) {
+        var origin = Util.canvasToDataUrl,
+            supportJpeg;
+    
+        Util.canvasToDataUrl = function( canvas, type, quality ) {
+            var ctx, w, h, fragement, parts;
+    
+            // 非android手机直接跳过。
+            if ( !Base.os.android ) {
+                return origin.apply( null, arguments );
+            }
+    
+            // 检测是否canvas支持jpeg导出，根据数据格式来判断。
+            // JPEG 前两位分别是：255, 216
+            if ( type === 'image/jpeg' && typeof supportJpeg === 'undefined' ) {
+                fragement = origin.apply( null, arguments );
+    
+                parts = fragement.split(',');
+    
+                if ( ~parts[ 0 ].indexOf('base64') ) {
+                    fragement = atob( parts[ 1 ] );
+                } else {
+                    fragement = decodeURIComponent( parts[ 1 ] );
+                }
+    
+                fragement = fragement.substring( 0, 2 );
+    
+                supportJpeg = fragement.charCodeAt( 0 ) === 255 &&
+                        fragement.charCodeAt( 1 ) === 216;
+            }
+    
+            // 只有在android环境下才修复
+            if ( type === 'image/jpeg' && !supportJpeg ) {
+                w = canvas.width;
+                h = canvas.height;
+                ctx = canvas.getContext('2d');
+    
+                return encoder.encode( ctx.getImageData( 0, 0, w, h ), quality );
+            }
+    
+            return origin.apply( null, arguments );
+        };
+    });
+    /**
      * @fileOverview Image
      */
     define('runtime/html5/image',[
@@ -5978,9 +6890,1053 @@
         });
     });
     /**
-     * @fileOverview 只有html5实现的文件版本。
+     * @fileOverview  Transport flash实现
      */
-    define('preset/html5only',[
+    define('runtime/html5/md5',[
+        'runtime/html5/runtime'
+    ], function( FlashRuntime ) {
+    
+        /*
+         * Fastest md5 implementation around (JKM md5)
+         * Credits: Joseph Myers
+         *
+         * @see http://www.myersdaily.org/joseph/javascript/md5-text.html
+         * @see http://jsperf.com/md5-shootout/7
+         */
+    
+        /* this function is much faster,
+          so if possible we use it. Some IEs
+          are the only ones I know of that
+          need the idiotic second function,
+          generated by an if clause.  */
+        var add32 = function (a, b) {
+            return (a + b) & 0xFFFFFFFF;
+        },
+    
+        cmn = function (q, a, b, x, s, t) {
+            a = add32(add32(a, q), add32(x, t));
+            return add32((a << s) | (a >>> (32 - s)), b);
+        },
+    
+        ff = function (a, b, c, d, x, s, t) {
+            return cmn((b & c) | ((~b) & d), a, b, x, s, t);
+        },
+    
+        gg = function (a, b, c, d, x, s, t) {
+            return cmn((b & d) | (c & (~d)), a, b, x, s, t);
+        },
+    
+        hh = function (a, b, c, d, x, s, t) {
+            return cmn(b ^ c ^ d, a, b, x, s, t);
+        },
+    
+        ii = function (a, b, c, d, x, s, t) {
+            return cmn(c ^ (b | (~d)), a, b, x, s, t);
+        },
+    
+        md5cycle = function (x, k) {
+            var a = x[0],
+                b = x[1],
+                c = x[2],
+                d = x[3];
+    
+            a = ff(a, b, c, d, k[0], 7, -680876936);
+            d = ff(d, a, b, c, k[1], 12, -389564586);
+            c = ff(c, d, a, b, k[2], 17, 606105819);
+            b = ff(b, c, d, a, k[3], 22, -1044525330);
+            a = ff(a, b, c, d, k[4], 7, -176418897);
+            d = ff(d, a, b, c, k[5], 12, 1200080426);
+            c = ff(c, d, a, b, k[6], 17, -1473231341);
+            b = ff(b, c, d, a, k[7], 22, -45705983);
+            a = ff(a, b, c, d, k[8], 7, 1770035416);
+            d = ff(d, a, b, c, k[9], 12, -1958414417);
+            c = ff(c, d, a, b, k[10], 17, -42063);
+            b = ff(b, c, d, a, k[11], 22, -1990404162);
+            a = ff(a, b, c, d, k[12], 7, 1804603682);
+            d = ff(d, a, b, c, k[13], 12, -40341101);
+            c = ff(c, d, a, b, k[14], 17, -1502002290);
+            b = ff(b, c, d, a, k[15], 22, 1236535329);
+    
+            a = gg(a, b, c, d, k[1], 5, -165796510);
+            d = gg(d, a, b, c, k[6], 9, -1069501632);
+            c = gg(c, d, a, b, k[11], 14, 643717713);
+            b = gg(b, c, d, a, k[0], 20, -373897302);
+            a = gg(a, b, c, d, k[5], 5, -701558691);
+            d = gg(d, a, b, c, k[10], 9, 38016083);
+            c = gg(c, d, a, b, k[15], 14, -660478335);
+            b = gg(b, c, d, a, k[4], 20, -405537848);
+            a = gg(a, b, c, d, k[9], 5, 568446438);
+            d = gg(d, a, b, c, k[14], 9, -1019803690);
+            c = gg(c, d, a, b, k[3], 14, -187363961);
+            b = gg(b, c, d, a, k[8], 20, 1163531501);
+            a = gg(a, b, c, d, k[13], 5, -1444681467);
+            d = gg(d, a, b, c, k[2], 9, -51403784);
+            c = gg(c, d, a, b, k[7], 14, 1735328473);
+            b = gg(b, c, d, a, k[12], 20, -1926607734);
+    
+            a = hh(a, b, c, d, k[5], 4, -378558);
+            d = hh(d, a, b, c, k[8], 11, -2022574463);
+            c = hh(c, d, a, b, k[11], 16, 1839030562);
+            b = hh(b, c, d, a, k[14], 23, -35309556);
+            a = hh(a, b, c, d, k[1], 4, -1530992060);
+            d = hh(d, a, b, c, k[4], 11, 1272893353);
+            c = hh(c, d, a, b, k[7], 16, -155497632);
+            b = hh(b, c, d, a, k[10], 23, -1094730640);
+            a = hh(a, b, c, d, k[13], 4, 681279174);
+            d = hh(d, a, b, c, k[0], 11, -358537222);
+            c = hh(c, d, a, b, k[3], 16, -722521979);
+            b = hh(b, c, d, a, k[6], 23, 76029189);
+            a = hh(a, b, c, d, k[9], 4, -640364487);
+            d = hh(d, a, b, c, k[12], 11, -421815835);
+            c = hh(c, d, a, b, k[15], 16, 530742520);
+            b = hh(b, c, d, a, k[2], 23, -995338651);
+    
+            a = ii(a, b, c, d, k[0], 6, -198630844);
+            d = ii(d, a, b, c, k[7], 10, 1126891415);
+            c = ii(c, d, a, b, k[14], 15, -1416354905);
+            b = ii(b, c, d, a, k[5], 21, -57434055);
+            a = ii(a, b, c, d, k[12], 6, 1700485571);
+            d = ii(d, a, b, c, k[3], 10, -1894986606);
+            c = ii(c, d, a, b, k[10], 15, -1051523);
+            b = ii(b, c, d, a, k[1], 21, -2054922799);
+            a = ii(a, b, c, d, k[8], 6, 1873313359);
+            d = ii(d, a, b, c, k[15], 10, -30611744);
+            c = ii(c, d, a, b, k[6], 15, -1560198380);
+            b = ii(b, c, d, a, k[13], 21, 1309151649);
+            a = ii(a, b, c, d, k[4], 6, -145523070);
+            d = ii(d, a, b, c, k[11], 10, -1120210379);
+            c = ii(c, d, a, b, k[2], 15, 718787259);
+            b = ii(b, c, d, a, k[9], 21, -343485551);
+    
+            x[0] = add32(a, x[0]);
+            x[1] = add32(b, x[1]);
+            x[2] = add32(c, x[2]);
+            x[3] = add32(d, x[3]);
+        },
+    
+        /* there needs to be support for Unicode here,
+           * unless we pretend that we can redefine the MD-5
+           * algorithm for multi-byte characters (perhaps
+           * by adding every four 16-bit characters and
+           * shortening the sum to 32 bits). Otherwise
+           * I suggest performing MD-5 as if every character
+           * was two bytes--e.g., 0040 0025 = @%--but then
+           * how will an ordinary MD-5 sum be matched?
+           * There is no way to standardize text to something
+           * like UTF-8 before transformation; speed cost is
+           * utterly prohibitive. The JavaScript standard
+           * itself needs to look at this: it should start
+           * providing access to strings as preformed UTF-8
+           * 8-bit unsigned value arrays.
+           */
+        md5blk = function (s) {
+            var md5blks = [],
+                i; /* Andy King said do it this way. */
+    
+            for (i = 0; i < 64; i += 4) {
+                md5blks[i >> 2] = s.charCodeAt(i) + (s.charCodeAt(i + 1) << 8) + (s.charCodeAt(i + 2) << 16) + (s.charCodeAt(i + 3) << 24);
+            }
+            return md5blks;
+        },
+    
+        md5blk_array = function (a) {
+            var md5blks = [],
+                i; /* Andy King said do it this way. */
+    
+            for (i = 0; i < 64; i += 4) {
+                md5blks[i >> 2] = a[i] + (a[i + 1] << 8) + (a[i + 2] << 16) + (a[i + 3] << 24);
+            }
+            return md5blks;
+        },
+    
+        md51 = function (s) {
+            var n = s.length,
+                state = [1732584193, -271733879, -1732584194, 271733878],
+                i,
+                length,
+                tail,
+                tmp,
+                lo,
+                hi;
+    
+            for (i = 64; i <= n; i += 64) {
+                md5cycle(state, md5blk(s.substring(i - 64, i)));
+            }
+            s = s.substring(i - 64);
+            length = s.length;
+            tail = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
+            for (i = 0; i < length; i += 1) {
+                tail[i >> 2] |= s.charCodeAt(i) << ((i % 4) << 3);
+            }
+            tail[i >> 2] |= 0x80 << ((i % 4) << 3);
+            if (i > 55) {
+                md5cycle(state, tail);
+                for (i = 0; i < 16; i += 1) {
+                    tail[i] = 0;
+                }
+            }
+    
+            // Beware that the final length might not fit in 32 bits so we take care of that
+            tmp = n * 8;
+            tmp = tmp.toString(16).match(/(.*?)(.{0,8})$/);
+            lo = parseInt(tmp[2], 16);
+            hi = parseInt(tmp[1], 16) || 0;
+    
+            tail[14] = lo;
+            tail[15] = hi;
+    
+            md5cycle(state, tail);
+            return state;
+        },
+    
+        md51_array = function (a) {
+            var n = a.length,
+                state = [1732584193, -271733879, -1732584194, 271733878],
+                i,
+                length,
+                tail,
+                tmp,
+                lo,
+                hi;
+    
+            for (i = 64; i <= n; i += 64) {
+                md5cycle(state, md5blk_array(a.subarray(i - 64, i)));
+            }
+    
+            // Not sure if it is a bug, however IE10 will always produce a sub array of length 1
+            // containing the last element of the parent array if the sub array specified starts
+            // beyond the length of the parent array - weird.
+            // https://connect.microsoft.com/IE/feedback/details/771452/typed-array-subarray-issue
+            a = (i - 64) < n ? a.subarray(i - 64) : new Uint8Array(0);
+    
+            length = a.length;
+            tail = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
+            for (i = 0; i < length; i += 1) {
+                tail[i >> 2] |= a[i] << ((i % 4) << 3);
+            }
+    
+            tail[i >> 2] |= 0x80 << ((i % 4) << 3);
+            if (i > 55) {
+                md5cycle(state, tail);
+                for (i = 0; i < 16; i += 1) {
+                    tail[i] = 0;
+                }
+            }
+    
+            // Beware that the final length might not fit in 32 bits so we take care of that
+            tmp = n * 8;
+            tmp = tmp.toString(16).match(/(.*?)(.{0,8})$/);
+            lo = parseInt(tmp[2], 16);
+            hi = parseInt(tmp[1], 16) || 0;
+    
+            tail[14] = lo;
+            tail[15] = hi;
+    
+            md5cycle(state, tail);
+    
+            return state;
+        },
+    
+        hex_chr = ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'a', 'b', 'c', 'd', 'e', 'f'],
+    
+        rhex = function (n) {
+            var s = '',
+                j;
+            for (j = 0; j < 4; j += 1) {
+                s += hex_chr[(n >> (j * 8 + 4)) & 0x0F] + hex_chr[(n >> (j * 8)) & 0x0F];
+            }
+            return s;
+        },
+    
+        hex = function (x) {
+            var i;
+            for (i = 0; i < x.length; i += 1) {
+                x[i] = rhex(x[i]);
+            }
+            return x.join('');
+        },
+    
+        md5 = function (s) {
+            return hex(md51(s));
+        },
+    
+    
+    
+        ////////////////////////////////////////////////////////////////////////////
+    
+        /**
+         * SparkMD5 OOP implementation.
+         *
+         * Use this class to perform an incremental md5, otherwise use the
+         * static methods instead.
+         */
+        SparkMD5 = function () {
+            // call reset to init the instance
+            this.reset();
+        };
+    
+    
+        // In some cases the fast add32 function cannot be used..
+        if (md5('hello') !== '5d41402abc4b2a76b9719d911017c592') {
+            add32 = function (x, y) {
+                var lsw = (x & 0xFFFF) + (y & 0xFFFF),
+                    msw = (x >> 16) + (y >> 16) + (lsw >> 16);
+                return (msw << 16) | (lsw & 0xFFFF);
+            };
+        }
+    
+    
+        /**
+         * Appends a string.
+         * A conversion will be applied if an utf8 string is detected.
+         *
+         * @param {String} str The string to be appended
+         *
+         * @return {SparkMD5} The instance itself
+         */
+        SparkMD5.prototype.append = function (str) {
+            // converts the string to utf8 bytes if necessary
+            if (/[\u0080-\uFFFF]/.test(str)) {
+                str = unescape(encodeURIComponent(str));
+            }
+    
+            // then append as binary
+            this.appendBinary(str);
+    
+            return this;
+        };
+    
+        /**
+         * Appends a binary string.
+         *
+         * @param {String} contents The binary string to be appended
+         *
+         * @return {SparkMD5} The instance itself
+         */
+        SparkMD5.prototype.appendBinary = function (contents) {
+            this._buff += contents;
+            this._length += contents.length;
+    
+            var length = this._buff.length,
+                i;
+    
+            for (i = 64; i <= length; i += 64) {
+                md5cycle(this._state, md5blk(this._buff.substring(i - 64, i)));
+            }
+    
+            this._buff = this._buff.substr(i - 64);
+    
+            return this;
+        };
+    
+        /**
+         * Finishes the incremental computation, reseting the internal state and
+         * returning the result.
+         * Use the raw parameter to obtain the raw result instead of the hex one.
+         *
+         * @param {Boolean} raw True to get the raw result, false to get the hex result
+         *
+         * @return {String|Array} The result
+         */
+        SparkMD5.prototype.end = function (raw) {
+            var buff = this._buff,
+                length = buff.length,
+                i,
+                tail = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+                ret;
+    
+            for (i = 0; i < length; i += 1) {
+                tail[i >> 2] |= buff.charCodeAt(i) << ((i % 4) << 3);
+            }
+    
+            this._finish(tail, length);
+            ret = !!raw ? this._state : hex(this._state);
+    
+            this.reset();
+    
+            return ret;
+        };
+    
+        /**
+         * Finish the final calculation based on the tail.
+         *
+         * @param {Array}  tail   The tail (will be modified)
+         * @param {Number} length The length of the remaining buffer
+         */
+        SparkMD5.prototype._finish = function (tail, length) {
+            var i = length,
+                tmp,
+                lo,
+                hi;
+    
+            tail[i >> 2] |= 0x80 << ((i % 4) << 3);
+            if (i > 55) {
+                md5cycle(this._state, tail);
+                for (i = 0; i < 16; i += 1) {
+                    tail[i] = 0;
+                }
+            }
+    
+            // Do the final computation based on the tail and length
+            // Beware that the final length may not fit in 32 bits so we take care of that
+            tmp = this._length * 8;
+            tmp = tmp.toString(16).match(/(.*?)(.{0,8})$/);
+            lo = parseInt(tmp[2], 16);
+            hi = parseInt(tmp[1], 16) || 0;
+    
+            tail[14] = lo;
+            tail[15] = hi;
+            md5cycle(this._state, tail);
+        };
+    
+        /**
+         * Resets the internal state of the computation.
+         *
+         * @return {SparkMD5} The instance itself
+         */
+        SparkMD5.prototype.reset = function () {
+            this._buff = "";
+            this._length = 0;
+            this._state = [1732584193, -271733879, -1732584194, 271733878];
+    
+            return this;
+        };
+    
+        /**
+         * Releases memory used by the incremental buffer and other aditional
+         * resources. If you plan to use the instance again, use reset instead.
+         */
+        SparkMD5.prototype.destroy = function () {
+            delete this._state;
+            delete this._buff;
+            delete this._length;
+        };
+    
+    
+        /**
+         * Performs the md5 hash on a string.
+         * A conversion will be applied if utf8 string is detected.
+         *
+         * @param {String}  str The string
+         * @param {Boolean} raw True to get the raw result, false to get the hex result
+         *
+         * @return {String|Array} The result
+         */
+        SparkMD5.hash = function (str, raw) {
+            // converts the string to utf8 bytes if necessary
+            if (/[\u0080-\uFFFF]/.test(str)) {
+                str = unescape(encodeURIComponent(str));
+            }
+    
+            var hash = md51(str);
+    
+            return !!raw ? hash : hex(hash);
+        };
+    
+        /**
+         * Performs the md5 hash on a binary string.
+         *
+         * @param {String}  content The binary string
+         * @param {Boolean} raw     True to get the raw result, false to get the hex result
+         *
+         * @return {String|Array} The result
+         */
+        SparkMD5.hashBinary = function (content, raw) {
+            var hash = md51(content);
+    
+            return !!raw ? hash : hex(hash);
+        };
+    
+        /**
+         * SparkMD5 OOP implementation for array buffers.
+         *
+         * Use this class to perform an incremental md5 ONLY for array buffers.
+         */
+        SparkMD5.ArrayBuffer = function () {
+            // call reset to init the instance
+            this.reset();
+        };
+    
+        ////////////////////////////////////////////////////////////////////////////
+    
+        /**
+         * Appends an array buffer.
+         *
+         * @param {ArrayBuffer} arr The array to be appended
+         *
+         * @return {SparkMD5.ArrayBuffer} The instance itself
+         */
+        SparkMD5.ArrayBuffer.prototype.append = function (arr) {
+            // TODO: we could avoid the concatenation here but the algorithm would be more complex
+            //       if you find yourself needing extra performance, please make a PR.
+            var buff = this._concatArrayBuffer(this._buff, arr),
+                length = buff.length,
+                i;
+    
+            this._length += arr.byteLength;
+    
+            for (i = 64; i <= length; i += 64) {
+                md5cycle(this._state, md5blk_array(buff.subarray(i - 64, i)));
+            }
+    
+            // Avoids IE10 weirdness (documented above)
+            this._buff = (i - 64) < length ? buff.subarray(i - 64) : new Uint8Array(0);
+    
+            return this;
+        };
+    
+        /**
+         * Finishes the incremental computation, reseting the internal state and
+         * returning the result.
+         * Use the raw parameter to obtain the raw result instead of the hex one.
+         *
+         * @param {Boolean} raw True to get the raw result, false to get the hex result
+         *
+         * @return {String|Array} The result
+         */
+        SparkMD5.ArrayBuffer.prototype.end = function (raw) {
+            var buff = this._buff,
+                length = buff.length,
+                tail = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+                i,
+                ret;
+    
+            for (i = 0; i < length; i += 1) {
+                tail[i >> 2] |= buff[i] << ((i % 4) << 3);
+            }
+    
+            this._finish(tail, length);
+            ret = !!raw ? this._state : hex(this._state);
+    
+            this.reset();
+    
+            return ret;
+        };
+    
+        SparkMD5.ArrayBuffer.prototype._finish = SparkMD5.prototype._finish;
+    
+        /**
+         * Resets the internal state of the computation.
+         *
+         * @return {SparkMD5.ArrayBuffer} The instance itself
+         */
+        SparkMD5.ArrayBuffer.prototype.reset = function () {
+            this._buff = new Uint8Array(0);
+            this._length = 0;
+            this._state = [1732584193, -271733879, -1732584194, 271733878];
+    
+            return this;
+        };
+    
+        /**
+         * Releases memory used by the incremental buffer and other aditional
+         * resources. If you plan to use the instance again, use reset instead.
+         */
+        SparkMD5.ArrayBuffer.prototype.destroy = SparkMD5.prototype.destroy;
+    
+        /**
+         * Concats two array buffers, returning a new one.
+         *
+         * @param  {ArrayBuffer} first  The first array buffer
+         * @param  {ArrayBuffer} second The second array buffer
+         *
+         * @return {ArrayBuffer} The new array buffer
+         */
+        SparkMD5.ArrayBuffer.prototype._concatArrayBuffer = function (first, second) {
+            var firstLength = first.length,
+                result = new Uint8Array(firstLength + second.byteLength);
+    
+            result.set(first);
+            result.set(new Uint8Array(second), firstLength);
+    
+            return result;
+        };
+    
+        /**
+         * Performs the md5 hash on an array buffer.
+         *
+         * @param {ArrayBuffer} arr The array buffer
+         * @param {Boolean}     raw True to get the raw result, false to get the hex result
+         *
+         * @return {String|Array} The result
+         */
+        SparkMD5.ArrayBuffer.hash = function (arr, raw) {
+            var hash = md51_array(new Uint8Array(arr));
+    
+            return !!raw ? hash : hex(hash);
+        };
+        
+        return FlashRuntime.register( 'Md5', {
+            init: function() {
+                // do nothing.
+            },
+    
+            loadFromBlob: function( file ) {
+                var blob = file.getSource(),
+                    chunkSize = 2 * 1024 * 1024,
+                    chunks = Math.ceil( blob.size / chunkSize ),
+                    chunk = 0,
+                    owner = this.owner,
+                    spark = new SparkMD5.ArrayBuffer(),
+                    me = this,
+                    blobSlice = blob.mozSlice || blob.webkitSlice || blob.slice,
+                    loadNext, fr;
+    
+                fr = new FileReader();
+    
+                loadNext = function() {
+                    var start, end;
+    
+                    start = chunk * chunkSize;
+                    end = Math.min( start + chunkSize, blob.size );
+    
+                    fr.onload = function( e ) {
+                        spark.append( e.target.result );
+                        owner.trigger( 'progress', {
+                            total: file.size,
+                            loaded: end
+                        });
+                    };
+    
+                    fr.onloadend = function() {
+                        fr.onloadend = fr.onload = null;
+    
+                        if ( ++chunk < chunks ) {
+                            setTimeout( loadNext, 1 );
+                        } else {
+                            setTimeout(function(){
+                                owner.trigger('load');
+                                me.result = spark.end();
+                                loadNext = file = blob = spark = null;
+                                owner.trigger('complete');
+                            }, 50 );
+                        }
+                    };
+    
+                    fr.readAsArrayBuffer( blobSlice.call( blob, start, end ) );
+                };
+    
+                loadNext();
+            },
+    
+            getResult: function() {
+                return this.result;
+            }
+        });
+    });
+    /**
+     * @fileOverview FlashRuntime
+     */
+    define('runtime/flash/runtime',[
+        'base',
+        'runtime/runtime',
+        'runtime/compbase'
+    ], function( Base, Runtime, CompBase ) {
+    
+        var $ = Base.$,
+            type = 'flash',
+            components = {};
+    
+    
+        function getFlashVersion() {
+            var version;
+    
+            try {
+                version = navigator.plugins[ 'Shockwave Flash' ];
+                version = version.description;
+            } catch ( ex ) {
+                try {
+                    version = new ActiveXObject('ShockwaveFlash.ShockwaveFlash')
+                            .GetVariable('$version');
+                } catch ( ex2 ) {
+                    version = '0.0';
+                }
+            }
+            version = version.match( /\d+/g );
+            return parseFloat( version[ 0 ] + '.' + version[ 1 ], 10 );
+        }
+    
+        function FlashRuntime() {
+            var pool = {},
+                clients = {},
+                destroy = this.destroy,
+                me = this,
+                jsreciver = Base.guid('webuploader_');
+    
+            Runtime.apply( me, arguments );
+            me.type = type;
+    
+    
+            // 这个方法的调用者，实际上是RuntimeClient
+            me.exec = function( comp, fn/*, args...*/ ) {
+                var client = this,
+                    uid = client.uid,
+                    args = Base.slice( arguments, 2 ),
+                    instance;
+    
+                clients[ uid ] = client;
+    
+                if ( components[ comp ] ) {
+                    if ( !pool[ uid ] ) {
+                        pool[ uid ] = new components[ comp ]( client, me );
+                    }
+    
+                    instance = pool[ uid ];
+    
+                    if ( instance[ fn ] ) {
+                        return instance[ fn ].apply( instance, args );
+                    }
+                }
+    
+                return me.flashExec.apply( client, arguments );
+            };
+    
+            function handler( evt, obj ) {
+                var type = evt.type || evt,
+                    parts, uid;
+    
+                parts = type.split('::');
+                uid = parts[ 0 ];
+                type = parts[ 1 ];
+    
+                // console.log.apply( console, arguments );
+    
+                if ( type === 'Ready' && uid === me.uid ) {
+                    me.trigger('ready');
+                } else if ( clients[ uid ] ) {
+                    clients[ uid ].trigger( type.toLowerCase(), evt, obj );
+                }
+    
+                // Base.log( evt, obj );
+            }
+    
+            // flash的接受器。
+            window[ jsreciver ] = function() {
+                var args = arguments;
+    
+                // 为了能捕获得到。
+                setTimeout(function() {
+                    handler.apply( null, args );
+                }, 1 );
+            };
+    
+            this.jsreciver = jsreciver;
+    
+            this.destroy = function() {
+                // @todo 删除池子中的所有实例
+                return destroy && destroy.apply( this, arguments );
+            };
+    
+            this.flashExec = function( comp, fn ) {
+                var flash = me.getFlash(),
+                    args = Base.slice( arguments, 2 );
+    
+                return flash.exec( this.uid, comp, fn, args );
+            };
+    
+            // @todo
+        }
+    
+        Base.inherits( Runtime, {
+            constructor: FlashRuntime,
+    
+            init: function() {
+                var container = this.getContainer(),
+                    opts = this.options,
+                    html;
+    
+                // if not the minimal height, shims are not initialized
+                // in older browsers (e.g FF3.6, IE6,7,8, Safari 4.0,5.0, etc)
+                container.css({
+                    position: 'absolute',
+                    top: '-8px',
+                    left: '-8px',
+                    width: '9px',
+                    height: '9px',
+                    overflow: 'hidden'
+                });
+    
+                // insert flash object
+                html = '<object id="' + this.uid + '" type="application/' +
+                        'x-shockwave-flash" data="' +  opts.swf + '" ';
+    
+                if ( Base.browser.ie ) {
+                    html += 'classid="clsid:d27cdb6e-ae6d-11cf-96b8-444553540000" ';
+                }
+    
+                html += 'width="100%" height="100%" style="outline:0">'  +
+                    '<param name="movie" value="' + opts.swf + '" />' +
+                    '<param name="flashvars" value="uid=' + this.uid +
+                    '&jsreciver=' + this.jsreciver + '" />' +
+                    '<param name="wmode" value="transparent" />' +
+                    '<param name="allowscriptaccess" value="always" />' +
+                '</object>';
+    
+                container.html( html );
+            },
+    
+            getFlash: function() {
+                if ( this._flash ) {
+                    return this._flash;
+                }
+    
+                this._flash = $( '#' + this.uid ).get( 0 );
+                return this._flash;
+            }
+    
+        });
+    
+        FlashRuntime.register = function( name, component ) {
+            component = components[ name ] = Base.inherits( CompBase, $.extend({
+    
+                // @todo fix this later
+                flashExec: function() {
+                    var owner = this.owner,
+                        runtime = this.getRuntime();
+    
+                    return runtime.flashExec.apply( owner, arguments );
+                }
+            }, component ) );
+    
+            return component;
+        };
+    
+        if ( getFlashVersion() >= 11.4 ) {
+            Runtime.addRuntime( type, FlashRuntime );
+        }
+    
+        return FlashRuntime;
+    });
+    /**
+     * @fileOverview FilePicker
+     */
+    define('runtime/flash/filepicker',[
+        'base',
+        'runtime/flash/runtime'
+    ], function( Base, FlashRuntime ) {
+        var $ = Base.$;
+    
+        return FlashRuntime.register( 'FilePicker', {
+            init: function( opts ) {
+                var copy = $.extend({}, opts ),
+                    len, i;
+    
+                // 修复Flash再没有设置title的情况下无法弹出flash文件选择框的bug.
+                len = copy.accept && copy.accept.length;
+                for (  i = 0; i < len; i++ ) {
+                    if ( !copy.accept[ i ].title ) {
+                        copy.accept[ i ].title = 'Files';
+                    }
+                }
+    
+                delete copy.button;
+                delete copy.id;
+                delete copy.container;
+    
+                this.flashExec( 'FilePicker', 'init', copy );
+            },
+    
+            destroy: function() {
+                this.flashExec( 'FilePicker', 'destroy' );
+            }
+        });
+    });
+    /**
+     * @fileOverview 图片压缩
+     */
+    define('runtime/flash/image',[
+        'runtime/flash/runtime'
+    ], function( FlashRuntime ) {
+    
+        return FlashRuntime.register( 'Image', {
+            // init: function( options ) {
+            //     var owner = this.owner;
+    
+            //     this.flashExec( 'Image', 'init', options );
+            //     owner.on( 'load', function() {
+            //         debugger;
+            //     });
+            // },
+    
+            loadFromBlob: function( blob ) {
+                var owner = this.owner;
+    
+                owner.info() && this.flashExec( 'Image', 'info', owner.info() );
+                owner.meta() && this.flashExec( 'Image', 'meta', owner.meta() );
+    
+                this.flashExec( 'Image', 'loadFromBlob', blob.uid );
+            }
+        });
+    });
+    /**
+     * @fileOverview  Transport flash实现
+     */
+    define('runtime/flash/transport',[
+        'base',
+        'runtime/flash/runtime',
+        'runtime/client'
+    ], function( Base, FlashRuntime, RuntimeClient ) {
+        var $ = Base.$;
+    
+        return FlashRuntime.register( 'Transport', {
+            init: function() {
+                this._status = 0;
+                this._response = null;
+                this._responseJson = null;
+            },
+    
+            send: function() {
+                var owner = this.owner,
+                    opts = this.options,
+                    xhr = this._initAjax(),
+                    blob = owner._blob,
+                    server = opts.server,
+                    binary;
+    
+                xhr.connectRuntime( blob.ruid );
+    
+                if ( opts.sendAsBinary ) {
+                    server += (/\?/.test( server ) ? '&' : '?') +
+                            $.param( owner._formData );
+    
+                    binary = blob.uid;
+                } else {
+                    $.each( owner._formData, function( k, v ) {
+                        xhr.exec( 'append', k, v );
+                    });
+    
+                    xhr.exec( 'appendBlob', opts.fileVal, blob.uid,
+                            opts.filename || owner._formData.name || '' );
+                }
+    
+                this._setRequestHeader( xhr, opts.headers );
+                xhr.exec( 'send', {
+                    method: opts.method,
+                    url: server,
+                    forceURLStream: opts.forceURLStream,
+                    mimeType: 'application/octet-stream'
+                }, binary );
+            },
+    
+            getStatus: function() {
+                return this._status;
+            },
+    
+            getResponse: function() {
+                return this._response || '';
+            },
+    
+            getResponseAsJson: function() {
+                return this._responseJson;
+            },
+    
+            abort: function() {
+                var xhr = this._xhr;
+    
+                if ( xhr ) {
+                    xhr.exec('abort');
+                    xhr.destroy();
+                    this._xhr = xhr = null;
+                }
+            },
+    
+            destroy: function() {
+                this.abort();
+            },
+    
+            _initAjax: function() {
+                var me = this,
+                    xhr = new RuntimeClient('XMLHttpRequest');
+    
+                xhr.on( 'uploadprogress progress', function( e ) {
+                    var percent = e.loaded / e.total;
+                    percent = Math.min( 1, Math.max( 0, percent ) );
+                    return me.trigger( 'progress', percent );
+                });
+    
+                xhr.on( 'load', function() {
+                    var status = xhr.exec('getStatus'),
+                        readBody = false,
+                        err = '',
+                        p;
+    
+                    xhr.off();
+                    me._xhr = null;
+    
+                    if ( status >= 200 && status < 300 ) {
+                        readBody = true;
+                    } else if ( status >= 500 && status < 600 ) {
+                        readBody = true;
+                        err = 'server';
+                    } else {
+                        err = 'http';
+                    }
+    
+                    if ( readBody ) {
+                        me._response = xhr.exec('getResponse');
+                        me._response = decodeURIComponent( me._response );
+    
+                        // flash 处理可能存在 bug, 没辙只能靠 js 了
+                        // try {
+                        //     me._responseJson = xhr.exec('getResponseAsJson');
+                        // } catch ( error ) {
+                            
+                        p = window.JSON && window.JSON.parse || function( s ) {
+                            try {
+                                return new Function('return ' + s).call();
+                            } catch ( err ) {
+                                return {};
+                            }
+                        };
+                        me._responseJson  = me._response ? p(me._response) : {};
+                            
+                        // }
+                    }
+                    
+                    xhr.destroy();
+                    xhr = null;
+    
+                    return err ? me.trigger( 'error', err ) : me.trigger('load');
+                });
+    
+                xhr.on( 'error', function() {
+                    xhr.off();
+                    me._xhr = null;
+                    me.trigger( 'error', 'http' );
+                });
+    
+                me._xhr = xhr;
+                return xhr;
+            },
+    
+            _setRequestHeader: function( xhr, headers ) {
+                $.each( headers, function( key, val ) {
+                    xhr.exec( 'setRequestHeader', key, val );
+                });
+            }
+        });
+    });
+    /**
+     * @fileOverview  Md5 flash实现
+     */
+    define('runtime/flash/md5',[
+        'runtime/flash/runtime'
+    ], function( FlashRuntime ) {
+        
+        return FlashRuntime.register( 'Md5', {
+            init: function() {
+                // do nothing.
+            },
+    
+            loadFromBlob: function( blob ) {
+                return this.flashExec( 'Md5', 'loadFromBlob', blob.uid );
+            }
+        });
+    });
+    /**
+     * @fileOverview 完全版本。
+     */
+    define('preset/all',[
         'base',
     
         // widgets
@@ -5992,6 +7948,7 @@
         'widgets/runtime',
         'widgets/upload',
         'widgets/validator',
+        'widgets/md5',
     
         // runtimes
         // html5
@@ -6000,13 +7957,21 @@
         'runtime/html5/filepaste',
         'runtime/html5/filepicker',
         'runtime/html5/imagemeta/exif',
+        'runtime/html5/androidpatch',
         'runtime/html5/image',
-        'runtime/html5/transport'
+        'runtime/html5/transport',
+        'runtime/html5/md5',
+    
+        // flash
+        'runtime/flash/filepicker',
+        'runtime/flash/image',
+        'runtime/flash/transport',
+        'runtime/flash/md5'
     ], function( Base ) {
         return Base;
     });
     define('webuploader',[
-        'preset/html5only'
+        'preset/all'
     ], function( preset ) {
         return preset;
     });

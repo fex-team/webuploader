@@ -1445,13 +1445,22 @@
         // 扩展Uploader.
         $.extend( Uploader.prototype, {
     
+            /**
+             * @property {String | Array} [disableWidgets=undefined]
+             * @namespace options
+             * @for Uploader
+             * @description 默认所有 Uploader.register 了的 widget 都会被加载，如果禁用某一部分，请通过此 option 指定黑名单。
+             */
+    
             // 覆写_init用来初始化widgets
             _init: function() {
                 var me = this,
-                    widgets = me._widgets = [];
+                    widgets = me._widgets = [],
+                    deactives = me.options.disableWidgets || '';
     
                 $.each( widgetClass, function( _, klass ) {
-                    widgets.push( new klass( me ) );
+                    (!deactives || !~deactives.indexOf( klass._name )) &&
+                        widgets.push( new klass( me ) );
                 });
     
                 return _init.apply( me, arguments );
@@ -1652,6 +1661,7 @@
         });
     
         return Uploader.register({
+            name: 'picker',
     
             init: function( opts ) {
                 this.pickers = [];
@@ -1963,6 +1973,8 @@
         });
     
         return Uploader.register({
+    
+            name: 'image',
     
     
             /**
@@ -2590,6 +2602,7 @@
             Status = WUFile.Status;
     
         return Uploader.register({
+            name: 'queue',
     
             init: function( opts ) {
                 var me = this,
@@ -2712,6 +2725,14 @@
              * @param {File} files 数组，内容为原始File(lib/File）对象。
              * @description 当一批文件添加进队列以后触发。
              * @for  Uploader
+             */
+            
+            /**
+             * @property {Boolean} [auto=false]
+             * @namespace options
+             * @for Uploader
+             * @description 设置为 true 后，不需要手动调用上传，有文件选择即开始上传。
+             * 
              */
     
             /**
@@ -2883,6 +2904,7 @@
         };
     
         return Uploader.register({
+            name: 'runtime',
     
             init: function() {
                 if ( !this.predictRuntimeType() ) {
@@ -3187,6 +3209,7 @@
         }
     
         Uploader.register({
+            name: 'upload',
     
             init: function() {
                 var owner = this.owner,
@@ -3930,6 +3953,8 @@
     
         // 在Uploader初始化的时候启动Validators的初始化
         Uploader.register({
+            name: 'validator',
+    
             init: function() {
                 var me = this;
                 Base.nextTick(function() {
@@ -4504,7 +4529,7 @@
                                 return {};
                             }
                         };
-                        me._responseJson  = p(me._response);
+                        me._responseJson  = me._response ? p(me._response) : {};
                             
                         // }
                     }

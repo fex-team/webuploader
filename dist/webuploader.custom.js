@@ -1748,13 +1748,22 @@
         // 扩展Uploader.
         $.extend( Uploader.prototype, {
     
+            /**
+             * @property {String | Array} [disableWidgets=undefined]
+             * @namespace options
+             * @for Uploader
+             * @description 默认所有 Uploader.register 了的 widget 都会被加载，如果禁用某一部分，请通过此 option 指定黑名单。
+             */
+    
             // 覆写_init用来初始化widgets
             _init: function() {
                 var me = this,
-                    widgets = me._widgets = [];
+                    widgets = me._widgets = [],
+                    deactives = me.options.disableWidgets || '';
     
                 $.each( widgetClass, function( _, klass ) {
-                    widgets.push( new klass( me ) );
+                    (!deactives || !~deactives.indexOf( klass._name )) &&
+                        widgets.push( new klass( me ) );
                 });
     
                 return _init.apply( me, arguments );
@@ -1955,6 +1964,7 @@
         });
     
         return Uploader.register({
+            name: 'picker',
     
             init: function( opts ) {
                 this.pickers = [];
@@ -2266,6 +2276,8 @@
         });
     
         return Uploader.register({
+    
+            name: 'image',
     
     
             /**
@@ -2893,6 +2905,7 @@
             Status = WUFile.Status;
     
         return Uploader.register({
+            name: 'queue',
     
             init: function( opts ) {
                 var me = this,
@@ -3015,6 +3028,14 @@
              * @param {File} files 数组，内容为原始File(lib/File）对象。
              * @description 当一批文件添加进队列以后触发。
              * @for  Uploader
+             */
+            
+            /**
+             * @property {Boolean} [auto=false]
+             * @namespace options
+             * @for Uploader
+             * @description 设置为 true 后，不需要手动调用上传，有文件选择即开始上传。
+             * 
              */
     
             /**
@@ -3186,6 +3207,7 @@
         };
     
         return Uploader.register({
+            name: 'runtime',
     
             init: function() {
                 if ( !this.predictRuntimeType() ) {
@@ -3490,6 +3512,7 @@
         }
     
         Uploader.register({
+            name: 'upload',
     
             init: function() {
                 var owner = this.owner,
@@ -4189,6 +4212,79 @@
                         });
             }
     
+        });
+    });
+    /**
+     * @fileOverview 日志组件，主要用来收集错误信息，可以帮助 webuploader 更好的定位问题和发展。
+     *
+     * 如果您不想要启用此功能，请在打包的时候去掉 log 模块。
+     * 
+     * 或者可以在初始化的时候通过 options.disableWidgets 属性禁用。
+     *
+     * 如：
+     * WebUploader.create({
+     *     ...
+     *
+     *     disableWidgets: 'log',
+     * 
+     *     ...
+     * })
+     */
+    define('widgets/log',[
+        'base',
+        'uploader',
+        'widgets/widget'
+    ], function( Base, Uploader ) {
+        var $ = Base.$,
+            logUrl = ' http://static.tieba.baidu.com/tb/pms/img/st.gif??',
+            base = {
+                dv: 3,
+                master: 'webuploader',
+                online: 1,
+                product: location.hostname,
+                module: '',
+                type: 0
+            };
+    
+        function send(data) {
+            var obj = $.extend({}, base, data),
+                url = logUrl.replace(/^(.*)\?/, '$1' + $.param( obj )),
+                image = new Image();
+    
+            image.src = url;
+        }
+    
+        return Uploader.register({
+            name: 'log',
+    
+            init: function() {
+                var owner = this.owner;
+    
+                owner
+                    .on('error', function(code) {
+                        send({
+                            type: 2,
+                            c_error_code: code
+                        });
+                    })
+                    .on('uploadError', function(file, reason) {
+                        send({
+                            type: 2,
+                            c_error_code: 'UPLOAD_ERROR',
+                            c_reason: reason
+                        });
+                    })
+                    .on('uploadComplete', function(file) {
+                        send({
+                            c_count: 1,
+                            c_size: file.size
+                        });
+                    });
+    
+                send({
+                    c_usage: 1
+                });
+            }
         });
     });
     /**
@@ -6359,6 +6455,7 @@
         'widgets/queue',
         'widgets/runtime',
         'widgets/upload',
+        'widgets/log',
         'runtime/html5/blob',
         'runtime/html5/filepicker',
         'runtime/html5/imagemeta/exif',
