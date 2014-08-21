@@ -10,8 +10,19 @@ module.exports = function(grunt) {
             },
 
             all: {
-                preset: 'all',
+                name: 'webuploader',
                 dest: "dist/webuploader.js",
+
+                // 在没有jquery类似的库的前提下可以设置builtin,去除强行依赖。
+                builtin: {
+                    dollar: false,
+                    promise: false
+                }
+            },
+
+            nolog: {
+                preset: 'all',
+                dest: "dist/webuploader.nolog.js",
 
                 // 在没有jquery类似的库的前提下可以设置builtin,去除强行依赖。
                 builtin: {
@@ -32,7 +43,7 @@ module.exports = function(grunt) {
 
             withoutimage: {
                 preset: 'withoutimage',
-                dest: "dist/webuploader.withoutimage.js",
+                dest: "dist/webuploader.noimage.js",
             },
 
             // 自己配置的实例
@@ -50,6 +61,7 @@ module.exports = function(grunt) {
                     'widgets/queue.js',
                     'widgets/runtime.js',
                     'widgets/upload.js',
+                    'widgets/log.js',
 
                     'runtime/html5/blob.js',
                     'runtime/html5/filepicker.js',
@@ -62,7 +74,7 @@ module.exports = function(grunt) {
             },
 
             fis: {
-                preset: 'all',
+                name: 'webuploader',
                 dest: "dist/webuploader.fis.js",
 
                 fis: true,
@@ -82,22 +94,37 @@ module.exports = function(grunt) {
             },
 
             static_mapping: {
-                files: [{
-                    src: 'dist/webuploader.js',
-                    dest: 'dist/webuploader.min.js'
-                }, {
-                    src: 'dist/webuploader.flashonly.js',
-                    dest: 'dist/webuploader.flashonly.min.js'
-                }, {
-                    src: 'dist/webuploader.html5only.js',
-                    dest: 'dist/webuploader.html5only.min.js'
-                }, {
-                    src: 'dist/webuploader.withoutimage.js',
-                    dest: 'dist/webuploader.withoutimage.min.js'
-                }, {
-                    src: 'dist/webuploader.custom.js',
-                    dest: 'dist/webuploader.custom.min.js'
-                }]
+                files: [
+                    {
+                        src: 'dist/webuploader.js',
+                        dest: 'dist/webuploader.min.js'
+                    },
+
+                    {
+                        src: 'dist/webuploader.nolog.js',
+                        dest: 'dist/webuploader.nolog.min.js'
+                    },
+
+                    {
+                        src: 'dist/webuploader.flashonly.js',
+                        dest: 'dist/webuploader.flashonly.min.js'
+                    },
+
+                    {
+                        src: 'dist/webuploader.html5only.js',
+                        dest: 'dist/webuploader.html5only.min.js'
+                    },
+
+                    {
+                        src: 'dist/webuploader.noimage.js',
+                        dest: 'dist/webuploader.noimage.min.js'
+                    },
+
+                    {
+                        src: 'dist/webuploader.custom.js',
+                        dest: 'dist/webuploader.custom.min.js'
+                    }
+                ]
             }
         },
 
