@@ -133,10 +133,13 @@ module.exports = function( grunt ) {
             custom.unshift('\'./base\'');
             custom = 'define([\n    ' + custom.join(',\n    ') + '\n], function( Base ) {\n    return Base;\n});';
             config.rawText.webuploader = custom;
-        } else {
+        } else if (this.data.preset) {
+
             config.rawText.webuploader = 'define([\n    ' + ['\'./preset/' +
                     this.data.preset +'\''].join(',\n    ') +
                     '\n], function( preset ) {\n    return preset;\n});';
+        } else {
+            config.name = this.data.name;
         }
 
         // 处理最终输出
@@ -147,6 +150,11 @@ module.exports = function( grunt ) {
                 sep = '\n\n';
 
             banner && arr.push( banner );
+
+            if ( options.builtin.dollar ) {
+                compiled = compiled.replace('define([ \'jquery\' ], exports );', 'define([], exports);');
+            }
+
             arr.push(compiled);
             footer && arr.push( footer );
 
@@ -162,6 +170,13 @@ module.exports = function( grunt ) {
                 flag = true;
             });
         };
+
+        if (options.fis) {
+            config.wrap = {
+                startFile: 'build/fis/intro.js',
+                endFile: 'build/fis/outro.js'
+            }
+        }
 
         requirejs.optimize( config, function( response ) {
             // requirejs有bug, callback不一定会执行，目前调试的结果是

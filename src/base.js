@@ -6,7 +6,7 @@
  * Web Uploader内部类的详细说明，以下提及的功能类，都可以在`WebUploader`这个变量中访问到。
  *
  * As you know, Web Uploader的每个文件都是用过[AMD](https://github.com/amdjs/amdjs-api/wiki/AMD)规范中的`define`组织起来的, 每个Module都会有个module id.
- * 默认module id该文件的路径，而此路径将会转化成名字空间存放在WebUploader中。如：
+ * 默认module id为该文件的路径，而此路径将会转化成名字空间存放在WebUploader中。如：
  *
  * * module `base`：WebUploader.Base
  * * module `file`: WebUploader.File
@@ -14,7 +14,7 @@
  * * module `runtime/html5/dnd`: WebUploader.Runtime.Html5.Dnd
  *
  *
- * 以下文档将可能省略`WebUploader`前缀。
+ * 以下文档中对类的使用可能省略掉了`WebUploader`前缀。
  * @module WebUploader
  * @title WebUploader API文档
  */
@@ -93,7 +93,8 @@ define([
                 chrome = ua.match( /Chrome\/([\d.]+)/ ) ||
                     ua.match( /CriOS\/([\d.]+)/ ),
 
-                ie = ua.match( /MSIE\s([\d.]+)/ ),
+                ie = ua.match( /MSIE\s([\d\.]+)/ ) ||
+                    ua.match( /(?:trident)(?:.*rv:([\w.]+))?/i ),
                 firefox = ua.match( /Firefox\/([\d.]+)/ ),
                 safari = ua.match( /Safari\/([\d.]+)/ ),
                 opera = ua.match( /OPR\/([\d.]+)/ );
@@ -219,7 +220,7 @@ define([
         bindFn: bindFn,
 
         /**
-         * 引用Console.log如果存在的话，否则引用一个[空函数loop](#WebUploader:Base.log)。
+         * 引用Console.log如果存在的话，否则引用一个[空函数noop](#WebUploader:Base.noop)。
          * @grammar Base.log( args... ) => undefined
          * @method log
          */

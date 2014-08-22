@@ -12,22 +12,21 @@ define([
     };
 
     return Uploader.register({
-        'predict-runtime-type': 'predictRuntmeType'
-    }, {
+        name: 'runtime',
 
         init: function() {
-            if ( !this.predictRuntmeType() ) {
+            if ( !this.predictRuntimeType() ) {
                 throw Error('Runtime Error');
             }
         },
 
         /**
          * 预测Uploader将采用哪个`Runtime`
-         * @grammar predictRuntmeType() => String
-         * @method predictRuntmeType
+         * @grammar predictRuntimeType() => String
+         * @method predictRuntimeType
          * @for  Uploader
          */
-        predictRuntmeType: function() {
+        predictRuntimeType: function() {
             var orders = this.options.runtimeOrder || Runtime.orders,
                 type = this.type,
                 i, len;

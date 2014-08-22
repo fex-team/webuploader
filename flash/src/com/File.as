@@ -32,7 +32,8 @@ package com
 			if (properties is Object && properties.hasOwnProperty('name')) {
 				_name = properties.name;
 			}
-			super(sources, properties);		
+
+            super(sources, properties);
 		}
 		
 		

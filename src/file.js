@@ -44,9 +44,9 @@ define([
          * 文件MIMETYPE类型，与文件类型的对应关系请参考[http://t.cn/z8ZnFny](http://t.cn/z8ZnFny)
          * @property type
          * @type {string}
-         * @default 'application'
+         * @default 'application/octet-stream'
          */
-        this.type = source.type || 'application';
+        this.type = source.type || 'application/octet-stream';
 
         /**
          * 文件最后修改日期
@@ -147,7 +147,8 @@ define([
             return this.source;
         },
 
-        destory: function() {
+        destroy: function() {
+            this.off();
             delete statusMap[ this.id ];
         }
     });

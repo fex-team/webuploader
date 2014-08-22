@@ -33,7 +33,7 @@ define([
     function FlashRuntime() {
         var pool = {},
             clients = {},
-            destory = this.destory,
+            destroy = this.destroy,
             me = this,
             jsreciver = Base.guid('webuploader_');
 
@@ -96,9 +96,9 @@ define([
 
         this.jsreciver = jsreciver;
 
-        this.destory = function() {
+        this.destroy = function() {
             // @todo 删除池子中的所有实例
-            return destory && destory.apply( this, arguments );
+            return destroy && destroy.apply( this, arguments );
         };
 
         this.flashExec = function( comp, fn ) {
@@ -134,7 +134,7 @@ define([
             html = '<object id="' + this.uid + '" type="application/' +
                     'x-shockwave-flash" data="' +  opts.swf + '" ';
 
-            if ( Base.isIE ) {
+            if ( Base.browser.ie ) {
                 html += 'classid="clsid:d27cdb6e-ae6d-11cf-96b8-444553540000" ';
             }
 
@@ -175,7 +175,7 @@ define([
         return component;
     };
 
-    if ( getFlashVersion() >= 11.3 ) {
+    if ( getFlashVersion() >= 11.4 ) {
         Runtime.addRuntime( type, FlashRuntime );
     }
 

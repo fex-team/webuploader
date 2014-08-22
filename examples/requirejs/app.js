@@ -1,4 +1,11 @@
-(function( $ ){
+requirejs.config({
+    baseUrl: '../../dist',
+    paths: {
+        jquery: '../examples/image-upload/jquery'
+    }
+});
+
+require([ 'webuploader.flashonly' ], function( WebUploader ) {
     // 当domReady的时候开始初始化
     $(function() {
         var $wrap = $('#uploader'),
@@ -39,58 +46,14 @@
 
             // 所有文件的进度信息，key为file id
             percentages = {},
-            // 判断浏览器是否支持图片的base64
-            isSupportBase64 = ( function() {
-                var data = new Image();
-                var support = true;
-                data.onload = data.onerror = function() {
-                    if( this.width != 1 || this.height != 1 ) {
-                        support = false;
-                    }
-                }
-                data.src = "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///ywAAAAAAQABAAACAUwAOw==";
-                return support;
-            } )(),
 
-            // 检测是否已经安装flash，检测flash的版本
-            flashVersion = ( function() {
-                var flashVer = NaN;
-                var ua = navigator.userAgent;
-
-                if ( window.ActiveXObject ) {
-                    var swf = new ActiveXObject( 'ShockwaveFlash.ShockwaveFlash' );
-
-                    if ( swf ) {
-                        flashVer = Number( swf.GetVariable( '$version' ).split(' ')[ 1 ].replace(/\,/g, '.').replace( /^(\d+\.\d+).*$/, '$1') );
-                    }
-                }
-                else {
-                    if ( navigator.plugins && navigator.plugins.length > 0 ) {
-                        var swf = navigator.plugins[ 'Shockwave Flash' ];
-
-                        if ( swf ) {
-                            var arr = swf.description.split(' ');
-                            for ( var i = 0, len = arr.length; i < len; i++ ) {
-                                var ver = Number( arr[ i ] );
-
-                                if ( !isNaN( ver ) ) {
-                                    flashVer = ver;
-                                    break;
-                                }
-                            }
-                        }
-                    }
-                }
-
-                return flashVer;
-            } )(),
             supportTransition = (function(){
                 var s = document.createElement('p').style,
                     r = 'transition' in s ||
-                            'WebkitTransition' in s ||
-                            'MozTransition' in s ||
-                            'msTransition' in s ||
-                            'OTransition' in s;
+                          'WebkitTransition' in s ||
+                          'MozTransition' in s ||
+                          'msTransition' in s ||
+                          'OTransition' in s;
                 s = null;
                 return r;
             })(),
@@ -98,88 +61,30 @@
             // WebUploader实例
             uploader;
 
-        if ( !WebUploader.Uploader.support() ) {
-            // if ( isNaN( flashVersion ) || flashVersion < 11 ) {
-            //     if ( confirm( '您尚未安装flash播放器或当前flash player 的版本过低于 11，请升级!' ) ) {
-            //         // 做自己的处理，比如跳转到http://get.adobe.com/cn/flashplayer
-            //     }
-            //     return;
-            // }
-            alert( 'Web Uploader 不支持您的浏览器！');
-            throw new Error( 'WebUploader does not support the browser you are using.' );
-        }
-
         // 实例化
         uploader = WebUploader.create({
             pick: {
                 id: '#filePicker',
                 label: '点击选择图片'
             },
-            formData: {
-                uid: 123
-            },
             dnd: '#dndArea',
             paste: '#uploader',
-            swf: '../dist/Uploader.swf',
-            chunked: false,
-            chunkSize: 512 * 1024,
+            swf: '../../dist/Uploader.swf',
+            chunked: true,
             // runtimeOrder: 'flash',
             sendAsBinary: true,
-            server: '../server/fileupload.php',
+            server: '../../server/fileupload.php',
             // server: 'http://liaoxuezhi.fe.baidu.com/webupload/fileupload.php',
             // server: 'http://www.2betop.net/fileupload.php',
-            //
-
-            // accept: {
-            //     title: 'Images',
-            //     extensions: 'gif,jpg,jpeg,bmp,png',
-            //     mimeTypes: 'image/*'
-            // },
-
-            // 禁掉全局的拖拽功能。这样不会出现图片拖进页面的时候，把图片打开。
-            disableGlobalDnd: true,
             fileNumLimit: 300,
             fileSizeLimit: 200 * 1024 * 1024,    // 200 M
             fileSingleSizeLimit: 50 * 1024 * 1024    // 50 M
         });
 
-        // 拖拽时不接受 js, txt 文件。
-        uploader.on( 'dndAccept', function( items ) {
-            var denied = false,
-                len = items.length,
-                i = 0,
-                // 修改js类型
-                unAllowed = 'text/plain;application/javascript ';
-            
-            for ( ; i < len; i++ ) {
-                // 如果在列表里面
-                if ( ~unAllowed.indexOf( items[ i ].type ) ) {
-                    denied = true;
-                    break;
-                }
-            }
-
-            return !denied;
-        });
-
-        // uploader.on('filesQueued', function() {
-        //     uploader.sort(function( a, b ) {
-        //         if ( a.name < b.name )
-        //           return -1;
-        //         if ( a.name > b.name )
-        //           return 1;
-        //         return 0;
-        //     });
-        // });
-
         // 添加“添加文件”的按钮，
         uploader.addButton({
             id: '#filePicker2',
             label: '继续添加'
-        });
-
-        uploader.on('ready', function() {
-            window.uploader = uploader;
         });
 
         // 当有文件添加进来时执行，负责view的创建
@@ -226,10 +131,7 @@
                         $wrap.text( '不能预览' );
                         return;
                     }
-                    if( !isSupportBase64 ) {
-                        // 针对不支持base64的浏览器单独处理
-                        // src = 'http://f9.topit.me/9/dd/6d/11206448174286ddd9l.jpg';
-                    }
+
                     var img = $('<img src="'+src+'">');
                     $wrap.empty().append( img );
                 }, thumbnailWidth, thumbnailHeight );
@@ -525,5 +427,4 @@
         $upload.addClass( 'state-' + state );
         updateTotalProgress();
     });
-
-})( jQuery );
+});

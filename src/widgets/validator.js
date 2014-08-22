@@ -20,6 +20,7 @@ define([
      *
      * * `Q_EXCEED_NUM_LIMIT` 在设置了`fileNumLimit`且尝试给`uploader`添加的文件数量超出这个值时派送。
      * * `Q_EXCEED_SIZE_LIMIT` 在设置了`Q_EXCEED_SIZE_LIMIT`且尝试给`uploader`添加的文件总大小超出这个值时派送。
+     * * `Q_TYPE_DENIED` 当文件类型不满足时触发。。
      * @for  Uploader
      */
 
@@ -39,10 +40,14 @@ define([
 
     // 在Uploader初始化的时候启动Validators的初始化
     Uploader.register({
+        name: 'validator',
+
         init: function() {
             var me = this;
-            $.each( validators, function() {
-                this.call( me.owner );
+            Base.nextTick(function() {
+                $.each( validators, function() {
+                    this.call( me.owner );
+                });
             });
         }
     });
@@ -57,18 +62,18 @@ define([
         var uploader = this,
             opts = uploader.options,
             count = 0,
-            max = opts.fileNumLimit >> 0,
+            max = parseInt( opts.fileNumLimit, 10 ),
             flag = true;
 
         if ( !max ) {
             return;
         }
 
-        uploader.on( 'beforeFileQueued', function() {
+        uploader.on( 'beforeFileQueued', function( file ) {
 
             if ( count >= max && flag ) {
                 flag = false;
-                this.trigger( 'error', 'Q_EXCEED_NUM_LIMIT', max );
+                this.trigger( 'error', 'Q_EXCEED_NUM_LIMIT', max, file );
                 setTimeout(function() {
                     flag = true;
                 }, 1 );
@@ -85,7 +90,7 @@ define([
             count--;
         });
 
-        uploader.on( 'uploadFinished', function() {
+        uploader.on( 'reset', function() {
             count = 0;
         });
     });
@@ -101,7 +106,7 @@ define([
         var uploader = this,
             opts = uploader.options,
             count = 0,
-            max = opts.fileSizeLimit >> 0,
+            max = parseInt( opts.fileSizeLimit, 10 ),
             flag = true;
 
         if ( !max ) {
@@ -113,7 +118,7 @@ define([
 
             if ( invalid && flag ) {
                 flag = false;
-                this.trigger( 'error', 'Q_EXCEED_SIZE_LIMIT', max );
+                this.trigger( 'error', 'Q_EXCEED_SIZE_LIMIT', max, file );
                 setTimeout(function() {
                     flag = true;
                 }, 1 );
@@ -130,7 +135,7 @@ define([
             count -= file.size;
         });
 
-        uploader.on( 'uploadFinished', function() {
+        uploader.on( 'reset', function() {
             count = 0;
         });
     });
@@ -154,7 +159,7 @@ define([
 
             if ( file.size > max ) {
                 file.setStatus( WUFile.Status.INVALID, 'exceed_size' );
-                this.trigger( 'error', 'F_EXCEED_SIZE' );
+                this.trigger( 'error', 'F_EXCEED_SIZE', max, file );
                 return false;
             }
 
@@ -163,7 +168,7 @@ define([
     });
 
     /**
-     * @property {int} [duplicate=undefined]
+     * @property {Boolean} [duplicate=undefined]
      * @namespace options
      * @for Uploader
      * @description 去重， 根据文件名字、文件大小和最后修改时间来生成hash Key.
@@ -197,7 +202,7 @@ define([
 
             // 已经重复了
             if ( mapping[ hash ] ) {
-                this.trigger( 'error', 'F_DUPLICATE' );
+                this.trigger( 'error', 'F_DUPLICATE', file );
                 return false;
             }
         });
@@ -212,6 +217,10 @@ define([
             var hash = file.__hash;
 
             hash && (delete mapping[ hash ]);
+        });
+
+        uploader.on( 'reset', function() {
+            mapping = {};
         });
     });
 

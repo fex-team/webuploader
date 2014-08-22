@@ -4,7 +4,8 @@ package com
 	import com.errors.RuntimeError;
 	import com.events.OErrorEvent;
 	import com.events.OProgressEvent;
-	import com.utils.URLStreamProgress;
+import com.utils.Buffer;
+import com.utils.URLStreamProgress;
 	import com.utils.Utils;
 	
 	import flash.events.DataEvent;
@@ -125,10 +126,12 @@ package com
 					_blobName = blob.name;
 				} 
 			}
+
+            // Uploader.log(["forceUrlStream is : ", _options.forceURLStream]);
 						
 			if (blob && _options.method == 'POST') {
-				if (_multipart && blob.isFileRef() && Utils.isEmptyObj(_headers)) {
-					_uploadFileRef(blob);
+				if (_multipart && blob.isFileRef() && Utils.isEmptyObj(_headers) && (!meta.hasOwnProperty("forceURLStream") || !meta.forceURLStream)) {
+                    _uploadFileRef(blob);
 				} else {
 					_preloadBlob(blob, _doURLStreamRequest);
 				}
@@ -149,19 +152,39 @@ package com
 			Uploader.compFactory.add(blob.uid, blob);
 			return blob.toObject();
 		}
+
+        public function _getResponse():String {
+            var ret:String;
+            if ( !_response ) {
+                return '';
+            }
+            _response.position = 0;
+            ret = _response.readUTFBytes(_response.length);
+
+            return ret;
+        }
 		
 		public function getResponse():String {
-			if ( !_response ) {
-				return '';
-			}
-			_response.position = 0;
-			return _response.readUTFBytes(_response.length);
+            return encodeURIComponent(_getResponse());
 		}
 		
 		public function getResponseAsJson() : Object
 		{
+            var ret:Object;
+
+            try {
+                var str:String = _getResponse();
+
+                if (!str || !str.match(/^\s*{/)) {
+                    return {};
+                }
+
+                ret = com.adobe.serialization.json.JSON.decode(str);
+            } catch( e:Error ) {
+                ret = {};
+            }
 			
-			return com.adobe.serialization.json.JSON.decode( getResponse() );
+			return ret;
 		}
 		
 		
@@ -230,7 +253,7 @@ package com
 		}
 		
 		private function onComplete(e:*) : void {
-			// give upload complete event a chance to fire
+            // give upload complete event a chance to fire
 			_onCompleteTimeout = setTimeout(onUploadComplete, 500, e);
 		}
 		
@@ -279,20 +302,31 @@ package com
 			request.data = queryString.join('&');
 								
 			_conn = blob.getFileRef();
-			_readyState = XMLHttpRequest.OPENED;
+            _readyState = XMLHttpRequest.OPENED;
+
+            if (blob.isLoading()) {
+                _conn.addEventListener(Event.COMPLETE, function( e:Event = null ):void {
+                    _conn.removeEventListener(Event.COMPLETE, arguments.callee);
+                    doUpload();
+                });
+            } else {
+                doUpload();
+            }
 						
-			_conn.addEventListener(Event.COMPLETE, onComplete);
-			_conn.addEventListener(DataEvent.UPLOAD_COMPLETE_DATA, onUploadComplete);
-			_conn.addEventListener(ProgressEvent.PROGRESS, onUploadProgress);
-			_conn.addEventListener(HTTPStatusEvent.HTTP_STATUS, onStatus);
-			_conn.addEventListener(IOErrorEvent.IO_ERROR, onIOError);
-			_conn.addEventListener(SecurityErrorEvent.SECURITY_ERROR, onError);
-			
-			// _conn.addEventListener(Event.OPEN, onOpen); doesn't fire, ideas?
-			onOpen(); // trigger it manually
-						
-			_readyState = XMLHttpRequest.LOADING;
-			_conn.upload(request, _blobFieldName, false);
+			function doUpload():void {
+                _conn.addEventListener(Event.COMPLETE, onComplete);
+                _conn.addEventListener(DataEvent.UPLOAD_COMPLETE_DATA, onUploadComplete);
+                _conn.addEventListener(ProgressEvent.PROGRESS, onUploadProgress);
+                _conn.addEventListener(HTTPStatusEvent.HTTP_STATUS, onStatus);
+                _conn.addEventListener(IOErrorEvent.IO_ERROR, onIOError);
+                _conn.addEventListener(SecurityErrorEvent.SECURITY_ERROR, onError);
+
+                // _conn.addEventListener(Event.OPEN, onOpen); doesn't fire, ideas?
+                onOpen(); // trigger it manually
+
+                _readyState = XMLHttpRequest.LOADING;
+                _conn.upload(request, _blobFieldName, false);
+            }
 		}
 		
 		

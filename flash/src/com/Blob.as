@@ -18,10 +18,20 @@ package com
 			return _size;
 		}
 		
-		private var _type:String;
-		public function get type() : String {
-			return _type;
-		}
+		private var _type:String = '';
+
+        public function get type() : String {
+            if (_type !== '') {
+                return _type;
+            }
+            // if source is not a FileReference return default name
+            if (!isFileRef()) {
+                return _type;
+            }
+
+            // otherwise return original name
+            return ''; //_sources[0].buffer.fileRef.type;
+        }
 		
 		// cumulative size of all the sources this blob is part of
 		public function get realSize() : uint {
@@ -166,6 +176,14 @@ package com
 		{
 			return false; // Blob as a rule contains only part of the source
 		}
+
+        private var _isLoading:Boolean =false;
+        public function isLoading() : Boolean {
+            return _isLoading;
+        }
+        public function setLoading(val:Boolean):void {
+            _isLoading = val;
+        }
 		
 		
 		public function getFileRef() : FileReference {

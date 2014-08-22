@@ -13,6 +13,7 @@ define([
     '../widgets/runtime',
     '../widgets/upload',
     '../widgets/validator',
+    '../widgets/md5',
 
     // runtimes
     // html5
@@ -24,11 +25,13 @@ define([
     '../runtime/html5/androidpatch',
     '../runtime/html5/image',
     '../runtime/html5/transport',
+    '../runtime/html5/md5',
 
     // flash
     '../runtime/flash/filepicker',
     '../runtime/flash/image',
-    '../runtime/flash/transport'
+    '../runtime/flash/transport',
+    '../runtime/flash/md5'
 ], function( Base ) {
     return Base;
 });

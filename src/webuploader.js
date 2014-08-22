@@ -2,7 +2,8 @@
  * @fileOverview Uploader上传类
  */
 define([
-    './preset/all'
+    './preset/all',
+    './widgets/log'
 ], function( preset ) {
     return preset;
 });

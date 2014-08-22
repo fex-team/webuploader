@@ -8,6 +8,7 @@ define([
 
     var $ = Base.$,
         _init = Uploader.prototype._init,
+        _destroy = Uploader.prototype.destroy,
         IGNORE = {},
         widgetClass = [];
 
@@ -74,13 +75,22 @@ define([
     // 扩展Uploader.
     $.extend( Uploader.prototype, {
 
+        /**
+         * @property {String | Array} [disableWidgets=undefined]
+         * @namespace options
+         * @for Uploader
+         * @description 默认所有 Uploader.register 了的 widget 都会被加载，如果禁用某一部分，请通过此 option 指定黑名单。
+         */
+
         // 覆写_init用来初始化widgets
         _init: function() {
             var me = this,
-                widgets = me._widgets = [];
+                widgets = me._widgets = [],
+                deactives = me.options.disableWidgets || '';
 
             $.each( widgetClass, function( _, klass ) {
-                widgets.push( new klass( me ) );
+                (!deactives || !~deactives.indexOf( klass._name )) &&
+                    widgets.push( new klass( me ) );
             });
 
             return _init.apply( me, arguments );
@@ -89,10 +99,10 @@ define([
         request: function( apiName, args, callback ) {
             var i = 0,
                 widgets = this._widgets,
-                len = widgets.length,
+                len = widgets && widgets.length,
                 rlts = [],
                 dfds = [],
-                widget, rlt;
+                widget, rlt, promise, key;
 
             args = isArrayLike( args ) ? args : [ args ];
 
@@ -113,54 +123,116 @@ define([
 
             // 如果有callback，则用异步方式。
             if ( callback || dfds.length ) {
-                return Base.when.apply( Base, dfds )
+                promise = Base.when.apply( Base, dfds );
+                key = promise.pipe ? 'pipe' : 'then';
 
-                        // 很重要不能删除。删除了会死循环。
-                        // 保证执行顺序。让callback总是在下一个tick中执行。
-                        .pipe(function() {
+                // 很重要不能删除。删除了会死循环。
+                // 保证执行顺序。让callback总是在下一个 tick 中执行。
+                return promise[ key ](function() {
                             var deferred = Base.Deferred(),
                                 args = arguments;
 
+                            if ( args.length === 1 ) {
+                                args = args[ 0 ];
+                            }
+
                             setTimeout(function() {
-                                deferred.resolve.apply( deferred, args );
+                                deferred.resolve( args );
                             }, 1 );
 
                             return deferred.promise();
-                        })
-                        .pipe( callback || Base.noop );
+                        })[ callback ? key : 'done' ]( callback || Base.noop );
             } else {
                 return rlts[ 0 ];
             }
+        },
+
+        destroy: function() {
+            _destroy.apply( this, arguments );
+            this._widgets = null;
         }
     });
 
     /**
      * 添加组件
-     * @param  {object} widgetProto 组件原型，构造函数通过constructor属性定义
-     * @param  {object} responseMap API名称与函数实现的映射
+     * @grammar Uploader.register(proto);
+     * @grammar Uploader.register(map, proto);
+     * @param  {object} responseMap API 名称与函数实现的映射
+     * @param  {object} proto 组件原型，构造函数通过 constructor 属性定义
+     * @method Uploader.register
+     * @for Uploader
      * @example
-     *     Uploader.register( {
-     *         init: function( options ) {},
-     *         makeThumb: function() {}
-     *     }, {
-     *         'make-thumb': 'makeThumb'
-     *     } );
+     * Uploader.register({
+     *     'make-thumb': 'makeThumb'
+     * }, {
+     *     init: function( options ) {},
+     *     makeThumb: function() {}
+     * });
+     *
+     * Uploader.register({
+     *     'make-thumb': function() {
+     *         
+     *     }
+     * });
      */
     Uploader.register = Widget.register = function( responseMap, widgetProto ) {
-        var map = { init: 'init' },
+        var map = { init: 'init', destroy: 'destroy', name: 'anonymous' },
             klass;
 
         if ( arguments.length === 1 ) {
             widgetProto = responseMap;
-            widgetProto.responseMap = map;
+
+            // 自动生成 map 表。
+            $.each(widgetProto, function(key) {
+                if ( key[0] === '_' || key === 'name' ) {
+                    key === 'name' && (map.name = widgetProto.name);
+                    return;
+                }
+
+                map[key.replace(/[A-Z]/g, '-$&').toLowerCase()] = key;
+            });
+
         } else {
-            widgetProto.responseMap = $.extend( map, responseMap );
+            map = $.extend( map, responseMap );
         }
 
+        widgetProto.responseMap = map;
         klass = Base.inherits( Widget, widgetProto );
+        klass._name = map.name;
         widgetClass.push( klass );
 
         return klass;
+    };
+
+    /**
+     * 删除插件，只有在注册时指定了名字的才能被删除。
+     * @grammar Uploader.unRegister(name);
+     * @param  {string} name 组件名字
+     * @method Uploader.unRegister
+     * @for Uploader
+     * @example
+     *
+     * Uploader.register({
+     *     name: 'custom',
+     *     
+     *     'make-thumb': function() {
+     *         
+     *     }
+     * });
+     *
+     * Uploader.unRegister('custom');
+     */
+    Uploader.unRegister = Widget.unRegister = function( name ) {
+        if ( !name || name === 'anonymous' ) {
+            return;
+        }
+        
+        // 删除指定的插件。
+        for ( var i = widgetClass.length; i--; ) {
+            if ( widgetClass[i]._name === name ) {
+                widgetClass.splice(i, 1)
+            }
+        }
     };
 
     return Widget;

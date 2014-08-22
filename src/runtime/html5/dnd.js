@@ -53,7 +53,6 @@ define([
                         'removeClass' ]( prefix + 'denied' );
             }
 
-
             e.dataTransfer.dropEffect = denied ? 'none' : 'copy';
 
             return false;
@@ -89,14 +88,29 @@ define([
         _dropHandler: function( e ) {
             var me = this,
                 ruid = me.getRuid(),
-                parentElem = me.elem.parent().get( 0 );
+                parentElem = me.elem.parent().get( 0 ),
+                dataTransfer, data;
 
             // 只处理框内的。
             if ( parentElem && !$.contains( parentElem, e.currentTarget ) ) {
                 return false;
             }
 
-            me._getTansferFiles( e, function( results ) {
+            e = e.originalEvent || e;
+            dataTransfer = e.dataTransfer;
+
+            // 如果是页面内拖拽，还不能处理，不阻止事件。
+            // 此处 ie11 下会报参数错误，
+            try {
+                data = dataTransfer.getData('text/html');
+            } catch( err ) {
+            }
+
+            if ( data ) {
+                return;
+            }
+
+            me._getTansferFiles( dataTransfer, function( results ) {
                 me.trigger( 'drop', $.map( results, function( file ) {
                     return new File( ruid, file );
                 }) );
@@ -108,14 +122,11 @@ define([
         },
 
         // 如果传入 callback 则去查看文件夹，否则只管当前文件夹。
-        _getTansferFiles: function( e, callback ) {
+        _getTansferFiles: function( dataTransfer, callback ) {
             var results  = [],
                 promises = [],
-                items, files, dataTransfer, file, item, i, len, canAccessFolder;
+                items, files, file, item, i, len, canAccessFolder;
 
-            e = e.originalEvent || e;
-
-            dataTransfer = e.dataTransfer;
             items = dataTransfer.items;
             files = dataTransfer.files;
 
@@ -178,8 +189,13 @@ define([
         destroy: function() {
             var elem = this.elem;
 
+            // 还没 init 就调用 destroy
+            if (!elem) {
+                return;
+            }
+            
             elem.off( 'dragenter', this.dragEnterHandler );
-            elem.off( 'dragover', this.dragEnterHandler );
+            elem.off( 'dragover', this.dragOverHandler );
             elem.off( 'dragleave', this.dragLeaveHandler );
             elem.off( 'drop', this.dropHandler );
 

@@ -59,9 +59,6 @@ define([
          *     // 是否允许裁剪。
          *     crop: true,
          *
-         *     // 是否保留头部meta信息。
-         *     preserveHeaders: false,
-         *
          *     // 为空的话则保留原有图片格式。
          *     // 否则强制转换成指定的类型。
          *     type: 'image/jpeg'
@@ -78,6 +75,8 @@ define([
 
             // 为空的话则保留原有图片格式。
             // 否则强制转换成指定的类型。
+            // IE 8下面 base64 大小不能超过 32K 否则预览失败，而非 jpeg 编码的图片很可
+            // 能会超过 32k, 所以这里设置成预览的时候都是 image/jpeg
             type: 'image/jpeg'
         },
 
@@ -104,7 +103,14 @@ define([
          *     crop: false,
          *
          *     // 是否保留头部meta信息。
-         *     preserveHeaders: true
+         *     preserveHeaders: true,
+         *
+         *     // 如果发现压缩后文件大小比原来还大，则使用原来图片
+         *     // 此属性可能会影响图片自动纠正功能
+         *     noCompressIfLarger: false,
+         *
+         *     // 单位字节，如果图片大小小于此值，不会采用压缩。
+         *     compressSize: 0
          * }
          * ```
          */
@@ -119,14 +125,15 @@ define([
     });
 
     return Uploader.register({
-        'make-thumb': 'makeThumb',
-        'before-send-file': 'compressImage'
-    }, {
+
+        name: 'image',
 
 
         /**
          * 生成缩略图，此过程为异步，所以需要传入`callback`。
          * 通常情况在图片加入队里后调用此方法来生成预览图以增强交互效果。
+         *
+         * 当 width 或者 height 的值介于 0 - 1 时，被当成百分比使用。
          *
          * `callback`中可以接收到两个参数。
          * * 第一个为error，如果生成缩略图有错误，此error将为真。
@@ -134,7 +141,7 @@ define([
          *
          * **注意**
          * Date URL在IE6/7中不支持，所以不用调用此方法了，直接显示一张暂不支持预览图片好了。
-         *
+         * 也可以借助服务端，将 base64 数据传给服务端，生成一个临时文件供预览。
          *
          * @method makeThumb
          * @grammar makeThumb( file, callback ) => undefined
@@ -182,16 +189,29 @@ define([
             image.once( 'load', function() {
                 file._info = file._info || image.info();
                 file._meta = file._meta || image.meta();
+
+                // 如果 width 的值介于 0 - 1
+                // 说明设置的是百分比。
+                if ( width <= 1 && width > 0 ) {
+                    width = file._info.width * width;
+                }
+
+                // 同样的规则应用于 height
+                if ( height <= 1 && height > 0 ) {
+                    height = file._info.height * height;
+                }
+
                 image.resize( width, height );
             });
 
+            // 当 resize 完后
             image.once( 'complete', function() {
                 cb( false, image.getAsDataUrl( opts.type ) );
                 image.destroy();
             });
 
-            image.once( 'error', function() {
-                cb( true );
+            image.once( 'error', function( reason ) {
+                cb( reason || true );
                 image.destroy();
             });
 
@@ -202,14 +222,17 @@ define([
             });
         },
 
-        compressImage: function( file ) {
+        beforeSendFile: function( file ) {
             var opts = this.options.compress || this.options.resize,
-                compressSize = opts && opts.compressSize || 300 * 1024,
+                compressSize = opts && opts.compressSize || 0,
+                noCompressIfLarger = opts && opts.noCompressIfLarger || false,
                 image, deferred;
 
             file = this.request( 'get-file', file );
 
-            // 只预览图片格式。
+            // 只压缩 jpeg 图片格式。
+            // gif 可能会丢失针
+            // bmp png 基本上尺寸都不大，且压缩比比较小。
             if ( !opts || !~'image/jpeg,image/jpg'.indexOf( file.type ) ||
                     file.size < compressSize ||
                     file._compressed ) {
@@ -227,9 +250,24 @@ define([
             });
             image.once( 'error', deferred.reject );
             image.once( 'load', function() {
+                var width = opts.width,
+                    height = opts.height;
+
                 file._info = file._info || image.info();
                 file._meta = file._meta || image.meta();
-                image.resize( opts.width, opts.height );
+
+                // 如果 width 的值介于 0 - 1
+                // 说明设置的是百分比。
+                if ( width <= 1 && width > 0 ) {
+                    width = file._info.width * width;
+                }
+
+                // 同样的规则应用于 height
+                if ( height <= 1 && height > 0 ) {
+                    height = file._info.height * height;
+                }
+
+                image.resize( width, height );
             });
 
             image.once( 'complete', function() {
@@ -244,7 +282,7 @@ define([
                     size = file.size;
 
                     // 如果压缩后，比原来还大则不用压缩后的。
-                    if ( blob.size < size ) {
+                    if ( !noCompressIfLarger || blob.size < size ) {
                         // file.source.destroy && file.source.destroy();
                         file.source = blob;
                         file.size = blob.size;

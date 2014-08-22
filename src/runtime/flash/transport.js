@@ -42,7 +42,9 @@ define([
             this._setRequestHeader( xhr, opts.headers );
             xhr.exec( 'send', {
                 method: opts.method,
-                url: server
+                url: server,
+                forceURLStream: opts.forceURLStream,
+                mimeType: 'application/octet-stream'
             }, binary );
         },
 
@@ -51,7 +53,7 @@ define([
         },
 
         getResponse: function() {
-            return this._response;
+            return this._response || '';
         },
 
         getResponseAsJson: function() {
@@ -77,27 +79,50 @@ define([
                 xhr = new RuntimeClient('XMLHttpRequest');
 
             xhr.on( 'uploadprogress progress', function( e ) {
-                return me.trigger( 'progress', e.loaded / e.total );
+                var percent = e.loaded / e.total;
+                percent = Math.min( 1, Math.max( 0, percent ) );
+                return me.trigger( 'progress', percent );
             });
 
             xhr.on( 'load', function() {
                 var status = xhr.exec('getStatus'),
-                    err = '';
+                    readBody = false,
+                    err = '',
+                    p;
 
                 xhr.off();
                 me._xhr = null;
 
                 if ( status >= 200 && status < 300 ) {
-                    me._response = xhr.exec('getResponse');
-                    me._responseJson = xhr.exec('getResponseAsJson');
+                    readBody = true;
                 } else if ( status >= 500 && status < 600 ) {
-                    me._response = xhr.exec('getResponse');
-                    me._responseJson = xhr.exec('getResponseAsJson');
+                    readBody = true;
                     err = 'server';
                 } else {
                     err = 'http';
                 }
 
+                if ( readBody ) {
+                    me._response = xhr.exec('getResponse');
+                    me._response = decodeURIComponent( me._response );
+
+                    // flash 处理可能存在 bug, 没辙只能靠 js 了
+                    // try {
+                    //     me._responseJson = xhr.exec('getResponseAsJson');
+                    // } catch ( error ) {
+                        
+                    p = window.JSON && window.JSON.parse || function( s ) {
+                        try {
+                            return new Function('return ' + s).call();
+                        } catch ( err ) {
+                            return {};
+                        }
+                    };
+                    me._responseJson  = me._response ? p(me._response) : {};
+                        
+                    // }
+                }
+                
                 xhr.destroy();
                 xhr = null;
 

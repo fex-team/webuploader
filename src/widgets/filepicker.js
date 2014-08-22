@@ -52,15 +52,11 @@ define([
     });
 
     return Uploader.register({
-        'add-btn': 'addButton',
-        refresh: 'refresh',
-        disable: 'disable',
-        enable: 'enable'
-    }, {
+        name: 'picker',
 
         init: function( opts ) {
             this.pickers = [];
-            return opts.pick && this.addButton( opts.pick );
+            return opts.pick && this.addBtn( opts.pick );
         },
 
         refresh: function() {
@@ -81,38 +77,46 @@ define([
          *     innerHTML: '选择文件'
          * });
          */
-        addButton: function( pick ) {
+        addBtn: function( pick ) {
             var me = this,
                 opts = me.options,
                 accept = opts.accept,
-                options, picker, deferred;
+                promises = [];
 
             if ( !pick ) {
                 return;
             }
-
-            deferred = Base.Deferred();
+            
             $.isPlainObject( pick ) || (pick = {
                 id: pick
             });
 
-            options = $.extend({}, pick, {
-                accept: $.isPlainObject( accept ) ? [ accept ] : accept,
-                swf: opts.swf,
-                runtimeOrder: opts.runtimeOrder
+            $( pick.id ).each(function() {
+                var options, picker, deferred;
+
+                deferred = Base.Deferred();
+
+                options = $.extend({}, pick, {
+                    accept: $.isPlainObject( accept ) ? [ accept ] : accept,
+                    swf: opts.swf,
+                    runtimeOrder: opts.runtimeOrder,
+                    id: this
+                });
+
+                picker = new FilePicker( options );
+
+                picker.once( 'ready', deferred.resolve );
+                picker.on( 'select', function( files ) {
+                    me.owner.request( 'add-file', [ files ]);
+                });
+                picker.init();
+
+                me.pickers.push( picker );
+
+                promises.push( deferred.promise() );
             });
 
-            picker = new FilePicker( options );
-
-            picker.once( 'ready', deferred.resolve );
-            picker.on( 'select', function( files ) {
-                me.owner.request( 'add-file', [ files ]);
-            });
-            picker.init();
-
-            this.pickers.push( picker );
-
-            return deferred.promise();
+            return Base.when.apply( Base, promises );
         },
 
         disable: function() {
@@ -125,6 +129,13 @@ define([
             $.each( this.pickers, function() {
                 this.enable();
             });
+        },
+
+        destroy: function() {
+            $.each( this.pickers, function() {
+                this.destroy();
+            });
+            this.pickers = null;
         }
     });
 });

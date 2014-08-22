@@ -53,7 +53,7 @@ package
 
             // Allow scripting on swf loaded from another domain
 			Security.allowDomain("*");
-			
+
 //			var loader:CLibInit = new CLibInit();
 //			clib = loader.init();
 
@@ -77,7 +77,12 @@ package
             }
 			
 			// 整个很重要，用来增加as贞频的。
-			Zhenpin.start();
+            // 整个很重要，用来增加as贞频的。
+            try {
+                Zhenpin.start();
+            } catch (err:*) {
+                _fireEvent(Uploader.uid, err);
+            }
 
             //ExternalInterface.marshallExceptions = true; // propagate AS exceptions to JS and vice-versa
             ExternalInterface.addCallback('exec', exec);

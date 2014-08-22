@@ -1,0 +1,161 @@
+K 25
+svn:wc:ra_dav:version-url
+V 43
+/svnroot/hashlib2plus/!svn/ver/77/trunk/src
+END
+hl_sha384wrapper.cpp
+K 25
+svn:wc:ra_dav:version-url
+V 64
+/svnroot/hashlib2plus/!svn/ver/70/trunk/src/hl_sha384wrapper.cpp
+END
+hl_sha256.h
+K 25
+svn:wc:ra_dav:version-url
+V 55
+/svnroot/hashlib2plus/!svn/ver/70/trunk/src/hl_sha256.h
+END
+hl_wrapperfactory.h
+K 25
+svn:wc:ra_dav:version-url
+V 63
+/svnroot/hashlib2plus/!svn/ver/78/trunk/src/hl_wrapperfactory.h
+END
+hl_sha2ext.cpp
+K 25
+svn:wc:ra_dav:version-url
+V 58
+/svnroot/hashlib2plus/!svn/ver/70/trunk/src/hl_sha2ext.cpp
+END
+hl_sha256wrapper.h
+K 25
+svn:wc:ra_dav:version-url
+V 62
+/svnroot/hashlib2plus/!svn/ver/70/trunk/src/hl_sha256wrapper.h
+END
+hl_sha384wrapper.h
+K 25
+svn:wc:ra_dav:version-url
+V 62
+/svnroot/hashlib2plus/!svn/ver/70/trunk/src/hl_sha384wrapper.h
+END
+hl_sha2mac.h
+K 25
+svn:wc:ra_dav:version-url
+V 56
+/svnroot/hashlib2plus/!svn/ver/70/trunk/src/hl_sha2mac.h
+END
+hl_sha2ext.h
+K 25
+svn:wc:ra_dav:version-url
+V 56
+/svnroot/hashlib2plus/!svn/ver/70/trunk/src/hl_sha2ext.h
+END
+hl_md5.cpp
+K 25
+svn:wc:ra_dav:version-url
+V 54
+/svnroot/hashlib2plus/!svn/ver/70/trunk/src/hl_md5.cpp
+END
+hl_md5wrapper.cpp
+K 25
+svn:wc:ra_dav:version-url
+V 61
+/svnroot/hashlib2plus/!svn/ver/71/trunk/src/hl_md5wrapper.cpp
+END
+hl_hashwrapper.h
+K 25
+svn:wc:ra_dav:version-url
+V 60
+/svnroot/hashlib2plus/!svn/ver/78/trunk/src/hl_hashwrapper.h
+END
+hl_md5.h
+K 25
+svn:wc:ra_dav:version-url
+V 52
+/svnroot/hashlib2plus/!svn/ver/70/trunk/src/hl_md5.h
+END
+hl_md5wrapper.h
+K 25
+svn:wc:ra_dav:version-url
+V 59
+/svnroot/hashlib2plus/!svn/ver/70/trunk/src/hl_md5wrapper.h
+END
+hashlibpp.h
+K 25
+svn:wc:ra_dav:version-url
+V 55
+/svnroot/hashlib2plus/!svn/ver/78/trunk/src/hashlibpp.h
+END
+hl_sha1.cpp
+K 25
+svn:wc:ra_dav:version-url
+V 55
+/svnroot/hashlib2plus/!svn/ver/70/trunk/src/hl_sha1.cpp
+END
+hl_sha1wrapper.cpp
+K 25
+svn:wc:ra_dav:version-url
+V 62
+/svnroot/hashlib2plus/!svn/ver/70/trunk/src/hl_sha1wrapper.cpp
+END
+hl_sha1.h
+K 25
+svn:wc:ra_dav:version-url
+V 53
+/svnroot/hashlib2plus/!svn/ver/70/trunk/src/hl_sha1.h
+END
+hl_sha1wrapper.h
+K 25
+svn:wc:ra_dav:version-url
+V 60
+/svnroot/hashlib2plus/!svn/ver/70/trunk/src/hl_sha1wrapper.h
+END
+hl_exception.h
+K 25
+svn:wc:ra_dav:version-url
+V 58
+/svnroot/hashlib2plus/!svn/ver/78/trunk/src/hl_exception.h
+END
+hl_sha512wrapper.cpp
+K 25
+svn:wc:ra_dav:version-url
+V 64
+/svnroot/hashlib2plus/!svn/ver/70/trunk/src/hl_sha512wrapper.cpp
+END
+hl_sha256.cpp
+K 25
+svn:wc:ra_dav:version-url
+V 57
+/svnroot/hashlib2plus/!svn/ver/70/trunk/src/hl_sha256.cpp
+END
+hl_wrapperfactory.cpp
+K 25
+svn:wc:ra_dav:version-url
+V 65
+/svnroot/hashlib2plus/!svn/ver/78/trunk/src/hl_wrapperfactory.cpp
+END
+hl_sha256wrapper.cpp
+K 25
+svn:wc:ra_dav:version-url
+V 64
+/svnroot/hashlib2plus/!svn/ver/70/trunk/src/hl_sha256wrapper.cpp
+END
+Makefile
+K 25
+svn:wc:ra_dav:version-url
+V 52
+/svnroot/hashlib2plus/!svn/ver/78/trunk/src/Makefile
+END
+hl_sha512wrapper.h
+K 25
+svn:wc:ra_dav:version-url
+V 62
+/svnroot/hashlib2plus/!svn/ver/70/trunk/src/hl_sha512wrapper.h
+END
+hl_types.h
+K 25
+svn:wc:ra_dav:version-url
+V 54
+/svnroot/hashlib2plus/!svn/ver/71/trunk/src/hl_types.h
+END

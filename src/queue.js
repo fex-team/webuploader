@@ -21,10 +21,11 @@ define([
          * 统计文件数。
          * * `numOfQueue` 队列中的文件数。
          * * `numOfSuccess` 上传成功的文件数
-         * * `numOfCancel` 被移除的文件数
+         * * `numOfCancel` 被取消的文件数
          * * `numOfProgress` 正在上传中的文件数
          * * `numOfUploadFailed` 上传错误的文件数。
          * * `numOfInvalid` 无效的文件数。
+         * * `numofDeleted` 被移除的文件数。
          * @property {Object} stats
          */
         this.stats = {
@@ -33,7 +34,9 @@ define([
             numOfCancel: 0,
             numOfProgress: 0,
             numOfUploadFailed: 0,
-            numOfInvalid: 0
+            numOfInvalid: 0,
+            numofDeleted: 0,
+            numofInterrupt: 0,
         };
 
         // 上传队列，仅包括等待上传的文件
@@ -145,6 +148,23 @@ define([
             return ret;
         },
 
+        /**
+         * 在队列中删除文件。
+         * @grammar removeFile( file ) => Array
+         * @method removeFile
+         * @param {File} 文件对象。
+         */
+        removeFile: function( file ) {
+            var me = this,
+                existing = this._map[ file.id ];
+
+            if ( existing ) {
+                delete this._map[ file.id ];
+                file.destroy();
+                this.stats.numofDeleted++;
+            }
+        },
+
         _fileAdded: function( file ) {
             var me = this,
                 existing = this._map[ file.id ];
@@ -156,8 +176,6 @@ define([
                     me._onFileStatusChange( cur, pre );
                 });
             }
-
-            file.setStatus( STATUS.QUEUED );
         },
 
         _onFileStatusChange: function( curStatus, preStatus ) {
@@ -178,6 +196,10 @@ define([
 
                 case STATUS.INVALID:
                     stats.numOfInvalid--;
+                    break;
+
+                case STATUS.INTERRUPT:
+                    stats.numofInterrupt--;
                     break;
             }
 
@@ -202,8 +224,13 @@ define([
                     stats.numOfCancel++;
                     break;
 
+
                 case STATUS.INVALID:
                     stats.numOfInvalid++;
+                    break;
+
+                case STATUS.INTERRUPT:
+                    stats.numofInterrupt++;
                     break;
             }
         }

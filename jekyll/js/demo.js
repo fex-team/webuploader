@@ -55,6 +55,11 @@ jQuery(function() {
         // WebUploader实例
         uploader;
 
+    if ( !WebUploader.Uploader.support() ) {
+        alert( 'Web Uploader 不支持您的浏览器！如果你使用的是IE浏览器，请尝试升级 flash 播放器');
+        throw new Error( 'WebUploader does not support the browser you are using.' );
+    }
+
     // 实例化
     uploader = WebUploader.create({
         pick: {
@@ -76,10 +81,11 @@ jQuery(function() {
         disableGlobalDnd: true,
 
         chunked: true,
-        server: 'http://webuploader.duapp.com/server/fileupload.php',
+        // server: 'http://webuploader.duapp.com/server/fileupload.php',
+        server: 'http://2betop.net/fileupload.php',
         fileNumLimit: 300,
-        fileSizeLimit: 200 * 1024 * 1024,    // 200 M
-        fileSingleSizeLimit: 50 * 1024 * 1024    // 50 M
+        fileSizeLimit: 5 * 1024 * 1024,    // 200 M
+        fileSingleSizeLimit: 1 * 1024 * 1024    // 50 M
     });
 
     // 添加“添加文件”的按钮，

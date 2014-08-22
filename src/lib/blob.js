@@ -11,12 +11,18 @@ define([
 
         me.source = source;
         me.ruid = ruid;
+        this.size = source.size || 0;
+
+        // 如果没有指定 mimetype, 但是知道文件后缀。
+        if ( !source.type && this.ext &&
+                ~'jpg,jpeg,png,gif,bmp'.indexOf( this.ext ) ) {
+            this.type = 'image/' + (this.ext === 'jpg' ? 'jpeg' : this.ext);
+        } else {
+            this.type = source.type || 'application/octet-stream';
+        }
 
         RuntimeClient.call( me, 'Blob' );
-
         this.uid = source.uid || this.uid;
-        this.type = source.type || '';
-        this.size = source.size || 0;
 
         if ( ruid ) {
             me.connectRuntime( ruid );

@@ -53,6 +53,7 @@ define([
             parent.append( container );
             parent.addClass('webuploader-container');
             this._container = container;
+            this._parent = parent;
             return container;
         },
 
@@ -60,10 +61,8 @@ define([
         exec: Base.noop,
 
         destroy: function() {
-            if ( this._container ) {
-                this._container.parentNode.removeChild( this.__container );
-            }
-
+            this._container && this._container.remove();
+            this._parent && this._parent.removeClass('webuploader-container');
             this.off();
         }
     });

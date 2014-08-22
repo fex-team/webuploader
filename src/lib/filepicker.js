@@ -63,8 +63,12 @@ define([
                     case 'change':
                         files = me.exec('getFiles');
                         me.trigger( 'select', $.map( files, function( file ) {
-                            return new File( me.getRuid(), file );
-                        }) );
+                            file = new File( me.getRuid(), file );
+
+                            // 记录来源。
+                            file._refer = opts.container;
+                            return file;
+                        }), opts.container );
                         break;
                 }
             });
@@ -75,9 +79,8 @@ define([
                 me.trigger('ready');
             });
 
-            $( window ).on( 'resize', function() {
-                me.refresh();
-            });
+            this._resizeHandler = Base.bindFn( this.refresh, this );
+            $( window ).on( 'resize', this._resizeHandler );
         },
 
         refresh: function() {
@@ -117,10 +120,10 @@ define([
         },
 
         destroy: function() {
-            if ( this.runtime ) {
-                this.exec('destroy');
-                this.disconnectRuntime();
-            }
+            var btn = this.options.button;
+            $( window ).off( 'resize', this._resizeHandler );
+            btn.removeClass('webuploader-pick-disable webuploader-pick-hover ' +
+                'webuploader-pick');
         }
     });
 
