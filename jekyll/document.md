@@ -178,7 +178,7 @@ define([
 │   ├── image.js    图片处理类，生成缩略图和图片压缩。
 │   └── transport.js    文件传送。
 ├── mediator.js   Event类
-├── promise.js    通jq-bridge, 在没有jQuery的时候才需要。用来实现Deferred。
+├── promise.js    同jq-bridge, 在没有jQuery的时候才需要。用来实现Deferred。
 ├── queue.js    队列
 ├── runtime
 │   ├── client.js   连接器
