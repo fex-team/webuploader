@@ -633,6 +633,7 @@ define([
                     });
                 } else {
                     block.percentage = 1;
+                    me.updateFileProgress( file );
                     me._popBlock( block );
                     Base.nextTick( me.__tick );
                 }
@@ -710,25 +711,8 @@ define([
 
             // 广播上传进度。以文件为单位。
             tr.on( 'progress', function( percentage ) {
-                var totalPercent = 0,
-                    uploaded = 0;
-
-                // 可能没有abort掉，progress还是执行进来了。
-                // if ( !file.blocks ) {
-                //     return;
-                // }
-
-                totalPercent = block.percentage = percentage;
-
-                if ( block.chunks > 1 ) {    // 计算文件的整体速度。
-                    $.each( file.blocks, function( _, v ) {
-                        uploaded += (v.percentage || 0) * (v.end - v.start);
-                    });
-
-                    totalPercent = uploaded / file.size;
-                }
-
-                owner.trigger( 'uploadProgress', file, totalPercent || 0 );
+                block.percentage = percentage;
+                me.updateFileProgress( file );
             });
 
             // 用来询问，是否返回的结果是有错误的。
@@ -837,6 +821,22 @@ define([
                     .always(function() {
                         owner.trigger( 'uploadComplete', file );
                     });
+        },
+
+        updateFileProgress: function(file) {
+            var totalPercent = 0,
+                uploaded = 0;
+
+            if (!file.blocks) {
+                return;
+            }
+
+            $.each( file.blocks, function( _, v ) {
+                uploaded += (v.percentage || 0) * (v.end - v.start);
+            });
+
+            totalPercent = uploaded / file.size;
+            this.owner.trigger( 'uploadProgress', file, totalPercent || 0 );
         }
 
     });
