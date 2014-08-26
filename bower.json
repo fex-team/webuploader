@@ -1,5 +1,5 @@
 {
-  "name": "webuploader",
+  "name": "fex-webuploader",
   "main": "dist/webuploader.js",
   "version": "0.1.6-dev",
   "homepage": "https://github.com/fex-team/webuploader",
