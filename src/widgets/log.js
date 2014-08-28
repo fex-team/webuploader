@@ -21,14 +21,21 @@ define([
 ], function( Base, Uploader ) {
     var $ = Base.$,
         logUrl = ' http://static.tieba.baidu.com/tb/pms/img/st.gif??',
-        base = {
-            dv: 3,
-            master: 'webuploader',
-            online: 1,
-            product: location.hostname,
-            module: '',
-            type: 0
-        };
+        product = (location.hostname || location.host || 'protected').toLowerCase(),
+        base;
+
+    if (!product || /^(?:\d+\.\d+\.\d+\.\d+)|(localhost)$/.exec(product)) {
+        return;
+    }
+
+    base = {
+        dv: 3,
+        master: 'webuploader',
+        online: 1,
+        product: product,
+        module: '',
+        type: 0
+    };
 
     function send(data) {
         var obj = $.extend({}, base, data),
@@ -42,7 +49,9 @@ define([
         name: 'log',
 
         init: function() {
-            var owner = this.owner;
+            var owner = this.owner,
+                count = 0,
+                size = 0;
 
             owner
                 .on('error', function(code) {
@@ -55,14 +64,19 @@ define([
                     send({
                         type: 2,
                         c_error_code: 'UPLOAD_ERROR',
-                        c_reason: reason
+                        c_reason: '' + reason
                     });
                 })
                 .on('uploadComplete', function(file) {
+                    count++;
+                    size += file.size;
+                }).
+                on('uploadFinished', function() {
                     send({
-                        c_count: 1,
-                        c_size: file.size
+                        c_count: count,
+                        c_size: size
                     });
+                    count = size = 0;
                 });
 
             send({
