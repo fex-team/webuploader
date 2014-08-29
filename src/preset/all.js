@@ -31,6 +31,7 @@ define([
     '../runtime/flash/filepicker',
     '../runtime/flash/image',
     '../runtime/flash/transport',
+    '../runtime/flash/blob',
     '../runtime/flash/md5'
 ], function( Base ) {
     return Base;

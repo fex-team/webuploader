@@ -23,7 +23,8 @@ define([
 
     // flash
     '../runtime/flash/filepicker',
-    '../runtime/flash/transport'
+    '../runtime/flash/transport',
+    '../runtime/flash/blob'
 ], function( Base ) {
     return Base;
 });

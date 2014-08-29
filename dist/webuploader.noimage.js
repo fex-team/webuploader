@@ -4956,6 +4956,22 @@
         });
     });
     /**
+     * @fileOverview Blob Html实现
+     */
+    define('runtime/flash/blob',[
+        'runtime/flash/runtime',
+        'lib/blob'
+    ], function( FlashRuntime, Blob ) {
+    
+        return FlashRuntime.register( 'Blob', {
+            slice: function( start, end ) {
+                var blob = this.flashExec( 'Blob', 'slice', start, end );
+    
+                return new Blob( blob.uid, blob );
+            }
+        });
+    });
+    /**
      * @fileOverview 没有图像处理的版本。
      */
     define('preset/withoutimage',[
@@ -4980,7 +4996,8 @@
     
         // flash
         'runtime/flash/filepicker',
-        'runtime/flash/transport'
+        'runtime/flash/transport',
+        'runtime/flash/blob'
     ], function( Base ) {
         return Base;
     });

@@ -17,6 +17,7 @@ define([
     // flash
     '../runtime/flash/filepicker',
     '../runtime/flash/image',
+    '../runtime/flash/blob',
     '../runtime/flash/transport'
 ], function( Base ) {
     return Base;
