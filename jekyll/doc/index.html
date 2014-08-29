@@ -544,7 +544,7 @@ var uploader = WebUploader.Uploader({
             </span>
             <p>指定选择文件的按钮容器，不指定则不创建按钮。</p>
 <ul>
-<li><code>id</code> {Seletor} 指定选择文件的按钮容器，不指定则不创建按钮。</li>
+<li><code>id</code> {Seletor|dom} 指定选择文件的按钮容器，不指定则不创建按钮。<strong>注意</strong> 这里虽然写的是 id, 但是不是只支持 id, 还支持 class, 或者 dom 节点。</li>
 <li><code>label</code> {String} 请采用 <code>innerHTML</code> 代替</li>
 <li><code>innerHTML</code> {String} 指定按钮文字。不指定时优先从指定的容器中看是否自带文字。</li>
 <li><code>multiple</code> {Boolean} 是否开起同时选择多个文件能力。</li>

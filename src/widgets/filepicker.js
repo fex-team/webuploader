@@ -17,7 +17,7 @@ define([
          * @for Uploader
          * @description 指定选择文件的按钮容器，不指定则不创建按钮。
          *
-         * * `id` {Seletor} 指定选择文件的按钮容器，不指定则不创建按钮。
+         * * `id` {Seletor|dom} 指定选择文件的按钮容器，不指定则不创建按钮。**注意** 这里虽然写的是 id, 但是不是只支持 id, 还支持 class, 或者 dom 节点。
          * * `label` {String} 请采用 `innerHTML` 代替
          * * `innerHTML` {String} 指定按钮文字。不指定时优先从指定的容器中看是否自带文字。
          * * `multiple` {Boolean} 是否开起同时选择多个文件能力。
@@ -86,7 +86,7 @@ define([
             if ( !pick ) {
                 return;
             }
-            
+
             $.isPlainObject( pick ) || (pick = {
                 id: pick
             });
