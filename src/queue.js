@@ -36,7 +36,7 @@ define([
             numOfUploadFailed: 0,
             numOfInvalid: 0,
             numofDeleted: 0,
-            numofInterrupt: 0,
+            numofInterrupt: 0
         };
 
         // 上传队列，仅包括等待上传的文件
