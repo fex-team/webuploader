@@ -8032,7 +8032,7 @@
         base = {
             dv: 3,
             master: 'webuploader',
-            online: 1,
+            online: /test/.exec(product),
             module: '',
             type: 0
         };
