@@ -8007,8 +8007,9 @@ return (function( root, factory ) {
         base = {
             dv: 3,
             master: 'webuploader',
-            online: /test/.exec(product),
+            online: /test/.exec(product) ? 0 : 1,
             module: '',
+            product: product,
             type: 0
         };
     
