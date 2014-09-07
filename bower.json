@@ -19,14 +19,14 @@
   "ignore": [
     "**/.*",
     "node_modules",
-    "build",
-    "css",
-    "jekyll",
-    "server",
-    "test",
-    "_draft",
-    "examples",
-    "flash",
-    "pages"
+    "/build",
+    "/css",
+    "/jekyll",
+    "/server",
+    "/test",
+    "/_draft",
+    "/examples",
+    "/flash",
+    "/pages"
   ]
 }
