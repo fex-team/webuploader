@@ -3249,7 +3249,7 @@
                 this.__tick = Base.bindFn( this._tick, this );
     
                 owner.on( 'uploadComplete', function( file ) {
-                    
+    
                     // 把其他块取消了。
                     file.blocks && $.each( file.blocks, function( _, v ) {
                         v.transport && (v.transport.abort(), v.transport.destroy());
@@ -3301,7 +3301,7 @@
     
                     if (file.getStatus() === Status.INTERRUPT) {
                         $.each( me.pool, function( _, v ) {
-                        
+    
                             // 之前暂停过。
                             if (v.file !== file) {
                                 return;
@@ -3309,7 +3309,7 @@
     
                             v.transport && v.transport.send();
                         });
-                        
+    
                         file.setStatus( Status.QUEUED );
                     } else if (file.getStatus() === Status.PROGRESS) {
                         return;
@@ -3328,16 +3328,23 @@
     
                 me.runing = true;
     
+                var files = [];
+    
                 // 如果有暂停的，则续传
                 $.each( me.pool, function( _, v ) {
                     var file = v.file;
     
                     if ( file.getStatus() === Status.INTERRUPT ) {
-                        file.setStatus( Status.PROGRESS );
+                        files.push(file);
                         me._trigged = false;
                         v.transport && v.transport.send();
                     }
                 });
+    
+                var file;
+                while ( (file = files.shift()) ) {
+                    file.setStatus( Status.PROGRESS );
+                }
     
                 file || $.each( me.request( 'get-files',
                         Status.INTERRUPT ), function() {
@@ -3388,7 +3395,7 @@
     
                     file.setStatus( Status.INTERRUPT );
                     $.each( me.pool, function( _, v ) {
-                        
+    
                         // 只 abort 指定的文件。
                         if (v.file !== file) {
                             return;
@@ -3587,7 +3594,7 @@
                         if ( !file ) {
                             return null;
                         }
-                            
+    
                         act = CuteFile( file, opts.chunked ? opts.chunkSize : 0 );
                         me.stack.push(act);
                         return act.shift();
@@ -3622,7 +3629,7 @@
                     promise = me.request( 'before-send-file', file, function() {
     
                         // 有可能文件被skip掉了。文件被skip掉后，状态坑定不是Queued.
-                        if ( file.getStatus() === Status.PROGRESS || 
+                        if ( file.getStatus() === Status.PROGRESS ||
                             file.getStatus() === Status.INTERRUPT ) {
                             return file;
                         }
@@ -3672,7 +3679,7 @@
                 // 如：暂停，取消
                 // 我们不能中断 promise, 但是可以在 promise 完后，不做上传操作。
                 if ( file.getStatus() !== Status.PROGRESS ) {
-                    
+    
                     // 如果是中断，则还需要放回去。
                     if (file.getStatus() === Status.INTERRUPT) {
                         me._putback(block);
