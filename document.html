@@ -1,8 +1,8 @@
-<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
-<html lang="en">
+<!DOCTYPE html>
+<html lang="zh-CN">
 
 <head>
-    <meta http-equiv="Content-Type" content="text/html;charset=UTF-8">
+    <meta charset="UTF-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>
@@ -39,7 +39,7 @@
                 <span class="fa fa-cloud-upload"></span>WebUploader</a>
         </div>
         <div class="collapse navbar-collapse">
-            <ul class="nav navbar-nav">       <li><a href="/webuploader/getting-started.html">Getting started</a></li>      <li class="active"><a href="/webuploader/document.html" class="active">Document</a></li>       <li><a href="/webuploader/doc/index.html">API</a></li>       <li><a href="/webuploader/demo.html">Demo</a></li>           <li><a href="/webuploader/download.html">Download</a></li>                                     
+            <ul class="nav navbar-nav">      <li><a href="/webuploader/getting-started.html">getting-started.md</a></li>      <li class="active"><a href="/webuploader/document.html" class="active">document.md</a></li>           <li><a href="/webuploader/doc/index.html">index.html</a></li>    <li><a href="/webuploader/demo.html">demo.md</a></li>          <li><a href="/webuploader/download.html">download.md</a></li>                                      
                 <li><a target="_blank" href="https://github.com/fex-team/webuploader/issues?labels=faq&amp;page=1&amp;state=open">FAQ</a></li>
             </ul>
 
@@ -62,16 +62,16 @@
         <div class="col-md-3">
             <div class="post-toc"><ul class="nav">
 <li>
-<a href="#toc_0">接口说明</a>
+<a href="#接口说明">接口说明</a>
 </li>
 <li>
-<a href="#toc_1">事件</a>
+<a href="#事件">事件</a>
 </li>
 <li>
-<a href="#toc_2">Hook</a>
+<a href="#hook">Hook</a>
 </li>
 <li>
-<a href="#toc_3">文件组织</a>
+<a href="#文件组织">文件组织</a>
 </li>
 </ul>
 </div>
@@ -81,13 +81,13 @@
             
 
             <div class="page-container">
-                <h2 id="toc_0">接口说明</h2>
+                <h2 id="接口说明">接口说明</h2>
 
 <p>Web Uploader的所有代码都在一个内部闭包中，对外暴露了唯一的一个变量<code>WebUploader</code>，所以完全不用担心此框架会与其他框架冲突。</p>
 
 <p>内部<strong>所有</strong>的类和功能都暴露在<code>WebUploader</code>名字空间下面。<br />
 Demo中使用的是<code>WebUploader.create</code>方法来初始化的，实际上可直接访问<code>WebUploader.Uploader</code>。</p>
-<div class="highlight"><pre><code class="javascript language-javascript" data-lang="javascript"><span class="kd">var</span> <span class="nx">uploader</span> <span class="o">=</span> <span class="k">new</span> <span class="nx">WebUploader</span><span class="p">.</span><span class="nx">Uploader</span><span class="p">({</span>
+<div class="highlight"><pre><code class="language-javascript" data-lang="javascript"><span class="kd">var</span> <span class="nx">uploader</span> <span class="o">=</span> <span class="k">new</span> <span class="nx">WebUploader</span><span class="p">.</span><span class="nx">Uploader</span><span class="p">({</span>
     <span class="nx">swf</span><span class="o">:</span> <span class="s1">&#39;path_of_swf/Uploader.swf&#39;</span>
 
     <span class="c1">// 其他配置项</span>
@@ -95,25 +95,25 @@ Demo中使用的是<code>WebUploader.create</code>方法来初始化的，实际
 </code></pre></div>
 <p>具体有哪些内部类，请转到<a href="/webuploader/doc/index.html">API</a>页面。</p>
 
-<h2 id="toc_1">事件</h2>
+<h2 id="事件">事件</h2>
 
 <p><code>Uploader</code>实例具有Backbone同样的事件API：<code>on</code>，<code>off</code>，<code>once</code>，<code>trigger</code>。</p>
-<div class="highlight"><pre><code class="javascript language-javascript" data-lang="javascript"><span class="nx">uploader</span><span class="p">.</span><span class="nx">on</span><span class="p">(</span> <span class="s1">&#39;fileQueued&#39;</span><span class="p">,</span> <span class="kd">function</span><span class="p">(</span> <span class="nx">file</span> <span class="p">)</span> <span class="p">{</span>
+<div class="highlight"><pre><code class="language-javascript" data-lang="javascript"><span class="nx">uploader</span><span class="p">.</span><span class="nx">on</span><span class="p">(</span> <span class="s1">&#39;fileQueued&#39;</span><span class="p">,</span> <span class="kd">function</span><span class="p">(</span> <span class="nx">file</span> <span class="p">)</span> <span class="p">{</span>
     <span class="c1">// do some things.</span>
 <span class="p">});</span>
 </code></pre></div>
 <p>除了通过<code>on</code>绑定事件外，<code>Uploader</code>实例还有一个更便捷的添加事件方式。</p>
-<div class="highlight"><pre><code class="javascript language-javascript" data-lang="javascript"><span class="nx">uploader</span><span class="p">.</span><span class="nx">onFileQueued</span> <span class="o">=</span> <span class="kd">function</span><span class="p">(</span> <span class="nx">file</span> <span class="p">)</span> <span class="p">{</span>
+<div class="highlight"><pre><code class="language-javascript" data-lang="javascript"><span class="nx">uploader</span><span class="p">.</span><span class="nx">onFileQueued</span> <span class="o">=</span> <span class="kd">function</span><span class="p">(</span> <span class="nx">file</span> <span class="p">)</span> <span class="p">{</span>
     <span class="c1">// do some things.</span>
 <span class="p">};</span>
 </code></pre></div>
 <p>如同<code>Document Element</code>中的onEvent一样，他的执行比<code>on</code>添加的<code>handler</code>的要晚。如果那些<code>handler</code>里面，有一个<code>return false</code>了，此<code>onEvent</code>里面是不会执行到的。</p>
 
-<h2 id="toc_2">Hook</h2>
+<h2 id="hook">Hook</h2>
 
 <p><code>Uploader</code>里面的功能被拆分成了好几个<code>widget</code>，由<code>command</code>机制来通信合作。<br />
 如下，filepicker在用户选择文件后，直接把结果<code>request</code>出去，然后负责队列的<code>queue</code> widget，监听命令，根据配置项中的<code>accept</code>来决定是否加入队列。</p>
-<div class="highlight"><pre><code class="javascript language-javascript" data-lang="javascript"><span class="c1">// in file picker</span>
+<div class="highlight"><pre><code class="language-javascript" data-lang="javascript"><span class="c1">// in file picker</span>
 <span class="nx">picker</span><span class="p">.</span><span class="nx">on</span><span class="p">(</span> <span class="s1">&#39;select&#39;</span><span class="p">,</span> <span class="kd">function</span><span class="p">(</span> <span class="nx">files</span> <span class="p">)</span> <span class="p">{</span>
     <span class="nx">me</span><span class="p">.</span><span class="nx">owner</span><span class="p">.</span><span class="nx">request</span><span class="p">(</span> <span class="s1">&#39;add-file&#39;</span><span class="p">,</span> <span class="p">[</span> <span class="nx">files</span> <span class="p">]);</span>
 <span class="p">});</span>
@@ -134,7 +134,7 @@ Demo中使用的是<code>WebUploader.create</code>方法来初始化的，实际
 <p><code>Uploader.regeister</code>方法用来说明，该<code>widget</code>要响应哪些命令，并指定由什么方法来响应。上面的例子，当<code>add-file</code>命令派送时，内部的<code>addFiles</code>成员方法将被执行到，同一个命令，可以指定多次<code>handler</code>, 各个<code>handler</code>会按添加顺序依次执行，且后续的<code>handler</code>，不能被前面的<code>handler</code>截断。</p>
 
 <p><code>handler</code>里面可以是同步过程，也可以是异步过程。是异步过程时，只需要返回一个<code>promise</code>对象即可。存在异步可能的request调用者会等待此过程结束后才继续。举个例子，webuploader运行在flash模式下时，需要等待flash加载完毕后才能算ready了，此过程为一个异步过程，目前的做法是如下：</p>
-<div class="highlight"><pre><code class="javascript language-javascript" data-lang="javascript"><span class="c1">// uploader在初始化的时候</span>
+<div class="highlight"><pre><code class="language-javascript" data-lang="javascript"><span class="c1">// uploader在初始化的时候</span>
 <span class="nx">me</span><span class="p">.</span><span class="nx">request</span><span class="p">(</span> <span class="s1">&#39;init&#39;</span><span class="p">,</span> <span class="nx">opts</span><span class="p">,</span> <span class="kd">function</span><span class="p">()</span> <span class="p">{</span>
     <span class="nx">me</span><span class="p">.</span><span class="nx">state</span> <span class="o">=</span> <span class="s1">&#39;ready&#39;</span><span class="p">;</span>
     <span class="nx">me</span><span class="p">.</span><span class="nx">trigger</span><span class="p">(</span><span class="s1">&#39;ready&#39;</span><span class="p">);</span>
@@ -185,12 +185,12 @@ Demo中使用的是<code>WebUploader.create</code>方法来初始化的，实际
     </tr>
 </table>
 
-<h2 id="toc_3">文件组织</h2>
+<h2 id="文件组织">文件组织</h2>
 
 <p>webuploader由很多独立的小文件组成。每个文件都是以<a href="https://github.com/amdjs/amdjs-api/wiki/AMD">AMD</a>规范组织的，方便类似与<a href="http://requirejs.org/">RequireJS</a>之类的库直接使用。</p>
 
 <p>如<code>lib/file.js</code></p>
-<div class="highlight"><pre><code class="javascript language-javascript" data-lang="javascript"><span class="cm">/**</span>
+<div class="highlight"><pre><code class="language-javascript" data-lang="javascript"><span class="cm">/**</span>
 <span class="cm"> * @fileOverview File</span>
 <span class="cm"> */</span>
 <span class="nx">define</span><span class="p">([</span>
@@ -223,7 +223,7 @@ Demo中使用的是<code>WebUploader.create</code>方法来初始化的，实际
 <span class="p">});</span>
 </code></pre></div>
 <p>下面是目前的目录结构及说明。</p>
-<div class="highlight"><pre><code class="text language-text" data-lang="text">├── base.js   实现一些常用的帮助类方法，如inherits, log等等。
+<div class="highlight"><pre><code class="language-text" data-lang="text">├── base.js   实现一些常用的帮助类方法，如inherits, log等等。
 ├── file.js    文件类，Queue中存放的数据类。
 ├── jq-bridge.js    jQuery的替代品，只实现webuploader所需的，当然，如果已经有jQuery了，此文件不用打包。
 ├── lib
@@ -235,7 +235,7 @@ Demo中使用的是<code>WebUploader.create</code>方法来初始化的，实际
 │   ├── image.js    图片处理类，生成缩略图和图片压缩。
 │   └── transport.js    文件传送。
 ├── mediator.js   Event类
-├── promise.js    通jq-bridge, 在没有jQuery的时候才需要。用来实现Deferred。
+├── promise.js    同jq-bridge, 在没有jQuery的时候才需要。用来实现Deferred。
 ├── queue.js    队列
 ├── runtime
 │   ├── client.js   连接器

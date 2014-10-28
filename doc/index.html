@@ -1,8 +1,8 @@
-<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
-<html lang="en">
+<!DOCTYPE html>
+<html lang="zh-CN">
 
 <head>
-    <meta http-equiv="Content-Type" content="text/html;charset=UTF-8">
+    <meta charset="UTF-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>
@@ -41,7 +41,7 @@
                 <span class="fa fa-cloud-upload"></span>WebUploader</a>
         </div>
         <div class="collapse navbar-collapse">
-            <ul class="nav navbar-nav">       <li><a href="/webuploader/getting-started.html">Getting started</a></li>      <li><a href="/webuploader/document.html">Document</a></li>       <li class="active"><a href="/webuploader/doc/index.html" class="active">API</a></li>       <li><a href="/webuploader/demo.html">Demo</a></li>           <li><a href="/webuploader/download.html">Download</a></li>                                     
+            <ul class="nav navbar-nav">      <li><a href="/webuploader/getting-started.html">getting-started.md</a></li>      <li><a href="/webuploader/document.html">document.md</a></li>           <li class="active"><a href="/webuploader/doc/index.html" class="active">index.html</a></li>    <li><a href="/webuploader/demo.html">demo.md</a></li>          <li><a href="/webuploader/download.html">download.md</a></li>                                      
                 <li><a target="_blank" href="https://github.com/fex-team/webuploader/issues?labels=faq&amp;page=1&amp;state=open">FAQ</a></li>
             </ul>
 
@@ -525,13 +525,12 @@
 
         
             
-<div class="highlight"><pre><code class="javascript"><span class="kd">var</span> <span class="nx">uploader</span> <span class="o">=</span> <span class="nx">WebUploader</span><span class="p">.</span><span class="nx">Uploader</span><span class="p">({</span>
+<div class="highlight"><pre><code class="language-javascript" data-lang="javascript"><span class="kd">var</span> <span class="nx">uploader</span> <span class="o">=</span> <span class="nx">WebUploader</span><span class="p">.</span><span class="nx">Uploader</span><span class="p">({</span>
     <span class="nx">swf</span><span class="o">:</span> <span class="s1">&#39;path_of_swf/Uploader.swf&#39;</span><span class="p">,</span>
 
     <span class="c1">// 开起分片上传。</span>
     <span class="nx">chunked</span><span class="o">:</span> <span class="kc">true</span>
-<span class="p">});</span>
-</code></pre></div>
+<span class="p">});</span></code></pre></div>
 
 
         
@@ -630,7 +629,7 @@
             <p>配置生成缩略图的选项。</p>
 <p>默认为：</p>
 
-<div class="highlight"><pre><code class="javascript"><span class="p">{</span>
+<div class="highlight"><pre><code class="language-javascript" data-lang="javascript"><span class="p">{</span>
     <span class="nx">width</span><span class="o">:</span> <span class="mi">110</span><span class="p">,</span>
     <span class="nx">height</span><span class="o">:</span> <span class="mi">110</span><span class="p">,</span>
 
@@ -646,8 +645,7 @@
     <span class="c1">// 为空的话则保留原有图片格式。</span>
     <span class="c1">// 否则强制转换成指定的类型。</span>
     <span class="nx">type</span><span class="o">:</span> <span class="s1">&#39;image/jpeg&#39;</span>
-<span class="p">}</span>
-</code></pre></div>
+<span class="p">}</span></code></pre></div>
 
 
             
@@ -663,7 +661,7 @@
             <p>配置压缩的图片的选项。如果此选项为<code>false</code>, 则图片在上传前不进行压缩。</p>
 <p>默认为：</p>
 
-<div class="highlight"><pre><code class="javascript"><span class="p">{</span>
+<div class="highlight"><pre><code class="language-javascript" data-lang="javascript"><span class="p">{</span>
     <span class="nx">width</span><span class="o">:</span> <span class="mi">1600</span><span class="p">,</span>
     <span class="nx">height</span><span class="o">:</span> <span class="mi">1600</span><span class="p">,</span>
 
@@ -685,8 +683,7 @@
 
     <span class="c1">// 单位字节，如果图片大小小于此值，不会采用压缩。</span>
     <span class="nx">compressSize</span><span class="o">:</span> <span class="mi">0</span>
-<span class="p">}</span>
-</code></pre></div>
+<span class="p">}</span></code></pre></div>
 
 
             
@@ -1135,7 +1132,7 @@
 
     
         
-<div class="highlight"><pre><code class="javascript"><span class="c1">// 初始状态图片上传前不会压缩</span>
+<div class="highlight"><pre><code class="language-javascript" data-lang="javascript"><span class="c1">// 初始状态图片上传前不会压缩</span>
 <span class="kd">var</span> <span class="nx">uploader</span> <span class="o">=</span> <span class="k">new</span> <span class="nx">WebUploader</span><span class="p">.</span><span class="nx">Uploader</span><span class="p">({</span>
     <span class="nx">compress</span><span class="o">:</span> <span class="kc">null</span><span class="p">;</span>
 <span class="p">});</span>
@@ -1144,8 +1141,7 @@
 <span class="nx">uploader</span><span class="p">.</span><span class="nx">option</span><span class="p">(</span> <span class="s1">&#39;compress&#39;</span><span class="p">,</span> <span class="p">{</span>
     <span class="nx">width</span><span class="o">:</span> <span class="mi">1600</span><span class="p">,</span>
     <span class="nx">height</span><span class="o">:</span> <span class="mi">1600</span>
-<span class="p">});</span>
-</code></pre></div>
+<span class="p">});</span></code></pre></div>
 
 
     
@@ -1243,11 +1239,10 @@
 
     
         
-<div class="highlight"><pre><code class="javascript"><span class="nx">uploader</span><span class="p">.</span><span class="nx">addButton</span><span class="p">({</span>
+<div class="highlight"><pre><code class="language-javascript" data-lang="javascript"><span class="nx">uploader</span><span class="p">.</span><span class="nx">addButton</span><span class="p">({</span>
     <span class="nx">id</span><span class="o">:</span> <span class="s1">&#39;#btnContainer&#39;</span><span class="p">,</span>
     <span class="nx">innerHTML</span><span class="o">:</span> <span class="s1">&#39;选择文件&#39;</span>
-<span class="p">});</span>
-</code></pre></div>
+<span class="p">});</span></code></pre></div>
 
 
     
@@ -1294,7 +1289,7 @@ Date URL在IE6/7中不支持，所以不用调用此方法了，直接显示一�
 
     
         
-<div class="highlight"><pre><code class="javascript"><span class="nx">uploader</span><span class="p">.</span><span class="nx">on</span><span class="p">(</span> <span class="s1">&#39;fileQueued&#39;</span><span class="p">,</span> <span class="kd">function</span><span class="p">(</span> <span class="nx">file</span> <span class="p">)</span> <span class="p">{</span>
+<div class="highlight"><pre><code class="language-javascript" data-lang="javascript"><span class="nx">uploader</span><span class="p">.</span><span class="nx">on</span><span class="p">(</span> <span class="s1">&#39;fileQueued&#39;</span><span class="p">,</span> <span class="kd">function</span><span class="p">(</span> <span class="nx">file</span> <span class="p">)</span> <span class="p">{</span>
     <span class="kd">var</span> <span class="nx">$li</span> <span class="o">=</span> <span class="p">...;</span>
 
     <span class="nx">uploader</span><span class="p">.</span><span class="nx">makeThumb</span><span class="p">(</span> <span class="nx">file</span><span class="p">,</span> <span class="kd">function</span><span class="p">(</span> <span class="nx">error</span><span class="p">,</span> <span class="nx">ret</span> <span class="p">)</span> <span class="p">{</span>
@@ -1305,8 +1300,7 @@ Date URL在IE6/7中不支持，所以不用调用此方法了，直接显示一�
         <span class="p">}</span>
     <span class="p">});</span>
 
-<span class="p">});</span>
-</code></pre></div>
+<span class="p">});</span></code></pre></div>
 
 
     
@@ -1339,7 +1333,7 @@ Date URL在IE6/7中不支持，所以不用调用此方法了，直接显示一�
 
     
         
-<div class="highlight"><pre><code class="javascript"><span class="nx">uploader</span><span class="p">.</span><span class="nx">on</span><span class="p">(</span> <span class="s1">&#39;fileQueued&#39;</span><span class="p">,</span> <span class="kd">function</span><span class="p">(</span> <span class="nx">file</span> <span class="p">)</span> <span class="p">{</span>
+<div class="highlight"><pre><code class="language-javascript" data-lang="javascript"><span class="nx">uploader</span><span class="p">.</span><span class="nx">on</span><span class="p">(</span> <span class="s1">&#39;fileQueued&#39;</span><span class="p">,</span> <span class="kd">function</span><span class="p">(</span> <span class="nx">file</span> <span class="p">)</span> <span class="p">{</span>
     <span class="kd">var</span> <span class="nx">$li</span> <span class="o">=</span> <span class="p">...;</span>
 
     <span class="nx">uploader</span><span class="p">.</span><span class="nx">md5File</span><span class="p">(</span> <span class="nx">file</span> <span class="p">)</span>
@@ -1354,8 +1348,7 @@ Date URL在IE6/7中不支持，所以不用调用此方法了，直接显示一�
             <span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="s1">&#39;md5 result:&#39;</span><span class="p">,</span> <span class="nx">val</span><span class="p">);</span>
         <span class="p">});</span>
 
-<span class="p">});</span>
-</code></pre></div>
+<span class="p">});</span></code></pre></div>
 
 
     
@@ -1440,10 +1433,9 @@ Date URL在IE6/7中不支持，所以不用调用此方法了，直接显示一�
 
     
         
-<div class="highlight"><pre><code class="javascript"><span class="nx">$li</span><span class="p">.</span><span class="nx">on</span><span class="p">(</span><span class="s1">&#39;click&#39;</span><span class="p">,</span> <span class="s1">&#39;.remove-this&#39;</span><span class="p">,</span> <span class="kd">function</span><span class="p">()</span> <span class="p">{</span>
+<div class="highlight"><pre><code class="language-javascript" data-lang="javascript"><span class="nx">$li</span><span class="p">.</span><span class="nx">on</span><span class="p">(</span><span class="s1">&#39;click&#39;</span><span class="p">,</span> <span class="s1">&#39;.remove-this&#39;</span><span class="p">,</span> <span class="kd">function</span><span class="p">()</span> <span class="p">{</span>
     <span class="nx">uploader</span><span class="p">.</span><span class="nx">removeFile</span><span class="p">(</span> <span class="nx">file</span> <span class="p">);</span>
-<span class="p">})</span>
-</code></pre></div>
+<span class="p">})</span></code></pre></div>
 
 
     
@@ -1480,9 +1472,8 @@ Date URL在IE6/7中不支持，所以不用调用此方法了，直接显示一�
 
     
         
-<div class="highlight"><pre><code class="javascript"><span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span> <span class="nx">uploader</span><span class="p">.</span><span class="nx">getFiles</span><span class="p">()</span> <span class="p">);</span>    <span class="c1">// =&gt; all files</span>
-<span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span> <span class="nx">uploader</span><span class="p">.</span><span class="nx">getFiles</span><span class="p">(</span><span class="s1">&#39;error&#39;</span><span class="p">)</span> <span class="p">)</span>    <span class="c1">// =&gt; all error files.</span>
-</code></pre></div>
+<div class="highlight"><pre><code class="language-javascript" data-lang="javascript"><span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span> <span class="nx">uploader</span><span class="p">.</span><span class="nx">getFiles</span><span class="p">()</span> <span class="p">);</span>    <span class="c1">// =&gt; all files</span>
+<span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span> <span class="nx">uploader</span><span class="p">.</span><span class="nx">getFiles</span><span class="p">(</span><span class="s1">&#39;error&#39;</span><span class="p">)</span> <span class="p">)</span>    <span class="c1">// =&gt; all error files.</span></code></pre></div>
 
 
     
@@ -1519,10 +1510,9 @@ Date URL在IE6/7中不支持，所以不用调用此方法了，直接显示一�
 
     
         
-<div class="highlight"><pre><code class="javascript"><span class="kd">function</span> <span class="nx">retry</span><span class="p">()</span> <span class="p">{</span>
+<div class="highlight"><pre><code class="language-javascript" data-lang="javascript"><span class="kd">function</span> <span class="nx">retry</span><span class="p">()</span> <span class="p">{</span>
     <span class="nx">uploader</span><span class="p">.</span><span class="nx">retry</span><span class="p">();</span>
-<span class="p">}</span>
-</code></pre></div>
+<span class="p">}</span></code></pre></div>
 
 
     
@@ -1583,8 +1573,7 @@ Date URL在IE6/7中不支持，所以不用调用此方法了，直接显示一�
 
     
         
-<div class="highlight"><pre><code class="javascript"><span class="nx">uploader</span><span class="p">.</span><span class="nx">reset</span><span class="p">();</span>
-</code></pre></div>
+<div class="highlight"><pre><code class="language-javascript" data-lang="javascript"><span class="nx">uploader</span><span class="p">.</span><span class="nx">reset</span><span class="p">();</span></code></pre></div>
 
 
     
@@ -1723,10 +1712,9 @@ Date URL在IE6/7中不支持，所以不用调用此方法了，直接显示一�
 
     
         
-<div class="highlight"><pre><code class="javascript"><span class="nx">$li</span><span class="p">.</span><span class="nx">on</span><span class="p">(</span><span class="s1">&#39;click&#39;</span><span class="p">,</span> <span class="s1">&#39;.remove-this&#39;</span><span class="p">,</span> <span class="kd">function</span><span class="p">()</span> <span class="p">{</span>
+<div class="highlight"><pre><code class="language-javascript" data-lang="javascript"><span class="nx">$li</span><span class="p">.</span><span class="nx">on</span><span class="p">(</span><span class="s1">&#39;click&#39;</span><span class="p">,</span> <span class="s1">&#39;.remove-this&#39;</span><span class="p">,</span> <span class="kd">function</span><span class="p">()</span> <span class="p">{</span>
     <span class="nx">uploader</span><span class="p">.</span><span class="nx">cancelFile</span><span class="p">(</span> <span class="nx">file</span> <span class="p">);</span>
-<span class="p">})</span>
-</code></pre></div>
+<span class="p">})</span></code></pre></div>
 
 
     
@@ -1856,7 +1844,7 @@ Date URL在IE6/7中不支持，所以不用调用此方法了，直接显示一�
 
     
         
-<div class="highlight"><pre><code class="javascript"><span class="nx">Uploader</span><span class="p">.</span><span class="nx">register</span><span class="p">({</span>
+<div class="highlight"><pre><code class="language-javascript" data-lang="javascript"><span class="nx">Uploader</span><span class="p">.</span><span class="nx">register</span><span class="p">({</span>
     <span class="s1">&#39;make-thumb&#39;</span><span class="o">:</span> <span class="s1">&#39;makeThumb&#39;</span>
 <span class="p">},</span> <span class="p">{</span>
     <span class="nx">init</span><span class="o">:</span> <span class="kd">function</span><span class="p">(</span> <span class="nx">options</span> <span class="p">)</span> <span class="p">{},</span>
@@ -1867,8 +1855,7 @@ Date URL在IE6/7中不支持，所以不用调用此方法了，直接显示一�
     <span class="s1">&#39;make-thumb&#39;</span><span class="o">:</span> <span class="kd">function</span><span class="p">()</span> <span class="p">{</span>
 
     <span class="p">}</span>
-<span class="p">});</span>
-</code></pre></div>
+<span class="p">});</span></code></pre></div>
 
 
     
@@ -1905,7 +1892,7 @@ Date URL在IE6/7中不支持，所以不用调用此方法了，直接显示一�
 
     
         
-<div class="highlight"><pre><code class="javascript"><span class="nx">Uploader</span><span class="p">.</span><span class="nx">register</span><span class="p">({</span>
+<div class="highlight"><pre><code class="language-javascript" data-lang="javascript"><span class="nx">Uploader</span><span class="p">.</span><span class="nx">register</span><span class="p">({</span>
     <span class="nx">name</span><span class="o">:</span> <span class="s1">&#39;custom&#39;</span><span class="p">,</span>
 
     <span class="s1">&#39;make-thumb&#39;</span><span class="o">:</span> <span class="kd">function</span><span class="p">()</span> <span class="p">{</span>
@@ -1913,8 +1900,7 @@ Date URL在IE6/7中不支持，所以不用调用此方法了，直接显示一�
     <span class="p">}</span>
 <span class="p">});</span>
 
-<span class="nx">Uploader</span><span class="p">.</span><span class="nx">unRegister</span><span class="p">(</span><span class="s1">&#39;custom&#39;</span><span class="p">);</span>
-</code></pre></div>
+<span class="nx">Uploader</span><span class="p">.</span><span class="nx">unRegister</span><span class="p">(</span><span class="s1">&#39;custom&#39;</span><span class="p">);</span></code></pre></div>
 
 
     
@@ -2104,7 +2090,7 @@ Date URL在IE6/7中不支持，所以不用调用此方法了，直接显示一�
 
     
         
-<div class="highlight"><pre><code class="javascript"><span class="kd">function</span> <span class="nx">Person</span><span class="p">()</span> <span class="p">{</span>
+<div class="highlight"><pre><code class="language-javascript" data-lang="javascript"><span class="kd">function</span> <span class="nx">Person</span><span class="p">()</span> <span class="p">{</span>
     <span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span> <span class="s1">&#39;Super&#39;</span> <span class="p">);</span>
 <span class="p">}</span>
 <span class="nx">Person</span><span class="p">.</span><span class="nx">prototype</span><span class="p">.</span><span class="nx">hello</span> <span class="o">=</span> <span class="kd">function</span><span class="p">()</span> <span class="p">{</span>
@@ -2125,8 +2111,7 @@ Date URL在IE6/7中不支持，所以不用调用此方法了，直接显示一�
 <span class="nx">instance</span><span class="p">.</span><span class="nx">world</span><span class="p">();</span>    <span class="c1">// =&gt; World</span>
 
 <span class="c1">// 子类的__super__属性指向父类</span>
-<span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span> <span class="nx">Manager</span><span class="p">.</span><span class="nx">__super__</span> <span class="o">===</span> <span class="nx">Person</span> <span class="p">);</span>    <span class="c1">// =&gt; true</span>
-</code></pre></div>
+<span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span> <span class="nx">Manager</span><span class="p">.</span><span class="nx">__super__</span> <span class="o">===</span> <span class="nx">Person</span> <span class="p">);</span>    <span class="c1">// =&gt; true</span></code></pre></div>
 
 
     
@@ -2179,7 +2164,7 @@ Date URL在IE6/7中不支持，所以不用调用此方法了，直接显示一�
 
     
         
-<div class="highlight"><pre><code class="javascript"><span class="kd">var</span> <span class="nx">doSomething</span> <span class="o">=</span> <span class="kd">function</span><span class="p">()</span> <span class="p">{</span>
+<div class="highlight"><pre><code class="language-javascript" data-lang="javascript"><span class="kd">var</span> <span class="nx">doSomething</span> <span class="o">=</span> <span class="kd">function</span><span class="p">()</span> <span class="p">{</span>
         <span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span> <span class="k">this</span><span class="p">.</span><span class="nx">name</span> <span class="p">);</span>
     <span class="p">},</span>
     <span class="nx">obj</span> <span class="o">=</span> <span class="p">{</span>
@@ -2187,8 +2172,7 @@ Date URL在IE6/7中不支持，所以不用调用此方法了，直接显示一�
     <span class="p">},</span>
     <span class="nx">aliasFn</span> <span class="o">=</span> <span class="nx">Base</span><span class="p">.</span><span class="nx">bind</span><span class="p">(</span> <span class="nx">doSomething</span><span class="p">,</span> <span class="nx">obj</span> <span class="p">);</span>
 
- <span class="nx">aliasFn</span><span class="p">();</span>    <span class="c1">// =&gt; Object Name</span>
-</code></pre></div>
+ <span class="nx">aliasFn</span><span class="p">();</span>    <span class="c1">// =&gt; Object Name</span></code></pre></div>
 
 
     
@@ -2250,13 +2234,12 @@ Date URL在IE6/7中不支持，所以不用调用此方法了，直接显示一�
 
     
         
-<div class="highlight"><pre><code class="javascript"><span class="kd">function</span> <span class="nx">doSomthing</span><span class="p">()</span> <span class="p">{</span>
+<div class="highlight"><pre><code class="language-javascript" data-lang="javascript"><span class="kd">function</span> <span class="nx">doSomthing</span><span class="p">()</span> <span class="p">{</span>
     <span class="kd">var</span> <span class="nx">args</span> <span class="o">=</span> <span class="nx">Base</span><span class="p">.</span><span class="nx">slice</span><span class="p">(</span> <span class="nx">arguments</span><span class="p">,</span> <span class="mi">1</span> <span class="p">);</span>
     <span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span> <span class="nx">args</span> <span class="p">);</span>
 <span class="p">}</span>
 
-<span class="nx">doSomthing</span><span class="p">(</span> <span class="s1">&#39;ignored&#39;</span><span class="p">,</span> <span class="s1">&#39;arg2&#39;</span><span class="p">,</span> <span class="s1">&#39;arg3&#39;</span> <span class="p">);</span>    <span class="c1">// =&gt; Array [&quot;arg2&quot;, &quot;arg3&quot;]</span>
-</code></pre></div>
+<span class="nx">doSomthing</span><span class="p">(</span> <span class="s1">&#39;ignored&#39;</span><span class="p">,</span> <span class="s1">&#39;arg2&#39;</span><span class="p">,</span> <span class="s1">&#39;arg3&#39;</span> <span class="p">);</span>    <span class="c1">// =&gt; Array [&quot;arg2&quot;, &quot;arg3&quot;]</span></code></pre></div>
 
 
     
@@ -2335,13 +2318,12 @@ Date URL在IE6/7中不支持，所以不用调用此方法了，直接显示一�
 
     
         
-<div class="highlight"><pre><code class="javascript"><span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span> <span class="nx">Base</span><span class="p">.</span><span class="nx">formatSize</span><span class="p">(</span> <span class="mi">100</span> <span class="p">)</span> <span class="p">);</span>    <span class="c1">// =&gt; 100B</span>
+<div class="highlight"><pre><code class="language-javascript" data-lang="javascript"><span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span> <span class="nx">Base</span><span class="p">.</span><span class="nx">formatSize</span><span class="p">(</span> <span class="mi">100</span> <span class="p">)</span> <span class="p">);</span>    <span class="c1">// =&gt; 100B</span>
 <span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span> <span class="nx">Base</span><span class="p">.</span><span class="nx">formatSize</span><span class="p">(</span> <span class="mi">1024</span> <span class="p">)</span> <span class="p">);</span>    <span class="c1">// =&gt; 1.00K</span>
 <span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span> <span class="nx">Base</span><span class="p">.</span><span class="nx">formatSize</span><span class="p">(</span> <span class="mi">1024</span><span class="p">,</span> <span class="mi">0</span> <span class="p">)</span> <span class="p">);</span>    <span class="c1">// =&gt; 1K</span>
 <span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span> <span class="nx">Base</span><span class="p">.</span><span class="nx">formatSize</span><span class="p">(</span> <span class="mi">1024</span> <span class="o">*</span> <span class="mi">1024</span> <span class="p">)</span> <span class="p">);</span>    <span class="c1">// =&gt; 1.00M</span>
 <span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span> <span class="nx">Base</span><span class="p">.</span><span class="nx">formatSize</span><span class="p">(</span> <span class="mi">1024</span> <span class="o">*</span> <span class="mi">1024</span> <span class="o">*</span> <span class="mi">1024</span> <span class="p">)</span> <span class="p">);</span>    <span class="c1">// =&gt; 1.00G</span>
-<span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span> <span class="nx">Base</span><span class="p">.</span><span class="nx">formatSize</span><span class="p">(</span> <span class="mi">1024</span> <span class="o">*</span> <span class="mi">1024</span> <span class="o">*</span> <span class="mi">1024</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="p">[</span><span class="s1">&#39;B&#39;</span><span class="p">,</span> <span class="s1">&#39;KB&#39;</span><span class="p">,</span> <span class="s1">&#39;MB&#39;</span><span class="p">]</span> <span class="p">)</span> <span class="p">);</span>    <span class="c1">// =&gt; 1024MB</span>
-</code></pre></div>
+<span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span> <span class="nx">Base</span><span class="p">.</span><span class="nx">formatSize</span><span class="p">(</span> <span class="mi">1024</span> <span class="o">*</span> <span class="mi">1024</span> <span class="o">*</span> <span class="mi">1024</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="p">[</span><span class="s1">&#39;B&#39;</span><span class="p">,</span> <span class="s1">&#39;KB&#39;</span><span class="p">,</span> <span class="s1">&#39;MB&#39;</span><span class="p">]</span> <span class="p">)</span> <span class="p">);</span>    <span class="c1">// =&gt; 1024MB</span></code></pre></div>
 
 
     
@@ -2376,7 +2358,7 @@ Date URL在IE6/7中不支持，所以不用调用此方法了，直接显示一�
 
     
         
-<div class="highlight"><pre><code class="javascript"><span class="c1">// 在文件开始发送前做些异步操作。</span>
+<div class="highlight"><pre><code class="language-javascript" data-lang="javascript"><span class="c1">// 在文件开始发送前做些异步操作。</span>
 <span class="c1">// WebUploader会等待此异步操作完成后，开始发送文件。</span>
 <span class="nx">Uploader</span><span class="p">.</span><span class="nx">register</span><span class="p">({</span>
     <span class="s1">&#39;before-send-file&#39;</span><span class="o">:</span> <span class="s1">&#39;doSomthingAsync&#39;</span>
@@ -2390,8 +2372,7 @@ Date URL在IE6/7中不支持，所以不用调用此方法了，直接显示一�
 
         <span class="k">return</span> <span class="nx">deferred</span><span class="p">.</span><span class="nx">promise</span><span class="p">();</span>
     <span class="p">}</span>
-<span class="p">});</span>
-</code></pre></div>
+<span class="p">});</span></code></pre></div>
 
 
     
@@ -2431,13 +2412,12 @@ Date URL在IE6/7中不支持，所以不用调用此方法了，直接显示一�
 
     
         
-<div class="highlight"><pre><code class="javascript"><span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span> <span class="nx">Base</span><span class="p">.</span><span class="nx">isPromise</span><span class="p">()</span> <span class="p">);</span>    <span class="c1">// =&gt; false</span>
+<div class="highlight"><pre><code class="language-javascript" data-lang="javascript"><span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span> <span class="nx">Base</span><span class="p">.</span><span class="nx">isPromise</span><span class="p">()</span> <span class="p">);</span>    <span class="c1">// =&gt; false</span>
 <span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span> <span class="nx">Base</span><span class="p">.</span><span class="nx">isPromise</span><span class="p">({</span> <span class="nx">key</span><span class="o">:</span> <span class="s1">&#39;123&#39;</span> <span class="p">})</span> <span class="p">);</span>    <span class="c1">// =&gt; false</span>
 <span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span> <span class="nx">Base</span><span class="p">.</span><span class="nx">isPromise</span><span class="p">(</span> <span class="nx">Base</span><span class="p">.</span><span class="nx">Deferred</span><span class="p">().</span><span class="nx">promise</span><span class="p">()</span> <span class="p">)</span> <span class="p">);</span>    <span class="c1">// =&gt; true</span>
 
 <span class="c1">// Deferred也是一个Promise</span>
-<span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span> <span class="nx">Base</span><span class="p">.</span><span class="nx">isPromise</span><span class="p">(</span> <span class="nx">Base</span><span class="p">.</span><span class="nx">Deferred</span><span class="p">()</span> <span class="p">)</span> <span class="p">);</span>    <span class="c1">// =&gt; true</span>
-</code></pre></div>
+<span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span> <span class="nx">Base</span><span class="p">.</span><span class="nx">isPromise</span><span class="p">(</span> <span class="nx">Base</span><span class="p">.</span><span class="nx">Deferred</span><span class="p">()</span> <span class="p">)</span> <span class="p">);</span>    <span class="c1">// =&gt; true</span></code></pre></div>
 
 
     
@@ -2527,7 +2507,7 @@ Date URL在IE6/7中不支持，所以不用调用此方法了，直接显示一�
     <p>绑定事件。</p>
 <p><code>callback</code>方法在执行时，arguments将会来源于trigger的时候携带的参数。如</p>
 
-<div class="highlight"><pre><code class="javascript"><span class="kd">var</span> <span class="nx">obj</span> <span class="o">=</span> <span class="p">{};</span>
+<div class="highlight"><pre><code class="language-javascript" data-lang="javascript"><span class="kd">var</span> <span class="nx">obj</span> <span class="o">=</span> <span class="p">{};</span>
 
 <span class="c1">// 使得obj有事件行为</span>
 <span class="nx">Mediator</span><span class="p">.</span><span class="nx">installTo</span><span class="p">(</span> <span class="nx">obj</span> <span class="p">);</span>
@@ -2536,18 +2516,16 @@ Date URL在IE6/7中不支持，所以不用调用此方法了，直接显示一�
     <span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span> <span class="nx">arg1</span><span class="p">,</span> <span class="nx">arg2</span> <span class="p">);</span> <span class="c1">// =&gt; &#39;arg1&#39;, &#39;arg2&#39;</span>
 <span class="p">});</span>
 
-<span class="nx">obj</span><span class="p">.</span><span class="nx">trigger</span><span class="p">(</span> <span class="s1">&#39;testa&#39;</span><span class="p">,</span> <span class="s1">&#39;arg1&#39;</span><span class="p">,</span> <span class="s1">&#39;arg2&#39;</span> <span class="p">);</span>
-</code></pre></div>
+<span class="nx">obj</span><span class="p">.</span><span class="nx">trigger</span><span class="p">(</span> <span class="s1">&#39;testa&#39;</span><span class="p">,</span> <span class="s1">&#39;arg1&#39;</span><span class="p">,</span> <span class="s1">&#39;arg2&#39;</span> <span class="p">);</span></code></pre></div>
 
 <p>如果<code>callback</code>中，某一个方法<code>return false</code>了，则后续的其他<code>callback</code>都不会被执行到。
 切会影响到<code>trigger</code>方法的返回值，为<code>false</code>。</p>
 <p><code>on</code>还可以用来添加一个特殊事件<code>all</code>, 这样所有的事件触发都会响应到。同时此类<code>callback</code>中的arguments有一个不同处，
 就是第一个参数为<code>type</code>，记录当前是什么事件在触发。此类<code>callback</code>的优先级比脚低，会再正常<code>callback</code>执行完后触发。</p>
 
-<div class="highlight"><pre><code class="javascript"><span class="nx">obj</span><span class="p">.</span><span class="nx">on</span><span class="p">(</span> <span class="s1">&#39;all&#39;</span><span class="p">,</span> <span class="kd">function</span><span class="p">(</span> <span class="nx">type</span><span class="p">,</span> <span class="nx">arg1</span><span class="p">,</span> <span class="nx">arg2</span> <span class="p">)</span> <span class="p">{</span>
+<div class="highlight"><pre><code class="language-javascript" data-lang="javascript"><span class="nx">obj</span><span class="p">.</span><span class="nx">on</span><span class="p">(</span> <span class="s1">&#39;all&#39;</span><span class="p">,</span> <span class="kd">function</span><span class="p">(</span> <span class="nx">type</span><span class="p">,</span> <span class="nx">arg1</span><span class="p">,</span> <span class="nx">arg2</span> <span class="p">)</span> <span class="p">{</span>
     <span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span> <span class="nx">type</span><span class="p">,</span> <span class="nx">arg1</span><span class="p">,</span> <span class="nx">arg2</span> <span class="p">);</span> <span class="c1">// =&gt; &#39;testa&#39;, &#39;arg1&#39;, &#39;arg2&#39;</span>
-<span class="p">});</span>
-</code></pre></div>
+<span class="p">});</span></code></pre></div>
 
 
     

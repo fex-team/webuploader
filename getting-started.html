@@ -1,8 +1,8 @@
-<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
-<html lang="en">
+<!DOCTYPE html>
+<html lang="zh-CN">
 
 <head>
-    <meta http-equiv="Content-Type" content="text/html;charset=UTF-8">
+    <meta charset="UTF-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>
@@ -41,7 +41,7 @@
                 <span class="fa fa-cloud-upload"></span>WebUploader</a>
         </div>
         <div class="collapse navbar-collapse">
-            <ul class="nav navbar-nav">       <li class="active"><a href="/webuploader/getting-started.html" class="active">Getting started</a></li>      <li><a href="/webuploader/document.html">Document</a></li>       <li><a href="/webuploader/doc/index.html">API</a></li>       <li><a href="/webuploader/demo.html">Demo</a></li>           <li><a href="/webuploader/download.html">Download</a></li>                                     
+            <ul class="nav navbar-nav">      <li class="active"><a href="/webuploader/getting-started.html" class="active">getting-started.md</a></li>      <li><a href="/webuploader/document.html">document.md</a></li>           <li><a href="/webuploader/doc/index.html">index.html</a></li>    <li><a href="/webuploader/demo.html">demo.md</a></li>          <li><a href="/webuploader/download.html">download.md</a></li>                                      
                 <li><a target="_blank" href="https://github.com/fex-team/webuploader/issues?labels=faq&amp;page=1&amp;state=open">FAQ</a></li>
             </ul>
 
@@ -74,36 +74,36 @@
         <div class="col-md-3">
             <div class="post-toc"><ul class="nav">
 <li>
-<a href="#toc_0">引入资源</a>
+<a href="#引入资源">引入资源</a>
 </li>
 <li>
-<a href="#toc_1">文件上传</a>
+<a href="#文件上传">文件上传</a>
 <ul class="nav">
 <li>
-<a href="#toc_2">Html部分</a>
+<a href="#html部分">Html部分</a>
 </li>
 <li>
-<a href="#toc_3">初始化Web Uploader</a>
+<a href="#初始化web-uploader">初始化Web Uploader</a>
 </li>
 <li>
-<a href="#toc_4">显示用户选择</a>
+<a href="#显示用户选择">显示用户选择</a>
 </li>
 <li>
-<a href="#toc_5">文件上传进度</a>
+<a href="#文件上传进度">文件上传进度</a>
 </li>
 <li>
-<a href="#toc_6">文件成功、失败处理</a>
+<a href="#文件成功、失败处理">文件成功、失败处理</a>
 </li>
 </ul>
 </li>
 <li>
-<a href="#toc_7">图片上传</a>
+<a href="#图片上传">图片上传</a>
 <ul class="nav">
 <li>
-<a href="#toc_8">Html</a>
+<a href="#html">Html</a>
 </li>
 <li>
-<a href="#toc_9">Javascript</a>
+<a href="#javascript">Javascript</a>
 </li>
 </ul>
 </li>
@@ -115,10 +115,10 @@
             
 
             <div class="page-container">
-                <h2 id="toc_0">引入资源</h2>
+                <h2 id="引入资源">引入资源</h2>
 
 <p>使用Web Uploader文件上传需要引入三种资源：JS, CSS, SWF。</p>
-<div class="highlight"><pre><code class="html language-html" data-lang="html"><span class="c">&lt;!--引入CSS--&gt;</span>
+<div class="highlight"><pre><code class="language-html" data-lang="html"><span class="c">&lt;!--引入CSS--&gt;</span>
 <span class="nt">&lt;link</span> <span class="na">rel=</span><span class="s">&quot;stylesheet&quot;</span> <span class="na">type=</span><span class="s">&quot;text/css&quot;</span> <span class="na">href=</span><span class="s">&quot;webuploader文件夹/webuploader.css&quot;</span><span class="nt">&gt;</span>
 
 <span class="c">&lt;!--引入JS--&gt;</span>
@@ -126,7 +126,7 @@
 
 <span class="c">&lt;!--SWF在初始化的时候指定，在后面将展示--&gt;</span>
 </code></pre></div>
-<h2 id="toc_1">文件上传</h2>
+<h2 id="文件上传">文件上传</h2>
 
 <p>WebUploader只包含文件上传的底层实现，不包括UI部分。所以交互方面可以自由发挥，以下将演示如何去实现一个简单的版本。</p>
 
@@ -140,10 +140,10 @@
     </div>
 </div>
 
-<h3 id="toc_2">Html部分</h3>
+<h3 id="html部分">Html部分</h3>
 
 <p>首先准备dom结构，包含存放文件信息的容器、选择按钮和上传按钮三个部分。</p>
-<div class="highlight"><pre><code class="html language-html" data-lang="html"><span class="nt">&lt;div</span> <span class="na">id=</span><span class="s">&quot;uploader&quot;</span> <span class="na">class=</span><span class="s">&quot;wu-example&quot;</span><span class="nt">&gt;</span>
+<div class="highlight"><pre><code class="language-html" data-lang="html"><span class="nt">&lt;div</span> <span class="na">id=</span><span class="s">&quot;uploader&quot;</span> <span class="na">class=</span><span class="s">&quot;wu-example&quot;</span><span class="nt">&gt;</span>
     <span class="c">&lt;!--用来存放文件信息--&gt;</span>
     <span class="nt">&lt;div</span> <span class="na">id=</span><span class="s">&quot;thelist&quot;</span> <span class="na">class=</span><span class="s">&quot;uploader-list&quot;</span><span class="nt">&gt;&lt;/div&gt;</span>
     <span class="nt">&lt;div</span> <span class="na">class=</span><span class="s">&quot;btns&quot;</span><span class="nt">&gt;</span>
@@ -152,10 +152,10 @@
     <span class="nt">&lt;/div&gt;</span>
 <span class="nt">&lt;/div&gt;</span>
 </code></pre></div>
-<h3 id="toc_3">初始化Web Uploader</h3>
+<h3 id="初始化web-uploader">初始化Web Uploader</h3>
 
 <p>具体说明，请看一下代码中的注释部分。</p>
-<div class="highlight"><pre><code class="javascript language-javascript" data-lang="javascript"><span class="kd">var</span> <span class="nx">uploader</span> <span class="o">=</span> <span class="nx">WebUploader</span><span class="p">.</span><span class="nx">create</span><span class="p">({</span>
+<div class="highlight"><pre><code class="language-javascript" data-lang="javascript"><span class="kd">var</span> <span class="nx">uploader</span> <span class="o">=</span> <span class="nx">WebUploader</span><span class="p">.</span><span class="nx">create</span><span class="p">({</span>
 
     <span class="c1">// swf文件路径</span>
     <span class="nx">swf</span><span class="o">:</span> <span class="nx">BASE_URL</span> <span class="o">+</span> <span class="s1">&#39;/js/Uploader.swf&#39;</span><span class="p">,</span>
@@ -171,10 +171,10 @@
     <span class="nx">resize</span><span class="o">:</span> <span class="kc">false</span>
 <span class="p">});</span>
 </code></pre></div>
-<h3 id="toc_4">显示用户选择</h3>
+<h3 id="显示用户选择">显示用户选择</h3>
 
 <p>由于webuploader不处理UI逻辑，所以需要去监听<code>fileQueued</code>事件来实现。</p>
-<div class="highlight"><pre><code class="javascript language-javascript" data-lang="javascript"><span class="c1">// 当有文件被添加进队列的时候</span>
+<div class="highlight"><pre><code class="language-javascript" data-lang="javascript"><span class="c1">// 当有文件被添加进队列的时候</span>
 <span class="nx">uploader</span><span class="p">.</span><span class="nx">on</span><span class="p">(</span> <span class="s1">&#39;fileQueued&#39;</span><span class="p">,</span> <span class="kd">function</span><span class="p">(</span> <span class="nx">file</span> <span class="p">)</span> <span class="p">{</span>
     <span class="nx">$list</span><span class="p">.</span><span class="nx">append</span><span class="p">(</span> <span class="s1">&#39;&lt;div id=&quot;&#39;</span> <span class="o">+</span> <span class="nx">file</span><span class="p">.</span><span class="nx">id</span> <span class="o">+</span> <span class="s1">&#39;&quot; class=&quot;item&quot;&gt;&#39;</span> <span class="o">+</span>
         <span class="s1">&#39;&lt;h4 class=&quot;info&quot;&gt;&#39;</span> <span class="o">+</span> <span class="nx">file</span><span class="p">.</span><span class="nx">name</span> <span class="o">+</span> <span class="s1">&#39;&lt;/h4&gt;&#39;</span> <span class="o">+</span>
@@ -182,10 +182,10 @@
     <span class="s1">&#39;&lt;/div&gt;&#39;</span> <span class="p">);</span>
 <span class="p">});</span>
 </code></pre></div>
-<h3 id="toc_5">文件上传进度</h3>
+<h3 id="文件上传进度">文件上传进度</h3>
 
 <p>文件上传中，Web Uploader会对外派送<code>uploadProgress</code>事件，其中包含文件对象和该文件当前上传进度。</p>
-<div class="highlight"><pre><code class="javascript language-javascript" data-lang="javascript"><span class="c1">// 文件上传过程中创建进度条实时显示。</span>
+<div class="highlight"><pre><code class="language-javascript" data-lang="javascript"><span class="c1">// 文件上传过程中创建进度条实时显示。</span>
 <span class="nx">uploader</span><span class="p">.</span><span class="nx">on</span><span class="p">(</span> <span class="s1">&#39;uploadProgress&#39;</span><span class="p">,</span> <span class="kd">function</span><span class="p">(</span> <span class="nx">file</span><span class="p">,</span> <span class="nx">percentage</span> <span class="p">)</span> <span class="p">{</span>
     <span class="kd">var</span> <span class="nx">$li</span> <span class="o">=</span> <span class="nx">$</span><span class="p">(</span> <span class="s1">&#39;#&#39;</span><span class="o">+</span><span class="nx">file</span><span class="p">.</span><span class="nx">id</span> <span class="p">),</span>
         <span class="nx">$percent</span> <span class="o">=</span> <span class="nx">$li</span><span class="p">.</span><span class="nx">find</span><span class="p">(</span><span class="s1">&#39;.progress .progress-bar&#39;</span><span class="p">);</span>
@@ -203,10 +203,10 @@
     <span class="nx">$percent</span><span class="p">.</span><span class="nx">css</span><span class="p">(</span> <span class="s1">&#39;width&#39;</span><span class="p">,</span> <span class="nx">percentage</span> <span class="o">*</span> <span class="mi">100</span> <span class="o">+</span> <span class="s1">&#39;%&#39;</span> <span class="p">);</span>
 <span class="p">});</span>
 </code></pre></div>
-<h3 id="toc_6">文件成功、失败处理</h3>
+<h3 id="文件成功、失败处理">文件成功、失败处理</h3>
 
 <p>文件上传失败会派送<code>uploadError</code>事件，成功则派送<code>uploadSuccess</code>事件。不管成功或者失败，在文件上传完后都会触发<code>uploadComplete</code>事件。</p>
-<div class="highlight"><pre><code class="javascript language-javascript" data-lang="javascript"><span class="nx">uploader</span><span class="p">.</span><span class="nx">on</span><span class="p">(</span> <span class="s1">&#39;uploadSuccess&#39;</span><span class="p">,</span> <span class="kd">function</span><span class="p">(</span> <span class="nx">file</span> <span class="p">)</span> <span class="p">{</span>
+<div class="highlight"><pre><code class="language-javascript" data-lang="javascript"><span class="nx">uploader</span><span class="p">.</span><span class="nx">on</span><span class="p">(</span> <span class="s1">&#39;uploadSuccess&#39;</span><span class="p">,</span> <span class="kd">function</span><span class="p">(</span> <span class="nx">file</span> <span class="p">)</span> <span class="p">{</span>
     <span class="nx">$</span><span class="p">(</span> <span class="s1">&#39;#&#39;</span><span class="o">+</span><span class="nx">file</span><span class="p">.</span><span class="nx">id</span> <span class="p">).</span><span class="nx">find</span><span class="p">(</span><span class="s1">&#39;p.state&#39;</span><span class="p">).</span><span class="nx">text</span><span class="p">(</span><span class="s1">&#39;已上传&#39;</span><span class="p">);</span>
 <span class="p">});</span>
 
@@ -218,7 +218,7 @@
     <span class="nx">$</span><span class="p">(</span> <span class="s1">&#39;#&#39;</span><span class="o">+</span><span class="nx">file</span><span class="p">.</span><span class="nx">id</span> <span class="p">).</span><span class="nx">find</span><span class="p">(</span><span class="s1">&#39;.progress&#39;</span><span class="p">).</span><span class="nx">fadeOut</span><span class="p">();</span>
 <span class="p">});</span>
 </code></pre></div>
-<h2 id="toc_7">图片上传</h2>
+<h2 id="图片上传">图片上传</h2>
 
 <p>与普通文件上传相比，此demo演示了：文件过滤，图片预览，图片压缩上传等功能。</p>
 
@@ -228,20 +228,20 @@
     <div id="filePicker">选择图片</div>
 </div>
 
-<h3 id="toc_8">Html</h3>
+<h3 id="html">Html</h3>
 
 <p>要实现如上demo，首先需要准备一个按钮，和一个用来存放添加的文件信息列表的容器。</p>
-<div class="highlight"><pre><code class="html language-html" data-lang="html"><span class="c">&lt;!--dom结构部分--&gt;</span>
+<div class="highlight"><pre><code class="language-html" data-lang="html"><span class="c">&lt;!--dom结构部分--&gt;</span>
 <span class="nt">&lt;div</span> <span class="na">id=</span><span class="s">&quot;uploader-demo&quot;</span><span class="nt">&gt;</span>
     <span class="c">&lt;!--用来存放item--&gt;</span>
     <span class="nt">&lt;div</span> <span class="na">id=</span><span class="s">&quot;fileList&quot;</span> <span class="na">class=</span><span class="s">&quot;uploader-list&quot;</span><span class="nt">&gt;&lt;/div&gt;</span>
     <span class="nt">&lt;div</span> <span class="na">id=</span><span class="s">&quot;filePicker&quot;</span><span class="nt">&gt;</span>选择图片<span class="nt">&lt;/div&gt;</span>
 <span class="nt">&lt;/div&gt;</span>
 </code></pre></div>
-<h3 id="toc_9">Javascript</h3>
+<h3 id="javascript">Javascript</h3>
 
 <p>创建Web Uploader实例</p>
-<div class="highlight"><pre><code class="javascript language-javascript" data-lang="javascript"><span class="c1">// 初始化Web Uploader</span>
+<div class="highlight"><pre><code class="language-javascript" data-lang="javascript"><span class="c1">// 初始化Web Uploader</span>
 <span class="kd">var</span> <span class="nx">uploader</span> <span class="o">=</span> <span class="nx">WebUploader</span><span class="p">.</span><span class="nx">create</span><span class="p">({</span>
 
     <span class="c1">// 选完文件后，是否自动上传。</span>
@@ -267,7 +267,7 @@
 </code></pre></div>
 <p>监听<code>fileQueued</code>事件，通过<code>uploader.makeThumb</code>来创建图片预览图。<br />
 PS: 这里得到的是<a href="http://en.wikipedia.org/wiki/Data_URI_scheme">Data URL</a>数据，IE6、IE7不支持直接预览。可以借助FLASH或者服务端来完成预览。</p>
-<div class="highlight"><pre><code class="javascript language-javascript" data-lang="javascript"><span class="c1">// 当有文件添加进来的时候</span>
+<div class="highlight"><pre><code class="language-javascript" data-lang="javascript"><span class="c1">// 当有文件添加进来的时候</span>
 <span class="nx">uploader</span><span class="p">.</span><span class="nx">on</span><span class="p">(</span> <span class="s1">&#39;fileQueued&#39;</span><span class="p">,</span> <span class="kd">function</span><span class="p">(</span> <span class="nx">file</span> <span class="p">)</span> <span class="p">{</span>
     <span class="kd">var</span> <span class="nx">$li</span> <span class="o">=</span> <span class="nx">$</span><span class="p">(</span>
             <span class="s1">&#39;&lt;div id=&quot;&#39;</span> <span class="o">+</span> <span class="nx">file</span><span class="p">.</span><span class="nx">id</span> <span class="o">+</span> <span class="s1">&#39;&quot; class=&quot;file-item thumbnail&quot;&gt;&#39;</span> <span class="o">+</span>
@@ -296,7 +296,7 @@ PS: 这里得到的是<a href="http://en.wikipedia.org/wiki/Data_URI_scheme">Dat
 </code></pre></div>
 <p>然后剩下的就是上传状态提示了，当文件上传过程中, 上传成功，上传失败，上传完成都分别对应<code>uploadProgress</code>,
 <code>uploadSuccess</code>, <code>uploadError</code>, <code>uploadComplete</code>事件。</p>
-<div class="highlight"><pre><code class="javascript language-javascript" data-lang="javascript"><span class="c1">// 文件上传过程中创建进度条实时显示。</span>
+<div class="highlight"><pre><code class="language-javascript" data-lang="javascript"><span class="c1">// 文件上传过程中创建进度条实时显示。</span>
 <span class="nx">uploader</span><span class="p">.</span><span class="nx">on</span><span class="p">(</span> <span class="s1">&#39;uploadProgress&#39;</span><span class="p">,</span> <span class="kd">function</span><span class="p">(</span> <span class="nx">file</span><span class="p">,</span> <span class="nx">percentage</span> <span class="p">)</span> <span class="p">{</span>
     <span class="kd">var</span> <span class="nx">$li</span> <span class="o">=</span> <span class="nx">$</span><span class="p">(</span> <span class="s1">&#39;#&#39;</span><span class="o">+</span><span class="nx">file</span><span class="p">.</span><span class="nx">id</span> <span class="p">),</span>
         <span class="nx">$percent</span> <span class="o">=</span> <span class="nx">$li</span><span class="p">.</span><span class="nx">find</span><span class="p">(</span><span class="s1">&#39;.progress span&#39;</span><span class="p">);</span>
