@@ -26,6 +26,8 @@ define([
                     height: this.height
                 };
 
+                debugger;
+
                 // 读取meta信息。
                 if ( !me._metas && 'image/jpeg' === me.type ) {
                     Util.parseMeta( me._blob, function( error, ret ) {
@@ -171,12 +173,12 @@ define([
 
             // setter
             if ( val ) {
-                this._meta = val;
+                this._metas = val;
                 return this;
             }
 
             // getter
-            return this._meta;
+            return this._metas;
         },
 
         destroy: function() {
