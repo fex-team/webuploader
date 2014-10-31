@@ -4581,6 +4581,9 @@
                 } catch( err ) {
                 }
     
+                me.dndOver = false;
+                me.elem.removeClass( prefix + 'over' );
+    
                 if ( data ) {
                     return;
                 }
@@ -4591,8 +4594,6 @@
                     }) );
                 });
     
-                me.dndOver = false;
-                me.elem.removeClass( prefix + 'over' );
                 return false;
             },
     
@@ -4668,7 +4669,7 @@
                 if (!elem) {
                     return;
                 }
-                
+    
                 elem.off( 'dragenter', this.dragEnterHandler );
                 elem.off( 'dragover', this.dragOverHandler );
                 elem.off( 'dragleave', this.dragLeaveHandler );
@@ -5416,6 +5417,8 @@
                         height: this.height
                     };
     
+                    debugger;
+    
                     // 读取meta信息。
                     if ( !me._metas && 'image/jpeg' === me.type ) {
                         Util.parseMeta( me._blob, function( error, ret ) {
@@ -5561,12 +5564,12 @@
     
                 // setter
                 if ( val ) {
-                    this._meta = val;
+                    this._metas = val;
                     return this;
                 }
     
                 // getter
-                return this._meta;
+                return this._metas;
             },
     
             destroy: function() {
