@@ -1,7 +1,7 @@
 ---
 layout: post
 title: 下载
-name: Download
+navName: Download
 group: 'nav'
 weight : 5
 hideTitle: true

@@ -1,7 +1,7 @@
 ---
 layout: post
 title: 演示
-name: Demo
+navName: Demo
 group: 'nav'
 weight : 4
 hideTitle: true

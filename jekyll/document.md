@@ -1,7 +1,7 @@
 ---
 layout: post
 title: 文档
-name: Document
+navName: Document
 group: 'nav'
 weight : 2
 hideTitle: true

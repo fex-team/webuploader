@@ -1,7 +1,7 @@
 ---
 layout: post
 title: 快速开始
-name: Getting started
+navName: Getting started
 group: 'nav'
 weight : 1,
 styles:
