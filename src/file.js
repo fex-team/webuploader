@@ -39,6 +39,23 @@ define([
          * @default 0
          */
         this.size = source.size || 0;
+        /** 
+         * 图片宽度（px）
+         * @property width
+         * @type {int}
+         * @default -1
+         * add by rexschuang
+         */
+        this.width = source.width || -1; 
+        
+        /** 
+         * 图片高度（px）
+         * @property height
+         * @type {int}
+         * @default -1
+         * add by rexschuang
+         */
+        this.height = source.height || -1;
 
         /**
          * 文件MIMETYPE类型，与文件类型的对应关系请参考[http://t.cn/z8ZnFny](http://t.cn/z8ZnFny)
