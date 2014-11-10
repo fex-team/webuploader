@@ -4,8 +4,9 @@
 define([
     '../base',
     '../runtime/client',
-    './file'
-], function( Base, RuntimeClent, File ) {
+    './file',
+    './image'
+], function( Base, RuntimeClent, File, Image ) {
 
     var $ = Base.$;
 
@@ -49,7 +50,7 @@ define([
             button.addClass('webuploader-pick');
 
             me.on( 'all', function( type ) {
-                var files;
+                var files, length;
 
                 switch ( type ) {
                     case 'mouseenter':
@@ -61,14 +62,37 @@ define([
                         break;
 
                     case 'change':
+                        length = 0;
                         files = me.exec('getFiles');
-                        me.trigger( 'select', $.map( files, function( file ) {
+                        files = $.map( files, function( file ) {
                             file = new File( me.getRuid(), file );
 
                             // 记录来源。
                             file._refer = opts.container;
+                            
+                            // 获取宽高
+                            if (opts.imageSize 
+                                && ~'image/jpeg,image/jpg,image/png,image/bmp,image/gif'.indexOf(file.type)) {
+                                var image = new Image( opts.compress||opts.resize );
+                                image.on('load', function(){
+                                    var info = image.info();
+                                    file.width  = info.width;
+                                    file.height = info.height;
+                                    length ++;
+                                    (length == files.length) && me.trigger( 'select', files, opts.container );
+                                });
+                                image.on('error', function(){
+                                    length ++;
+                                    (length == files.length) && me.trigger( 'select', files, opts.container );
+                                });
+                                image.loadFromBlob( file );
+                            } else {
+                                length ++;
+                            }
+                            
                             return file;
-                        }), opts.container );
+                        });
+                        (length == files.length) && me.trigger( 'select', files, opts.container );
                         break;
                 }
             });
