@@ -15,7 +15,7 @@ package com
 		public static var dispatches:Object = { // hash of events dispatched by this class
 			"Cancel": FilePickerEvent.CANCEL,
 			"Change": FilePickerEvent.SELECT,
-			"Open": FilePickerEvent.OPEN,
+			"DialogOpen": FilePickerEvent.OPEN,
 			"MouseEnter": MouseEvent.ROLL_OVER,
 			"MouseLeave": MouseEvent.ROLL_OUT,
 			"MouseDown": MouseEvent.MOUSE_DOWN,

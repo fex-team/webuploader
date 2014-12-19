@@ -109,7 +109,7 @@ define([
                 picker.on( 'select', function( files ) {
                     me.owner.request( 'add-file', [ files ]);
                 });
-                picker.on('open', function() {
+                picker.on('dialogopen', function() {
                     me.owner.trigger('dialogOpen', picker.button);
                 });
                 picker.init();

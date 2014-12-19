@@ -1895,7 +1895,7 @@ return (function( root, factory ) {
                     picker.on( 'select', function( files ) {
                         me.owner.request( 'add-file', [ files ]);
                     });
-                    picker.on('open', function() {
+                    picker.on('dialogopen', function() {
                         me.owner.trigger('dialogOpen', picker.button);
                     });
                     picker.init();
@@ -4864,7 +4864,7 @@ return (function( root, factory ) {
     
                 label.on( 'click', function() {
                     input.trigger('click');
-                    owner.trigger('open');
+                    owner.trigger('dialogopen');
                 });
     
                 label.css({
