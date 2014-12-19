@@ -109,6 +109,9 @@ define([
                 picker.on( 'select', function( files ) {
                     me.owner.request( 'add-file', [ files ]);
                 });
+                picker.on('open', function() {
+                    me.owner.trigger('dialogOpen', picker.button);
+                });
                 picker.init();
 
                 me.pickers.push( picker );

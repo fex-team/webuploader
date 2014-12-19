@@ -6,6 +6,7 @@ package com.events
 	{
 		public static const SELECT:String = 'filepickerselect';
 		public static const CANCEL:String = 'filepickercancel';
+		public static const OPEN:String = 'filepickeropen';
 		
 		public var data:*;
 		

@@ -24,6 +24,7 @@ define([
 
             label.on( 'click', function() {
                 input.trigger('click');
+                owner.trigger('open');
             });
 
             label.css({

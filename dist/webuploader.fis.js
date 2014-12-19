@@ -1,4 +1,4 @@
-/*! WebUploader 0.1.5 */
+/*! WebUploader 0.1.6 */
 
 
 var jQuery = require('example:widget/ui/jquery/jquery.js')
@@ -211,7 +211,7 @@ return (function( root, factory ) {
             /**
              * @property {String} version 当前版本号。
              */
-            version: '0.1.5',
+            version: '0.1.6',
     
             /**
              * @property {jQuery|Zepto} $ 引用依赖的jQuery或者Zepto对象。
@@ -1894,6 +1894,9 @@ return (function( root, factory ) {
                     picker.once( 'ready', deferred.resolve );
                     picker.on( 'select', function( files ) {
                         me.owner.request( 'add-file', [ files ]);
+                    });
+                    picker.on('open', function() {
+                        me.owner.trigger('dialogOpen', picker.button);
                     });
                     picker.init();
     
@@ -4861,6 +4864,7 @@ return (function( root, factory ) {
     
                 label.on( 'click', function() {
                     input.trigger('click');
+                    owner.trigger('open');
                 });
     
                 label.css({

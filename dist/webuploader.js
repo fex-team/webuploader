@@ -1,4 +1,4 @@
-/*! WebUploader 0.1.5 */
+/*! WebUploader 0.1.6 */
 
 
 /**
@@ -236,7 +236,7 @@
             /**
              * @property {String} version 当前版本号。
              */
-            version: '0.1.5',
+            version: '0.1.6',
     
             /**
              * @property {jQuery|Zepto} $ 引用依赖的jQuery或者Zepto对象。
@@ -1919,6 +1919,9 @@
                     picker.once( 'ready', deferred.resolve );
                     picker.on( 'select', function( files ) {
                         me.owner.request( 'add-file', [ files ]);
+                    });
+                    picker.on('open', function() {
+                        me.owner.trigger('dialogOpen', picker.button);
                     });
                     picker.init();
     
@@ -4886,6 +4889,7 @@
     
                 label.on( 'click', function() {
                     input.trigger('click');
+                    owner.trigger('open');
                 });
     
                 label.css({

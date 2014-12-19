@@ -152,7 +152,7 @@
             chunked: false,
             chunkSize: 512 * 1024,
             server: '../../server/fileupload.php',
-            // runtimeOrder: 'flash',
+            runtimeOrder: 'flash',
 
             // accept: {
             //     title: 'Images',
@@ -184,6 +184,10 @@
             }
 
             return !denied;
+        });
+
+        uploader.on('dialogOpen', function() {
+            console.log('here');
         });
 
         // uploader.on('filesQueued', function() {
