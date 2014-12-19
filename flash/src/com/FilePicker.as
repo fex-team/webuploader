@@ -105,7 +105,7 @@ package com
 			_picker.addEventListener(Event.CANCEL, onDialogEvent);
 			_picker.addEventListener(Event.SELECT, onDialogEvent);
 			_picker.browse(_filters);
-			dispatchEvent(new FilePickerEvent(FilePickerEvent.OPEN))
+			dispatchEvent(new FilePickerEvent(FilePickerEvent.OPEN));
 		}
 
 
