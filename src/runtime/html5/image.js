@@ -26,7 +26,7 @@ define([
                     height: this.height
                 };
 
-                debugger;
+                //debugger;
 
                 // 读取meta信息。
                 if ( !me._metas && 'image/jpeg' === me.type ) {
