@@ -4556,19 +4556,23 @@
                         // try {
                         //     me._responseJson = xhr.exec('getResponseAsJson');
                         // } catch ( error ) {
-                            
-                        p = window.JSON && window.JSON.parse || function( s ) {
+    
+                        p = function( s ) {
                             try {
+                                if (window.JSON && window.JSON.parse) {
+                                    return JSON.parse(s);
+                                }
+    
                                 return new Function('return ' + s).call();
                             } catch ( err ) {
                                 return {};
                             }
                         };
                         me._responseJson  = me._response ? p(me._response) : {};
-                            
+    
                         // }
                     }
-                    
+    
                     xhr.destroy();
                     xhr = null;
     
@@ -4592,6 +4596,7 @@
             }
         });
     });
+    
     /**
      * @fileOverview 只有flash实现的文件版本。
      */
