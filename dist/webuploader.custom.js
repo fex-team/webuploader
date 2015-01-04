@@ -5106,7 +5106,7 @@
                         height: this.height
                     };
     
-                    debugger;
+                    //debugger;
     
                     // 读取meta信息。
                     if ( !me._metas && 'image/jpeg' === me.type ) {
@@ -5513,6 +5513,7 @@
             })()
         });
     });
+    
     /**
      * 这个方式性能不行，但是可以解决android里面的toDataUrl的bug
      * android里面toDataUrl('image/jpege')得到的结果却是png.

@@ -6308,7 +6308,7 @@ return (function( root, factory ) {
                         height: this.height
                     };
     
-                    debugger;
+                    //debugger;
     
                     // 读取meta信息。
                     if ( !me._metas && 'image/jpeg' === me.type ) {
@@ -6715,6 +6715,7 @@ return (function( root, factory ) {
             })()
         });
     });
+    
     /**
      * @fileOverview Transport
      * @todo 支持chunked传输，优势：
