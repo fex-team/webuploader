@@ -5,7 +5,7 @@ define([
     '../base',
     '../runtime/client',
     './file'
-], function( Base, RuntimeClent, File ) {
+], function( Base, RuntimeClient, File ) {
 
     var $ = Base.$;
 
@@ -25,7 +25,7 @@ define([
         opts.button.html( opts.innerHTML );
         opts.container.html( opts.button );
 
-        RuntimeClent.call( this, 'FilePicker', true );
+        RuntimeClient.call( this, 'FilePicker', true );
     }
 
     FilePicker.options = {
@@ -38,7 +38,7 @@ define([
         name: 'file'
     };
 
-    Base.inherits( RuntimeClent, {
+    Base.inherits( RuntimeClient, {
         constructor: FilePicker,
 
         init: function() {
