@@ -35,7 +35,8 @@ define([
         innerHTML: null,
         multiple: true,
         accept: null,
-        name: 'file'
+        name: 'file',
+        style: 'webuploader-pick'   //pick element class attribute, default is "webuploader-pick"
     };
 
     Base.inherits( RuntimeClient, {
@@ -44,20 +45,24 @@ define([
         init: function() {
             var me = this,
                 opts = me.options,
-                button = opts.button;
+                button = opts.button,
+                style = opts.style;
 
-            button.addClass('webuploader-pick');
+            if (style)
+                button.addClass('webuploader-pick');
 
             me.on( 'all', function( type ) {
                 var files;
 
                 switch ( type ) {
                     case 'mouseenter':
-                        button.addClass('webuploader-pick-hover');
+                        if (style)
+                            button.addClass('webuploader-pick-hover');
                         break;
 
                     case 'mouseleave':
-                        button.removeClass('webuploader-pick-hover');
+                        if (style)
+                            button.removeClass('webuploader-pick-hover');
                         break;
 
                     case 'change':
