@@ -10,7 +10,7 @@ define([
         slice: function( start, end ) {
             var blob = this.flashExec( 'Blob', 'slice', start, end );
 
-            return new Blob( blob.uid, blob );
+            return new Blob( this.getRuid(), blob );
         }
     });
 });
