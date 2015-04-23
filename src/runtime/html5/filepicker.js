@@ -23,8 +23,9 @@ define([
             input.attr( 'name', opts.name );
             input.addClass('webuploader-element-invisible');
 
-            label.on( 'click', function() {
+            label.on( 'click', function(e) {
                 input.trigger('click');
+                e.stopPropagation();
                 owner.trigger('dialogopen');
             });
 
