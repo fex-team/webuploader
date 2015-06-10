@@ -1659,7 +1659,7 @@ return (function( root, factory ) {
         'base',
         'runtime/client',
         'lib/file'
-    ], function( Base, RuntimeClent, File ) {
+    ], function( Base, RuntimeClient, File ) {
     
         var $ = Base.$;
     
@@ -1679,7 +1679,7 @@ return (function( root, factory ) {
             opts.button.html( opts.innerHTML );
             opts.container.html( opts.button );
     
-            RuntimeClent.call( this, 'FilePicker', true );
+            RuntimeClient.call( this, 'FilePicker', true );
         }
     
         FilePicker.options = {
@@ -1689,29 +1689,34 @@ return (function( root, factory ) {
             innerHTML: null,
             multiple: true,
             accept: null,
-            name: 'file'
+            name: 'file',
+            style: 'webuploader-pick'   //pick element class attribute, default is "webuploader-pick"
         };
     
-        Base.inherits( RuntimeClent, {
+        Base.inherits( RuntimeClient, {
             constructor: FilePicker,
     
             init: function() {
                 var me = this,
                     opts = me.options,
-                    button = opts.button;
+                    button = opts.button,
+                    style = opts.style;
     
-                button.addClass('webuploader-pick');
+                if (style)
+                    button.addClass('webuploader-pick');
     
                 me.on( 'all', function( type ) {
                     var files;
     
                     switch ( type ) {
                         case 'mouseenter':
-                            button.addClass('webuploader-pick-hover');
+                            if (style)
+                                button.addClass('webuploader-pick-hover');
                             break;
     
                         case 'mouseleave':
-                            button.removeClass('webuploader-pick-hover');
+                            if (style)
+                                button.removeClass('webuploader-pick-hover');
                             break;
     
                         case 'change':
@@ -1852,13 +1857,13 @@ return (function( root, factory ) {
             },
     
             /**
-             * @method addButton
+             * @method addBtn
              * @for Uploader
-             * @grammar addButton( pick ) => Promise
+             * @grammar addBtn( pick ) => Promise
              * @description
              * 添加文件选择按钮，如果一个按钮不够，需要调用此方法来添加。参数跟[options.pick](#WebUploader:Uploader:options)一致。
              * @example
-             * uploader.addButton({
+             * uploader.addBtn({
              *     id: '#btnContainer',
              *     innerHTML: '选择文件'
              * });
@@ -2933,13 +2938,16 @@ return (function( root, factory ) {
                 files = $.map( files, function( file ) {
                     return me._addFile( file );
                 });
+    			
+    			if ( files.length ) {
     
-                me.owner.trigger( 'filesQueued', files );
+                    me.owner.trigger( 'filesQueued', files );
     
-                if ( me.options.auto ) {
-                    setTimeout(function() {
-                        me.request('start-upload');
-                    }, 20 );
+    				if ( me.options.auto ) {
+    					setTimeout(function() {
+    						me.request('start-upload');
+    					}, 20 );
+    				}
                 }
             },
     
@@ -4859,11 +4867,13 @@ return (function( root, factory ) {
                     arr, i, len, mouseHandler;
     
                 input.attr( 'type', 'file' );
+                input.attr( 'capture', 'camera');
                 input.attr( 'name', opts.name );
                 input.addClass('webuploader-element-invisible');
     
-                label.on( 'click', function() {
+                label.on( 'click', function(e) {
                     input.trigger('click');
+                    e.stopPropagation();
                     owner.trigger('dialogopen');
                 });
     
@@ -4931,6 +4941,7 @@ return (function( root, factory ) {
             }
         });
     });
+    
     /**
      * Terms:
      *
@@ -7932,7 +7943,7 @@ return (function( root, factory ) {
             slice: function( start, end ) {
                 var blob = this.flashExec( 'Blob', 'slice', start, end );
     
-                return new Blob( blob.uid, blob );
+                return new Blob( this.getRuid(), blob );
             }
         });
     });
