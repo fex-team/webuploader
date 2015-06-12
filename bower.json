@@ -1,7 +1,6 @@
 {
   "name": "fex-webuploader",
   "main": "dist/webuploader.js",
-  "version": "0.1.5",
   "homepage": "https://github.com/fex-team/webuploader",
   "author": "fex-team",
   "description": "WebUploader是一个简单的以Html5为主，Flash为辅的现代文件上传组件。在现代的浏览器里面能充分发挥html5的优势，同时又不摒弃主流IE浏览器，延用原来的Flash运行时。两套运行时，同样的调用方式，可供用户任意选用。WebUploader采用大文件分片并发上传，极大的提高了文件上传效率。",
