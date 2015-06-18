@@ -1,9 +1,9 @@
 /*! WebUploader 0.1.6 */
 
 
-var jQuery = require('example:widget/ui/jquery/jquery.js')
+var jQuery = require('example:widget/ui/jquery/jquery.js');
 
-return (function( root, factory ) {
+module.exports = (function( root, factory ) {
     var modules = {},
 
         // 内部require, 简单不完全实现。
@@ -108,7 +108,8 @@ return (function( root, factory ) {
      * @fileOverview jQuery or Zepto
      */
     define('dollar-third',[],function() {
-        var $ = window.__dollar || window.jQuery || window.Zepto;
+        var req = window.require;
+        var $ = window.__dollar || window.jQuery || window.Zepto || req('jquery') || req('zepto');
     
         if ( !$ ) {
             throw new Error('jQuery or Zepto not found!');
@@ -116,6 +117,7 @@ return (function( root, factory ) {
     
         return $;
     });
+    
     /**
      * @fileOverview Dom 操作相关
      */

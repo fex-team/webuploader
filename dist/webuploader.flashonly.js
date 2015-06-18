@@ -133,7 +133,8 @@
      * @fileOverview jQuery or Zepto
      */
     define('dollar-third',[],function() {
-        var $ = window.__dollar || window.jQuery || window.Zepto;
+        var req = window.require;
+        var $ = window.__dollar || window.jQuery || window.Zepto || req('jquery') || req('zepto');
     
         if ( !$ ) {
             throw new Error('jQuery or Zepto not found!');
@@ -141,6 +142,7 @@
     
         return $;
     });
+    
     /**
      * @fileOverview Dom 操作相关
      */
