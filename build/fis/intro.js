@@ -1,6 +1,6 @@
-var jQuery = require('example:widget/ui/jquery/jquery.js')
+var jQuery = require('example:widget/ui/jquery/jquery.js');
 
-return (function( root, factory ) {
+module.exports = (function( root, factory ) {
     var modules = {},
 
         // 内部require, 简单不完全实现。
