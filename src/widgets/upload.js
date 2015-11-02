@@ -162,6 +162,7 @@ define([
             this.remaning = 0;
             this.__tick = Base.bindFn( this._tick, this );
 
+            // 销毁上传相关的属性。
             owner.on( 'uploadComplete', function( file ) {
 
                 // 把其他块取消了。
@@ -209,11 +210,13 @@ define([
                 me.request( 'remove-file', this );
             });
 
-            // 如果指定了开始某个文件，则只开始指定文件。
+            // 如果指定了开始某个文件，则只开始指定的文件。
             if ( file ) {
                 file = file.id ? file : me.request( 'get-file', file );
 
                 if (file.getStatus() === Status.INTERRUPT) {
+                    file.setStatus( Status.QUEUED );
+
                     $.each( me.pool, function( _, v ) {
 
                         // 之前暂停过。
@@ -222,12 +225,11 @@ define([
                         }
 
                         v.transport && v.transport.send();
+                        file.setStatus( Status.PROGRESS );
                     });
 
-                    file.setStatus( Status.QUEUED );
-                } else if (file.getStatus() === Status.PROGRESS) {
-                    return;
-                } else {
+                    
+                } else if (file.getStatus() !== Status.PROGRESS) {
                     file.setStatus( Status.QUEUED );
                 }
             } else {
@@ -237,7 +239,7 @@ define([
             }
 
             if ( me.runing ) {
-                return;
+                return Base.nextTick( me.__tick );
             }
 
             me.runing = true;
@@ -314,13 +316,18 @@ define([
                 });
 
                 block.transport && block.transport.abort();
-                me._putback(block);
+
+                if (interrupt) {
+                    me._putback(block);
+                    me._popBlock(block);
+                }
 
                 return Base.nextTick( me.__tick );
             }
 
             me.runing = false;
 
+            // 正在准备中的文件。
             if (this._promise && this._promise.file) {
                 this._promise.file.setStatus( Status.INTERRUPT );
             }
