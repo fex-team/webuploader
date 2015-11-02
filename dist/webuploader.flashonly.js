@@ -3386,7 +3386,8 @@
              * @for  Uploader
              */
             stopUpload: function( file, interrupt ) {
-                var me = this;
+                var me = this,
+                    block;
     
                 if (file === true) {
                     interrupt = file;
@@ -3407,17 +3408,20 @@
                     }
     
                     file.setStatus( Status.INTERRUPT );
+    
+    
                     $.each( me.pool, function( _, v ) {
     
                         // 只 abort 指定的文件。
-                        if (v.file !== file) {
-                            return;
+                        if (v.file === file) {
+                            block = v;
+                            return false;
                         }
-    
-                        v.transport && v.transport.abort();
-                        me._putback(v);
-                        me._popBlock(v);
                     });
+    
+                    block.transport && block.transport.abort();
+                    me._putback(block);
+                    me._popBlock(block);
     
                     return Base.nextTick( me.__tick );
                 }
@@ -3940,6 +3944,7 @@
     
         });
     });
+    
     /**
      * @fileOverview 各种验证，包括文件总大小是否超出、单文件是否超出和文件是否重复。
      */

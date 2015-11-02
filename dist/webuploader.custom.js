@@ -3689,7 +3689,8 @@
              * @for  Uploader
              */
             stopUpload: function( file, interrupt ) {
-                var me = this;
+                var me = this,
+                    block;
     
                 if (file === true) {
                     interrupt = file;
@@ -3710,17 +3711,20 @@
                     }
     
                     file.setStatus( Status.INTERRUPT );
+    
+    
                     $.each( me.pool, function( _, v ) {
     
                         // 只 abort 指定的文件。
-                        if (v.file !== file) {
-                            return;
+                        if (v.file === file) {
+                            block = v;
+                            return false;
                         }
-    
-                        v.transport && v.transport.abort();
-                        me._putback(v);
-                        me._popBlock(v);
                     });
+    
+                    block.transport && block.transport.abort();
+                    me._putback(block);
+                    me._popBlock(block);
     
                     return Base.nextTick( me.__tick );
                 }
@@ -4243,6 +4247,7 @@
     
         });
     });
+    
     /**
      * @fileOverview 日志组件，主要用来收集错误信息，可以帮助 webuploader 更好的定位问题和发展。
      *

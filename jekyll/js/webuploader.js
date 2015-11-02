@@ -133,7 +133,8 @@
      * @fileOverview jQuery or Zepto
      */
     define('dollar-third',[],function() {
-        var $ = window.__dollar || window.jQuery || window.Zepto;
+        var req = window.require;
+        var $ = window.__dollar || window.jQuery || window.Zepto || req('jquery') || req('zepto');
     
         if ( !$ ) {
             throw new Error('jQuery or Zepto not found!');
@@ -141,6 +142,7 @@
     
         return $;
     });
+    
     /**
      * @fileOverview Dom 操作相关
      */
@@ -1684,7 +1686,7 @@
         'base',
         'runtime/client',
         'lib/file'
-    ], function( Base, RuntimeClent, File ) {
+    ], function( Base, RuntimeClient, File ) {
     
         var $ = Base.$;
     
@@ -1704,7 +1706,7 @@
             opts.button.html( opts.innerHTML );
             opts.container.html( opts.button );
     
-            RuntimeClent.call( this, 'FilePicker', true );
+            RuntimeClient.call( this, 'FilePicker', true );
         }
     
         FilePicker.options = {
@@ -1714,29 +1716,34 @@
             innerHTML: null,
             multiple: true,
             accept: null,
-            name: 'file'
+            name: 'file',
+            style: 'webuploader-pick'   //pick element class attribute, default is "webuploader-pick"
         };
     
-        Base.inherits( RuntimeClent, {
+        Base.inherits( RuntimeClient, {
             constructor: FilePicker,
     
             init: function() {
                 var me = this,
                     opts = me.options,
-                    button = opts.button;
+                    button = opts.button,
+                    style = opts.style;
     
-                button.addClass('webuploader-pick');
+                if (style)
+                    button.addClass('webuploader-pick');
     
                 me.on( 'all', function( type ) {
                     var files;
     
                     switch ( type ) {
                         case 'mouseenter':
-                            button.addClass('webuploader-pick-hover');
+                            if (style)
+                                button.addClass('webuploader-pick-hover');
                             break;
     
                         case 'mouseleave':
-                            button.removeClass('webuploader-pick-hover');
+                            if (style)
+                                button.removeClass('webuploader-pick-hover');
                             break;
     
                         case 'change':
@@ -1877,13 +1884,13 @@
             },
     
             /**
-             * @method addButton
+             * @method addBtn
              * @for Uploader
-             * @grammar addButton( pick ) => Promise
+             * @grammar addBtn( pick ) => Promise
              * @description
              * 添加文件选择按钮，如果一个按钮不够，需要调用此方法来添加。参数跟[options.pick](#WebUploader:Uploader:options)一致。
              * @example
-             * uploader.addButton({
+             * uploader.addBtn({
              *     id: '#btnContainer',
              *     innerHTML: '选择文件'
              * });
@@ -2958,13 +2965,16 @@
                 files = $.map( files, function( file ) {
                     return me._addFile( file );
                 });
+    			
+    			if ( files.length ) {
     
-                me.owner.trigger( 'filesQueued', files );
+                    me.owner.trigger( 'filesQueued', files );
     
-                if ( me.options.auto ) {
-                    setTimeout(function() {
-                        me.request('start-upload');
-                    }, 20 );
+    				if ( me.options.auto ) {
+    					setTimeout(function() {
+    						me.request('start-upload');
+    					}, 20 );
+    				}
                 }
             },
     
@@ -3578,7 +3588,8 @@
              * @for  Uploader
              */
             stopUpload: function( file, interrupt ) {
-                var me = this;
+                var me = this,
+                    block;
     
                 if (file === true) {
                     interrupt = file;
@@ -3599,17 +3610,20 @@
                     }
     
                     file.setStatus( Status.INTERRUPT );
+    
+    
                     $.each( me.pool, function( _, v ) {
     
                         // 只 abort 指定的文件。
-                        if (v.file !== file) {
-                            return;
+                        if (v.file === file) {
+                            block = v;
+                            return false;
                         }
-    
-                        v.transport && v.transport.abort();
-                        me._putback(v);
-                        me._popBlock(v);
                     });
+    
+                    block.transport && block.transport.abort();
+                    me._putback(block);
+                    me._popBlock(block);
     
                     return Base.nextTick( me.__tick );
                 }
@@ -4132,6 +4146,7 @@
     
         });
     });
+    
     /**
      * @fileOverview 各种验证，包括文件总大小是否超出、单文件是否超出和文件是否重复。
      */
@@ -4884,11 +4899,13 @@
                     arr, i, len, mouseHandler;
     
                 input.attr( 'type', 'file' );
+                input.attr( 'capture', 'camera');
                 input.attr( 'name', opts.name );
                 input.addClass('webuploader-element-invisible');
     
-                label.on( 'click', function() {
+                label.on( 'click', function(e) {
                     input.trigger('click');
+                    e.stopPropagation();
                     owner.trigger('dialogopen');
                 });
     
@@ -4956,6 +4973,7 @@
             }
         });
     });
+    
     /**
      * Terms:
      *
@@ -7957,7 +7975,7 @@
             slice: function( start, end ) {
                 var blob = this.flashExec( 'Blob', 'slice', start, end );
     
-                return new Blob( blob.uid, blob );
+                return new Blob( this.getRuid(), blob );
             }
         });
     });
