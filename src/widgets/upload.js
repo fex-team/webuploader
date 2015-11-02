@@ -76,13 +76,6 @@ define([
          */
 
         /**
-         * @property {Object} [method='POST']
-         * @namespace options
-         * @for Uploader
-         * @description 文件上传方式，`POST`或者`GET`。
-         */
-
-        /**
          * @property {Object} [sendAsBinary=false]
          * @namespace options
          * @for Uploader
@@ -249,23 +242,16 @@ define([
 
             me.runing = true;
 
-            var files = [];
-
             // 如果有暂停的，则续传
-            $.each( me.pool, function( _, v ) {
+            file || $.each( me.pool, function( _, v ) {
                 var file = v.file;
 
                 if ( file.getStatus() === Status.INTERRUPT ) {
-                    files.push(file);
                     me._trigged = false;
                     v.transport && v.transport.send();
+                    file.setStatus( Status.PROGRESS );
                 }
             });
-
-            var file;
-            while ( (file = files.shift()) ) {
-                file.setStatus( Status.PROGRESS );
-            }
 
             file || $.each( me.request( 'get-files',
                     Status.INTERRUPT ), function() {
@@ -329,7 +315,6 @@ define([
 
                 block.transport && block.transport.abort();
                 me._putback(block);
-                me._popBlock(block);
 
                 return Base.nextTick( me.__tick );
             }
