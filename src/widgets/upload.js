@@ -243,6 +243,7 @@ define([
             }
 
             me.runing = true;
+            var files = [];
 
             // 如果有暂停的，则续传
             file || $.each( me.pool, function( _, v ) {
@@ -250,9 +251,13 @@ define([
 
                 if ( file.getStatus() === Status.INTERRUPT ) {
                     me._trigged = false;
+                    files.push(file);
                     v.transport && v.transport.send();
-                    file.setStatus( Status.PROGRESS );
                 }
+            });
+
+            $.each(files, function() {
+                this.setStatus( Status.PROGRESS );
             });
 
             file || $.each( me.request( 'get-files',
