@@ -1,5 +1,7 @@
 /**
  * @fileOverview jQuery or Zepto
+ * @require "jquery"
+ * @require "zepto"
  */
 define(function() {
     var req = window.require;
@@ -7,9 +9,7 @@ define(function() {
         window.jQuery || 
         window.Zepto || 
         req('jquery') || 
-        req('zepto') ||
-        require('jquery') ||
-        require('zepto');
+        req('zepto');
 
     if ( !$ ) {
         throw new Error('jQuery or Zepto not found!');
