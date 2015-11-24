@@ -17,6 +17,11 @@ define(function() {
     function each( obj, iterator ) {
         var i;
 
+        //fix error, add guard here
+        if(!obj) {
+            return;
+        }
+
         // like array
         if ( typeof obj !== 'function' && typeof obj.length === 'number' ) {
             for ( i = 0; i < obj.length; i++ ) {
@@ -91,6 +96,14 @@ define(function() {
             removeClass: function( classname ) {
                 elem.classList.remove( classname );
                 return this;
+            },
+
+            //fix error, $(...).each is used in the source
+            each: function(callback){
+              [].every.call(this, function(el, idx){
+                return callback.call(el, idx, el) !== false
+              })
+              return this
             },
 
             html: function( html ) {
@@ -176,6 +189,27 @@ define(function() {
                 class2type[ toString.call( obj ) ] || 'object';
     }
     $.type = type;
+
+    //fix error, $.grep is used in the source
+    $.grep = function( elems, callback, invert ) {
+        var callbackInverse,
+            matches = [],
+            i = 0,
+            length = elems.length,
+            callbackExpect = !invert;
+
+        // Go through the array, only saving the items
+        // that pass the validator function
+        for ( ; i < length; i++ ) {
+            callbackInverse = !callback( elems[ i ], i );
+            if ( callbackInverse !== callbackExpect ) {
+                matches.push( elems[ i ] );
+            }
+        }
+
+        return matches;
+    }
+
     $.isWindow = function( obj ) {
         return obj && obj.window === obj;
     };

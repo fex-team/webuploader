@@ -41,6 +41,15 @@ module.exports = function(grunt) {
                 dest: "dist/webuploader.html5only.js",
             },
 
+            html5nodepend: {
+                preset: 'html5only',
+                dest: "dist/webuploader.html5nodepend.js",
+                builtin: {
+                    dollar: true,
+                    promise: true
+                },
+            },
+
             withoutimage: {
                 preset: 'withoutimage',
                 dest: "dist/webuploader.noimage.js",
@@ -113,6 +122,11 @@ module.exports = function(grunt) {
                     {
                         src: 'dist/webuploader.html5only.js',
                         dest: 'dist/webuploader.html5only.min.js'
+                    },
+
+                    {
+                        src: 'dist/webuploader.html5nodepend.js',
+                        dest: 'dist/webuploader.html5nodepend.min.js'
                     },
 
                     {
