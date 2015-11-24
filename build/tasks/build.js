@@ -91,7 +91,6 @@ module.exports = function( grunt ) {
 
         options = grunt.util._.extend( options, this.data );
         config.name = 'webuploader';
-
         if ( options.builtin.dollar ) {
             config.rawText.dollar = 'define([\n' +
                     '    \'./dollar-builtin\'\n' +
