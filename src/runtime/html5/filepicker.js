@@ -60,22 +60,24 @@ define([
                 owner.trigger( e.type );
             };
 
-            input.on( 'change', function( e ) {
-                var fn = arguments.callee,
-                    clone;
-
+            var changeFn = (function even(that, e){
+                var clone;
                 me.files = e.target.files;
-
                 // reset input
-                clone = this.cloneNode( true );
+                clone = that.cloneNode(true);
                 clone.value = null;
-                this.parentNode.replaceChild( clone, this );
+                that.parentNode.replaceChild(clone, that);
 
                 input.off();
-                input = $( clone ).on( 'change', fn )
-                        .on( 'mouseenter mouseleave', mouseHandler );
+                input = $(clone).on('change', function(e){
+                    even(this, e);
+                }).on('mouseenter mouseleave', mouseHandler);
 
                 owner.trigger('change');
+            });
+
+            input.on('change', function(e){
+                changeFn(this, e);
             });
 
             label.on( 'mouseenter mouseleave', mouseHandler );
