@@ -296,11 +296,14 @@
                 } else if ( cur === 'interrupt' ) {
                     showError( 'interrupt' );
                 } else if ( cur === 'queued' ) {
+                    $info.remove();
+                    $prgress.css('display', 'block');
                     percentages[ file.id ][ 1 ] = 0;
                 } else if ( cur === 'progress' ) {
                     $info.remove();
                     $prgress.css('display', 'block');
                 } else if ( cur === 'complete' ) {
+                    $prgress.hide().width(0);
                     $li.append( '<span class="success"></span>' );
                 }
 

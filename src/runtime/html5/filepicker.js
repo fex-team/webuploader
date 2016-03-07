@@ -19,11 +19,13 @@ define([
                 arr, i, len, mouseHandler;
 
             input.attr( 'type', 'file' );
+            input.attr( 'capture', 'camera');
             input.attr( 'name', opts.name );
             input.addClass('webuploader-element-invisible');
 
-            label.on( 'click', function() {
+            label.on( 'click', function(e) {
                 input.trigger('click');
+                e.stopPropagation();
                 owner.trigger('dialogopen');
             });
 

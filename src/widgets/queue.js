@@ -167,13 +167,16 @@ define([
             files = $.map( files, function( file ) {
                 return me._addFile( file );
             });
+			
+			if ( files.length ) {
 
-            me.owner.trigger( 'filesQueued', files );
+                me.owner.trigger( 'filesQueued', files );
 
-            if ( me.options.auto ) {
-                setTimeout(function() {
-                    me.request('start-upload');
-                }, 20 );
+				if ( me.options.auto ) {
+					setTimeout(function() {
+						me.request('start-upload');
+					}, 20 );
+				}
             }
         },
 

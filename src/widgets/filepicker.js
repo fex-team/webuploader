@@ -66,13 +66,13 @@ define([
         },
 
         /**
-         * @method addButton
+         * @method addBtn
          * @for Uploader
-         * @grammar addButton( pick ) => Promise
+         * @grammar addBtn( pick ) => Promise
          * @description
          * 添加文件选择按钮，如果一个按钮不够，需要调用此方法来添加。参数跟[options.pick](#WebUploader:Uploader:options)一致。
          * @example
-         * uploader.addButton({
+         * uploader.addBtn({
          *     id: '#btnContainer',
          *     innerHTML: '选择文件'
          * });
