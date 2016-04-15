@@ -140,13 +140,13 @@ define([
          * @description 当一批文件添加进队列以后触发。
          * @for  Uploader
          */
-        
+
         /**
          * @property {Boolean} [auto=false]
          * @namespace options
          * @for Uploader
          * @description 设置为 true 后，不需要手动调用上传，有文件选择即开始上传。
-         * 
+         *
          */
 
         /**
@@ -168,6 +168,7 @@ define([
                 return me._addFile( file );
             });
 			
+
 			if ( files.length ) {
 
                 me.owner.trigger( 'filesQueued', files );
@@ -210,6 +211,10 @@ define([
             var me = this;
 
             file = file.id ? file : me.queue.getFile( file );
+
+            if( !me.queue.getFile( file.id ) ) {
+                return false;
+            }
 
             this.request( 'cancel-file', file );
 
