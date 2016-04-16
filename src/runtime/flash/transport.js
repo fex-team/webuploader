@@ -134,8 +134,8 @@ define([
             });
 
             xhr.on( 'error', function() {
-                xhr.off();
                 var status = xhr.exec('getStatus'),err = status?'http-'+status:'http'；
+                xhr.off();
                 me._xhr = null;
                 me.trigger( 'error', err );
             });
