@@ -1,4 +1,5 @@
 /**
+ * 实现command机制
  * @fileOverview 组件基类。
  */
 define([

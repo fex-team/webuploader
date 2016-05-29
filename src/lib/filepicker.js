@@ -1,4 +1,5 @@
 /**
+ * 文件选择器
  * @fileOverview 错误信息
  */
 define([

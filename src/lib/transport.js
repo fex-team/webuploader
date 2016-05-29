@@ -1,4 +1,6 @@
 /**
+ *
+ * 文件传送
  * @fileOverview Transport
  */
 define([

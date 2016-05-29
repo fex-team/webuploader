@@ -1,4 +1,5 @@
 /**
+ * 文件拖拽
  * @fileOverview 错误信息
  */
 define([

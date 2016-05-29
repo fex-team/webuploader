@@ -1,4 +1,5 @@
 /**
+ * 文件类，Queue中存放的数据类
  * @fileOverview 文件属性封装
  */
 define([

@@ -1,4 +1,5 @@
 /**
+ * 图片处理类，生成缩略图和图片压缩
  * @fileOverview Image
  */
 define([

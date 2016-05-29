@@ -1,4 +1,5 @@
 /**
+ * 队列管理
  * @fileOverview 队列
  */
 define([
