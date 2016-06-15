@@ -1,4 +1,4 @@
-/*! WebUploader 0.1.6 */
+/*! WebUploader 0.1.7 */
 
 
 var jQuery = require('example:widget/ui/jquery/jquery.js');
@@ -103,7 +103,6 @@ module.exports = (function( root, factory ) {
     return makeExport( jQuery );
 })( window, function( window, define, require ) {
 
-
     /**
      * @fileOverview jQuery or Zepto
      * @require "jquery"
@@ -148,6 +147,7 @@ module.exports = (function( root, factory ) {
         };
     });
     /**
+     * 同jq-bridge,在没有jquery的时候才需要，用来实现Deferred
      * @fileOverview Promise/A+
      */
     define('promise',[
@@ -219,7 +219,7 @@ module.exports = (function( root, factory ) {
             /**
              * @property {String} version 当前版本号。
              */
-            version: '0.1.6',
+            version: '0.1.7',
     
             /**
              * @property {jQuery|Zepto} $ 引用依赖的jQuery或者Zepto对象。
@@ -329,8 +329,10 @@ module.exports = (function( root, factory ) {
                     child = protos;
                     protos = null;
                 } else if ( protos && protos.hasOwnProperty('constructor') ) {
+                    //如果子类存在构造器则实用子类的构造器
                     child = protos.constructor;
                 } else {
+                    //调用父类
                     child = function() {
                         return Super.apply( this, arguments );
                     };
@@ -911,9 +913,11 @@ module.exports = (function( root, factory ) {
     
         // 接口类。
         function Runtime( options ) {
+            //默认container为document.body
             this.options = $.extend({
                 container: document.body
             }, options );
+            //生成uid
             this.uid = Base.guid('rt_');
         }
     
@@ -999,6 +1003,7 @@ module.exports = (function( root, factory ) {
     });
     
     /**
+     * 连接器
      * @fileOverview Runtime管理器，负责Runtime的选择, 连接
      */
     define('runtime/client',[
@@ -1138,6 +1143,7 @@ module.exports = (function( root, factory ) {
         return RuntimeClient;
     });
     /**
+     * 文件拖拽
      * @fileOverview 错误信息
      */
     define('lib/dnd',[
@@ -1183,6 +1189,7 @@ module.exports = (function( root, factory ) {
         return DragAndDrop;
     });
     /**
+     * 实现command机制
      * @fileOverview 组件基类。
      */
     define('widgets/widget',[
@@ -1422,6 +1429,7 @@ module.exports = (function( root, factory ) {
         return Widget;
     });
     /**
+     * 文件拖拽应用在Uploader
      * @fileOverview DragAndDrop Widget。
      */
     define('widgets/filednd',[
@@ -1495,6 +1503,8 @@ module.exports = (function( root, factory ) {
     });
     
     /**
+     *
+     * 负责图片黏贴
      * @fileOverview 错误信息
      */
     define('lib/filepaste',[
@@ -1529,6 +1539,7 @@ module.exports = (function( root, factory ) {
         return FilePaste;
     });
     /**
+     * 图片粘贴应用在Uploader
      * @fileOverview 组件基类。
      */
     define('widgets/filepaste',[
@@ -1578,7 +1589,7 @@ module.exports = (function( root, factory ) {
             }
         });
     });
-    /**
+    /**带ruid（为了兼容flash抽象出来的，ruid为运行时id）的Blob类
      * @fileOverview Blob
      */
     define('lib/blob',[
@@ -1624,6 +1635,7 @@ module.exports = (function( root, factory ) {
         return Blob;
     });
     /**
+     * 带ruid的文件类，blob的子类
      * 为了统一化Flash的File和HTML5的File而存在。
      * 以至于要调用Flash里面的File，也可以像调用HTML5版本的File一下。
      * @fileOverview File
@@ -1661,6 +1673,7 @@ module.exports = (function( root, factory ) {
     });
     
     /**
+     * 文件选择器
      * @fileOverview 错误信息
      */
     define('lib/filepicker',[
@@ -1798,6 +1811,7 @@ module.exports = (function( root, factory ) {
     });
     
     /**
+     * 文件上传应用在Uploader
      * @fileOverview 文件选择相关
      */
     define('widgets/filepicker',[
@@ -1942,6 +1956,7 @@ module.exports = (function( root, factory ) {
         });
     });
     /**
+     * 图片处理类，生成缩略图和图片压缩
      * @fileOverview Image
      */
     define('lib/image',[
@@ -2040,6 +2055,7 @@ module.exports = (function( root, factory ) {
         return Image;
     });
     /**
+     * 图片文件在对应的时机做图片压缩和预览
      * @fileOverview 图片操作, 负责预览图片和上传前压缩图片
      */
     define('widgets/image',[
@@ -2349,6 +2365,7 @@ module.exports = (function( root, factory ) {
         });
     });
     /**
+     * 文件类，Queue中存放的数据类
      * @fileOverview 文件属性封装
      */
     define('file',[
@@ -2778,6 +2795,7 @@ module.exports = (function( root, factory ) {
         return Queue;
     });
     /**
+     * 队列管理
      * @fileOverview 队列
      */
     define('widgets/queue',[
@@ -3087,6 +3105,7 @@ module.exports = (function( root, factory ) {
     
     });
     /**
+     * 添加runtime信息给Uploader
      * @fileOverview 添加获取Runtime相关信息的方法。
      */
     define('widgets/runtime',[
@@ -3144,6 +3163,8 @@ module.exports = (function( root, factory ) {
         });
     });
     /**
+     *
+     * 文件传送
      * @fileOverview Transport
      */
     define('lib/transport',[
@@ -3274,6 +3295,7 @@ module.exports = (function( root, factory ) {
         return Transport;
     });
     /**
+     * 负责具体的上传逻辑哦
      * @fileOverview 负责文件上传相关。
      */
     define('widgets/upload',[
@@ -4126,6 +4148,7 @@ module.exports = (function( root, factory ) {
     });
     
     /**
+     * 各种验证器
      * @fileOverview 各种验证，包括文件总大小是否超出、单文件是否超出和文件是否重复。
      */
     
@@ -4465,6 +4488,7 @@ module.exports = (function( root, factory ) {
         });
     });
     /**
+     * Component基类
      * @fileOverview Runtime管理器，负责Runtime的选择, 连接
      */
     define('runtime/compbase',[],function() {
@@ -4690,7 +4714,7 @@ module.exports = (function( root, factory ) {
                 me.dndOver = false;
                 me.elem.removeClass( prefix + 'over' );
     
-                if ( data ) {
+                if ( !dataTransfer || data ) {
                     return;
                 }
     
@@ -8111,6 +8135,7 @@ module.exports = (function( root, factory ) {
     ], function( preset ) {
         return preset;
     });
+
 
     var _require = require;
     return _require('webuploader');
