@@ -556,7 +556,7 @@ var uploader = WebUploader.Uploader({
         <li>
             <span class="meta">
                 <code>accept</code>
-                 {Arroy} 
+                 {Array} 
                  [可选] 
                  [默认值：null] 
             </span>
@@ -669,7 +669,7 @@ var uploader = WebUploader.Uploader({
                  [可选] 
                  [默认值：html5,flash] 
             </span>
-            <p>指定运行时启动顺序。默认会想尝试 html5 是否支持，如果支持则使用 html5, 否则则使用 flash.</p>
+            <p>指定运行时启动顺序。默认会先尝试 html5 是否支持，如果支持则使用 html5, 否则使用 flash.</p>
 <p>可以将此值设置成 <code>flash</code>，来强制使用 flash 运行时。</p>
 
             
@@ -683,7 +683,7 @@ var uploader = WebUploader.Uploader({
                  [默认值：false] 
             </span>
             <p>是否允许在文件传输时提前把下一个文件准备好。
-对于一个文件的准备工作比较耗时，比如图片压缩，md5序列化。
+某些文件的准备工作比较耗时（比如图片压缩，md5序列化），
 如果能提前在当前文件传输期处理，可以节省总体耗时。</p>
 
             
@@ -878,7 +878,7 @@ var uploader = WebUploader.Uploader({
 </li></ul>
                 
             </td>
-            <td><p>当文件被加入队列之前触发，此事件的handler返回值为<code>false</code>，则此文件不会被添加进入队列。</p>
+            <td><p>当文件被加入队列之前触发。如果此事件handler的返回值为<code>false</code>，则此文件不会被添加进入队列。</p>
 </td>
         </tr>
         
@@ -1750,7 +1750,7 @@ $li.on('click', '.remove-this', function() {
     
     
 
-    <p>掉过一个文件上传，直接标记指定文件为已上传状态。</p>
+    <p>跳过一个文件上传，直接标记指定文件为已上传状态。</p>
 
     
 </article>
