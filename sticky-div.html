@@ -1,0 +1,104 @@
+<html><head>
+<title>
+</title>
+<style>
+html {
+  box-sizing: border-box;
+}
+*, *:before, *:after {
+  box-sizing: inherit;
+}
+body {
+  background-color: #F5F7FA;
+  line-height: 1.2;
+}
+/**
+ * For modern browsers
+ * 1. The space content is one way to avoid an Opera bug when the
+ *    contenteditable attribute is included anywhere else in the document.
+ *    Otherwise it causes space to appear at the top and bottom of elements
+ *    that are clearfixed.
+ * 2. The use of `table` rather than `block` is only necessary if using
+ *    `:before` to contain the top-margins of child elements.
+ */
+.cf:before,
+.cf:after {
+    content: " "; /* 1 */
+    display: table; /* 2 */
+}
+
+.cf:after {
+    clear: both;
+}
+
+/**
+ * For IE 6/7 only
+ * Include this rule to trigger hasLayout and contain floats.
+ */
+.cf {
+    *zoom: 1;
+}
+.wrapper {
+  width: 100%;
+  max-width: 590px;
+  margin-right: auto;
+  margin-left: auto;
+  margin-top: 60px;
+  margin-bottom: 200px;
+}
+.content {
+  padding: 0 15px;
+  width: 360px;
+}
+.content h1 {
+  margin-top: 0;
+}
+.content p,
+.sidebar p{
+  font-family: "BLOKKNeue-Regular";
+}
+.sidebar {
+  padding: 20px;
+  width: 190px;
+  background-color: #434A54;
+  color: #fff;
+}
+.sidebar h3 {
+  margin: 0;
+}
+.content,
+.sidebar {
+  float: left;
+}
+
+
+/* The sticky */
+.sidebar {
+  position: -webkit-sticky;
+  position: sticky;
+  top: 15px;
+}
+</style>
+
+<script type="javascript/text">
+var sidebar = document.getElementById('sidebar');
+Stickyfill.add(sidebar);
+</script>
+</head><body>
+<div class="wrapper cf">
+  <div class="content">
+   <h1>Scroll Down!</h1>
+<p>Pellentesque habitant morbi tristique senectus et netus et malesuada fames ac turpis egestas. Vestibulum tortor quam, feugiat vitae, ultricies eget, tempor sit amet, ante. Donec eu libero sit amet quam egestas semper. Aenean ultricies mi vitae est. Mauris placerat eleifend leo.</p>  
+    <p>Lorem ipsum dolor sit amet, consectetur adipisicing elit. Atque vero, maxime nulla dolore iure voluptatem itaque. Nisi commodi ut consectetur beatae mollitia. Ab, maxime quisquam ipsa, quibusdam itaque et eius.</p>  
+    <p>Lorem ipsum dolor sit amet, consectetur adipisicing elit. Expedita, molestiae.</p> 
+    <p>Lorem ipsum dolor sit amet, consectetur adipisicing elit. Minus suscipit blanditiis delectus quos, soluta fuga voluptatem, facere inventore neque voluptate quaerat unde laboriosam molestiae repellat, sapiente accusamus cumque! Ipsam, illo!</p>  
+        <p>Lorem ipsum dolor sit amet, consectetur adipisicing elit. Expedita, molestiae.</p> 
+    <p>Lorem ipsum dolor sit amet, consectetur adipisicing elit. Minus suscipit blanditiis delectus quos, soluta fuga voluptatem, facere inventore neque voluptate quaerat unde laboriosam molestiae repellat, sapiente accusamus cumque! Ipsam, illo!</p>  
+  </div>
+  <div id="sidebar" class="sidebar">
+     <h3>Sidebar</h3>
+    <p>Lorem ipsum dolor sit amet, consectetur adipisicing elit. Ab maxime fugiat perspiciatis.</p>
+  </div>
+</div>
+</body>
+</html>
