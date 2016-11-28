@@ -97,9 +97,9 @@ define([
                     readBody = true;
                 } else if ( status >= 500 && status < 600 ) {
                     readBody = true;
-                    err = 'server';
+                    err = 'server-'+status;
                 } else {
-                    err = 'http';
+                    err = 'http-'+status;
                 }
 
                 if ( readBody ) {
@@ -134,9 +134,10 @@ define([
             });
 
             xhr.on( 'error', function() {
+                var status = xhr.exec('getStatus'),err = status?'http-'+status:'http'；
                 xhr.off();
                 me._xhr = null;
-                me.trigger( 'error', 'http' );
+                me.trigger( 'error', err );
             });
 
             me._xhr = xhr;
