@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>
+            下载 - Web Uploader
+        </title>
+
+    <!-- HTML5 Shim and Respond.js IE8 support of HTML5 elements and media queries -->
+    <!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
+    <!--[if lt IE 9]>
+        <script src="https://oss.maxcdn.com/libs/html5shiv/3.7.0/html5shiv.js"></script>
+        <script src="https://oss.maxcdn.com/libs/respond.js/1.3.0/respond.min.js"></script>
+    <![endif]-->
+    <link rel="shortcut icon" href="/webuploader/images/favicon.ico">
+    <link rel="stylesheet" type="text/css" href="/webuploader/css/bootstrap.min.css">
+    <link rel="stylesheet" type="text/css" href="/webuploader/css/bootstrap-theme.min.css">
+    <link rel="stylesheet" type="text/css" href="/webuploader/css/font-awesome.min.css">
+    <link rel="stylesheet" type="text/css" href="/webuploader/css/syntax.css">
+    <link rel="stylesheet" type="text/css" href="/webuploader/css/style.css">
+    
+</head>
+
+<body>
+    <div id="wrapper">
+        <div class="navbar navbar-fixed-top navbar-inverse" role="navigation">
+    <div class="container">
+        <div class="navbar-header">
+            <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-collapse">
+                <span class="sr-only">Toggle navigation</span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+            </button>
+            <a class="navbar-brand logo" href="/webuploader/">
+                <span class="fa fa-cloud-upload"></span>WebUploader</a>
+        </div>
+        <div class="collapse navbar-collapse">
+            <ul class="nav navbar-nav">      <li><a href="/webuploader/getting-started.html">Getting started</a></li>      <li><a href="/webuploader/document.html">Document</a></li>           <li><a href="/webuploader/doc/index.html">API</a></li>    <li><a href="/webuploader/demo.html">Demo</a></li>          <li class="active"><a href="/webuploader/download.html" class="active">Download</a></li>                                      
+                <li><a target="_blank" href="https://github.com/fex-team/webuploader/issues?labels=faq&amp;page=1&amp;state=open">FAQ</a></li>
+            </ul>
+
+            <ul class="nav navbar-nav navbar-right">
+                <li><a target="_blank" href="https://github.com/fex-team/webuploader">Github</a></li>
+            </ul>
+        </div>
+        <!-- /.nav-collapse -->
+    </div>
+    <!-- /.container -->
+</div>
+<!-- /.navbar --> <div class="page-body">
+
+<div id="post-container" class="container">
+    
+
+    
+
+    <div class="row">
+        <div class="col-md-3">
+            <div class="post-toc"><ul class="nav">
+<li>
+<a href="#包内容">包内容</a>
+</li>
+<li>
+<a href="#下载">下载</a>
+</li>
+<li>
+<a href="#diy打包">DIY打包</a>
+<ul class="nav">
+<li>
+<a href="#环境依赖">环境依赖</a>
+</li>
+<li>
+<a href="#编译代码">编译代码</a>
+</li>
+<li>
+<a href="#配置">配置</a>
+</li>
+</ul>
+</li>
+</ul>
+</div>
+        </div>
+        <div class="col-md-9">
+
+            
+
+            <div class="page-container">
+                <h2 id="包内容">包内容</h2>
+
+<p>下载包中包含以下文件</p>
+<div class="highlight"><pre><code class="language-text" data-lang="text">├── Uploader.swf                      // SWF文件，当使用Flash运行时需要引入。
+
+├── webuploader.js                    // 完全版本。
+├── webuploader.min.js                // min版本
+
+├── webuploader.flashonly.js          // 只有Flash实现的版本。
+├── webuploader.flashonly.min.js      // min版本
+
+├── webuploader.html5only.js          // 只有Html5实现的版本。
+├── webuploader.html5only.min.js      // min版本
+
+├── webuploader.withoutimage.js       // 去除图片处理的版本，包括HTML5和FLASH.
+└── webuploader.withoutimage.min.js   // min版本
+</code></pre></div>
+<h2 id="下载">下载</h2>
+
+<p>直接下载本站默认打包版本，下载包中包含<code>源码版本</code>和<code>压缩版本</code>。</p>
+
+<p><a class="btn btn-success" href="https://github.com/fex-team/webuploader/releases">下载最新版本</a></p>
+
+<p>或者直接使用由<a href="http://www.staticfile.org/">staticfile</a>提供的cdn版本，或者下载<a href="https://github.com/fex-team/webuploader/zipball/master">Git项目包</a>。</p>
+<div class="highlight"><pre><code class="language-html" data-lang="html">// SWF文件，当使用Flash运行时需要引入。
+├── http://cdn.staticfile.org/webuploader/0.1.0/Uploader.swf
+
+// 完全版本。
+├── http://cdn.staticfile.org/webuploader/0.1.0/webuploader.js
+├── http://cdn.staticfile.org/webuploader/0.1.0/webuploader.min.js
+
+// 只有Flash实现的版本。
+├── http://cdn.staticfile.org/webuploader/0.1.0/webuploader.flashonly.js
+├── http://cdn.staticfile.org/webuploader/0.1.0/webuploader.flashonly.min.js
+
+// 只有Html5实现的版本。
+├── http://cdn.staticfile.org/webuploader/0.1.0/webuploader.html5only.js
+├── http://cdn.staticfile.org/webuploader/0.1.0/webuploader.html5only.min.js
+
+// 去除图片处理的版本，包括HTML5和FLASH.
+├── http://cdn.staticfile.org/webuploader/0.1.0/webuploader.withoutimage.js
+└── http://cdn.staticfile.org/webuploader/0.1.0/webuploader.withoutimage.min.js
+</code></pre></div>
+<h2 id="diy打包">DIY打包</h2>
+
+<p>想更大力度的搭配JS，实现满足需求的最小组合，请按如下步骤进行操作。 文件打包借助了<a href="http://gruntjs.com/getting-started">Grunt</a>工具来实现。
+如果您还不知道什么是<a href="http://gruntjs.com/getting-started">Grunt</a>，赶紧去了解一下吧。</p>
+
+<h3 id="环境依赖">环境依赖</h3>
+
+<ol>
+<li>git命令行工具</li>
+<li>node &amp; npm命令行工具</li>
+<li>grunt (<code>npm install grunt-cli -g</code>)</li>
+</ol>
+
+<h3 id="编译代码">编译代码</h3>
+
+<ol>
+<li>克隆 <a href="https://github.com/fex-team/webuploader">webuploader git仓库</a>，<code>git clone https://github.com/fex-team/webuploader.git</code>。</li>
+<li>安装node依赖，<code>npm install</code>。</li>
+<li>执行<code>grunt dist</code>，此动作会在dist目录下面创建合并版本的js, 包括通过<code>uglify</code>压缩的min版本。</li>
+</ol>
+
+<h3 id="配置">配置</h3>
+
+<p>打开webuploader仓库根目录下面的<code>Gruntfile.js</code>文件, 代码合并有<code>build</code>task来完成。找到<code>build</code>配置项。</p>
+
+<p>Gruntfile.js已经配置了一个自定义合并的demo. 打包只支持HTML5的版本。</p>
+<div class="highlight"><pre><code class="language-javascript" data-lang="javascript"><span class="c1">// 自己配置的实例</span>
+<span class="c1">// glob语法。</span>
+<span class="nx">custom</span><span class="o">:</span> <span class="p">{</span>
+    <span class="nx">preset</span><span class="o">:</span> <span class="s2">&quot;custom&quot;</span><span class="p">,</span>
+    <span class="nx">cwd</span><span class="o">:</span> <span class="s2">&quot;src&quot;</span><span class="p">,</span>
+    <span class="nx">src</span><span class="o">:</span> <span class="p">[</span>
+        <span class="s1">&#39;widgets/**/*.js&#39;</span><span class="p">,</span>
+        <span class="s1">&#39;runtime/html5/**/*.js&#39;</span>
+    <span class="p">],</span>
+    <span class="nx">dest</span><span class="o">:</span> <span class="s2">&quot;dist/webuploader.custom.js&quot;</span>
+<span class="p">}</span>
+</code></pre></div>
+            </div>
+
+            
+
+<div id="ghComments" class="comments" data-issue-id="82">
+    <h2>评论</h2>
+    <div id="header">想要留下评论，请在<a href="https://github.com/fex-team/webuploader/issues/82">此Github issue</a> 页面完成操作，谢谢！</div>
+
+    <div class="alert alert-warning">
+        <p>如果是讨论技术问题或者报告bug，请最好还是新建一个issue展开讨论，以免你提出的问题石沉大海。</p>
+        <p>点此进入<a href="https://github.com/fex-team/webuploader/issues">issues列表页</a>。</p></div>
+</div>
+
+
+        </div>
+    </div>
+
+    
+</div></div> <div id="footer" class="footer">
+    <div class="footer-inner container">
+        <div class="row">
+            <div class="col-md-4">
+                <p class="copyright">Webuploader由<a href="https://github.com/fex-team">fex-team</a>团队负责维护</p>
+                <p>&copy;2013-2018 Baidu Fex Team</p>
+            </div>
+            <div class="col-md-4">
+                <!-- <p>友情链接</p> -->
+                <ul class="friends-links">
+                    <li><a href="http://fis.baidu.com/" title="前端集成解决方案">Fis</a></li>
+                    <li><a href="http://gmu.baidu.com" title="基于zepto的mobile UI组件库">GMU</a></li>
+                    <li><a href="http://ueditor.baidu.com/website/" title="UEditor是由百度web前端研发部开发所见即所得富文本web编辑器，具有轻量，可定制，注重用户体验等特点，开源基于MIT协议，允许自由使用和修改代码...">Ueditor</a></li>
+                </ul>
+            </div>
+            <div class="col-md-4">
+                <div class="weixin">
+                    <img src="/webuploader/images/qrcode.jpg" alt="..." class="img-rounded weixin-img" />
+                    <p>微信公共帐号</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+    </div>
+    <script type="text/javascript">
+    // 添加全局站点信息
+    var BASE_URL = '/webuploader';
+    </script>
+    <script type="text/javascript" src="/webuploader/js/jquery-1.10.2.min.js"></script>
+    <script type="text/javascript" src="/webuploader/js/bootstrap.min.js"></script>
+    <script type="text/javascript" src="/webuploader/js/global.js"></script>
+    
+    <script type="text/javascript">
+    var _bdhmProtocol = (("https:" == document.location.protocol) ? " https://" : " http://");
+    document.write(unescape("%3Cscript src='" + _bdhmProtocol + "hm.baidu.com/h.js%3F67c4841095cbee8275705e1f6224a3c7' type='text/javascript'%3E%3C/script%3E"));
+    </script>
+</body>
+</html>

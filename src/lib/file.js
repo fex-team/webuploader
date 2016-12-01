@@ -1,4 +1,5 @@
 /**
+ * 带ruid的文件类，blob的子类
  * 为了统一化Flash的File和HTML5的File而存在。
  * 以至于要调用Flash里面的File，也可以像调用HTML5版本的File一下。
  * @fileOverview File

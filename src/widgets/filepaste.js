@@ -1,4 +1,5 @@
 /**
+ * 图片粘贴应用在Uploader
  * @fileOverview 组件基类。
  */
 define([

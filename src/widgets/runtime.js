@@ -1,4 +1,5 @@
 /**
+ * 添加runtime信息给Uploader
  * @fileOverview 添加获取Runtime相关信息的方法。
  */
 define([

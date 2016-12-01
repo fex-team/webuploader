@@ -1,4 +1,6 @@
 /**
+ *
+ * 负责图片黏贴
  * @fileOverview 错误信息
  */
 define([

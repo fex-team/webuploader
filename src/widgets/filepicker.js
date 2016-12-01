@@ -1,4 +1,5 @@
 /**
+ * 文件上传应用在Uploader
  * @fileOverview 文件选择相关
  */
 define([

@@ -45,7 +45,7 @@ jQuery(function() {
     }
 
     function formatDate( str ) {
-        var date = new Date( str.replace(/T/, ' ').replace(/Z/, ' UTC') );
+        var date = new Date( str.replace(/T/, ' ').replace(/Z/, '') );
 
         return date.getFullYear() + '-' +
                 formatNumber( date.getMonth() + 1 ) + '-' +

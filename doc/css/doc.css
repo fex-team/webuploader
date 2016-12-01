@@ -1,0 +1,64 @@
+ul.signature {
+    margin: 1em 0;
+    padding: 0;
+    font: normal 12px/18px Monaco, Consolas, "Lucida Console", monospace;
+}
+
+ul.signature li {
+    list-style: none;
+}
+
+.method p {
+    margin: 0.5em 0;
+}
+
+.method h3 {
+    margin-bottom: .2em;
+}
+
+.method h3.deprecated {
+    text-decoration: line-through;
+}
+
+span.deleted {
+    text-decoration: line-through;
+}
+
+.method pre.cm-s-default {
+    display: block;
+    white-space: pre-wrap;
+    margin: 1em 0px;
+}
+
+.method .warning {
+    margin: 5px 0;
+    font: bold 12px Arial;
+    color: #700;
+}
+
+.method .version {
+    background: #CCF;
+    color: black;
+    padding: 1px 3px;
+    margin: 0 0 0 5px;
+    border-radius: 3px;
+    font: bold 11px Arial;
+    font-weight: normal;
+}
+
+div.notice {
+    padding: 4px 10px;
+    border-left: 2px solid #FF8;
+    background: #FFE;
+    color: black;
+    margin: 1em 0;
+}
+
+ul.params-list li > span.meta + p, ol.plugin-list li > code + p {
+    display: inline;
+    padding-left: 10px;
+}
+
+table.table .events-tb-desc {
+    min-width: 250px;
+}

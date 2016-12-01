@@ -1,4 +1,5 @@
 /**
+ * 图片文件在对应的时机做图片压缩和预览
  * @fileOverview 图片操作, 负责预览图片和上传前压缩图片
  */
 define([
@@ -250,6 +251,7 @@ define([
             });
             image.once( 'error', deferred.reject );
             image.once( 'load', function() {
+                
                 var width = opts.width,
                     height = opts.height;
 

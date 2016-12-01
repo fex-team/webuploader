@@ -21,9 +21,11 @@ define([
 
     // 接口类。
     function Runtime( options ) {
+        //默认container为document.body
         this.options = $.extend({
             container: document.body
         }, options );
+        //生成uid
         this.uid = Base.guid('rt_');
     }
 

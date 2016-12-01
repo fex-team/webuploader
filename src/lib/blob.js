@@ -1,4 +1,4 @@
-/**
+/**带ruid（为了兼容flash抽象出来的，ruid为运行时id）的Blob类
  * @fileOverview Blob
  */
 define([

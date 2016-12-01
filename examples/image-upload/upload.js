@@ -1,6 +1,7 @@
 (function( $ ){
     // 当domReady的时候开始初始化
     $(function() {
+        $.support.cors=true;
         var $wrap = $('#uploader'),
 
             // 图片容器
@@ -151,7 +152,7 @@
             swf: '../../dist/Uploader.swf',
             chunked: false,
             chunkSize: 512 * 1024,
-            server: '../../server/fileupload.php',
+            server: 'http://211.153.22.238:8094/qifujia-server/api/webuploader/upload',
             // runtimeOrder: 'flash',
 
             // accept: {

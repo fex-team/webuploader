@@ -1,4 +1,5 @@
 /**
+ * 文件拖拽应用在Uploader
  * @fileOverview DragAndDrop Widget。
  */
 define([

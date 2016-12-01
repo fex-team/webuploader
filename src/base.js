@@ -172,8 +172,10 @@ define([
                 child = protos;
                 protos = null;
             } else if ( protos && protos.hasOwnProperty('constructor') ) {
+                //如果子类存在构造器则实用子类的构造器
                 child = protos.constructor;
             } else {
+                //调用父类
                 child = function() {
                     return Super.apply( this, arguments );
                 };
