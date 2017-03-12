@@ -176,6 +176,8 @@ define([
                     me._onFileStatusChange( cur, pre );
                 });
             }
+
+            file.setStatus( STATUS.QUEUED );
         },
 
         _onFileStatusChange: function( curStatus, preStatus ) {

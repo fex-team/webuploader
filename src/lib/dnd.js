@@ -18,7 +18,7 @@ define([
             return;
         }
 
-        RuntimeClent.call( this, 'DragAndDrop' );
+        RuntimeClent.call( this, 'DragAndDrop', true );
     }
 
     DragAndDrop.options = {

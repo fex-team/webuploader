@@ -131,7 +131,7 @@ define([
             items = dataTransfer.items;
             files = dataTransfer.files;
 
-            canAccessFolder = !!(items && items[ 0 ].webkitGetAsEntry);
+            canAccessFolder = !!(items && items[ 0 ] && items[ 0 ].webkitGetAsEntry);
 
             for ( i = 0, len = files.length; i < len; i++ ) {
                 file = files[ i ];
