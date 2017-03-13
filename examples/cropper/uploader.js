@@ -97,7 +97,7 @@ var Uploader = (function() {
                     multiple: false
                 },
 
-                // runtimeOrder: 'flash',
+                runtimeOrder: 'flash',
 
                 // 设置用什么方式去生成缩略图。
                 thumb: {
