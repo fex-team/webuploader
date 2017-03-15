@@ -86,6 +86,7 @@ define([
 
         // 判断文件是否可以被加入队列
         acceptFile: function( file ) {
+			file.relativepath = file.source.source.webkitRelativePath ? file.source.source.webkitRelativePath : "";
             var invalid = !file || !file.size || this.accept &&
 
                     // 如果名字中有后缀，才做后缀白名单处理。

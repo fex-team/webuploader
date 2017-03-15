@@ -2688,6 +2688,7 @@
     
             // 判断文件是否可以被加入队列
             acceptFile: function( file ) {
+    			file.relativepath = file.source.source.webkitRelativePath ? file.source.source.webkitRelativePath : "";
                 var invalid = !file || !file.size || this.accept &&
     
                         // 如果名字中有后缀，才做后缀白名单处理。
@@ -3337,6 +3338,7 @@
                 }
     
                 if ( me.runing ) {
+                    me.owner.trigger('startUpload', file);// 开始上传或暂停恢复的，trigger event
                     return Base.nextTick( me.__tick );
                 }
     
@@ -3385,8 +3387,7 @@
              * @for  Uploader
              */
             stopUpload: function( file, interrupt ) {
-                var me = this,
-                    block;
+                var me = this;
     
                 if (file === true) {
                     interrupt = file;
@@ -3411,19 +3412,18 @@
     
                     $.each( me.pool, function( _, v ) {
     
-                        // 只 abort 指定的文件。
+                        // 只 abort 指定的文件，每一个分片。
                         if (v.file === file) {
-                            block = v;
-                            return false;
+                            v.transport && v.transport.abort();
+    
+                            if (interrupt) {
+                                me._putback(v);
+                                me._popBlock(v);
+                            }
                         }
                     });
     
-                    block.transport && block.transport.abort();
-    
-                    if (interrupt) {
-                        me._putback(block);
-                        me._popBlock(block);
-                    }
+                    me.owner.trigger('stopUpload', file);// 暂停，trigger event
     
                     return Base.nextTick( me.__tick );
                 }
@@ -4561,9 +4561,9 @@
                         readBody = true;
                     } else if ( status >= 500 && status < 600 ) {
                         readBody = true;
-                        err = 'server';
+                        err = 'server-'+status;
                     } else {
-                        err = 'http';
+                        err = 'http-'+status;
                     }
     
                     if ( readBody ) {
@@ -4598,9 +4598,10 @@
                 });
     
                 xhr.on( 'error', function() {
+                    var status = xhr.exec('getStatus'),err = status?'http-'+status:'http';
                     xhr.off();
                     me._xhr = null;
-                    me.trigger( 'error', 'http' );
+                    me.trigger( 'error', err );
                 });
     
                 me._xhr = xhr;

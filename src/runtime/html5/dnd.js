@@ -137,7 +137,7 @@ define([
                 file = files[ i ];
                 item = items && items[ i ];
 
-                if ( canAccessFolder && item.webkitGetAsEntry().isDirectory ) {
+                if (canAccessFolder && item.webkitGetAsEntry() && item.webkitGetAsEntry().isDirectory) {
 
                     promises.push( this._traverseDirectoryTree(
                             item.webkitGetAsEntry(), results ) );
