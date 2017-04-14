@@ -3920,12 +3920,10 @@
     
                 // hook, 每个分片发送之前可能要做些异步的事情。
                 promise = me.request( 'before-send', block, function() {
-    
+                    
+                    me._doSend( block );
                     // 有可能文件已经上传出错了，所以不需要再传输了。
-                    if ( file.getStatus() === Status.PROGRESS ) {
-                        me._doSend( block );
-                    } else {
-                        me._popBlock( block );
+                    if ( file.getStatus() !== Status.PROGRESS ) {
                         Base.nextTick( me.__tick );
                     }
                 });
