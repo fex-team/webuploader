@@ -16,7 +16,7 @@ define([
                 opts = me.options,
                 label = this.label = $( document.createElement('label') ),
                 input =  this.input = $( document.createElement('input') ),
-                arr, i, len, mouseHandler;
+                arr, i, len, mouseHandler, changeHandler;
 
             input.attr( 'type', 'file' );
             input.attr( 'capture', 'camera');
@@ -60,9 +60,8 @@ define([
                 owner.trigger( e.type );
             };
 
-            input.on( 'change', function( e ) {
-                var fn = arguments.callee,
-                    clone;
+            changeHandler = function( e ) {
+                var clone;
 
                 // 解决chrome 56 第二次打开文件选择器，然后点击取消，依然会触发change事件的问题
                 if (e.target.files.length === 0){
@@ -83,8 +82,8 @@ define([
                         .on( 'mouseenter mouseleave', mouseHandler );
 
                 owner.trigger('change');
-            });
-
+            }
+            input.on( 'change', changeHandler);
             label.on( 'mouseenter mouseleave', mouseHandler );
 
         },
