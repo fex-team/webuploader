@@ -70,7 +70,10 @@ define([
         }
 
         uploader.on( 'beforeFileQueued', function( file ) {
-
+                // 增加beforeFileQueuedCheckfileNumLimit验证,主要为了再次加载时(已存在历史文件)验证数量是否超过设置项
+            if (!this.trigger('beforeFileQueuedCheckfileNumLimit', file,count)) {
+                return false;
+            }
             if ( count >= max && flag ) {
                 flag = false;
                 this.trigger( 'error', 'Q_EXCEED_NUM_LIMIT', max, file );
