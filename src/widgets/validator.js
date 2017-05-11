@@ -70,7 +70,7 @@ define([
         }
 
         uploader.on( 'beforeFileQueued', function( file ) {
-
+            max = parseInt( opts.fileNumLimit, 10 );
             if ( count >= max && flag ) {
                 flag = false;
                 this.trigger( 'error', 'Q_EXCEED_NUM_LIMIT', max, file );
