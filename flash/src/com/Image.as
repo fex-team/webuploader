@@ -26,6 +26,8 @@ import flash.events.ProgressEvent;
 import flash.geom.Matrix;
 	import flash.system.System;
 	import flash.utils.ByteArray;
+	import flash.geom.Rectangle;
+	import flash.geom.Point;
 	
 	public class Image extends OEventDispatcher
 	{
@@ -46,12 +48,15 @@ import flash.geom.Matrix;
 		
 		public var type:String = 'image/jpeg';
 		public var quality:uint = 70;
-		public var crop:Boolean = true;
+		public var _crop:Boolean = true;
 		public var allowMagnify:Boolean = true;
 		public var preserveHeaders:Boolean = false;
 		
 		public function init( options:Object = null ):void {
 			Utils.extend(this, options, true);
+			if (options.hasOwnProperty("crop")){				
+				_crop = options["crop"];
+			}
 		}
 		
 		public function loadFromBlob( blob:* = null ):void {
@@ -146,7 +151,7 @@ import flash.geom.Matrix;
 			}
 			
 			var selector:Function, scale:Number;
-			selector = crop ? Math.max : Math.min;
+			selector = _crop ? Math.max : Math.min;
 			scale = selector(  width / naturalWidth, height / naturalHeight );
 			
 			if ( !allowMagnify && scale > 1 ) {
@@ -211,6 +216,13 @@ import flash.geom.Matrix;
 			} catch (ex:*) {
 				Uploader.log([ex]);
 			}
+		}
+		
+		public function crop( x:Number = 0, y:Number = 0, width:Number = 110, height:Number = 110, scale:Number = 1  ):void {
+			var croppedBD:BitmapData = new BitmapData(width, height);
+			croppedBD.copyPixels(_bd, new Rectangle(x, y, width, height), new Point(0, 0));
+			_bd.dispose();
+			_bd = croppedBD
 		}
 		
 		public function getAsDataUrl( _type:String = null):String {
@@ -313,9 +325,9 @@ import flash.geom.Matrix;
 			imageEditor.commit();
 			
 			bd.dispose();
-			bd = imageEditor.bitmapData;
+			_bd = imageEditor.bitmapData;
 			imageEditor.purge();
-			return bd;
+			return _bd;
 		}
 	}
 }

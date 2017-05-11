@@ -53,17 +53,21 @@ var Uploader = (function() {
             });
             image.once( 'error', deferred.reject );
             image.once( 'load', function() {
-                image.crop( data.x, data.y, data.width, data.height, data.scale );
+                if (file._info)
+                {
+                    image.resize( file._info.width, file._info.height );
+                }
             });
 
             image.once( 'complete', function() {
+                image.crop( data.x, data.y, data.width, data.height, data.scale );
                 var blob, size;
 
                 // 移动端 UC / qq 浏览器的无图模式下
                 // ctx.getImageData 处理大图的时候会报 Exception
                 // INDEX_SIZE_ERR: DOM Exception 1
                 try {
-                    blob = image.getAsBlob();
+                    blob = image.getAsBlob(file.type);
                     size = file.size;
                     file.source = blob;
                     file.size = blob.size;
@@ -92,6 +96,8 @@ var Uploader = (function() {
                     id: '#filePicker',
                     multiple: false
                 },
+
+                runtimeOrder: 'flash',
 
                 // 设置用什么方式去生成缩略图。
                 thumb: {
