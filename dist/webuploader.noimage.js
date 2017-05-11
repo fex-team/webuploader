@@ -1,4 +1,4 @@
-/*! WebUploader 0.1.6 */
+/*! WebUploader 0.1.7-alpha */
 
 
 /**
@@ -244,7 +244,7 @@
             /**
              * @property {String} version 当前版本号。
              */
-            version: '0.1.6',
+            version: '0.1.7-alpha',
     
             /**
              * @property {jQuery|Zepto} $ 引用依赖的jQuery或者Zepto对象。
@@ -2314,21 +2314,19 @@
     
                 if ( existing ) {
                     delete this._map[ file.id ];
+                    this._delFile(file);
                     file.destroy();
                     this.stats.numofDeleted++;
+                    
                 }
             },
     
-            _fileAdded: function( file ) {
-                var me = this,
-                    existing = this._map[ file.id ];
-    
-                if ( !existing ) {
-                    this._map[ file.id ] = file;
-    
-                    file.on( 'statuschange', function( cur, pre ) {
-                        me._onFileStatusChange( cur, pre );
-                    });
+            _delFile : function(file){
+                for(var i = this._queue.length - 1 ; i >= 0 ; i-- ){
+                    if(this._queue[i] == file){
+                        this._queue.splice(i,1); 
+                        break;
+                    }
                 }
             },
     
@@ -2395,6 +2393,7 @@
     
         return Queue;
     });
+    
     /**
      * @fileOverview 队列
      */
@@ -3132,6 +3131,7 @@
                 }
     
                 if ( me.runing ) {
+                    me.owner.trigger('startUpload', file);// 开始上传或暂停恢复的，trigger event
                     return Base.nextTick( me.__tick );
                 }
     
@@ -3180,8 +3180,7 @@
              * @for  Uploader
              */
             stopUpload: function( file, interrupt ) {
-                var me = this,
-                    block;
+                var me = this;
     
                 if (file === true) {
                     interrupt = file;
@@ -3206,19 +3205,18 @@
     
                     $.each( me.pool, function( _, v ) {
     
-                        // 只 abort 指定的文件。
+                        // 只 abort 指定的文件，每一个分片。
                         if (v.file === file) {
-                            block = v;
-                            return false;
+                            v.transport && v.transport.abort();
+    
+                            if (interrupt) {
+                                me._putback(v);
+                                me._popBlock(v);
+                            }
                         }
                     });
     
-                    block.transport && block.transport.abort();
-    
-                    if (interrupt) {
-                        me._putback(block);
-                        me._popBlock(block);
-                    }
+                    me.owner.trigger('stopUpload', file);// 暂停，trigger event
     
                     return Base.nextTick( me.__tick );
                 }
@@ -3815,7 +3813,10 @@
             }
     
             uploader.on( 'beforeFileQueued', function( file ) {
-    
+                    // 增加beforeFileQueuedCheckfileNumLimit验证,主要为了再次加载时(已存在历史文件)验证数量是否超过设置项
+                if (!this.trigger('beforeFileQueuedCheckfileNumLimit', file,count)) {
+                    return false;
+                }
                 if ( count >= max && flag ) {
                     flag = false;
                     this.trigger( 'error', 'Q_EXCEED_NUM_LIMIT', max, file );
@@ -4198,7 +4199,7 @@
                 me.dndOver = false;
                 me.elem.removeClass( prefix + 'over' );
     
-                if ( data ) {
+                if ( !dataTransfer || data ) {
                     return;
                 }
     
@@ -4382,7 +4383,7 @@
                     opts = me.options,
                     label = this.label = $( document.createElement('label') ),
                     input =  this.input = $( document.createElement('input') ),
-                    arr, i, len, mouseHandler;
+                    arr, i, len, mouseHandler, changeHandler;
     
                 input.attr( 'type', 'file' );
                 input.attr( 'capture', 'camera');
@@ -4426,11 +4427,17 @@
                     owner.trigger( e.type );
                 };
     
-                input.on( 'change', function( e ) {
-                    var fn = arguments.callee,
-                        clone;
+                changeHandler = function( e ) {
+                    var clone;
     
+                    // 解决chrome 56 第二次打开文件选择器，然后点击取消，依然会触发change事件的问题
+                    if (e.target.files.length === 0){
+                        return false;
+                    }
+    
+                    // 第一次上传图片后，第二次再点击弹出文件选择器窗，等待
                     me.files = e.target.files;
+    
     
                     // reset input
                     clone = this.cloneNode( true );
@@ -4442,8 +4449,8 @@
                             .on( 'mouseenter mouseleave', mouseHandler );
     
                     owner.trigger('change');
-                });
-    
+                }
+                input.on( 'change', changeHandler);
                 label.on( 'mouseenter mouseleave', mouseHandler );
     
             },
@@ -4602,11 +4609,11 @@
                         return me.trigger('load');
                     } else if ( xhr.status >= 500 && xhr.status < 600 ) {
                         me._response = xhr.responseText;
-                        return me.trigger( 'error', 'server' );
+                        return me.trigger( 'error', 'server-'+status );
                     }
     
     
-                    return me.trigger( 'error', me._status ? 'http' : 'abort' );
+                    return me.trigger( 'error', me._status ? 'http-'+status : 'abort' );
                 };
     
                 me._xhr = xhr;
@@ -4632,6 +4639,7 @@
             }
         });
     });
+    
     /**
      * @fileOverview FlashRuntime
      */
@@ -4948,9 +4956,9 @@
                         readBody = true;
                     } else if ( status >= 500 && status < 600 ) {
                         readBody = true;
-                        err = 'server';
+                        err = 'server-'+status;
                     } else {
-                        err = 'http';
+                        err = 'http-'+status;
                     }
     
                     if ( readBody ) {
@@ -4985,9 +4993,10 @@
                 });
     
                 xhr.on( 'error', function() {
+                    var status = xhr.exec('getStatus'),err = status?'http-'+status:'http';
                     xhr.off();
                     me._xhr = null;
-                    me.trigger( 'error', 'http' );
+                    me.trigger( 'error', err );
                 });
     
                 me._xhr = xhr;
