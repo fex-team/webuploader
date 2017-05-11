@@ -148,7 +148,7 @@
         function each( obj, iterator ) {
             var i;
     
-            //add guard here
+            //fix error, add guard here
             if(!obj) {
                 return;
             }
@@ -229,7 +229,7 @@
                     return this;
                 },
     
-                //$(...).each is used in the source
+                //fix error, $(...).each is used in the source
                 each: function(callback){
                   [].every.call(this, function(el, idx){
                     return callback.call(el, idx, el) !== false
@@ -321,7 +321,7 @@
         }
         $.type = type;
     
-        //$.grep is used in the source
+        //fix error, $.grep is used in the source
         $.grep = function( elems, callback, invert ) {
             var callbackInverse,
                 matches = [],
@@ -3251,8 +3251,19 @@
     
                 if ( existing ) {
                     delete this._map[ file.id ];
+                    this._delFile(file);
                     file.destroy();
                     this.stats.numofDeleted++;
+                    
+                }
+            },
+    
+            _delFile : function(file){
+                for(var i = this._queue.length-1 ; i >= 0 ;i-- ){
+                    if(this._queue[i] == file){
+                        this._queue.splice(i,1); 
+                        break;
+                    }
                 }
             },
     
@@ -4069,6 +4080,7 @@
                 }
     
                 if ( me.runing ) {
+                    me.owner.trigger('startUpload', file);// 开始上传或暂停恢复的，trigger event
                     return Base.nextTick( me.__tick );
                 }
     
@@ -4117,8 +4129,7 @@
              * @for  Uploader
              */
             stopUpload: function( file, interrupt ) {
-                var me = this,
-                    block;
+                var me = this;
     
                 if (file === true) {
                     interrupt = file;
@@ -4143,19 +4154,18 @@
     
                     $.each( me.pool, function( _, v ) {
     
-                        // 只 abort 指定的文件。
+                        // 只 abort 指定的文件，每一个分片。
                         if (v.file === file) {
-                            block = v;
-                            return false;
+                            v.transport && v.transport.abort();
+    
+                            if (interrupt) {
+                                me._putback(v);
+                                me._popBlock(v);
+                            }
                         }
                     });
     
-                    block.transport && block.transport.abort();
-    
-                    if (interrupt) {
-                        me._putback(block);
-                        me._popBlock(block);
-                    }
+                    me.owner.trigger('stopUpload', file);// 暂停，trigger event
     
                     return Base.nextTick( me.__tick );
                 }
@@ -5135,7 +5145,7 @@
                 me.dndOver = false;
                 me.elem.removeClass( prefix + 'over' );
     
-                if ( data ) {
+                if ( !dataTransfer || data ) {
                     return;
                 }
     
