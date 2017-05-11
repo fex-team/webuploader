@@ -64,7 +64,14 @@ define([
                 var fn = arguments.callee,
                     clone;
 
+                // 解决chrome 56 第二次打开文件选择器，然后点击取消，依然会触发change事件的问题
+                if (e.target.files.length === 0){
+                    return false;
+                }
+
+                // 第一次上传图片后，第二次再点击弹出文件选择器窗，等待
                 me.files = e.target.files;
+
 
                 // reset input
                 clone = this.cloneNode( true );
