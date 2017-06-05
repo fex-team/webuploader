@@ -158,330 +158,27 @@
         return _;
     });
     /**
-     * 直接来源于jquery的代码。
-     * @fileOverview Promise/A+
-     * @beta
+     * @fileOverview 使用jQuery的Promise
      */
-    define('promise-builtin',[
+    define('promise-third',[
         'dollar'
     ], function( $ ) {
+        return {
+            Deferred: $.Deferred,
+            when: $.when,
     
-        var api;
-    
-        // 简单版Callbacks, 默认memory，可选once.
-        function Callbacks( once ) {
-            var list = [],
-                stack = !once && [],
-                fire = function( data ) {
-                    memory = data;
-                    fired = true;
-                    firingIndex = firingStart || 0;
-                    firingStart = 0;
-                    firingLength = list.length;
-                    firing = true;
-    
-                    for ( ; list && firingIndex < firingLength; firingIndex++ ) {
-                        list[ firingIndex ].apply( data[ 0 ], data[ 1 ] );
-                    }
-                    firing = false;
-    
-                    if ( list ) {
-                        if ( stack ) {
-                            stack.length && fire( stack.shift() );
-                        }  else {
-                            list = [];
-                        }
-                    }
-                },
-                self = {
-                    add: function() {
-                        if ( list ) {
-                            var start = list.length;
-                            (function add ( args ) {
-                                $.each( args, function( _, arg ) {
-                                    var type = $.type( arg );
-                                    if ( type === 'function' ) {
-                                        list.push( arg );
-                                    } else if ( arg && arg.length &&
-                                            type !== 'string' ) {
-    
-                                        add( arg );
-                                    }
-                                });
-                            })( arguments );
-    
-                            if ( firing ) {
-                                firingLength = list.length;
-                            } else if ( memory ) {
-                                firingStart = start;
-                                fire( memory );
-                            }
-                        }
-                        return this;
-                    },
-    
-                    disable: function() {
-                        list = stack = memory = undefined;
-                        return this;
-                    },
-    
-                    // Lock the list in its current state
-                    lock: function() {
-                        stack = undefined;
-                        if ( !memory ) {
-                            self.disable();
-                        }
-                        return this;
-                    },
-    
-                    fireWith: function( context, args ) {
-                        if ( list && (!fired || stack) ) {
-                            args = args || [];
-                            args = [ context, args.slice ? args.slice() : args ];
-                            if ( firing ) {
-                                stack.push( args );
-                            } else {
-                                fire( args );
-                            }
-                        }
-                        return this;
-                    },
-    
-                    fire: function() {
-                        self.fireWith( this, arguments );
-                        return this;
-                    }
-                },
-    
-                fired, firing, firingStart, firingLength, firingIndex, memory;
-    
-            return self;
-        }
-    
-        function Deferred( func ) {
-            var tuples = [
-                    // action, add listener, listener list, final state
-                    [ 'resolve', 'done', Callbacks( true ), 'resolved' ],
-                    [ 'reject', 'fail', Callbacks( true ), 'rejected' ],
-                    [ 'notify', 'progress', Callbacks() ]
-                ],
-                state = 'pending',
-                promise = {
-                    state: function() {
-                        return state;
-                    },
-                    always: function() {
-                        deferred.done( arguments ).fail( arguments );
-                        return this;
-                    },
-                    then: function( /* fnDone, fnFail, fnProgress */ ) {
-                        var fns = arguments;
-                        return Deferred(function( newDefer ) {
-                            $.each( tuples, function( i, tuple ) {
-                                var action = tuple[ 0 ],
-                                    fn = $.isFunction( fns[ i ] ) && fns[ i ];
-    
-                                // deferred[ done | fail | progress ] for
-                                // forwarding actions to newDefer
-                                deferred[ tuple[ 1 ] ](function() {
-                                    var returned;
-    
-                                    returned = fn && fn.apply( this, arguments );
-    
-                                    if ( returned &&
-                                            $.isFunction( returned.promise ) ) {
-    
-                                        returned.promise()
-                                                .done( newDefer.resolve )
-                                                .fail( newDefer.reject )
-                                                .progress( newDefer.notify );
-                                    } else {
-                                        newDefer[ action + 'With' ](
-                                                this === promise ?
-                                                newDefer.promise() :
-                                                this,
-                                                fn ? [ returned ] : arguments );
-                                    }
-                                });
-                            });
-                            fns = null;
-                        }).promise();
-                    },
-    
-                    // Get a promise for this deferred
-                    // If obj is provided, the promise aspect is added to the object
-                    promise: function( obj ) {
-    
-                        return obj != null ? $.extend( obj, promise ) : promise;
-                    }
-                },
-                deferred = {};
-    
-            // Keep pipe for back-compat
-            promise.pipe = promise.then;
-    
-            // Add list-specific methods
-            $.each( tuples, function( i, tuple ) {
-                var list = tuple[ 2 ],
-                    stateString = tuple[ 3 ];
-    
-                // promise[ done | fail | progress ] = list.add
-                promise[ tuple[ 1 ] ] = list.add;
-    
-                // Handle state
-                if ( stateString ) {
-                    list.add(function() {
-                        // state = [ resolved | rejected ]
-                        state = stateString;
-    
-                    // [ reject_list | resolve_list ].disable; progress_list.lock
-                    }, tuples[ i ^ 1 ][ 2 ].disable, tuples[ 2 ][ 2 ].lock );
-                }
-    
-                // deferred[ resolve | reject | notify ]
-                deferred[ tuple[ 0 ] ] = function() {
-                    deferred[ tuple[ 0 ] + 'With' ]( this === deferred ? promise :
-                            this, arguments );
-                    return this;
-                };
-                deferred[ tuple[ 0 ] + 'With' ] = list.fireWith;
-            });
-    
-            // Make the deferred a promise
-            promise.promise( deferred );
-    
-            // Call given func if any
-            if ( func ) {
-                func.call( deferred, deferred );
-            }
-    
-            // All done!
-            return deferred;
-        }
-    
-        api = {
-            /**
-             * 创建一个[Deferred](http://api.jquery.com/category/deferred-object/)对象。
-             * 详细的Deferred用法说明，请参照jQuery的API文档。
-             *
-             * Deferred对象在钩子回掉函数中经常要用到，用来处理需要等待的异步操作。
-             *
-             * @for  Base
-             * @method Deferred
-             * @grammar Base.Deferred() => Deferred
-             * @example
-             * // 在文件开始发送前做些异步操作。
-             * // WebUploader会等待此异步操作完成后，开始发送文件。
-             * Uploader.register({
-             *     'before-send-file': 'doSomthingAsync'
-             * }, {
-             *
-             *     doSomthingAsync: function() {
-             *         var deferred = Base.Deferred();
-             *
-             *         // 模拟一次异步操作。
-             *         setTimeout(deferred.resolve, 2000);
-             *
-             *         return deferred.promise();
-             *     }
-             * });
-             */
-            Deferred: Deferred,
-    
-            /**
-             * 判断传入的参数是否为一个promise对象。
-             * @method isPromise
-             * @grammar Base.isPromise( anything ) => Boolean
-             * @param  {*}  anything 检测对象。
-             * @return {Boolean}
-             * @for  Base
-             * @example
-             * console.log( Base.isPromise() );    // => false
-             * console.log( Base.isPromise({ key: '123' }) );    // => false
-             * console.log( Base.isPromise( Base.Deferred().promise() ) );    // => true
-             *
-             * // Deferred也是一个Promise
-             * console.log( Base.isPromise( Base.Deferred() ) );    // => true
-             */
             isPromise: function( anything ) {
                 return anything && typeof anything.then === 'function';
-            },
-    
-            /**
-             * 返回一个promise，此promise在所有传入的promise都完成了后完成。
-             * 详细请查看[这里](http://api.jquery.com/jQuery.when/)。
-             *
-             * @method when
-             * @for  Base
-             * @grammar Base.when( promise1[, promise2[, promise3...]] ) => Promise
-             */
-            when: function( subordinate /* , ..., subordinateN */ ) {
-                var i = 0,
-                    slice = [].slice,
-                    resolveValues = slice.call( arguments ),
-                    length = resolveValues.length,
-    
-                    // the count of uncompleted subordinates
-                    remaining = length !== 1 || (subordinate &&
-                        $.isFunction( subordinate.promise )) ? length : 0,
-    
-                    // the master Deferred. If resolveValues consist of
-                    // only a single Deferred, just use that.
-                    deferred = remaining === 1 ? subordinate : Deferred(),
-    
-                    // Update function for both resolve and progress values
-                    updateFunc = function( i, contexts, values ) {
-                        return function( value ) {
-                            contexts[ i ] = this;
-                            values[ i ] = arguments.length > 1 ?
-                                    slice.call( arguments ) : value;
-    
-                            if ( values === progressValues ) {
-                                deferred.notifyWith( contexts, values );
-                            } else if ( !(--remaining) ) {
-                                deferred.resolveWith( contexts, values );
-                            }
-                        };
-                    },
-    
-                    progressValues, progressContexts, resolveContexts;
-    
-                // add listeners to Deferred subordinates; treat others as resolved
-                if ( length > 1 ) {
-                    progressValues = new Array( length );
-                    progressContexts = new Array( length );
-                    resolveContexts = new Array( length );
-                    for ( ; i < length; i++ ) {
-                        if ( resolveValues[ i ] &&
-                                $.isFunction( resolveValues[ i ].promise ) ) {
-    
-                            resolveValues[ i ].promise()
-                                    .done( updateFunc( i, resolveContexts,
-                                            resolveValues ) )
-                                    .fail( deferred.reject )
-                                    .progress( updateFunc( i, progressContexts,
-                                            progressValues ) );
-                        } else {
-                            --remaining;
-                        }
-                    }
-                }
-    
-                // if we're not waiting on anything, resolve the master
-                if ( !remaining ) {
-                    deferred.resolveWith( resolveContexts, resolveValues );
-                }
-    
-                return deferred.promise();
             }
         };
-    
-        return api;
     });
+    /**
+     * @fileOverview Promise/A+
+     */
     define('promise',[
-        'promise-builtin'
-    ], function( $ ) {
-        return $;
+        'promise-third'
+    ], function( _ ) {
+        return _;
     });
     /**
      * @fileOverview 基础类方法。
@@ -1466,224 +1163,50 @@
         return RuntimeClient;
     });
     /**
-     * @fileOverview Blob
-     */
-    define('lib/blob',[
-        'base',
-        'runtime/client'
-    ], function( Base, RuntimeClient ) {
-    
-        function Blob( ruid, source ) {
-            var me = this;
-    
-            me.source = source;
-            me.ruid = ruid;
-            this.size = source.size || 0;
-    
-            // 如果没有指定 mimetype, 但是知道文件后缀。
-            if ( !source.type && this.ext &&
-                    ~'jpg,jpeg,png,gif,bmp'.indexOf( this.ext ) ) {
-                this.type = 'image/' + (this.ext === 'jpg' ? 'jpeg' : this.ext);
-            } else {
-                this.type = source.type || 'application/octet-stream';
-            }
-    
-            RuntimeClient.call( me, 'Blob' );
-            this.uid = source.uid || this.uid;
-    
-            if ( ruid ) {
-                me.connectRuntime( ruid );
-            }
-        }
-    
-        Base.inherits( RuntimeClient, {
-            constructor: Blob,
-    
-            slice: function( start, end ) {
-                return this.exec( 'slice', start, end );
-            },
-    
-            getSource: function() {
-                return this.source;
-            }
-        });
-    
-        return Blob;
-    });
-    /**
-     * 为了统一化Flash的File和HTML5的File而存在。
-     * 以至于要调用Flash里面的File，也可以像调用HTML5版本的File一下。
-     * @fileOverview File
-     */
-    define('lib/file',[
-        'base',
-        'lib/blob'
-    ], function( Base, Blob ) {
-    
-        var uid = 1,
-            rExt = /\.([^.]+)$/;
-    
-        function File( ruid, file ) {
-            var ext;
-    
-            this.name = file.name || ('untitled' + uid++);
-            ext = rExt.exec( file.name ) ? RegExp.$1.toLowerCase() : '';
-    
-            // todo 支持其他类型文件的转换。
-            // 如果有 mimetype, 但是文件名里面没有找出后缀规律
-            if ( !ext && file.type ) {
-                ext = /\/(jpg|jpeg|png|gif|bmp)$/i.exec( file.type ) ?
-                        RegExp.$1.toLowerCase() : '';
-                this.name += '.' + ext;
-            }
-    
-            this.ext = ext;
-            this.lastModifiedDate = file.lastModifiedDate ||
-                    (new Date()).toLocaleString();
-    
-            Blob.apply( this, arguments );
-        }
-    
-        return Base.inherits( Blob, File );
-    });
-    
-    /**
      * @fileOverview 错误信息
      */
-    define('lib/filepicker',[
+    define('lib/dnd',[
         'base',
-        'runtime/client',
-        'lib/file'
-    ], function( Base, RuntimeClient, File ) {
+        'mediator',
+        'runtime/client'
+    ], function( Base, Mediator, RuntimeClent ) {
     
         var $ = Base.$;
     
-        function FilePicker( opts ) {
-            opts = this.options = $.extend({}, FilePicker.options, opts );
+        function DragAndDrop( opts ) {
+            opts = this.options = $.extend({}, DragAndDrop.options, opts );
     
-            opts.container = $( opts.id );
+            opts.container = $( opts.container );
     
             if ( !opts.container.length ) {
-                throw new Error('按钮指定错误');
+                return;
             }
     
-            opts.innerHTML = opts.innerHTML || opts.label ||
-                    opts.container.html() || '';
-    
-            opts.button = $( opts.button || document.createElement('div') );
-            opts.button.html( opts.innerHTML );
-            opts.container.html( opts.button );
-    
-            RuntimeClient.call( this, 'FilePicker', true );
+            RuntimeClent.call( this, 'DragAndDrop' );
         }
     
-        FilePicker.options = {
-            button: null,
-            container: null,
-            label: null,
-            innerHTML: null,
-            multiple: true,
+        DragAndDrop.options = {
             accept: null,
-            name: 'file',
-            style: 'webuploader-pick'   //pick element class attribute, default is "webuploader-pick"
+            disableGlobalDnd: false
         };
     
-        Base.inherits( RuntimeClient, {
-            constructor: FilePicker,
+        Base.inherits( RuntimeClent, {
+            constructor: DragAndDrop,
     
             init: function() {
-                var me = this,
-                    opts = me.options,
-                    button = opts.button,
-                    style = opts.style;
+                var me = this;
     
-                if (style)
-                    button.addClass('webuploader-pick');
-    
-                me.on( 'all', function( type ) {
-                    var files;
-    
-                    switch ( type ) {
-                        case 'mouseenter':
-                            if (style)
-                                button.addClass('webuploader-pick-hover');
-                            break;
-    
-                        case 'mouseleave':
-                            if (style)
-                                button.removeClass('webuploader-pick-hover');
-                            break;
-    
-                        case 'change':
-                            files = me.exec('getFiles');
-                            me.trigger( 'select', $.map( files, function( file ) {
-                                file = new File( me.getRuid(), file );
-    
-                                // 记录来源。
-                                file._refer = opts.container;
-                                return file;
-                            }), opts.container );
-                            break;
-                    }
-                });
-    
-                me.connectRuntime( opts, function() {
-                    me.refresh();
-                    me.exec( 'init', opts );
+                me.connectRuntime( me.options, function() {
+                    me.exec('init');
                     me.trigger('ready');
                 });
-    
-                this._resizeHandler = Base.bindFn( this.refresh, this );
-                $( window ).on( 'resize', this._resizeHandler );
-            },
-    
-            refresh: function() {
-                var shimContainer = this.getRuntime().getContainer(),
-                    button = this.options.button,
-                    width = button.outerWidth ?
-                            button.outerWidth() : button.width(),
-    
-                    height = button.outerHeight ?
-                            button.outerHeight() : button.height(),
-    
-                    pos = button.offset();
-    
-                width && height && shimContainer.css({
-                    bottom: 'auto',
-                    right: 'auto',
-                    width: width + 'px',
-                    height: height + 'px'
-                }).offset( pos );
-            },
-    
-            enable: function() {
-                var btn = this.options.button;
-    
-                btn.removeClass('webuploader-pick-disable');
-                this.refresh();
-            },
-    
-            disable: function() {
-                var btn = this.options.button;
-    
-                this.getRuntime().getContainer().css({
-                    top: '-99999px'
-                });
-    
-                btn.addClass('webuploader-pick-disable');
-            },
-    
-            destroy: function() {
-                var btn = this.options.button;
-                $( window ).off( 'resize', this._resizeHandler );
-                btn.removeClass('webuploader-pick-disable webuploader-pick-hover ' +
-                    'webuploader-pick');
             }
         });
     
-        return FilePicker;
-    });
+        Mediator.installTo( DragAndDrop.prototype );
     
+        return DragAndDrop;
+    });
     /**
      * @fileOverview 组件基类。
      */
@@ -1923,6 +1446,382 @@
     
         return Widget;
     });
+    /**
+     * @fileOverview DragAndDrop Widget。
+     */
+    define('widgets/filednd',[
+        'base',
+        'uploader',
+        'lib/dnd',
+        'widgets/widget'
+    ], function( Base, Uploader, Dnd ) {
+        var $ = Base.$;
+    
+        Uploader.options.dnd = '';
+    
+        /**
+         * @property {Selector} [dnd=undefined]  指定Drag And Drop拖拽的容器，如果不指定，则不启动。
+         * @namespace options
+         * @for Uploader
+         */
+        
+        /**
+         * @property {Selector} [disableGlobalDnd=false]  是否禁掉整个页面的拖拽功能，如果不禁用，图片拖进来的时候会默认被浏览器打开。
+         * @namespace options
+         * @for Uploader
+         */
+    
+        /**
+         * @event dndAccept
+         * @param {DataTransferItemList} items DataTransferItem
+         * @description 阻止此事件可以拒绝某些类型的文件拖入进来。目前只有 chrome 提供这样的 API，且只能通过 mime-type 验证。
+         * @for  Uploader
+         */
+        return Uploader.register({
+            name: 'dnd',
+            
+            init: function( opts ) {
+    
+                if ( !opts.dnd ||
+                        this.request('predict-runtime-type') !== 'html5' ) {
+                    return;
+                }
+    
+                var me = this,
+                    deferred = Base.Deferred(),
+                    options = $.extend({}, {
+                        disableGlobalDnd: opts.disableGlobalDnd,
+                        container: opts.dnd,
+                        accept: opts.accept
+                    }),
+                    dnd;
+    
+                this.dnd = dnd = new Dnd( options );
+    
+                dnd.once( 'ready', deferred.resolve );
+                dnd.on( 'drop', function( files ) {
+                    me.request( 'add-file', [ files ]);
+                });
+    
+                // 检测文件是否全部允许添加。
+                dnd.on( 'accept', function( items ) {
+                    return me.owner.trigger( 'dndAccept', items );
+                });
+    
+                dnd.init();
+    
+                return deferred.promise();
+            },
+    
+            destroy: function() {
+                this.dnd && this.dnd.destroy();
+            }
+        });
+    });
+    
+    /**
+     * @fileOverview 错误信息
+     */
+    define('lib/filepaste',[
+        'base',
+        'mediator',
+        'runtime/client'
+    ], function( Base, Mediator, RuntimeClent ) {
+    
+        var $ = Base.$;
+    
+        function FilePaste( opts ) {
+            opts = this.options = $.extend({}, opts );
+            opts.container = $( opts.container || document.body );
+            RuntimeClent.call( this, 'FilePaste' );
+        }
+    
+        Base.inherits( RuntimeClent, {
+            constructor: FilePaste,
+    
+            init: function() {
+                var me = this;
+    
+                me.connectRuntime( me.options, function() {
+                    me.exec('init');
+                    me.trigger('ready');
+                });
+            }
+        });
+    
+        Mediator.installTo( FilePaste.prototype );
+    
+        return FilePaste;
+    });
+    /**
+     * @fileOverview 组件基类。
+     */
+    define('widgets/filepaste',[
+        'base',
+        'uploader',
+        'lib/filepaste',
+        'widgets/widget'
+    ], function( Base, Uploader, FilePaste ) {
+        var $ = Base.$;
+    
+        /**
+         * @property {Selector} [paste=undefined]  指定监听paste事件的容器，如果不指定，不启用此功能。此功能为通过粘贴来添加截屏的图片。建议设置为`document.body`.
+         * @namespace options
+         * @for Uploader
+         */
+        return Uploader.register({
+            name: 'paste',
+            
+            init: function( opts ) {
+    
+                if ( !opts.paste ||
+                        this.request('predict-runtime-type') !== 'html5' ) {
+                    return;
+                }
+    
+                var me = this,
+                    deferred = Base.Deferred(),
+                    options = $.extend({}, {
+                        container: opts.paste,
+                        accept: opts.accept
+                    }),
+                    paste;
+    
+                this.paste = paste = new FilePaste( options );
+    
+                paste.once( 'ready', deferred.resolve );
+                paste.on( 'paste', function( files ) {
+                    me.owner.request( 'add-file', [ files ]);
+                });
+                paste.init();
+    
+                return deferred.promise();
+            },
+    
+            destroy: function() {
+                this.paste && this.paste.destroy();
+            }
+        });
+    });
+    /**
+     * @fileOverview Blob
+     */
+    define('lib/blob',[
+        'base',
+        'runtime/client'
+    ], function( Base, RuntimeClient ) {
+    
+        function Blob( ruid, source ) {
+            var me = this;
+    
+            me.source = source;
+            me.ruid = ruid;
+            this.size = source.size || 0;
+    
+            // 如果没有指定 mimetype, 但是知道文件后缀。
+            if ( !source.type && this.ext &&
+                    ~'jpg,jpeg,png,gif,bmp'.indexOf( this.ext ) ) {
+                this.type = 'image/' + (this.ext === 'jpg' ? 'jpeg' : this.ext);
+            } else {
+                this.type = source.type || 'application/octet-stream';
+            }
+    
+            RuntimeClient.call( me, 'Blob' );
+            this.uid = source.uid || this.uid;
+    
+            if ( ruid ) {
+                me.connectRuntime( ruid );
+            }
+        }
+    
+        Base.inherits( RuntimeClient, {
+            constructor: Blob,
+    
+            slice: function( start, end ) {
+                return this.exec( 'slice', start, end );
+            },
+    
+            getSource: function() {
+                return this.source;
+            }
+        });
+    
+        return Blob;
+    });
+    /**
+     * 为了统一化Flash的File和HTML5的File而存在。
+     * 以至于要调用Flash里面的File，也可以像调用HTML5版本的File一下。
+     * @fileOverview File
+     */
+    define('lib/file',[
+        'base',
+        'lib/blob'
+    ], function( Base, Blob ) {
+    
+        var uid = 1,
+            rExt = /\.([^.]+)$/;
+    
+        function File( ruid, file ) {
+            var ext;
+    
+            this.name = file.name || ('untitled' + uid++);
+            ext = rExt.exec( file.name ) ? RegExp.$1.toLowerCase() : '';
+    
+            // todo 支持其他类型文件的转换。
+            // 如果有 mimetype, 但是文件名里面没有找出后缀规律
+            if ( !ext && file.type ) {
+                ext = /\/(jpg|jpeg|png|gif|bmp)$/i.exec( file.type ) ?
+                        RegExp.$1.toLowerCase() : '';
+                this.name += '.' + ext;
+            }
+    
+            this.ext = ext;
+            this.lastModifiedDate = file.lastModifiedDate ||
+                    (new Date()).toLocaleString();
+    
+            Blob.apply( this, arguments );
+        }
+    
+        return Base.inherits( Blob, File );
+    });
+    
+    /**
+     * @fileOverview 错误信息
+     */
+    define('lib/filepicker',[
+        'base',
+        'runtime/client',
+        'lib/file'
+    ], function( Base, RuntimeClient, File ) {
+    
+        var $ = Base.$;
+    
+        function FilePicker( opts ) {
+            opts = this.options = $.extend({}, FilePicker.options, opts );
+    
+            opts.container = $( opts.id );
+    
+            if ( !opts.container.length ) {
+                throw new Error('按钮指定错误');
+            }
+    
+            opts.innerHTML = opts.innerHTML || opts.label ||
+                    opts.container.html() || '';
+    
+            opts.button = $( opts.button || document.createElement('div') );
+            opts.button.html( opts.innerHTML );
+            opts.container.html( opts.button );
+    
+            RuntimeClient.call( this, 'FilePicker', true );
+        }
+    
+        FilePicker.options = {
+            button: null,
+            container: null,
+            label: null,
+            innerHTML: null,
+            multiple: true,
+            accept: null,
+            name: 'file',
+            style: 'webuploader-pick'   //pick element class attribute, default is "webuploader-pick"
+        };
+    
+        Base.inherits( RuntimeClient, {
+            constructor: FilePicker,
+    
+            init: function() {
+                var me = this,
+                    opts = me.options,
+                    button = opts.button,
+                    style = opts.style;
+    
+                if (style)
+                    button.addClass('webuploader-pick');
+    
+                me.on( 'all', function( type ) {
+                    var files;
+    
+                    switch ( type ) {
+                        case 'mouseenter':
+                            if (style)
+                                button.addClass('webuploader-pick-hover');
+                            break;
+    
+                        case 'mouseleave':
+                            if (style)
+                                button.removeClass('webuploader-pick-hover');
+                            break;
+    
+                        case 'change':
+                            files = me.exec('getFiles');
+                            me.trigger( 'select', $.map( files, function( file ) {
+                                file = new File( me.getRuid(), file );
+    
+                                // 记录来源。
+                                file._refer = opts.container;
+                                return file;
+                            }), opts.container );
+                            break;
+                    }
+                });
+    
+                me.connectRuntime( opts, function() {
+                    me.refresh();
+                    me.exec( 'init', opts );
+                    me.trigger('ready');
+                });
+    
+                this._resizeHandler = Base.bindFn( this.refresh, this );
+                $( window ).on( 'resize', this._resizeHandler );
+            },
+    
+            refresh: function() {
+                var shimContainer = this.getRuntime().getContainer(),
+                    button = this.options.button,
+                    width = button.outerWidth ?
+                            button.outerWidth() : button.width(),
+    
+                    height = button.outerHeight ?
+                            button.outerHeight() : button.height(),
+    
+                    pos = button.offset();
+    
+                width && height && shimContainer.css({
+                    bottom: 'auto',
+                    right: 'auto',
+                    width: width + 'px',
+                    height: height + 'px'
+                }).offset( pos );
+            },
+    
+            enable: function() {
+                var btn = this.options.button;
+    
+                btn.removeClass('webuploader-pick-disable');
+                this.refresh();
+            },
+    
+            disable: function() {
+                var btn = this.options.button;
+    
+                this.getRuntime().getContainer().css({
+                    top: '-99999px'
+                });
+    
+                btn.addClass('webuploader-pick-disable');
+            },
+    
+            destroy: function() {
+                var btn = this.options.button;
+                $( window ).off( 'resize', this._resizeHandler );
+                btn.removeClass('webuploader-pick-disable webuploader-pick-hover ' +
+                    'webuploader-pick');
+            }
+        });
+    
+        return FilePicker;
+    });
+    
     /**
      * @fileOverview 文件选择相关
      */
@@ -2828,6 +2727,19 @@
                     
                 }
             },
+    		
+    		_fileAdded: function( file ) {
+                var me = this,
+                    existing = this._map[ file.id ];
+    
+                if ( !existing ) {
+                    this._map[ file.id ] = file;
+    
+                    file.on( 'statuschange', function( cur, pre ) {
+                        me._onFileStatusChange( cur, pre );
+                    });
+    			}
+    		},
     
             _delFile : function(file){
                 for(var i = this._queue.length - 1 ; i >= 0 ; i-- ){
@@ -4250,92 +4162,344 @@
     });
     
     /**
-     * @fileOverview 日志组件，主要用来收集错误信息，可以帮助 webuploader 更好的定位问题和发展。
-     *
-     * 如果您不想要启用此功能，请在打包的时候去掉 log 模块。
-     *
-     * 或者可以在初始化的时候通过 options.disableWidgets 属性禁用。
-     *
-     * 如：
-     * WebUploader.create({
-     *     ...
-     *
-     *     disableWidgets: 'log',
-     *
-     *     ...
-     * })
+     * @fileOverview 各种验证，包括文件总大小是否超出、单文件是否超出和文件是否重复。
      */
-    define('widgets/log',[
+    
+    define('widgets/validator',[
         'base',
         'uploader',
+        'file',
         'widgets/widget'
-    ], function( Base, Uploader ) {
+    ], function( Base, Uploader, WUFile ) {
+    
         var $ = Base.$,
-            logUrl = ' http://static.tieba.baidu.com/tb/pms/img/st.gif??',
-            product = (location.hostname || location.host || 'protected').toLowerCase(),
+            validators = {},
+            api;
     
-            // 只针对 baidu 内部产品用户做统计功能。
-            enable = product && /baidu/i.exec(product),
-            base;
+        /**
+         * @event error
+         * @param {String} type 错误类型。
+         * @description 当validate不通过时，会以派送错误事件的形式通知调用者。通过`upload.on('error', handler)`可以捕获到此类错误，目前有以下错误会在特定的情况下派送错来。
+         *
+         * * `Q_EXCEED_NUM_LIMIT` 在设置了`fileNumLimit`且尝试给`uploader`添加的文件数量超出这个值时派送。
+         * * `Q_EXCEED_SIZE_LIMIT` 在设置了`Q_EXCEED_SIZE_LIMIT`且尝试给`uploader`添加的文件总大小超出这个值时派送。
+         * * `Q_TYPE_DENIED` 当文件类型不满足时触发。。
+         * @for  Uploader
+         */
     
-        if (!enable) {
-            return;
-        }
+        // 暴露给外面的api
+        api = {
     
-        base = {
-            dv: 3,
-            master: 'webuploader',
-            online: /test/.exec(product) ? 0 : 1,
-            module: '',
-            product: product,
-            type: 0
+            // 添加验证器
+            addValidator: function( type, cb ) {
+                validators[ type ] = cb;
+            },
+    
+            // 移除验证器
+            removeValidator: function( type ) {
+                delete validators[ type ];
+            }
         };
     
-        function send(data) {
-            var obj = $.extend({}, base, data),
-                url = logUrl.replace(/^(.*)\?/, '$1' + $.param( obj )),
-                image = new Image();
-    
-            image.src = url;
-        }
-    
-        return Uploader.register({
-            name: 'log',
+        // 在Uploader初始化的时候启动Validators的初始化
+        Uploader.register({
+            name: 'validator',
     
             init: function() {
-                var owner = this.owner,
-                    count = 0,
-                    size = 0;
-    
-                owner
-                    .on('error', function(code) {
-                        send({
-                            type: 2,
-                            c_error_code: code
-                        });
-                    })
-                    .on('uploadError', function(file, reason) {
-                        send({
-                            type: 2,
-                            c_error_code: 'UPLOAD_ERROR',
-                            c_reason: '' + reason
-                        });
-                    })
-                    .on('uploadComplete', function(file) {
-                        count++;
-                        size += file.size;
-                    }).
-                    on('uploadFinished', function() {
-                        send({
-                            c_count: count,
-                            c_size: size
-                        });
-                        count = size = 0;
+                var me = this;
+                Base.nextTick(function() {
+                    $.each( validators, function() {
+                        this.call( me.owner );
                     });
-    
-                send({
-                    c_usage: 1
                 });
+            }
+        });
+    
+        /**
+         * @property {int} [fileNumLimit=undefined]
+         * @namespace options
+         * @for Uploader
+         * @description 验证文件总数量, 超出则不允许加入队列。
+         */
+        api.addValidator( 'fileNumLimit', function() {
+            var uploader = this,
+                opts = uploader.options,
+                count = 0,
+                max = parseInt( opts.fileNumLimit, 10 ),
+                flag = true;
+    
+            if ( !max ) {
+                return;
+            }
+    
+            uploader.on( 'beforeFileQueued', function( file ) {
+                    // 增加beforeFileQueuedCheckfileNumLimit验证,主要为了再次加载时(已存在历史文件)验证数量是否超过设置项
+                if (!this.trigger('beforeFileQueuedCheckfileNumLimit', file,count)) {
+                    return false;
+                }
+                if ( count >= max && flag ) {
+                    flag = false;
+                    this.trigger( 'error', 'Q_EXCEED_NUM_LIMIT', max, file );
+                    setTimeout(function() {
+                        flag = true;
+                    }, 1 );
+                }
+    
+                return count >= max ? false : true;
+            });
+    
+            uploader.on( 'fileQueued', function() {
+                count++;
+            });
+    
+            uploader.on( 'fileDequeued', function() {
+                count--;
+            });
+    
+            uploader.on( 'reset', function() {
+                count = 0;
+            });
+        });
+    
+    
+        /**
+         * @property {int} [fileSizeLimit=undefined]
+         * @namespace options
+         * @for Uploader
+         * @description 验证文件总大小是否超出限制, 超出则不允许加入队列。
+         */
+        api.addValidator( 'fileSizeLimit', function() {
+            var uploader = this,
+                opts = uploader.options,
+                count = 0,
+                max = parseInt( opts.fileSizeLimit, 10 ),
+                flag = true;
+    
+            if ( !max ) {
+                return;
+            }
+    
+            uploader.on( 'beforeFileQueued', function( file ) {
+                var invalid = count + file.size > max;
+    
+                if ( invalid && flag ) {
+                    flag = false;
+                    this.trigger( 'error', 'Q_EXCEED_SIZE_LIMIT', max, file );
+                    setTimeout(function() {
+                        flag = true;
+                    }, 1 );
+                }
+    
+                return invalid ? false : true;
+            });
+    
+            uploader.on( 'fileQueued', function( file ) {
+                count += file.size;
+            });
+    
+            uploader.on( 'fileDequeued', function( file ) {
+                count -= file.size;
+            });
+    
+            uploader.on( 'reset', function() {
+                count = 0;
+            });
+        });
+    
+        /**
+         * @property {int} [fileSingleSizeLimit=undefined]
+         * @namespace options
+         * @for Uploader
+         * @description 验证单个文件大小是否超出限制, 超出则不允许加入队列。
+         */
+        api.addValidator( 'fileSingleSizeLimit', function() {
+            var uploader = this,
+                opts = uploader.options,
+                max = opts.fileSingleSizeLimit;
+    
+            if ( !max ) {
+                return;
+            }
+    
+            uploader.on( 'beforeFileQueued', function( file ) {
+    
+                if ( file.size > max ) {
+                    file.setStatus( WUFile.Status.INVALID, 'exceed_size' );
+                    this.trigger( 'error', 'F_EXCEED_SIZE', max, file );
+                    return false;
+                }
+    
+            });
+    
+        });
+    
+        /**
+         * @property {Boolean} [duplicate=undefined]
+         * @namespace options
+         * @for Uploader
+         * @description 去重， 根据文件名字、文件大小和最后修改时间来生成hash Key.
+         */
+        api.addValidator( 'duplicate', function() {
+            var uploader = this,
+                opts = uploader.options,
+                mapping = {};
+    
+            if ( opts.duplicate ) {
+                return;
+            }
+    
+            function hashString( str ) {
+                var hash = 0,
+                    i = 0,
+                    len = str.length,
+                    _char;
+    
+                for ( ; i < len; i++ ) {
+                    _char = str.charCodeAt( i );
+                    hash = _char + (hash << 6) + (hash << 16) - hash;
+                }
+    
+                return hash;
+            }
+    
+            uploader.on( 'beforeFileQueued', function( file ) {
+                var hash = file.__hash || (file.__hash = hashString( file.name +
+                        file.size + file.lastModifiedDate ));
+    
+                // 已经重复了
+                if ( mapping[ hash ] ) {
+                    this.trigger( 'error', 'F_DUPLICATE', file );
+                    return false;
+                }
+            });
+    
+            uploader.on( 'fileQueued', function( file ) {
+                var hash = file.__hash;
+    
+                hash && (mapping[ hash ] = true);
+            });
+    
+            uploader.on( 'fileDequeued', function( file ) {
+                var hash = file.__hash;
+    
+                hash && (delete mapping[ hash ]);
+            });
+    
+            uploader.on( 'reset', function() {
+                mapping = {};
+            });
+        });
+    
+        return api;
+    });
+    
+    /**
+     * @fileOverview Md5
+     */
+    define('lib/md5',[
+        'runtime/client',
+        'mediator'
+    ], function( RuntimeClient, Mediator ) {
+    
+        function Md5() {
+            RuntimeClient.call( this, 'Md5' );
+        }
+    
+        // 让 Md5 具备事件功能。
+        Mediator.installTo( Md5.prototype );
+    
+        Md5.prototype.loadFromBlob = function( blob ) {
+            var me = this;
+    
+            if ( me.getRuid() ) {
+                me.disconnectRuntime();
+            }
+    
+            // 连接到blob归属的同一个runtime.
+            me.connectRuntime( blob.ruid, function() {
+                me.exec('init');
+                me.exec( 'loadFromBlob', blob );
+            });
+        };
+    
+        Md5.prototype.getResult = function() {
+            return this.exec('getResult');
+        };
+    
+        return Md5;
+    });
+    /**
+     * @fileOverview 图片操作, 负责预览图片和上传前压缩图片
+     */
+    define('widgets/md5',[
+        'base',
+        'uploader',
+        'lib/md5',
+        'lib/blob',
+        'widgets/widget'
+    ], function( Base, Uploader, Md5, Blob ) {
+    
+        return Uploader.register({
+            name: 'md5',
+    
+    
+            /**
+             * 计算文件 md5 值，返回一个 promise 对象，可以监听 progress 进度。
+             *
+             *
+             * @method md5File
+             * @grammar md5File( file[, start[, end]] ) => promise
+             * @for Uploader
+             * @example
+             *
+             * uploader.on( 'fileQueued', function( file ) {
+             *     var $li = ...;
+             *
+             *     uploader.md5File( file )
+             *
+             *         // 及时显示进度
+             *         .progress(function(percentage) {
+             *             console.log('Percentage:', percentage);
+             *         })
+             *
+             *         // 完成
+             *         .then(function(val) {
+             *             console.log('md5 result:', val);
+             *         });
+             *
+             * });
+             */
+            md5File: function( file, start, end ) {
+                var md5 = new Md5(),
+                    deferred = Base.Deferred(),
+                    blob = (file instanceof Blob) ? file :
+                        this.request( 'get-file', file ).source;
+    
+                md5.on( 'progress load', function( e ) {
+                    e = e || {};
+                    deferred.notify( e.total ? e.loaded / e.total : 1 );
+                });
+    
+                md5.on( 'complete', function() {
+                    deferred.resolve( md5.getResult() );
+                });
+    
+                md5.on( 'error', function( reason ) {
+                    deferred.reject( reason );
+                });
+    
+                if ( arguments.length > 1 ) {
+                    start = start || 0;
+                    end = end || 0;
+                    start < 0 && (start = blob.size + start);
+                    end < 0 && (end = blob.size + end);
+                    end = Math.min( end, blob.size );
+                    blob = blob.slice( start, end );
+                }
+    
+                md5.loadFromBlob( blob );
+    
+                return deferred.promise();
             }
         });
     });
@@ -4455,6 +4619,283 @@
         });
     });
     /**
+     * @fileOverview FilePaste
+     */
+    define('runtime/html5/dnd',[
+        'base',
+        'runtime/html5/runtime',
+        'lib/file'
+    ], function( Base, Html5Runtime, File ) {
+    
+        var $ = Base.$,
+            prefix = 'webuploader-dnd-';
+    
+        return Html5Runtime.register( 'DragAndDrop', {
+            init: function() {
+                var elem = this.elem = this.options.container;
+    
+                this.dragEnterHandler = Base.bindFn( this._dragEnterHandler, this );
+                this.dragOverHandler = Base.bindFn( this._dragOverHandler, this );
+                this.dragLeaveHandler = Base.bindFn( this._dragLeaveHandler, this );
+                this.dropHandler = Base.bindFn( this._dropHandler, this );
+                this.dndOver = false;
+    
+                elem.on( 'dragenter', this.dragEnterHandler );
+                elem.on( 'dragover', this.dragOverHandler );
+                elem.on( 'dragleave', this.dragLeaveHandler );
+                elem.on( 'drop', this.dropHandler );
+    
+                if ( this.options.disableGlobalDnd ) {
+                    $( document ).on( 'dragover', this.dragOverHandler );
+                    $( document ).on( 'drop', this.dropHandler );
+                }
+            },
+    
+            _dragEnterHandler: function( e ) {
+                var me = this,
+                    denied = me._denied || false,
+                    items;
+    
+                e = e.originalEvent || e;
+    
+                if ( !me.dndOver ) {
+                    me.dndOver = true;
+    
+                    // 注意只有 chrome 支持。
+                    items = e.dataTransfer.items;
+    
+                    if ( items && items.length ) {
+                        me._denied = denied = !me.trigger( 'accept', items );
+                    }
+    
+                    me.elem.addClass( prefix + 'over' );
+                    me.elem[ denied ? 'addClass' :
+                            'removeClass' ]( prefix + 'denied' );
+                }
+    
+                e.dataTransfer.dropEffect = denied ? 'none' : 'copy';
+    
+                return false;
+            },
+    
+            _dragOverHandler: function( e ) {
+                // 只处理框内的。
+                var parentElem = this.elem.parent().get( 0 );
+                if ( parentElem && !$.contains( parentElem, e.currentTarget ) ) {
+                    return false;
+                }
+    
+                clearTimeout( this._leaveTimer );
+                this._dragEnterHandler.call( this, e );
+    
+                return false;
+            },
+    
+            _dragLeaveHandler: function() {
+                var me = this,
+                    handler;
+    
+                handler = function() {
+                    me.dndOver = false;
+                    me.elem.removeClass( prefix + 'over ' + prefix + 'denied' );
+                };
+    
+                clearTimeout( me._leaveTimer );
+                me._leaveTimer = setTimeout( handler, 100 );
+                return false;
+            },
+    
+            _dropHandler: function( e ) {
+                var me = this,
+                    ruid = me.getRuid(),
+                    parentElem = me.elem.parent().get( 0 ),
+                    dataTransfer, data;
+    
+                // 只处理框内的。
+                if ( parentElem && !$.contains( parentElem, e.currentTarget ) ) {
+                    return false;
+                }
+    
+                e = e.originalEvent || e;
+                dataTransfer = e.dataTransfer;
+    
+                // 如果是页面内拖拽，还不能处理，不阻止事件。
+                // 此处 ie11 下会报参数错误，
+                try {
+                    data = dataTransfer.getData('text/html');
+                } catch( err ) {
+                }
+    
+                me.dndOver = false;
+                me.elem.removeClass( prefix + 'over' );
+    
+                if ( !dataTransfer || data ) {
+                    return;
+                }
+    
+                me._getTansferFiles( dataTransfer, function( results ) {
+                    me.trigger( 'drop', $.map( results, function( file ) {
+                        return new File( ruid, file );
+                    }) );
+                });
+    
+                return false;
+            },
+    
+            // 如果传入 callback 则去查看文件夹，否则只管当前文件夹。
+            _getTansferFiles: function( dataTransfer, callback ) {
+                var results  = [],
+                    promises = [],
+                    items, files, file, item, i, len, canAccessFolder;
+    
+                items = dataTransfer.items;
+                files = dataTransfer.files;
+    
+                canAccessFolder = !!(items && items[ 0 ].webkitGetAsEntry);
+    
+                for ( i = 0, len = files.length; i < len; i++ ) {
+                    file = files[ i ];
+                    item = items && items[ i ];
+    
+                    if ( canAccessFolder && item.webkitGetAsEntry().isDirectory ) {
+    
+                        promises.push( this._traverseDirectoryTree(
+                                item.webkitGetAsEntry(), results ) );
+                    } else {
+                        results.push( file );
+                    }
+                }
+    
+                Base.when.apply( Base, promises ).done(function() {
+    
+                    if ( !results.length ) {
+                        return;
+                    }
+    
+                    callback( results );
+                });
+            },
+    
+            _traverseDirectoryTree: function( entry, results ) {
+                var deferred = Base.Deferred(),
+                    me = this;
+    
+                if ( entry.isFile ) {
+                    entry.file(function( file ) {
+                        results.push( file );
+                        deferred.resolve();
+                    });
+                } else if ( entry.isDirectory ) {
+                    entry.createReader().readEntries(function( entries ) {
+                        var len = entries.length,
+                            promises = [],
+                            arr = [],    // 为了保证顺序。
+                            i;
+    
+                        for ( i = 0; i < len; i++ ) {
+                            promises.push( me._traverseDirectoryTree(
+                                    entries[ i ], arr ) );
+                        }
+    
+                        Base.when.apply( Base, promises ).then(function() {
+                            results.push.apply( results, arr );
+                            deferred.resolve();
+                        }, deferred.reject );
+                    });
+                }
+    
+                return deferred.promise();
+            },
+    
+            destroy: function() {
+                var elem = this.elem;
+    
+                // 还没 init 就调用 destroy
+                if (!elem) {
+                    return;
+                }
+    
+                elem.off( 'dragenter', this.dragEnterHandler );
+                elem.off( 'dragover', this.dragOverHandler );
+                elem.off( 'dragleave', this.dragLeaveHandler );
+                elem.off( 'drop', this.dropHandler );
+    
+                if ( this.options.disableGlobalDnd ) {
+                    $( document ).off( 'dragover', this.dragOverHandler );
+                    $( document ).off( 'drop', this.dropHandler );
+                }
+            }
+        });
+    });
+    
+    /**
+     * @fileOverview FilePaste
+     */
+    define('runtime/html5/filepaste',[
+        'base',
+        'runtime/html5/runtime',
+        'lib/file'
+    ], function( Base, Html5Runtime, File ) {
+    
+        return Html5Runtime.register( 'FilePaste', {
+            init: function() {
+                var opts = this.options,
+                    elem = this.elem = opts.container,
+                    accept = '.*',
+                    arr, i, len, item;
+    
+                // accetp的mimeTypes中生成匹配正则。
+                if ( opts.accept ) {
+                    arr = [];
+    
+                    for ( i = 0, len = opts.accept.length; i < len; i++ ) {
+                        item = opts.accept[ i ].mimeTypes;
+                        item && arr.push( item );
+                    }
+    
+                    if ( arr.length ) {
+                        accept = arr.join(',');
+                        accept = accept.replace( /,/g, '|' ).replace( /\*/g, '.*' );
+                    }
+                }
+                this.accept = accept = new RegExp( accept, 'i' );
+                this.hander = Base.bindFn( this._pasteHander, this );
+                elem.on( 'paste', this.hander );
+            },
+    
+            _pasteHander: function( e ) {
+                var allowed = [],
+                    ruid = this.getRuid(),
+                    items, item, blob, i, len;
+    
+                e = e.originalEvent || e;
+                items = e.clipboardData.items;
+    
+                for ( i = 0, len = items.length; i < len; i++ ) {
+                    item = items[ i ];
+    
+                    if ( item.kind !== 'file' || !(blob = item.getAsFile()) ) {
+                        continue;
+                    }
+    
+                    allowed.push( new File( ruid, blob ) );
+                }
+    
+                if ( allowed.length ) {
+                    // 不阻止非文件粘贴（文字粘贴）的事件冒泡
+                    e.preventDefault();
+                    e.stopPropagation();
+                    this.trigger( 'paste', allowed );
+                }
+            },
+    
+            destroy: function() {
+                this.elem.off( 'paste', this.hander );
+            }
+        });
+    });
+    
+    /**
      * @fileOverview FilePicker
      */
     define('runtime/html5/filepicker',[
@@ -4534,7 +4975,7 @@
                     this.parentNode.replaceChild( clone, this );
     
                     input.off();
-                    input = $( clone ).on( 'change', fn )
+                    input = $( clone ).on( 'change', changeHandler )
                             .on( 'mouseenter mouseleave', mouseHandler );
     
                     owner.trigger('change');
@@ -5103,442 +5544,6 @@
         ImageMeta.parsers[ 0xffe1 ].push( EXIF.parseExifData );
         return EXIF;
     });
-    /**
-     * @fileOverview Image
-     */
-    define('runtime/html5/image',[
-        'base',
-        'runtime/html5/runtime',
-        'runtime/html5/util'
-    ], function( Base, Html5Runtime, Util ) {
-    
-        var BLANK = 'data:image/gif;base64,R0lGODlhAQABAAD/ACwAAAAAAQABAAACADs%3D';
-    
-        return Html5Runtime.register( 'Image', {
-    
-            // flag: 标记是否被修改过。
-            modified: false,
-    
-            init: function() {
-                var me = this,
-                    img = new Image();
-    
-                img.onload = function() {
-    
-                    me._info = {
-                        type: me.type,
-                        width: this.width,
-                        height: this.height
-                    };
-    
-                    //debugger;
-    
-                    // 读取meta信息。
-                    if ( !me._metas && 'image/jpeg' === me.type ) {
-                        Util.parseMeta( me._blob, function( error, ret ) {
-                            me._metas = ret;
-                            me.owner.trigger('load');
-                        });
-                    } else {
-                        me.owner.trigger('load');
-                    }
-                };
-    
-                img.onerror = function() {
-                    me.owner.trigger('error');
-                };
-    
-                me._img = img;
-            },
-    
-            loadFromBlob: function( blob ) {
-                var me = this,
-                    img = me._img;
-    
-                me._blob = blob;
-                me.type = blob.type;
-                img.src = Util.createObjectURL( blob.getSource() );
-                me.owner.once( 'load', function() {
-                    Util.revokeObjectURL( img.src );
-                });
-            },
-    
-            resize: function( width, height ) {
-                var canvas = this._canvas ||
-                        (this._canvas = document.createElement('canvas'));
-    
-                this._resize( this._img, canvas, width, height );
-                this._blob = null;    // 没用了，可以删掉了。
-                this.modified = true;
-                this.owner.trigger( 'complete', 'resize' );
-            },
-    
-            crop: function( x, y, w, h, s ) {
-                var cvs = this._canvas ||
-                        (this._canvas = document.createElement('canvas')),
-                    opts = this.options,
-                    img = this._img,
-                    iw = img.naturalWidth,
-                    ih = img.naturalHeight,
-                    orientation = this.getOrientation();
-    
-                s = s || 1;
-    
-                // todo 解决 orientation 的问题。
-                // values that require 90 degree rotation
-                // if ( ~[ 5, 6, 7, 8 ].indexOf( orientation ) ) {
-    
-                //     switch ( orientation ) {
-                //         case 6:
-                //             tmp = x;
-                //             x = y;
-                //             y = iw * s - tmp - w;
-                //             console.log(ih * s, tmp, w)
-                //             break;
-                //     }
-    
-                //     (w ^= h, h ^= w, w ^= h);
-                // }
-    
-                cvs.width = w;
-                cvs.height = h;
-    
-                opts.preserveHeaders || this._rotate2Orientaion( cvs, orientation );
-                this._renderImageToCanvas( cvs, img, -x, -y, iw * s, ih * s );
-    
-                this._blob = null;    // 没用了，可以删掉了。
-                this.modified = true;
-                this.owner.trigger( 'complete', 'crop' );
-            },
-    
-            getAsBlob: function( type ) {
-                var blob = this._blob,
-                    opts = this.options,
-                    canvas;
-    
-                type = type || this.type;
-    
-                // blob需要重新生成。
-                if ( this.modified || this.type !== type ) {
-                    canvas = this._canvas;
-    
-                    if ( type === 'image/jpeg' ) {
-    
-                        blob = Util.canvasToDataUrl( canvas, type, opts.quality );
-    
-                        if ( opts.preserveHeaders && this._metas &&
-                                this._metas.imageHead ) {
-    
-                            blob = Util.dataURL2ArrayBuffer( blob );
-                            blob = Util.updateImageHead( blob,
-                                    this._metas.imageHead );
-                            blob = Util.arrayBufferToBlob( blob, type );
-                            return blob;
-                        }
-                    } else {
-                        blob = Util.canvasToDataUrl( canvas, type );
-                    }
-    
-                    blob = Util.dataURL2Blob( blob );
-                }
-    
-                return blob;
-            },
-    
-            getAsDataUrl: function( type ) {
-                var opts = this.options;
-    
-                type = type || this.type;
-    
-                if ( type === 'image/jpeg' ) {
-                    return Util.canvasToDataUrl( this._canvas, type, opts.quality );
-                } else {
-                    return this._canvas.toDataURL( type );
-                }
-            },
-    
-            getOrientation: function() {
-                return this._metas && this._metas.exif &&
-                        this._metas.exif.get('Orientation') || 1;
-            },
-    
-            info: function( val ) {
-    
-                // setter
-                if ( val ) {
-                    this._info = val;
-                    return this;
-                }
-    
-                // getter
-                return this._info;
-            },
-    
-            meta: function( val ) {
-    
-                // setter
-                if ( val ) {
-                    this._metas = val;
-                    return this;
-                }
-    
-                // getter
-                return this._metas;
-            },
-    
-            destroy: function() {
-                var canvas = this._canvas;
-                this._img.onload = null;
-    
-                if ( canvas ) {
-                    canvas.getContext('2d')
-                            .clearRect( 0, 0, canvas.width, canvas.height );
-                    canvas.width = canvas.height = 0;
-                    this._canvas = null;
-                }
-    
-                // 释放内存。非常重要，否则释放不了image的内存。
-                this._img.src = BLANK;
-                this._img = this._blob = null;
-            },
-    
-            _resize: function( img, cvs, width, height ) {
-                var opts = this.options,
-                    naturalWidth = img.width,
-                    naturalHeight = img.height,
-                    orientation = this.getOrientation(),
-                    scale, w, h, x, y;
-    
-                // values that require 90 degree rotation
-                if ( ~[ 5, 6, 7, 8 ].indexOf( orientation ) ) {
-    
-                    // 交换width, height的值。
-                    width ^= height;
-                    height ^= width;
-                    width ^= height;
-                }
-    
-                scale = Math[ opts.crop ? 'max' : 'min' ]( width / naturalWidth,
-                        height / naturalHeight );
-    
-                // 不允许放大。
-                opts.allowMagnify || (scale = Math.min( 1, scale ));
-    
-                w = naturalWidth * scale;
-                h = naturalHeight * scale;
-    
-                if ( opts.crop ) {
-                    cvs.width = width;
-                    cvs.height = height;
-                } else {
-                    cvs.width = w;
-                    cvs.height = h;
-                }
-    
-                x = (cvs.width - w) / 2;
-                y = (cvs.height - h) / 2;
-    
-                opts.preserveHeaders || this._rotate2Orientaion( cvs, orientation );
-    
-                this._renderImageToCanvas( cvs, img, x, y, w, h );
-            },
-    
-            _rotate2Orientaion: function( canvas, orientation ) {
-                var width = canvas.width,
-                    height = canvas.height,
-                    ctx = canvas.getContext('2d');
-    
-                switch ( orientation ) {
-                    case 5:
-                    case 6:
-                    case 7:
-                    case 8:
-                        canvas.width = height;
-                        canvas.height = width;
-                        break;
-                }
-    
-                switch ( orientation ) {
-                    case 2:    // horizontal flip
-                        ctx.translate( width, 0 );
-                        ctx.scale( -1, 1 );
-                        break;
-    
-                    case 3:    // 180 rotate left
-                        ctx.translate( width, height );
-                        ctx.rotate( Math.PI );
-                        break;
-    
-                    case 4:    // vertical flip
-                        ctx.translate( 0, height );
-                        ctx.scale( 1, -1 );
-                        break;
-    
-                    case 5:    // vertical flip + 90 rotate right
-                        ctx.rotate( 0.5 * Math.PI );
-                        ctx.scale( 1, -1 );
-                        break;
-    
-                    case 6:    // 90 rotate right
-                        ctx.rotate( 0.5 * Math.PI );
-                        ctx.translate( 0, -height );
-                        break;
-    
-                    case 7:    // horizontal flip + 90 rotate right
-                        ctx.rotate( 0.5 * Math.PI );
-                        ctx.translate( width, -height );
-                        ctx.scale( -1, 1 );
-                        break;
-    
-                    case 8:    // 90 rotate left
-                        ctx.rotate( -0.5 * Math.PI );
-                        ctx.translate( -width, 0 );
-                        break;
-                }
-            },
-    
-            // https://github.com/stomita/ios-imagefile-megapixel/
-            // blob/master/src/megapix-image.js
-            _renderImageToCanvas: (function() {
-    
-                // 如果不是ios, 不需要这么复杂！
-                if ( !Base.os.ios ) {
-                    return function( canvas ) {
-                        var args = Base.slice( arguments, 1 ),
-                            ctx = canvas.getContext('2d');
-    
-                        ctx.drawImage.apply( ctx, args );
-                    };
-                }
-    
-                /**
-                 * Detecting vertical squash in loaded image.
-                 * Fixes a bug which squash image vertically while drawing into
-                 * canvas for some images.
-                 */
-                function detectVerticalSquash( img, iw, ih ) {
-                    var canvas = document.createElement('canvas'),
-                        ctx = canvas.getContext('2d'),
-                        sy = 0,
-                        ey = ih,
-                        py = ih,
-                        data, alpha, ratio;
-    
-    
-                    canvas.width = 1;
-                    canvas.height = ih;
-                    ctx.drawImage( img, 0, 0 );
-                    data = ctx.getImageData( 0, 0, 1, ih ).data;
-    
-                    // search image edge pixel position in case
-                    // it is squashed vertically.
-                    while ( py > sy ) {
-                        alpha = data[ (py - 1) * 4 + 3 ];
-    
-                        if ( alpha === 0 ) {
-                            ey = py;
-                        } else {
-                            sy = py;
-                        }
-    
-                        py = (ey + sy) >> 1;
-                    }
-    
-                    ratio = (py / ih);
-                    return (ratio === 0) ? 1 : ratio;
-                }
-    
-                // fix ie7 bug
-                // http://stackoverflow.com/questions/11929099/
-                // html5-canvas-drawimage-ratio-bug-ios
-                if ( Base.os.ios >= 7 ) {
-                    return function( canvas, img, x, y, w, h ) {
-                        var iw = img.naturalWidth,
-                            ih = img.naturalHeight,
-                            vertSquashRatio = detectVerticalSquash( img, iw, ih );
-    
-                        return canvas.getContext('2d').drawImage( img, 0, 0,
-                                iw * vertSquashRatio, ih * vertSquashRatio,
-                                x, y, w, h );
-                    };
-                }
-    
-                /**
-                 * Detect subsampling in loaded image.
-                 * In iOS, larger images than 2M pixels may be
-                 * subsampled in rendering.
-                 */
-                function detectSubsampling( img ) {
-                    var iw = img.naturalWidth,
-                        ih = img.naturalHeight,
-                        canvas, ctx;
-    
-                    // subsampling may happen overmegapixel image
-                    if ( iw * ih > 1024 * 1024 ) {
-                        canvas = document.createElement('canvas');
-                        canvas.width = canvas.height = 1;
-                        ctx = canvas.getContext('2d');
-                        ctx.drawImage( img, -iw + 1, 0 );
-    
-                        // subsampled image becomes half smaller in rendering size.
-                        // check alpha channel value to confirm image is covering
-                        // edge pixel or not. if alpha value is 0
-                        // image is not covering, hence subsampled.
-                        return ctx.getImageData( 0, 0, 1, 1 ).data[ 3 ] === 0;
-                    } else {
-                        return false;
-                    }
-                }
-    
-    
-                return function( canvas, img, x, y, width, height ) {
-                    var iw = img.naturalWidth,
-                        ih = img.naturalHeight,
-                        ctx = canvas.getContext('2d'),
-                        subsampled = detectSubsampling( img ),
-                        doSquash = this.type === 'image/jpeg',
-                        d = 1024,
-                        sy = 0,
-                        dy = 0,
-                        tmpCanvas, tmpCtx, vertSquashRatio, dw, dh, sx, dx;
-    
-                    if ( subsampled ) {
-                        iw /= 2;
-                        ih /= 2;
-                    }
-    
-                    ctx.save();
-                    tmpCanvas = document.createElement('canvas');
-                    tmpCanvas.width = tmpCanvas.height = d;
-    
-                    tmpCtx = tmpCanvas.getContext('2d');
-                    vertSquashRatio = doSquash ?
-                            detectVerticalSquash( img, iw, ih ) : 1;
-    
-                    dw = Math.ceil( d * width / iw );
-                    dh = Math.ceil( d * height / ih / vertSquashRatio );
-    
-                    while ( sy < ih ) {
-                        sx = 0;
-                        dx = 0;
-                        while ( sx < iw ) {
-                            tmpCtx.clearRect( 0, 0, d, d );
-                            tmpCtx.drawImage( img, -sx, -sy );
-                            ctx.drawImage( tmpCanvas, 0, 0, d, d,
-                                    x + dx, y + dy, dw, dh );
-                            sx += d;
-                            dx += dw;
-                        }
-                        sy += d;
-                        dy += dh;
-                    }
-                    ctx.restore();
-                    tmpCanvas = tmpCtx = null;
-                };
-            })()
-        });
-    });
-    
     /**
      * 这个方式性能不行，但是可以解决android里面的toDataUrl的bug
      * android里面toDataUrl('image/jpege')得到的结果却是png.
@@ -6342,6 +6347,442 @@
         };
     });
     /**
+     * @fileOverview Image
+     */
+    define('runtime/html5/image',[
+        'base',
+        'runtime/html5/runtime',
+        'runtime/html5/util'
+    ], function( Base, Html5Runtime, Util ) {
+    
+        var BLANK = 'data:image/gif;base64,R0lGODlhAQABAAD/ACwAAAAAAQABAAACADs%3D';
+    
+        return Html5Runtime.register( 'Image', {
+    
+            // flag: 标记是否被修改过。
+            modified: false,
+    
+            init: function() {
+                var me = this,
+                    img = new Image();
+    
+                img.onload = function() {
+    
+                    me._info = {
+                        type: me.type,
+                        width: this.width,
+                        height: this.height
+                    };
+    
+                    //debugger;
+    
+                    // 读取meta信息。
+                    if ( !me._metas && 'image/jpeg' === me.type ) {
+                        Util.parseMeta( me._blob, function( error, ret ) {
+                            me._metas = ret;
+                            me.owner.trigger('load');
+                        });
+                    } else {
+                        me.owner.trigger('load');
+                    }
+                };
+    
+                img.onerror = function() {
+                    me.owner.trigger('error');
+                };
+    
+                me._img = img;
+            },
+    
+            loadFromBlob: function( blob ) {
+                var me = this,
+                    img = me._img;
+    
+                me._blob = blob;
+                me.type = blob.type;
+                img.src = Util.createObjectURL( blob.getSource() );
+                me.owner.once( 'load', function() {
+                    Util.revokeObjectURL( img.src );
+                });
+            },
+    
+            resize: function( width, height ) {
+                var canvas = this._canvas ||
+                        (this._canvas = document.createElement('canvas'));
+    
+                this._resize( this._img, canvas, width, height );
+                this._blob = null;    // 没用了，可以删掉了。
+                this.modified = true;
+                this.owner.trigger( 'complete', 'resize' );
+            },
+    
+            crop: function( x, y, w, h, s ) {
+                var cvs = this._canvas ||
+                        (this._canvas = document.createElement('canvas')),
+                    opts = this.options,
+                    img = this._img,
+                    iw = img.naturalWidth,
+                    ih = img.naturalHeight,
+                    orientation = this.getOrientation();
+    
+                s = s || 1;
+    
+                // todo 解决 orientation 的问题。
+                // values that require 90 degree rotation
+                // if ( ~[ 5, 6, 7, 8 ].indexOf( orientation ) ) {
+    
+                //     switch ( orientation ) {
+                //         case 6:
+                //             tmp = x;
+                //             x = y;
+                //             y = iw * s - tmp - w;
+                //             console.log(ih * s, tmp, w)
+                //             break;
+                //     }
+    
+                //     (w ^= h, h ^= w, w ^= h);
+                // }
+    
+                cvs.width = w;
+                cvs.height = h;
+    
+                opts.preserveHeaders || this._rotate2Orientaion( cvs, orientation );
+                this._renderImageToCanvas( cvs, img, -x, -y, iw * s, ih * s );
+    
+                this._blob = null;    // 没用了，可以删掉了。
+                this.modified = true;
+                this.owner.trigger( 'complete', 'crop' );
+            },
+    
+            getAsBlob: function( type ) {
+                var blob = this._blob,
+                    opts = this.options,
+                    canvas;
+    
+                type = type || this.type;
+    
+                // blob需要重新生成。
+                if ( this.modified || this.type !== type ) {
+                    canvas = this._canvas;
+    
+                    if ( type === 'image/jpeg' ) {
+    
+                        blob = Util.canvasToDataUrl( canvas, type, opts.quality );
+    
+                        if ( opts.preserveHeaders && this._metas &&
+                                this._metas.imageHead ) {
+    
+                            blob = Util.dataURL2ArrayBuffer( blob );
+                            blob = Util.updateImageHead( blob,
+                                    this._metas.imageHead );
+                            blob = Util.arrayBufferToBlob( blob, type );
+                            return blob;
+                        }
+                    } else {
+                        blob = Util.canvasToDataUrl( canvas, type );
+                    }
+    
+                    blob = Util.dataURL2Blob( blob );
+                }
+    
+                return blob;
+            },
+    
+            getAsDataUrl: function( type ) {
+                var opts = this.options;
+    
+                type = type || this.type;
+    
+                if ( type === 'image/jpeg' ) {
+                    return Util.canvasToDataUrl( this._canvas, type, opts.quality );
+                } else {
+                    return this._canvas.toDataURL( type );
+                }
+            },
+    
+            getOrientation: function() {
+                return this._metas && this._metas.exif &&
+                        this._metas.exif.get('Orientation') || 1;
+            },
+    
+            info: function( val ) {
+    
+                // setter
+                if ( val ) {
+                    this._info = val;
+                    return this;
+                }
+    
+                // getter
+                return this._info;
+            },
+    
+            meta: function( val ) {
+    
+                // setter
+                if ( val ) {
+                    this._metas = val;
+                    return this;
+                }
+    
+                // getter
+                return this._metas;
+            },
+    
+            destroy: function() {
+                var canvas = this._canvas;
+                this._img.onload = null;
+    
+                if ( canvas ) {
+                    canvas.getContext('2d')
+                            .clearRect( 0, 0, canvas.width, canvas.height );
+                    canvas.width = canvas.height = 0;
+                    this._canvas = null;
+                }
+    
+                // 释放内存。非常重要，否则释放不了image的内存。
+                this._img.src = BLANK;
+                this._img = this._blob = null;
+            },
+    
+            _resize: function( img, cvs, width, height ) {
+                var opts = this.options,
+                    naturalWidth = img.width,
+                    naturalHeight = img.height,
+                    orientation = this.getOrientation(),
+                    scale, w, h, x, y;
+    
+                // values that require 90 degree rotation
+                if ( ~[ 5, 6, 7, 8 ].indexOf( orientation ) ) {
+    
+                    // 交换width, height的值。
+                    width ^= height;
+                    height ^= width;
+                    width ^= height;
+                }
+    
+                scale = Math[ opts.crop ? 'max' : 'min' ]( width / naturalWidth,
+                        height / naturalHeight );
+    
+                // 不允许放大。
+                opts.allowMagnify || (scale = Math.min( 1, scale ));
+    
+                w = naturalWidth * scale;
+                h = naturalHeight * scale;
+    
+                if ( opts.crop ) {
+                    cvs.width = width;
+                    cvs.height = height;
+                } else {
+                    cvs.width = w;
+                    cvs.height = h;
+                }
+    
+                x = (cvs.width - w) / 2;
+                y = (cvs.height - h) / 2;
+    
+                opts.preserveHeaders || this._rotate2Orientaion( cvs, orientation );
+    
+                this._renderImageToCanvas( cvs, img, x, y, w, h );
+            },
+    
+            _rotate2Orientaion: function( canvas, orientation ) {
+                var width = canvas.width,
+                    height = canvas.height,
+                    ctx = canvas.getContext('2d');
+    
+                switch ( orientation ) {
+                    case 5:
+                    case 6:
+                    case 7:
+                    case 8:
+                        canvas.width = height;
+                        canvas.height = width;
+                        break;
+                }
+    
+                switch ( orientation ) {
+                    case 2:    // horizontal flip
+                        ctx.translate( width, 0 );
+                        ctx.scale( -1, 1 );
+                        break;
+    
+                    case 3:    // 180 rotate left
+                        ctx.translate( width, height );
+                        ctx.rotate( Math.PI );
+                        break;
+    
+                    case 4:    // vertical flip
+                        ctx.translate( 0, height );
+                        ctx.scale( 1, -1 );
+                        break;
+    
+                    case 5:    // vertical flip + 90 rotate right
+                        ctx.rotate( 0.5 * Math.PI );
+                        ctx.scale( 1, -1 );
+                        break;
+    
+                    case 6:    // 90 rotate right
+                        ctx.rotate( 0.5 * Math.PI );
+                        ctx.translate( 0, -height );
+                        break;
+    
+                    case 7:    // horizontal flip + 90 rotate right
+                        ctx.rotate( 0.5 * Math.PI );
+                        ctx.translate( width, -height );
+                        ctx.scale( -1, 1 );
+                        break;
+    
+                    case 8:    // 90 rotate left
+                        ctx.rotate( -0.5 * Math.PI );
+                        ctx.translate( -width, 0 );
+                        break;
+                }
+            },
+    
+            // https://github.com/stomita/ios-imagefile-megapixel/
+            // blob/master/src/megapix-image.js
+            _renderImageToCanvas: (function() {
+    
+                // 如果不是ios, 不需要这么复杂！
+                if ( !Base.os.ios ) {
+                    return function( canvas ) {
+                        var args = Base.slice( arguments, 1 ),
+                            ctx = canvas.getContext('2d');
+    
+                        ctx.drawImage.apply( ctx, args );
+                    };
+                }
+    
+                /**
+                 * Detecting vertical squash in loaded image.
+                 * Fixes a bug which squash image vertically while drawing into
+                 * canvas for some images.
+                 */
+                function detectVerticalSquash( img, iw, ih ) {
+                    var canvas = document.createElement('canvas'),
+                        ctx = canvas.getContext('2d'),
+                        sy = 0,
+                        ey = ih,
+                        py = ih,
+                        data, alpha, ratio;
+    
+    
+                    canvas.width = 1;
+                    canvas.height = ih;
+                    ctx.drawImage( img, 0, 0 );
+                    data = ctx.getImageData( 0, 0, 1, ih ).data;
+    
+                    // search image edge pixel position in case
+                    // it is squashed vertically.
+                    while ( py > sy ) {
+                        alpha = data[ (py - 1) * 4 + 3 ];
+    
+                        if ( alpha === 0 ) {
+                            ey = py;
+                        } else {
+                            sy = py;
+                        }
+    
+                        py = (ey + sy) >> 1;
+                    }
+    
+                    ratio = (py / ih);
+                    return (ratio === 0) ? 1 : ratio;
+                }
+    
+                // fix ie7 bug
+                // http://stackoverflow.com/questions/11929099/
+                // html5-canvas-drawimage-ratio-bug-ios
+                if ( Base.os.ios >= 7 ) {
+                    return function( canvas, img, x, y, w, h ) {
+                        var iw = img.naturalWidth,
+                            ih = img.naturalHeight,
+                            vertSquashRatio = detectVerticalSquash( img, iw, ih );
+    
+                        return canvas.getContext('2d').drawImage( img, 0, 0,
+                                iw * vertSquashRatio, ih * vertSquashRatio,
+                                x, y, w, h );
+                    };
+                }
+    
+                /**
+                 * Detect subsampling in loaded image.
+                 * In iOS, larger images than 2M pixels may be
+                 * subsampled in rendering.
+                 */
+                function detectSubsampling( img ) {
+                    var iw = img.naturalWidth,
+                        ih = img.naturalHeight,
+                        canvas, ctx;
+    
+                    // subsampling may happen overmegapixel image
+                    if ( iw * ih > 1024 * 1024 ) {
+                        canvas = document.createElement('canvas');
+                        canvas.width = canvas.height = 1;
+                        ctx = canvas.getContext('2d');
+                        ctx.drawImage( img, -iw + 1, 0 );
+    
+                        // subsampled image becomes half smaller in rendering size.
+                        // check alpha channel value to confirm image is covering
+                        // edge pixel or not. if alpha value is 0
+                        // image is not covering, hence subsampled.
+                        return ctx.getImageData( 0, 0, 1, 1 ).data[ 3 ] === 0;
+                    } else {
+                        return false;
+                    }
+                }
+    
+    
+                return function( canvas, img, x, y, width, height ) {
+                    var iw = img.naturalWidth,
+                        ih = img.naturalHeight,
+                        ctx = canvas.getContext('2d'),
+                        subsampled = detectSubsampling( img ),
+                        doSquash = this.type === 'image/jpeg',
+                        d = 1024,
+                        sy = 0,
+                        dy = 0,
+                        tmpCanvas, tmpCtx, vertSquashRatio, dw, dh, sx, dx;
+    
+                    if ( subsampled ) {
+                        iw /= 2;
+                        ih /= 2;
+                    }
+    
+                    ctx.save();
+                    tmpCanvas = document.createElement('canvas');
+                    tmpCanvas.width = tmpCanvas.height = d;
+    
+                    tmpCtx = tmpCanvas.getContext('2d');
+                    vertSquashRatio = doSquash ?
+                            detectVerticalSquash( img, iw, ih ) : 1;
+    
+                    dw = Math.ceil( d * width / iw );
+                    dh = Math.ceil( d * height / ih / vertSquashRatio );
+    
+                    while ( sy < ih ) {
+                        sx = 0;
+                        dx = 0;
+                        while ( sx < iw ) {
+                            tmpCtx.clearRect( 0, 0, d, d );
+                            tmpCtx.drawImage( img, -sx, -sy );
+                            ctx.drawImage( tmpCanvas, 0, 0, d, d,
+                                    x + dx, y + dy, dw, dh );
+                            sx += d;
+                            dx += dw;
+                        }
+                        sy += d;
+                        dy += dh;
+                    }
+                    ctx.restore();
+                    tmpCanvas = tmpCtx = null;
+                };
+            })()
+        });
+    });
+    
+    /**
      * @fileOverview Transport
      * @todo 支持chunked传输，优势：
      * 可以将大文件分成小块，挨个传输，可以提高大文件成功率，当失败的时候，也只需要重传那小部分，
@@ -6514,20 +6955,1097 @@
         });
     });
     
+    /**
+     * @fileOverview  Transport flash实现
+     */
+    define('runtime/html5/md5',[
+        'runtime/html5/runtime'
+    ], function( FlashRuntime ) {
+    
+        /*
+         * Fastest md5 implementation around (JKM md5)
+         * Credits: Joseph Myers
+         *
+         * @see http://www.myersdaily.org/joseph/javascript/md5-text.html
+         * @see http://jsperf.com/md5-shootout/7
+         */
+    
+        /* this function is much faster,
+          so if possible we use it. Some IEs
+          are the only ones I know of that
+          need the idiotic second function,
+          generated by an if clause.  */
+        var add32 = function (a, b) {
+            return (a + b) & 0xFFFFFFFF;
+        },
+    
+        cmn = function (q, a, b, x, s, t) {
+            a = add32(add32(a, q), add32(x, t));
+            return add32((a << s) | (a >>> (32 - s)), b);
+        },
+    
+        ff = function (a, b, c, d, x, s, t) {
+            return cmn((b & c) | ((~b) & d), a, b, x, s, t);
+        },
+    
+        gg = function (a, b, c, d, x, s, t) {
+            return cmn((b & d) | (c & (~d)), a, b, x, s, t);
+        },
+    
+        hh = function (a, b, c, d, x, s, t) {
+            return cmn(b ^ c ^ d, a, b, x, s, t);
+        },
+    
+        ii = function (a, b, c, d, x, s, t) {
+            return cmn(c ^ (b | (~d)), a, b, x, s, t);
+        },
+    
+        md5cycle = function (x, k) {
+            var a = x[0],
+                b = x[1],
+                c = x[2],
+                d = x[3];
+    
+            a = ff(a, b, c, d, k[0], 7, -680876936);
+            d = ff(d, a, b, c, k[1], 12, -389564586);
+            c = ff(c, d, a, b, k[2], 17, 606105819);
+            b = ff(b, c, d, a, k[3], 22, -1044525330);
+            a = ff(a, b, c, d, k[4], 7, -176418897);
+            d = ff(d, a, b, c, k[5], 12, 1200080426);
+            c = ff(c, d, a, b, k[6], 17, -1473231341);
+            b = ff(b, c, d, a, k[7], 22, -45705983);
+            a = ff(a, b, c, d, k[8], 7, 1770035416);
+            d = ff(d, a, b, c, k[9], 12, -1958414417);
+            c = ff(c, d, a, b, k[10], 17, -42063);
+            b = ff(b, c, d, a, k[11], 22, -1990404162);
+            a = ff(a, b, c, d, k[12], 7, 1804603682);
+            d = ff(d, a, b, c, k[13], 12, -40341101);
+            c = ff(c, d, a, b, k[14], 17, -1502002290);
+            b = ff(b, c, d, a, k[15], 22, 1236535329);
+    
+            a = gg(a, b, c, d, k[1], 5, -165796510);
+            d = gg(d, a, b, c, k[6], 9, -1069501632);
+            c = gg(c, d, a, b, k[11], 14, 643717713);
+            b = gg(b, c, d, a, k[0], 20, -373897302);
+            a = gg(a, b, c, d, k[5], 5, -701558691);
+            d = gg(d, a, b, c, k[10], 9, 38016083);
+            c = gg(c, d, a, b, k[15], 14, -660478335);
+            b = gg(b, c, d, a, k[4], 20, -405537848);
+            a = gg(a, b, c, d, k[9], 5, 568446438);
+            d = gg(d, a, b, c, k[14], 9, -1019803690);
+            c = gg(c, d, a, b, k[3], 14, -187363961);
+            b = gg(b, c, d, a, k[8], 20, 1163531501);
+            a = gg(a, b, c, d, k[13], 5, -1444681467);
+            d = gg(d, a, b, c, k[2], 9, -51403784);
+            c = gg(c, d, a, b, k[7], 14, 1735328473);
+            b = gg(b, c, d, a, k[12], 20, -1926607734);
+    
+            a = hh(a, b, c, d, k[5], 4, -378558);
+            d = hh(d, a, b, c, k[8], 11, -2022574463);
+            c = hh(c, d, a, b, k[11], 16, 1839030562);
+            b = hh(b, c, d, a, k[14], 23, -35309556);
+            a = hh(a, b, c, d, k[1], 4, -1530992060);
+            d = hh(d, a, b, c, k[4], 11, 1272893353);
+            c = hh(c, d, a, b, k[7], 16, -155497632);
+            b = hh(b, c, d, a, k[10], 23, -1094730640);
+            a = hh(a, b, c, d, k[13], 4, 681279174);
+            d = hh(d, a, b, c, k[0], 11, -358537222);
+            c = hh(c, d, a, b, k[3], 16, -722521979);
+            b = hh(b, c, d, a, k[6], 23, 76029189);
+            a = hh(a, b, c, d, k[9], 4, -640364487);
+            d = hh(d, a, b, c, k[12], 11, -421815835);
+            c = hh(c, d, a, b, k[15], 16, 530742520);
+            b = hh(b, c, d, a, k[2], 23, -995338651);
+    
+            a = ii(a, b, c, d, k[0], 6, -198630844);
+            d = ii(d, a, b, c, k[7], 10, 1126891415);
+            c = ii(c, d, a, b, k[14], 15, -1416354905);
+            b = ii(b, c, d, a, k[5], 21, -57434055);
+            a = ii(a, b, c, d, k[12], 6, 1700485571);
+            d = ii(d, a, b, c, k[3], 10, -1894986606);
+            c = ii(c, d, a, b, k[10], 15, -1051523);
+            b = ii(b, c, d, a, k[1], 21, -2054922799);
+            a = ii(a, b, c, d, k[8], 6, 1873313359);
+            d = ii(d, a, b, c, k[15], 10, -30611744);
+            c = ii(c, d, a, b, k[6], 15, -1560198380);
+            b = ii(b, c, d, a, k[13], 21, 1309151649);
+            a = ii(a, b, c, d, k[4], 6, -145523070);
+            d = ii(d, a, b, c, k[11], 10, -1120210379);
+            c = ii(c, d, a, b, k[2], 15, 718787259);
+            b = ii(b, c, d, a, k[9], 21, -343485551);
+    
+            x[0] = add32(a, x[0]);
+            x[1] = add32(b, x[1]);
+            x[2] = add32(c, x[2]);
+            x[3] = add32(d, x[3]);
+        },
+    
+        /* there needs to be support for Unicode here,
+           * unless we pretend that we can redefine the MD-5
+           * algorithm for multi-byte characters (perhaps
+           * by adding every four 16-bit characters and
+           * shortening the sum to 32 bits). Otherwise
+           * I suggest performing MD-5 as if every character
+           * was two bytes--e.g., 0040 0025 = @%--but then
+           * how will an ordinary MD-5 sum be matched?
+           * There is no way to standardize text to something
+           * like UTF-8 before transformation; speed cost is
+           * utterly prohibitive. The JavaScript standard
+           * itself needs to look at this: it should start
+           * providing access to strings as preformed UTF-8
+           * 8-bit unsigned value arrays.
+           */
+        md5blk = function (s) {
+            var md5blks = [],
+                i; /* Andy King said do it this way. */
+    
+            for (i = 0; i < 64; i += 4) {
+                md5blks[i >> 2] = s.charCodeAt(i) + (s.charCodeAt(i + 1) << 8) + (s.charCodeAt(i + 2) << 16) + (s.charCodeAt(i + 3) << 24);
+            }
+            return md5blks;
+        },
+    
+        md5blk_array = function (a) {
+            var md5blks = [],
+                i; /* Andy King said do it this way. */
+    
+            for (i = 0; i < 64; i += 4) {
+                md5blks[i >> 2] = a[i] + (a[i + 1] << 8) + (a[i + 2] << 16) + (a[i + 3] << 24);
+            }
+            return md5blks;
+        },
+    
+        md51 = function (s) {
+            var n = s.length,
+                state = [1732584193, -271733879, -1732584194, 271733878],
+                i,
+                length,
+                tail,
+                tmp,
+                lo,
+                hi;
+    
+            for (i = 64; i <= n; i += 64) {
+                md5cycle(state, md5blk(s.substring(i - 64, i)));
+            }
+            s = s.substring(i - 64);
+            length = s.length;
+            tail = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
+            for (i = 0; i < length; i += 1) {
+                tail[i >> 2] |= s.charCodeAt(i) << ((i % 4) << 3);
+            }
+            tail[i >> 2] |= 0x80 << ((i % 4) << 3);
+            if (i > 55) {
+                md5cycle(state, tail);
+                for (i = 0; i < 16; i += 1) {
+                    tail[i] = 0;
+                }
+            }
+    
+            // Beware that the final length might not fit in 32 bits so we take care of that
+            tmp = n * 8;
+            tmp = tmp.toString(16).match(/(.*?)(.{0,8})$/);
+            lo = parseInt(tmp[2], 16);
+            hi = parseInt(tmp[1], 16) || 0;
+    
+            tail[14] = lo;
+            tail[15] = hi;
+    
+            md5cycle(state, tail);
+            return state;
+        },
+    
+        md51_array = function (a) {
+            var n = a.length,
+                state = [1732584193, -271733879, -1732584194, 271733878],
+                i,
+                length,
+                tail,
+                tmp,
+                lo,
+                hi;
+    
+            for (i = 64; i <= n; i += 64) {
+                md5cycle(state, md5blk_array(a.subarray(i - 64, i)));
+            }
+    
+            // Not sure if it is a bug, however IE10 will always produce a sub array of length 1
+            // containing the last element of the parent array if the sub array specified starts
+            // beyond the length of the parent array - weird.
+            // https://connect.microsoft.com/IE/feedback/details/771452/typed-array-subarray-issue
+            a = (i - 64) < n ? a.subarray(i - 64) : new Uint8Array(0);
+    
+            length = a.length;
+            tail = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
+            for (i = 0; i < length; i += 1) {
+                tail[i >> 2] |= a[i] << ((i % 4) << 3);
+            }
+    
+            tail[i >> 2] |= 0x80 << ((i % 4) << 3);
+            if (i > 55) {
+                md5cycle(state, tail);
+                for (i = 0; i < 16; i += 1) {
+                    tail[i] = 0;
+                }
+            }
+    
+            // Beware that the final length might not fit in 32 bits so we take care of that
+            tmp = n * 8;
+            tmp = tmp.toString(16).match(/(.*?)(.{0,8})$/);
+            lo = parseInt(tmp[2], 16);
+            hi = parseInt(tmp[1], 16) || 0;
+    
+            tail[14] = lo;
+            tail[15] = hi;
+    
+            md5cycle(state, tail);
+    
+            return state;
+        },
+    
+        hex_chr = ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'a', 'b', 'c', 'd', 'e', 'f'],
+    
+        rhex = function (n) {
+            var s = '',
+                j;
+            for (j = 0; j < 4; j += 1) {
+                s += hex_chr[(n >> (j * 8 + 4)) & 0x0F] + hex_chr[(n >> (j * 8)) & 0x0F];
+            }
+            return s;
+        },
+    
+        hex = function (x) {
+            var i;
+            for (i = 0; i < x.length; i += 1) {
+                x[i] = rhex(x[i]);
+            }
+            return x.join('');
+        },
+    
+        md5 = function (s) {
+            return hex(md51(s));
+        },
+    
+    
+    
+        ////////////////////////////////////////////////////////////////////////////
+    
+        /**
+         * SparkMD5 OOP implementation.
+         *
+         * Use this class to perform an incremental md5, otherwise use the
+         * static methods instead.
+         */
+        SparkMD5 = function () {
+            // call reset to init the instance
+            this.reset();
+        };
+    
+    
+        // In some cases the fast add32 function cannot be used..
+        if (md5('hello') !== '5d41402abc4b2a76b9719d911017c592') {
+            add32 = function (x, y) {
+                var lsw = (x & 0xFFFF) + (y & 0xFFFF),
+                    msw = (x >> 16) + (y >> 16) + (lsw >> 16);
+                return (msw << 16) | (lsw & 0xFFFF);
+            };
+        }
+    
+    
+        /**
+         * Appends a string.
+         * A conversion will be applied if an utf8 string is detected.
+         *
+         * @param {String} str The string to be appended
+         *
+         * @return {SparkMD5} The instance itself
+         */
+        SparkMD5.prototype.append = function (str) {
+            // converts the string to utf8 bytes if necessary
+            if (/[\u0080-\uFFFF]/.test(str)) {
+                str = unescape(encodeURIComponent(str));
+            }
+    
+            // then append as binary
+            this.appendBinary(str);
+    
+            return this;
+        };
+    
+        /**
+         * Appends a binary string.
+         *
+         * @param {String} contents The binary string to be appended
+         *
+         * @return {SparkMD5} The instance itself
+         */
+        SparkMD5.prototype.appendBinary = function (contents) {
+            this._buff += contents;
+            this._length += contents.length;
+    
+            var length = this._buff.length,
+                i;
+    
+            for (i = 64; i <= length; i += 64) {
+                md5cycle(this._state, md5blk(this._buff.substring(i - 64, i)));
+            }
+    
+            this._buff = this._buff.substr(i - 64);
+    
+            return this;
+        };
+    
+        /**
+         * Finishes the incremental computation, reseting the internal state and
+         * returning the result.
+         * Use the raw parameter to obtain the raw result instead of the hex one.
+         *
+         * @param {Boolean} raw True to get the raw result, false to get the hex result
+         *
+         * @return {String|Array} The result
+         */
+        SparkMD5.prototype.end = function (raw) {
+            var buff = this._buff,
+                length = buff.length,
+                i,
+                tail = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+                ret;
+    
+            for (i = 0; i < length; i += 1) {
+                tail[i >> 2] |= buff.charCodeAt(i) << ((i % 4) << 3);
+            }
+    
+            this._finish(tail, length);
+            ret = !!raw ? this._state : hex(this._state);
+    
+            this.reset();
+    
+            return ret;
+        };
+    
+        /**
+         * Finish the final calculation based on the tail.
+         *
+         * @param {Array}  tail   The tail (will be modified)
+         * @param {Number} length The length of the remaining buffer
+         */
+        SparkMD5.prototype._finish = function (tail, length) {
+            var i = length,
+                tmp,
+                lo,
+                hi;
+    
+            tail[i >> 2] |= 0x80 << ((i % 4) << 3);
+            if (i > 55) {
+                md5cycle(this._state, tail);
+                for (i = 0; i < 16; i += 1) {
+                    tail[i] = 0;
+                }
+            }
+    
+            // Do the final computation based on the tail and length
+            // Beware that the final length may not fit in 32 bits so we take care of that
+            tmp = this._length * 8;
+            tmp = tmp.toString(16).match(/(.*?)(.{0,8})$/);
+            lo = parseInt(tmp[2], 16);
+            hi = parseInt(tmp[1], 16) || 0;
+    
+            tail[14] = lo;
+            tail[15] = hi;
+            md5cycle(this._state, tail);
+        };
+    
+        /**
+         * Resets the internal state of the computation.
+         *
+         * @return {SparkMD5} The instance itself
+         */
+        SparkMD5.prototype.reset = function () {
+            this._buff = "";
+            this._length = 0;
+            this._state = [1732584193, -271733879, -1732584194, 271733878];
+    
+            return this;
+        };
+    
+        /**
+         * Releases memory used by the incremental buffer and other aditional
+         * resources. If you plan to use the instance again, use reset instead.
+         */
+        SparkMD5.prototype.destroy = function () {
+            delete this._state;
+            delete this._buff;
+            delete this._length;
+        };
+    
+    
+        /**
+         * Performs the md5 hash on a string.
+         * A conversion will be applied if utf8 string is detected.
+         *
+         * @param {String}  str The string
+         * @param {Boolean} raw True to get the raw result, false to get the hex result
+         *
+         * @return {String|Array} The result
+         */
+        SparkMD5.hash = function (str, raw) {
+            // converts the string to utf8 bytes if necessary
+            if (/[\u0080-\uFFFF]/.test(str)) {
+                str = unescape(encodeURIComponent(str));
+            }
+    
+            var hash = md51(str);
+    
+            return !!raw ? hash : hex(hash);
+        };
+    
+        /**
+         * Performs the md5 hash on a binary string.
+         *
+         * @param {String}  content The binary string
+         * @param {Boolean} raw     True to get the raw result, false to get the hex result
+         *
+         * @return {String|Array} The result
+         */
+        SparkMD5.hashBinary = function (content, raw) {
+            var hash = md51(content);
+    
+            return !!raw ? hash : hex(hash);
+        };
+    
+        /**
+         * SparkMD5 OOP implementation for array buffers.
+         *
+         * Use this class to perform an incremental md5 ONLY for array buffers.
+         */
+        SparkMD5.ArrayBuffer = function () {
+            // call reset to init the instance
+            this.reset();
+        };
+    
+        ////////////////////////////////////////////////////////////////////////////
+    
+        /**
+         * Appends an array buffer.
+         *
+         * @param {ArrayBuffer} arr The array to be appended
+         *
+         * @return {SparkMD5.ArrayBuffer} The instance itself
+         */
+        SparkMD5.ArrayBuffer.prototype.append = function (arr) {
+            // TODO: we could avoid the concatenation here but the algorithm would be more complex
+            //       if you find yourself needing extra performance, please make a PR.
+            var buff = this._concatArrayBuffer(this._buff, arr),
+                length = buff.length,
+                i;
+    
+            this._length += arr.byteLength;
+    
+            for (i = 64; i <= length; i += 64) {
+                md5cycle(this._state, md5blk_array(buff.subarray(i - 64, i)));
+            }
+    
+            // Avoids IE10 weirdness (documented above)
+            this._buff = (i - 64) < length ? buff.subarray(i - 64) : new Uint8Array(0);
+    
+            return this;
+        };
+    
+        /**
+         * Finishes the incremental computation, reseting the internal state and
+         * returning the result.
+         * Use the raw parameter to obtain the raw result instead of the hex one.
+         *
+         * @param {Boolean} raw True to get the raw result, false to get the hex result
+         *
+         * @return {String|Array} The result
+         */
+        SparkMD5.ArrayBuffer.prototype.end = function (raw) {
+            var buff = this._buff,
+                length = buff.length,
+                tail = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+                i,
+                ret;
+    
+            for (i = 0; i < length; i += 1) {
+                tail[i >> 2] |= buff[i] << ((i % 4) << 3);
+            }
+    
+            this._finish(tail, length);
+            ret = !!raw ? this._state : hex(this._state);
+    
+            this.reset();
+    
+            return ret;
+        };
+    
+        SparkMD5.ArrayBuffer.prototype._finish = SparkMD5.prototype._finish;
+    
+        /**
+         * Resets the internal state of the computation.
+         *
+         * @return {SparkMD5.ArrayBuffer} The instance itself
+         */
+        SparkMD5.ArrayBuffer.prototype.reset = function () {
+            this._buff = new Uint8Array(0);
+            this._length = 0;
+            this._state = [1732584193, -271733879, -1732584194, 271733878];
+    
+            return this;
+        };
+    
+        /**
+         * Releases memory used by the incremental buffer and other aditional
+         * resources. If you plan to use the instance again, use reset instead.
+         */
+        SparkMD5.ArrayBuffer.prototype.destroy = SparkMD5.prototype.destroy;
+    
+        /**
+         * Concats two array buffers, returning a new one.
+         *
+         * @param  {ArrayBuffer} first  The first array buffer
+         * @param  {ArrayBuffer} second The second array buffer
+         *
+         * @return {ArrayBuffer} The new array buffer
+         */
+        SparkMD5.ArrayBuffer.prototype._concatArrayBuffer = function (first, second) {
+            var firstLength = first.length,
+                result = new Uint8Array(firstLength + second.byteLength);
+    
+            result.set(first);
+            result.set(new Uint8Array(second), firstLength);
+    
+            return result;
+        };
+    
+        /**
+         * Performs the md5 hash on an array buffer.
+         *
+         * @param {ArrayBuffer} arr The array buffer
+         * @param {Boolean}     raw True to get the raw result, false to get the hex result
+         *
+         * @return {String|Array} The result
+         */
+        SparkMD5.ArrayBuffer.hash = function (arr, raw) {
+            var hash = md51_array(new Uint8Array(arr));
+    
+            return !!raw ? hash : hex(hash);
+        };
+        
+        return FlashRuntime.register( 'Md5', {
+            init: function() {
+                // do nothing.
+            },
+    
+            loadFromBlob: function( file ) {
+                var blob = file.getSource(),
+                    chunkSize = 2 * 1024 * 1024,
+                    chunks = Math.ceil( blob.size / chunkSize ),
+                    chunk = 0,
+                    owner = this.owner,
+                    spark = new SparkMD5.ArrayBuffer(),
+                    me = this,
+                    blobSlice = blob.mozSlice || blob.webkitSlice || blob.slice,
+                    loadNext, fr;
+    
+                fr = new FileReader();
+    
+                loadNext = function() {
+                    var start, end;
+    
+                    start = chunk * chunkSize;
+                    end = Math.min( start + chunkSize, blob.size );
+    
+                    fr.onload = function( e ) {
+                        spark.append( e.target.result );
+                        owner.trigger( 'progress', {
+                            total: file.size,
+                            loaded: end
+                        });
+                    };
+    
+                    fr.onloadend = function() {
+                        fr.onloadend = fr.onload = null;
+    
+                        if ( ++chunk < chunks ) {
+                            setTimeout( loadNext, 1 );
+                        } else {
+                            setTimeout(function(){
+                                owner.trigger('load');
+                                me.result = spark.end();
+                                loadNext = file = blob = spark = null;
+                                owner.trigger('complete');
+                            }, 50 );
+                        }
+                    };
+    
+                    fr.readAsArrayBuffer( blobSlice.call( blob, start, end ) );
+                };
+    
+                loadNext();
+            },
+    
+            getResult: function() {
+                return this.result;
+            }
+        });
+    });
+    /**
+     * @fileOverview FlashRuntime
+     */
+    define('runtime/flash/runtime',[
+        'base',
+        'runtime/runtime',
+        'runtime/compbase'
+    ], function( Base, Runtime, CompBase ) {
+    
+        var $ = Base.$,
+            type = 'flash',
+            components = {};
+    
+    
+        function getFlashVersion() {
+            var version;
+    
+            try {
+                version = navigator.plugins[ 'Shockwave Flash' ];
+                version = version.description;
+            } catch ( ex ) {
+                try {
+                    version = new ActiveXObject('ShockwaveFlash.ShockwaveFlash')
+                            .GetVariable('$version');
+                } catch ( ex2 ) {
+                    version = '0.0';
+                }
+            }
+            version = version.match( /\d+/g );
+            return parseFloat( version[ 0 ] + '.' + version[ 1 ], 10 );
+        }
+    
+        function FlashRuntime() {
+            var pool = {},
+                clients = {},
+                destroy = this.destroy,
+                me = this,
+                jsreciver = Base.guid('webuploader_');
+    
+            Runtime.apply( me, arguments );
+            me.type = type;
+    
+    
+            // 这个方法的调用者，实际上是RuntimeClient
+            me.exec = function( comp, fn/*, args...*/ ) {
+                var client = this,
+                    uid = client.uid,
+                    args = Base.slice( arguments, 2 ),
+                    instance;
+    
+                clients[ uid ] = client;
+    
+                if ( components[ comp ] ) {
+                    if ( !pool[ uid ] ) {
+                        pool[ uid ] = new components[ comp ]( client, me );
+                    }
+    
+                    instance = pool[ uid ];
+    
+                    if ( instance[ fn ] ) {
+                        return instance[ fn ].apply( instance, args );
+                    }
+                }
+    
+                return me.flashExec.apply( client, arguments );
+            };
+    
+            function handler( evt, obj ) {
+                var type = evt.type || evt,
+                    parts, uid;
+    
+                parts = type.split('::');
+                uid = parts[ 0 ];
+                type = parts[ 1 ];
+    
+                // console.log.apply( console, arguments );
+    
+                if ( type === 'Ready' && uid === me.uid ) {
+                    me.trigger('ready');
+                } else if ( clients[ uid ] ) {
+                    clients[ uid ].trigger( type.toLowerCase(), evt, obj );
+                }
+    
+                // Base.log( evt, obj );
+            }
+    
+            // flash的接受器。
+            window[ jsreciver ] = function() {
+                var args = arguments;
+    
+                // 为了能捕获得到。
+                setTimeout(function() {
+                    handler.apply( null, args );
+                }, 1 );
+            };
+    
+            this.jsreciver = jsreciver;
+    
+            this.destroy = function() {
+                // @todo 删除池子中的所有实例
+                return destroy && destroy.apply( this, arguments );
+            };
+    
+            this.flashExec = function( comp, fn ) {
+                var flash = me.getFlash(),
+                    args = Base.slice( arguments, 2 );
+    
+                return flash.exec( this.uid, comp, fn, args );
+            };
+    
+            // @todo
+        }
+    
+        Base.inherits( Runtime, {
+            constructor: FlashRuntime,
+    
+            init: function() {
+                var container = this.getContainer(),
+                    opts = this.options,
+                    html;
+    
+                // if not the minimal height, shims are not initialized
+                // in older browsers (e.g FF3.6, IE6,7,8, Safari 4.0,5.0, etc)
+                container.css({
+                    position: 'absolute',
+                    top: '-8px',
+                    left: '-8px',
+                    width: '9px',
+                    height: '9px',
+                    overflow: 'hidden'
+                });
+    
+                // insert flash object
+                html = '<object id="' + this.uid + '" type="application/' +
+                        'x-shockwave-flash" data="' +  opts.swf + '" ';
+    
+                if ( Base.browser.ie ) {
+                    html += 'classid="clsid:d27cdb6e-ae6d-11cf-96b8-444553540000" ';
+                }
+    
+                html += 'width="100%" height="100%" style="outline:0">'  +
+                    '<param name="movie" value="' + opts.swf + '" />' +
+                    '<param name="flashvars" value="uid=' + this.uid +
+                    '&jsreciver=' + this.jsreciver + '" />' +
+                    '<param name="wmode" value="transparent" />' +
+                    '<param name="allowscriptaccess" value="always" />' +
+                '</object>';
+    
+                container.html( html );
+            },
+    
+            getFlash: function() {
+                if ( this._flash ) {
+                    return this._flash;
+                }
+    
+                this._flash = $( '#' + this.uid ).get( 0 );
+                return this._flash;
+            }
+    
+        });
+    
+        FlashRuntime.register = function( name, component ) {
+            component = components[ name ] = Base.inherits( CompBase, $.extend({
+    
+                // @todo fix this later
+                flashExec: function() {
+                    var owner = this.owner,
+                        runtime = this.getRuntime();
+    
+                    return runtime.flashExec.apply( owner, arguments );
+                }
+            }, component ) );
+    
+            return component;
+        };
+    
+        if ( getFlashVersion() >= 11.4 ) {
+            Runtime.addRuntime( type, FlashRuntime );
+        }
+    
+        return FlashRuntime;
+    });
+    /**
+     * @fileOverview FilePicker
+     */
+    define('runtime/flash/filepicker',[
+        'base',
+        'runtime/flash/runtime'
+    ], function( Base, FlashRuntime ) {
+        var $ = Base.$;
+    
+        return FlashRuntime.register( 'FilePicker', {
+            init: function( opts ) {
+                var copy = $.extend({}, opts ),
+                    len, i;
+    
+                // 修复Flash再没有设置title的情况下无法弹出flash文件选择框的bug.
+                len = copy.accept && copy.accept.length;
+                for (  i = 0; i < len; i++ ) {
+                    if ( !copy.accept[ i ].title ) {
+                        copy.accept[ i ].title = 'Files';
+                    }
+                }
+    
+                delete copy.button;
+                delete copy.id;
+                delete copy.container;
+    
+                this.flashExec( 'FilePicker', 'init', copy );
+            },
+    
+            destroy: function() {
+                this.flashExec( 'FilePicker', 'destroy' );
+            }
+        });
+    });
+    /**
+     * @fileOverview 图片压缩
+     */
+    define('runtime/flash/image',[
+        'runtime/flash/runtime'
+    ], function( FlashRuntime ) {
+    
+        return FlashRuntime.register( 'Image', {
+            // init: function( options ) {
+            //     var owner = this.owner;
+    
+            //     this.flashExec( 'Image', 'init', options );
+            //     owner.on( 'load', function() {
+            //         debugger;
+            //     });
+            // },
+    
+            loadFromBlob: function( blob ) {
+                var owner = this.owner;
+    
+                owner.info() && this.flashExec( 'Image', 'info', owner.info() );
+                owner.meta() && this.flashExec( 'Image', 'meta', owner.meta() );
+    
+                this.flashExec( 'Image', 'loadFromBlob', blob.uid );
+            }
+        });
+    });
+    /**
+     * @fileOverview  Transport flash实现
+     */
+    define('runtime/flash/transport',[
+        'base',
+        'runtime/flash/runtime',
+        'runtime/client'
+    ], function( Base, FlashRuntime, RuntimeClient ) {
+        var $ = Base.$;
+    
+        return FlashRuntime.register( 'Transport', {
+            init: function() {
+                this._status = 0;
+                this._response = null;
+                this._responseJson = null;
+            },
+    
+            send: function() {
+                var owner = this.owner,
+                    opts = this.options,
+                    xhr = this._initAjax(),
+                    blob = owner._blob,
+                    server = opts.server,
+                    binary;
+    
+                xhr.connectRuntime( blob.ruid );
+    
+                if ( opts.sendAsBinary ) {
+                    server += (/\?/.test( server ) ? '&' : '?') +
+                            $.param( owner._formData );
+    
+                    binary = blob.uid;
+                } else {
+                    $.each( owner._formData, function( k, v ) {
+                        xhr.exec( 'append', k, v );
+                    });
+    
+                    xhr.exec( 'appendBlob', opts.fileVal, blob.uid,
+                            opts.filename || owner._formData.name || '' );
+                }
+    
+                this._setRequestHeader( xhr, opts.headers );
+                xhr.exec( 'send', {
+                    method: opts.method,
+                    url: server,
+                    forceURLStream: opts.forceURLStream,
+                    mimeType: 'application/octet-stream'
+                }, binary );
+            },
+    
+            getStatus: function() {
+                return this._status;
+            },
+    
+            getResponse: function() {
+                return this._response || '';
+            },
+    
+            getResponseAsJson: function() {
+                return this._responseJson;
+            },
+    
+            abort: function() {
+                var xhr = this._xhr;
+    
+                if ( xhr ) {
+                    xhr.exec('abort');
+                    xhr.destroy();
+                    this._xhr = xhr = null;
+                }
+            },
+    
+            destroy: function() {
+                this.abort();
+            },
+    
+            _initAjax: function() {
+                var me = this,
+                    xhr = new RuntimeClient('XMLHttpRequest');
+    
+                xhr.on( 'uploadprogress progress', function( e ) {
+                    var percent = e.loaded / e.total;
+                    percent = Math.min( 1, Math.max( 0, percent ) );
+                    return me.trigger( 'progress', percent );
+                });
+    
+                xhr.on( 'load', function() {
+                    var status = xhr.exec('getStatus'),
+                        readBody = false,
+                        err = '',
+                        p;
+    
+                    xhr.off();
+                    me._xhr = null;
+    
+                    if ( status >= 200 && status < 300 ) {
+                        readBody = true;
+                    } else if ( status >= 500 && status < 600 ) {
+                        readBody = true;
+                        err = 'server-'+status;
+                    } else {
+                        err = 'http-'+status;
+                    }
+    
+                    if ( readBody ) {
+                        me._response = xhr.exec('getResponse');
+                        me._response = decodeURIComponent( me._response );
+    
+                        // flash 处理可能存在 bug, 没辙只能靠 js 了
+                        // try {
+                        //     me._responseJson = xhr.exec('getResponseAsJson');
+                        // } catch ( error ) {
+    
+                        p = function( s ) {
+                            try {
+                                if (window.JSON && window.JSON.parse) {
+                                    return JSON.parse(s);
+                                }
+    
+                                return new Function('return ' + s).call();
+                            } catch ( err ) {
+                                return {};
+                            }
+                        };
+                        me._responseJson  = me._response ? p(me._response) : {};
+    
+                        // }
+                    }
+    
+                    xhr.destroy();
+                    xhr = null;
+    
+                    return err ? me.trigger( 'error', err ) : me.trigger('load');
+                });
+    
+                xhr.on( 'error', function() {
+                    var status = xhr.exec('getStatus'),err = status?'http-'+status:'http';
+                    xhr.off();
+                    me._xhr = null;
+                    me.trigger( 'error', err );
+                });
+    
+                me._xhr = xhr;
+                return xhr;
+            },
+    
+            _setRequestHeader: function( xhr, headers ) {
+                $.each( headers, function( key, val ) {
+                    xhr.exec( 'setRequestHeader', key, val );
+                });
+            }
+        });
+    });
+    
+    /**
+     * @fileOverview Blob Html实现
+     */
+    define('runtime/flash/blob',[
+        'runtime/flash/runtime',
+        'lib/blob'
+    ], function( FlashRuntime, Blob ) {
+    
+        return FlashRuntime.register( 'Blob', {
+            slice: function( start, end ) {
+                var blob = this.flashExec( 'Blob', 'slice', start, end );
+    
+                return new Blob( this.getRuid(), blob );
+            }
+        });
+    });
+    /**
+     * @fileOverview  Md5 flash实现
+     */
+    define('runtime/flash/md5',[
+        'runtime/flash/runtime'
+    ], function( FlashRuntime ) {
+        
+        return FlashRuntime.register( 'Md5', {
+            init: function() {
+                // do nothing.
+            },
+    
+            loadFromBlob: function( blob ) {
+                return this.flashExec( 'Md5', 'loadFromBlob', blob.uid );
+            }
+        });
+    });
     define('webuploader',[
         'base',
+        'widgets/filednd',
+        'widgets/filepaste',
         'widgets/filepicker',
         'widgets/image',
         'widgets/queue',
         'widgets/runtime',
         'widgets/upload',
-        'widgets/log',
+        'widgets/validator',
+        'widgets/md5',
         'runtime/html5/blob',
+        'runtime/html5/dnd',
+        'runtime/html5/filepaste',
         'runtime/html5/filepicker',
         'runtime/html5/imagemeta/exif',
-        'runtime/html5/image',
         'runtime/html5/androidpatch',
-        'runtime/html5/transport'
+        'runtime/html5/image',
+        'runtime/html5/transport',
+        'runtime/html5/md5',
+        'runtime/flash/filepicker',
+        'runtime/flash/image',
+        'runtime/flash/transport',
+        'runtime/flash/blob',
+        'runtime/flash/md5'
     ], function( Base ) {
         return Base;
     });

@@ -78,7 +78,7 @@ define([
                 this.parentNode.replaceChild( clone, this );
 
                 input.off();
-                input = $( clone ).on( 'change', fn )
+                input = $( clone ).on( 'change', changeHandler )
                         .on( 'mouseenter mouseleave', mouseHandler );
 
                 owner.trigger('change');
