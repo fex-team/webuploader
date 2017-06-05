@@ -167,7 +167,7 @@ define([
             }
         },
 		
-		_fileAdded: function( file ) {
+        _fileAdded: function( file ) {
             var me = this,
                 existing = this._map[ file.id ];
 
@@ -177,8 +177,8 @@ define([
                 file.on( 'statuschange', function( cur, pre ) {
                     me._onFileStatusChange( cur, pre );
                 });
-			}
-		},
+            }
+        },
 
         _delFile : function(file){
             for(var i = this._queue.length - 1 ; i >= 0 ; i-- ){
