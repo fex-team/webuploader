@@ -55,6 +55,10 @@ if (preg_match("#^data:image/(\w+);base64,(.*)$#", $src, $matches)) {
         $type = 'jpg';
     }
 
+    if (!in_array($type, array("jpg", "png", "gif", "bmp"))) {
+        die('{"jsonrpc" : "2.0", "error" : {"code": 200, "message": "un recoginized image source"}, "id" : "id"}');
+    }
+
     $filename = md5($base64).".$type";
     $filePath = $DIR.DIRECTORY_SEPARATOR.$filename;
 
