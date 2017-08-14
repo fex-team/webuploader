@@ -94,8 +94,8 @@ define([
             this.disconnectRuntime();
         },
 
-        getResonseHeaders: function() {
-            return this.exec('getResonseHeaders');
+        getResponseHeaders: function() {
+            return this.exec('getResponseHeaders');
         },
 
         getResponse: function() {

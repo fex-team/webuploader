@@ -2728,7 +2728,7 @@
                 }
             },
     		
-    		_fileAdded: function( file ) {
+            _fileAdded: function( file ) {
                 var me = this,
                     existing = this._map[ file.id ];
     
@@ -2738,8 +2738,8 @@
                     file.on( 'statuschange', function( cur, pre ) {
                         me._onFileStatusChange( cur, pre );
                     });
-    			}
-    		},
+                }
+            },
     
             _delFile : function(file){
                 for(var i = this._queue.length - 1 ; i >= 0 ; i-- ){
@@ -3276,6 +3276,10 @@
                 this.disconnectRuntime();
             },
     
+            getResponseHeaders: function() {
+                return this.exec('getResponseHeaders');
+            },
+    
             getResponse: function() {
                 return this.exec('getResponse');
             },
@@ -3310,6 +3314,7 @@
     
         return Transport;
     });
+    
     /**
      * @fileOverview 负责文件上传相关。
      */
@@ -4040,6 +4045,7 @@
     
                     ret = tr.getResponseAsJson() || {};
                     ret._raw = tr.getResponse();
+                    ret._headers = tr.getResponseHeaders();
                     fn = function( value ) {
                         reject = value;
                     };
@@ -6868,6 +6874,10 @@
                 return this._parseJson( this._response );
             },
     
+            getResponseHeaders: function() {
+                return this._headers;
+            },
+    
             getStatus: function() {
                 return this._status;
             },
@@ -6886,6 +6896,16 @@
     
             destroy: function() {
                 this.abort();
+            },
+    
+            _parseHeader: function(raw) {
+                var ret = {};
+    
+                raw && raw.replace(/^([^\:]+):(.*)$/mg, function(_, key, value) {
+                    ret[key.trim()] = value.trim();
+                });
+    
+                return ret;
             },
     
             _initAjax: function() {
@@ -6921,9 +6941,11 @@
     
                     if ( xhr.status >= 200 && xhr.status < 300 ) {
                         me._response = xhr.responseText;
+                        me._headers = me._parseHeader(xhr.getAllResponseHeaders());
                         return me.trigger('load');
                     } else if ( xhr.status >= 500 && xhr.status < 600 ) {
                         me._response = xhr.responseText;
+                        me._headers = me._parseHeader(xhr.getAllResponseHeaders());
                         return me.trigger( 'error', 'server-'+status );
                     }
     
@@ -7894,6 +7916,11 @@
     
             getResponseAsJson: function() {
                 return this._responseJson;
+            },
+    
+            getResponseHeaders: function() {
+                // flash 暂不支持
+                return {};
             },
     
             abort: function() {

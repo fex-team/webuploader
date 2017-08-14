@@ -84,7 +84,7 @@ define([
             return this._parseJson( this._response );
         },
 
-        getResonseHeaders: function() {
+        getResponseHeaders: function() {
             return this._headers;
         },
 
@@ -106,6 +106,16 @@ define([
 
         destroy: function() {
             this.abort();
+        },
+
+        _parseHeader: function(raw) {
+            var ret = {};
+
+            raw && raw.replace(/^([^\:]+):(.*)$/mg, function(_, key, value) {
+                ret[key.trim()] = value.trim();
+            });
+
+            return ret;
         },
 
         _initAjax: function() {
@@ -141,11 +151,11 @@ define([
 
                 if ( xhr.status >= 200 && xhr.status < 300 ) {
                     me._response = xhr.responseText;
-                    me._headers = xhr.getAllResponseHeaders();
+                    me._headers = me._parseHeader(xhr.getAllResponseHeaders());
                     return me.trigger('load');
                 } else if ( xhr.status >= 500 && xhr.status < 600 ) {
                     me._response = xhr.responseText;
-                    me._headers = xhr.getAllResponseHeaders();
+                    me._headers = me._parseHeader(xhr.getAllResponseHeaders());
                     return me.trigger( 'error', 'server-'+status );
                 }
 

@@ -2703,7 +2703,7 @@ module.exports = (function( root, factory ) {
                 }
             },
     		
-    		_fileAdded: function( file ) {
+            _fileAdded: function( file ) {
                 var me = this,
                     existing = this._map[ file.id ];
     
@@ -2713,8 +2713,8 @@ module.exports = (function( root, factory ) {
                     file.on( 'statuschange', function( cur, pre ) {
                         me._onFileStatusChange( cur, pre );
                     });
-    			}
-    		},
+                }
+            },
     
             _delFile : function(file){
                 for(var i = this._queue.length - 1 ; i >= 0 ; i-- ){
@@ -3251,6 +3251,10 @@ module.exports = (function( root, factory ) {
                 this.disconnectRuntime();
             },
     
+            getResponseHeaders: function() {
+                return this.exec('getResponseHeaders');
+            },
+    
             getResponse: function() {
                 return this.exec('getResponse');
             },
@@ -3285,6 +3289,7 @@ module.exports = (function( root, factory ) {
     
         return Transport;
     });
+    
     /**
      * @fileOverview 负责文件上传相关。
      */
@@ -4015,6 +4020,7 @@ module.exports = (function( root, factory ) {
     
                     ret = tr.getResponseAsJson() || {};
                     ret._raw = tr.getResponse();
+                    ret._headers = tr.getResponseHeaders();
                     fn = function( value ) {
                         reject = value;
                     };
@@ -6843,6 +6849,10 @@ module.exports = (function( root, factory ) {
                 return this._parseJson( this._response );
             },
     
+            getResponseHeaders: function() {
+                return this._headers;
+            },
+    
             getStatus: function() {
                 return this._status;
             },
@@ -6861,6 +6871,16 @@ module.exports = (function( root, factory ) {
     
             destroy: function() {
                 this.abort();
+            },
+    
+            _parseHeader: function(raw) {
+                var ret = {};
+    
+                raw && raw.replace(/^([^\:]+):(.*)$/mg, function(_, key, value) {
+                    ret[key.trim()] = value.trim();
+                });
+    
+                return ret;
             },
     
             _initAjax: function() {
@@ -6896,9 +6916,11 @@ module.exports = (function( root, factory ) {
     
                     if ( xhr.status >= 200 && xhr.status < 300 ) {
                         me._response = xhr.responseText;
+                        me._headers = me._parseHeader(xhr.getAllResponseHeaders());
                         return me.trigger('load');
                     } else if ( xhr.status >= 500 && xhr.status < 600 ) {
                         me._response = xhr.responseText;
+                        me._headers = me._parseHeader(xhr.getAllResponseHeaders());
                         return me.trigger( 'error', 'server-'+status );
                     }
     
@@ -7869,6 +7891,11 @@ module.exports = (function( root, factory ) {
     
             getResponseAsJson: function() {
                 return this._responseJson;
+            },
+    
+            getResponseHeaders: function() {
+                // flash 暂不支持
+                return {};
             },
     
             abort: function() {

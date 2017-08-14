@@ -2526,7 +2526,7 @@
                 }
             },
     		
-    		_fileAdded: function( file ) {
+            _fileAdded: function( file ) {
                 var me = this,
                     existing = this._map[ file.id ];
     
@@ -2536,8 +2536,8 @@
                     file.on( 'statuschange', function( cur, pre ) {
                         me._onFileStatusChange( cur, pre );
                     });
-    			}
-    		},
+                }
+            },
     
             _delFile : function(file){
                 for(var i = this._queue.length - 1 ; i >= 0 ; i-- ){
@@ -3074,6 +3074,10 @@
                 this.disconnectRuntime();
             },
     
+            getResponseHeaders: function() {
+                return this.exec('getResponseHeaders');
+            },
+    
             getResponse: function() {
                 return this.exec('getResponse');
             },
@@ -3108,6 +3112,7 @@
     
         return Transport;
     });
+    
     /**
      * @fileOverview 负责文件上传相关。
      */
@@ -3838,6 +3843,7 @@
     
                     ret = tr.getResponseAsJson() || {};
                     ret._raw = tr.getResponse();
+                    ret._headers = tr.getResponseHeaders();
                     fn = function( value ) {
                         reject = value;
                     };
@@ -4536,6 +4542,11 @@
     
             getResponseAsJson: function() {
                 return this._responseJson;
+            },
+    
+            getResponseHeaders: function() {
+                // flash 暂不支持
+                return {};
             },
     
             abort: function() {

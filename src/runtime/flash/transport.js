@@ -60,7 +60,7 @@ define([
             return this._responseJson;
         },
 
-        getResonseHeaders: function() {
+        getResponseHeaders: function() {
             // flash 暂不支持
             return {};
         },
