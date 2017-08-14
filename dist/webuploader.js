@@ -2805,6 +2805,18 @@
                         stats.numofInterrupt++;
                         break;
                 }
+            },
+			 _fileAdded: function( file ) {
+                var me = this,
+                    existing = this._map[ file.id ];
+    
+                if ( !existing ) {
+                    this._map[ file.id ] = file;
+    
+                    file.on( 'statuschange', function( cur, pre ) {
+                        me._onFileStatusChange( cur, pre );
+                    });
+                }
             }
     
         });
@@ -4964,7 +4976,7 @@
                 };
     
                 changeHandler = function( e ) {
-                    var clone;
+                    var clone,fn = arguments.callee;
     
                     // 解决chrome 56 第二次打开文件选择器，然后点击取消，依然会触发change事件的问题
                     if (e.target.files.length === 0){
