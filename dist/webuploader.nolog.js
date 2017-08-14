@@ -2727,6 +2727,19 @@
                     
                 }
             },
+    		
+    		_fileAdded: function( file ) {
+                var me = this,
+                    existing = this._map[ file.id ];
+    
+                if ( !existing ) {
+                    this._map[ file.id ] = file;
+    
+                    file.on( 'statuschange', function( cur, pre ) {
+                        me._onFileStatusChange( cur, pre );
+                    });
+    			}
+    		},
     
             _delFile : function(file){
                 for(var i = this._queue.length - 1 ; i >= 0 ; i-- ){
@@ -4962,7 +4975,7 @@
                     this.parentNode.replaceChild( clone, this );
     
                     input.off();
-                    input = $( clone ).on( 'change', fn )
+                    input = $( clone ).on( 'change', changeHandler )
                             .on( 'mouseenter mouseleave', mouseHandler );
     
                     owner.trigger('change');
