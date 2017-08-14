@@ -94,6 +94,10 @@ define([
             this.disconnectRuntime();
         },
 
+        getResonseHeaders: function() {
+            return this.exec('getResonseHeaders');
+        },
+
         getResponse: function() {
             return this.exec('getResponse');
         },

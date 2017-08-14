@@ -84,6 +84,10 @@ define([
             return this._parseJson( this._response );
         },
 
+        getResonseHeaders: function() {
+            return this._headers;
+        },
+
         getStatus: function() {
             return this._status;
         },
@@ -137,9 +141,11 @@ define([
 
                 if ( xhr.status >= 200 && xhr.status < 300 ) {
                     me._response = xhr.responseText;
+                    me._headers = xhr.getAllResponseHeaders();
                     return me.trigger('load');
                 } else if ( xhr.status >= 500 && xhr.status < 600 ) {
                     me._response = xhr.responseText;
+                    me._headers = xhr.getAllResponseHeaders();
                     return me.trigger( 'error', 'server-'+status );
                 }
 

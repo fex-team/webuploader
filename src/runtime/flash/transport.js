@@ -60,6 +60,11 @@ define([
             return this._responseJson;
         },
 
+        getResonseHeaders: function() {
+            // flash 暂不支持
+            return {};
+        },
+
         abort: function() {
             var xhr = this._xhr;
 

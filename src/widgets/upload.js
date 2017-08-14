@@ -728,6 +728,7 @@ define([
 
                 ret = tr.getResponseAsJson() || {};
                 ret._raw = tr.getResponse();
+                ret._headers = tr.getResponseHeaders();
                 fn = function( value ) {
                     reject = value;
                 };
