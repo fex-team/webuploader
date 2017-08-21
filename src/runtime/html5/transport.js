@@ -27,8 +27,8 @@ define([
                 formData, binary, fr;
 
             if ( opts.sendAsBinary ) {
-                server += (/\?/.test( server ) ? '&' : '?') +
-                        $.param( owner._formData );
+                server += opts.attachInfoToQuery !== false ? ((/\?/.test( server ) ? '&' : '?') +
+                        $.param( owner._formData )) : '';
 
                 binary = blob.getSource();
             } else {

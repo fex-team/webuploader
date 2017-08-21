@@ -4018,7 +4018,7 @@
             _doSend: function( block ) {
                 var me = this,
                     owner = me.owner,
-                    opts = me.options,
+                    opts = $.extend({}, me.options, block.options),
                     file = block.file,
                     tr = new Transport( opts ),
                     data = $.extend({}, opts.formData ),
@@ -4046,6 +4046,7 @@
                     ret = tr.getResponseAsJson() || {};
                     ret._raw = tr.getResponse();
                     ret._headers = tr.getResponseHeaders();
+                    block.response = ret;
                     fn = function( value ) {
                         reject = value;
                     };
@@ -6817,8 +6818,8 @@
                     formData, binary, fr;
     
                 if ( opts.sendAsBinary ) {
-                    server += (/\?/.test( server ) ? '&' : '?') +
-                            $.param( owner._formData );
+                    server += opts.attachInfoToQuery !== false ? ((/\?/.test( server ) ? '&' : '?') +
+                            $.param( owner._formData )) : '';
     
                     binary = blob.getSource();
                 } else {

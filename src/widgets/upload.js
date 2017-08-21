@@ -701,7 +701,7 @@ define([
         _doSend: function( block ) {
             var me = this,
                 owner = me.owner,
-                opts = me.options,
+                opts = $.extend({}, me.options, block.options),
                 file = block.file,
                 tr = new Transport( opts ),
                 data = $.extend({}, opts.formData ),
@@ -729,6 +729,7 @@ define([
                 ret = tr.getResponseAsJson() || {};
                 ret._raw = tr.getResponse();
                 ret._headers = tr.getResponseHeaders();
+                block.response = ret;
                 fn = function( value ) {
                     reject = value;
                 };
