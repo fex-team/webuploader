@@ -26,7 +26,7 @@ define([
          * * `numOfUploadFailed` 上传错误的文件数。
          * * `numOfInvalid` 无效的文件数。
          * * `numOfDeleted` 被移除的文件数。
-	 * * `numOfInterrupt` 被中断的文件。
+         * * `numOfInterrupt` 被中断的文件。
          * @property {Object} stats
          */
         this.stats = {
