@@ -35,8 +35,8 @@ define([
             numOfProgress: 0,
             numOfUploadFailed: 0,
             numOfInvalid: 0,
-            numofDeleted: 0,
-            numofInterrupt: 0
+            numOfDeleted: 0,
+            numOfInterrupt: 0
         };
 
         // 上传队列，仅包括等待上传的文件
@@ -210,7 +210,7 @@ define([
                     break;
 
                 case STATUS.INTERRUPT:
-                    stats.numofInterrupt--;
+                    stats.numOfInterrupt--;
                     break;
             }
 
@@ -241,7 +241,7 @@ define([
                     break;
 
                 case STATUS.INTERRUPT:
-                    stats.numofInterrupt++;
+                    stats.numOfInterrupt++;
                     break;
             }
         }
