@@ -134,7 +134,7 @@ define([
                 invalidNum: stats.numOfInvalid,
                 uploadFailNum: stats.numOfUploadFailed,
                 queueNum: stats.numOfQueue,
-                interruptNum: stats.numofInterrupt
+                interruptNum: stats.numOfInterrupt
             } : {};
         },
 
