@@ -25,7 +25,8 @@ define([
          * * `numOfProgress` 正在上传中的文件数
          * * `numOfUploadFailed` 上传错误的文件数。
          * * `numOfInvalid` 无效的文件数。
-         * * `numofDeleted` 被移除的文件数。
+         * * `numOfDeleted` 被移除的文件数。
+	 * * `numOfInterrupt` 被中断的文件。
          * @property {Object} stats
          */
         this.stats = {
@@ -162,7 +163,7 @@ define([
                 delete this._map[ file.id ];
                 this._delFile(file);
                 file.destroy();
-                this.stats.numofDeleted++;
+                this.stats.numOfDeleted++;
                 
             }
         },
