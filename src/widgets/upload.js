@@ -747,7 +747,7 @@ define([
                 block.retried = block.retried || 0;
 
                 // 自动重试
-                if ( block.chunks > 1 && ~'http,abort'.indexOf( type ) &&
+                if ( block.chunks > 1 && ~'http,abort,server'.indexOf( type.replace( /-.*/, '' ) ) &&
                         block.retried < opts.chunkRetry ) {
 
                     block.retried++;
