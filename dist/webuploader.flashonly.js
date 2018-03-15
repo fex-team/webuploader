@@ -3167,7 +3167,7 @@
             chunkRetry: 2,
     
             /**
-             * @property {Boolean} [chunkRetryDelay=1000]
+             * @property {Number} [chunkRetryDelay=1000]
              * @namespace options
              * @for Uploader
              * @description 开启重试后，设置重试延时时间, 单位毫秒。默认1000毫秒，即1秒.
