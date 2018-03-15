@@ -1,4 +1,4 @@
-/*! WebUploader 0.1.7-alpha */
+/*! WebUploader 0.1.8-alpha */
 
 
 /**
@@ -244,7 +244,7 @@
             /**
              * @property {String} version 当前版本号。
              */
-            version: '0.1.7-alpha',
+            version: '0.1.8-alpha',
     
             /**
              * @property {jQuery|Zepto} $ 引用依赖的jQuery或者Zepto对象。
@@ -2728,7 +2728,7 @@
                 }
             },
     		
-    		_fileAdded: function( file ) {
+            _fileAdded: function( file ) {
                 var me = this,
                     existing = this._map[ file.id ];
     
@@ -2738,8 +2738,8 @@
                     file.on( 'statuschange', function( cur, pre ) {
                         me._onFileStatusChange( cur, pre );
                     });
-    			}
-    		},
+                }
+            },
     
             _delFile : function(file){
                 for(var i = this._queue.length - 1 ; i >= 0 ; i-- ){
@@ -3276,6 +3276,10 @@
                 this.disconnectRuntime();
             },
     
+            getResponseHeaders: function() {
+                return this.exec('getResponseHeaders');
+            },
+    
             getResponse: function() {
                 return this.exec('getResponse');
             },
@@ -3310,6 +3314,7 @@
     
         return Transport;
     });
+    
     /**
      * @fileOverview 负责文件上传相关。
      */
@@ -3362,6 +3367,14 @@
              * @description 如果某个分片由于网络问题出错，允许自动重传多少次？
              */
             chunkRetry: 2,
+    
+            /**
+             * @property {Boolean} [chunkRetryDelay=1000]
+             * @namespace options
+             * @for Uploader
+             * @description 开启重试后，设置重试延时时间, 单位毫秒。默认1000毫秒，即1秒.
+             */
+            chunkRetryDelay: 1000,
     
             /**
              * @property {Boolean} [threads=3]
@@ -4013,7 +4026,7 @@
             _doSend: function( block ) {
                 var me = this,
                     owner = me.owner,
-                    opts = me.options,
+                    opts = $.extend({}, me.options, block.options),
                     file = block.file,
                     tr = new Transport( opts ),
                     data = $.extend({}, opts.formData ),
@@ -4040,6 +4053,8 @@
     
                     ret = tr.getResponseAsJson() || {};
                     ret._raw = tr.getResponse();
+                    ret._headers = tr.getResponseHeaders();
+                    block.response = ret;
                     fn = function( value ) {
                         reject = value;
                     };
@@ -4061,7 +4076,10 @@
                             block.retried < opts.chunkRetry ) {
     
                         block.retried++;
-                        tr.send();
+    
+                        me.retryTimer = setTimeout(function() {
+                            tr.send();
+                        }, opts.chunkRetryDelay || 1000);
     
                     } else {
     
@@ -4156,6 +4174,10 @@
     
                 totalPercent = uploaded / file.size;
                 this.owner.trigger( 'uploadProgress', file, totalPercent || 0 );
+            },
+    
+            destroy: function() {
+                clearTimeout(this.retryTimer);
             }
     
         });
@@ -6811,8 +6833,8 @@
                     formData, binary, fr;
     
                 if ( opts.sendAsBinary ) {
-                    server += (/\?/.test( server ) ? '&' : '?') +
-                            $.param( owner._formData );
+                    server += opts.attachInfoToQuery !== false ? ((/\?/.test( server ) ? '&' : '?') +
+                            $.param( owner._formData )) : '';
     
                     binary = blob.getSource();
                 } else {
@@ -6868,6 +6890,10 @@
                 return this._parseJson( this._response );
             },
     
+            getResponseHeaders: function() {
+                return this._headers;
+            },
+    
             getStatus: function() {
                 return this._status;
             },
@@ -6886,6 +6912,16 @@
     
             destroy: function() {
                 this.abort();
+            },
+    
+            _parseHeader: function(raw) {
+                var ret = {};
+    
+                raw && raw.replace(/^([^\:]+):(.*)$/mg, function(_, key, value) {
+                    ret[key.trim()] = value.trim();
+                });
+    
+                return ret;
             },
     
             _initAjax: function() {
@@ -6921,9 +6957,11 @@
     
                     if ( xhr.status >= 200 && xhr.status < 300 ) {
                         me._response = xhr.responseText;
+                        me._headers = me._parseHeader(xhr.getAllResponseHeaders());
                         return me.trigger('load');
                     } else if ( xhr.status >= 500 && xhr.status < 600 ) {
                         me._response = xhr.responseText;
+                        me._headers = me._parseHeader(xhr.getAllResponseHeaders());
                         return me.trigger( 'error', 'server-'+status );
                     }
     
@@ -7894,6 +7932,11 @@
     
             getResponseAsJson: function() {
                 return this._responseJson;
+            },
+    
+            getResponseHeaders: function() {
+                // flash 暂不支持
+                return {};
             },
     
             abort: function() {

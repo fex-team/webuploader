@@ -1,4 +1,4 @@
-/*! WebUploader 0.1.7-alpha */
+/*! WebUploader 0.1.8-alpha */
 
 
 /**
@@ -547,7 +547,7 @@
             /**
              * @property {String} version 当前版本号。
              */
-            version: '0.1.7-alpha',
+            version: '0.1.8-alpha',
     
             /**
              * @property {jQuery|Zepto} $ 引用依赖的jQuery或者Zepto对象。
@@ -3470,6 +3470,14 @@
             chunkRetry: 2,
     
             /**
+             * @property {Boolean} [chunkRetryDelay=1000]
+             * @namespace options
+             * @for Uploader
+             * @description 开启重试后，设置重试延时时间, 单位毫秒。默认1000毫秒，即1秒.
+             */
+            chunkRetryDelay: 1000,
+    
+            /**
              * @property {Boolean} [threads=3]
              * @namespace options
              * @for Uploader
@@ -4169,7 +4177,10 @@
                             block.retried < opts.chunkRetry ) {
     
                         block.retried++;
-                        tr.send();
+    
+                        me.retryTimer = setTimeout(function() {
+                            tr.send();
+                        }, opts.chunkRetryDelay || 1000);
     
                     } else {
     
@@ -4264,6 +4275,10 @@
     
                 totalPercent = uploaded / file.size;
                 this.owner.trigger( 'uploadProgress', file, totalPercent || 0 );
+            },
+    
+            destroy: function() {
+                clearTimeout(this.retryTimer);
             }
     
         });
