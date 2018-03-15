@@ -39,7 +39,7 @@
                 <span class="fa fa-cloud-upload"></span>WebUploader</a>
         </div>
         <div class="collapse navbar-collapse">
-            <ul class="nav navbar-nav">      <li><a href="/webuploader/getting-started.html">Getting started</a></li>      <li class="active"><a href="/webuploader/document.html" class="active">Document</a></li>           <li><a href="/webuploader/doc/index.html">API</a></li>    <li><a href="/webuploader/demo.html">Demo</a></li>          <li><a href="/webuploader/download.html">Download</a></li>                                      
+            <ul class="nav navbar-nav">      <li><a href="/webuploader/getting-started.html">Getting started</a></li>      <li class="active"><a href="/webuploader/document.html" class="active">Document</a></li>           <li><a href="/webuploader/doc/">API</a></li>    <li><a href="/webuploader/demo.html">Demo</a></li>          <li><a href="/webuploader/download.html">Download</a></li>                                      
                 <li><a target="_blank" href="https://github.com/fex-team/webuploader/issues?labels=faq&amp;page=1&amp;state=open">FAQ</a></li>
             </ul>
 
@@ -62,16 +62,16 @@
         <div class="col-md-3">
             <div class="post-toc"><ul class="nav">
 <li>
-<a href="#接口说明">接口说明</a>
+<a href="#part-2c66181340e2994c">接口说明</a>
 </li>
 <li>
-<a href="#事件">事件</a>
+<a href="#part-654292d1d43">事件</a>
 </li>
 <li>
 <a href="#hook">Hook</a>
 </li>
 <li>
-<a href="#文件组织">文件组织</a>
+<a href="#part-2c8cade5ce5b9d6c">文件组织</a>
 </li>
 </ul>
 </div>
@@ -81,80 +81,80 @@
             
 
             <div class="page-container">
-                <h2 id="接口说明">接口说明</h2>
+                <h2 id="part-2c66181340e2994c">接口说明</h2>
 
 <p>Web Uploader的所有代码都在一个内部闭包中，对外暴露了唯一的一个变量<code>WebUploader</code>，所以完全不用担心此框架会与其他框架冲突。</p>
 
 <p>内部<strong>所有</strong>的类和功能都暴露在<code>WebUploader</code>名字空间下面。<br />
 Demo中使用的是<code>WebUploader.create</code>方法来初始化的，实际上可直接访问<code>WebUploader.Uploader</code>。</p>
-<div class="highlight"><pre><code class="language-javascript" data-lang="javascript"><span class="kd">var</span> <span class="nx">uploader</span> <span class="o">=</span> <span class="k">new</span> <span class="nx">WebUploader</span><span class="p">.</span><span class="nx">Uploader</span><span class="p">({</span>
-    <span class="nx">swf</span><span class="o">:</span> <span class="s1">&#39;path_of_swf/Uploader.swf&#39;</span>
+<figure class="highlight"><pre><code class="language-javascript" data-lang="javascript">var uploader = new WebUploader.Uploader({
+    swf: &#39;path_of_swf/Uploader.swf&#39;
 
-    <span class="c1">// 其他配置项</span>
-<span class="p">});</span>
-</code></pre></div>
+    // 其他配置项
+});
+</code></pre></figure>
 <p>具体有哪些内部类，请转到<a href="/webuploader/doc/index.html">API</a>页面。</p>
 
-<h2 id="事件">事件</h2>
+<h2 id="part-654292d1d43">事件</h2>
 
 <p><code>Uploader</code>实例具有Backbone同样的事件API：<code>on</code>，<code>off</code>，<code>once</code>，<code>trigger</code>。</p>
-<div class="highlight"><pre><code class="language-javascript" data-lang="javascript"><span class="nx">uploader</span><span class="p">.</span><span class="nx">on</span><span class="p">(</span> <span class="s1">&#39;fileQueued&#39;</span><span class="p">,</span> <span class="kd">function</span><span class="p">(</span> <span class="nx">file</span> <span class="p">)</span> <span class="p">{</span>
-    <span class="c1">// do some things.</span>
-<span class="p">});</span>
-</code></pre></div>
+<figure class="highlight"><pre><code class="language-javascript" data-lang="javascript">uploader.on( &#39;fileQueued&#39;, function( file ) {
+    // do some things.
+});
+</code></pre></figure>
 <p>除了通过<code>on</code>绑定事件外，<code>Uploader</code>实例还有一个更便捷的添加事件方式。</p>
-<div class="highlight"><pre><code class="language-javascript" data-lang="javascript"><span class="nx">uploader</span><span class="p">.</span><span class="nx">onFileQueued</span> <span class="o">=</span> <span class="kd">function</span><span class="p">(</span> <span class="nx">file</span> <span class="p">)</span> <span class="p">{</span>
-    <span class="c1">// do some things.</span>
-<span class="p">};</span>
-</code></pre></div>
+<figure class="highlight"><pre><code class="language-javascript" data-lang="javascript">uploader.onFileQueued = function( file ) {
+    // do some things.
+};
+</code></pre></figure>
 <p>如同<code>Document Element</code>中的onEvent一样，他的执行比<code>on</code>添加的<code>handler</code>的要晚。如果那些<code>handler</code>里面，有一个<code>return false</code>了，此<code>onEvent</code>里面是不会执行到的。</p>
 
 <h2 id="hook">Hook</h2>
 
 <p><code>Uploader</code>里面的功能被拆分成了好几个<code>widget</code>，由<code>command</code>机制来通信合作。<br />
 如下，filepicker在用户选择文件后，直接把结果<code>request</code>出去，然后负责队列的<code>queue</code> widget，监听命令，根据配置项中的<code>accept</code>来决定是否加入队列。</p>
-<div class="highlight"><pre><code class="language-javascript" data-lang="javascript"><span class="c1">// in file picker</span>
-<span class="nx">picker</span><span class="p">.</span><span class="nx">on</span><span class="p">(</span> <span class="s1">&#39;select&#39;</span><span class="p">,</span> <span class="kd">function</span><span class="p">(</span> <span class="nx">files</span> <span class="p">)</span> <span class="p">{</span>
-    <span class="nx">me</span><span class="p">.</span><span class="nx">owner</span><span class="p">.</span><span class="nx">request</span><span class="p">(</span> <span class="s1">&#39;add-file&#39;</span><span class="p">,</span> <span class="p">[</span> <span class="nx">files</span> <span class="p">]);</span>
-<span class="p">});</span>
+<figure class="highlight"><pre><code class="language-javascript" data-lang="javascript">// in file picker
+picker.on( &#39;select&#39;, function( files ) {
+    me.owner.request( &#39;add-file&#39;, [ files ]);
+});
 
-<span class="c1">// in queue picker</span>
-<span class="nx">Uploader</span><span class="p">.</span><span class="nx">register</span><span class="p">({</span>
-    <span class="s1">&#39;add-file&#39;</span><span class="o">:</span> <span class="s1">&#39;addFiles&#39;</span>
+// in queue picker
+Uploader.register({
+    &#39;add-file&#39;: &#39;addFiles&#39;
 
-    <span class="c1">// xxxx</span>
-<span class="p">},</span> <span class="p">{</span>
+    // xxxx
+}, {
 
-    <span class="nx">addFiles</span><span class="o">:</span> <span class="kd">function</span><span class="p">(</span> <span class="nx">files</span> <span class="p">)</span> <span class="p">{</span>
+    addFiles: function( files ) {
 
-        <span class="c1">// 遍历files中的文件, 过滤掉不满足规则的。</span>
-    <span class="p">}</span>
-<span class="p">});</span>
-</code></pre></div>
+        // 遍历files中的文件, 过滤掉不满足规则的。
+    }
+});
+</code></pre></figure>
 <p><code>Uploader.regeister</code>方法用来说明，该<code>widget</code>要响应哪些命令，并指定由什么方法来响应。上面的例子，当<code>add-file</code>命令派送时，内部的<code>addFiles</code>成员方法将被执行到，同一个命令，可以指定多次<code>handler</code>, 各个<code>handler</code>会按添加顺序依次执行，且后续的<code>handler</code>，不能被前面的<code>handler</code>截断。</p>
 
 <p><code>handler</code>里面可以是同步过程，也可以是异步过程。是异步过程时，只需要返回一个<code>promise</code>对象即可。存在异步可能的request调用者会等待此过程结束后才继续。举个例子，webuploader运行在flash模式下时，需要等待flash加载完毕后才能算ready了，此过程为一个异步过程，目前的做法是如下：</p>
-<div class="highlight"><pre><code class="language-javascript" data-lang="javascript"><span class="c1">// uploader在初始化的时候</span>
-<span class="nx">me</span><span class="p">.</span><span class="nx">request</span><span class="p">(</span> <span class="s1">&#39;init&#39;</span><span class="p">,</span> <span class="nx">opts</span><span class="p">,</span> <span class="kd">function</span><span class="p">()</span> <span class="p">{</span>
-    <span class="nx">me</span><span class="p">.</span><span class="nx">state</span> <span class="o">=</span> <span class="s1">&#39;ready&#39;</span><span class="p">;</span>
-    <span class="nx">me</span><span class="p">.</span><span class="nx">trigger</span><span class="p">(</span><span class="s1">&#39;ready&#39;</span><span class="p">);</span>
-<span class="p">});</span>
+<figure class="highlight"><pre><code class="language-javascript" data-lang="javascript">// uploader在初始化的时候
+me.request( &#39;init&#39;, opts, function() {
+    me.state = &#39;ready&#39;;
+    me.trigger(&#39;ready&#39;);
+});
 
-<span class="c1">// filepicker `widget`中的初始化过程。</span>
-<span class="nx">Uploader</span><span class="p">.</span><span class="nx">register</span><span class="p">({</span>
-    <span class="s1">&#39;init&#39;</span><span class="o">:</span> <span class="s1">&#39;init&#39;</span>
-<span class="p">},</span> <span class="p">{</span>
-    <span class="nx">init</span><span class="o">:</span> <span class="kd">function</span><span class="p">(</span> <span class="nx">opts</span> <span class="p">)</span> <span class="p">{</span>
+// filepicker `widget`中的初始化过程。
+Uploader.register({
+    &#39;init&#39;: &#39;init&#39;
+}, {
+    init: function( opts ) {
 
-        <span class="kd">var</span> <span class="nx">deferred</span> <span class="o">=</span> <span class="nx">Base</span><span class="p">.</span><span class="nx">Deferred</span><span class="p">();</span>
+        var deferred = Base.Deferred();
 
-        <span class="c1">// 加载flash</span>
-        <span class="c1">// 当flash ready执行deferred.resolve方法。</span>
+        // 加载flash
+        // 当flash ready执行deferred.resolve方法。
 
-        <span class="k">return</span> <span class="nx">deferred</span><span class="p">.</span><span class="nx">promise</span><span class="p">();</span>
-    <span class="p">}</span>
-<span class="p">});</span>
-</code></pre></div>
+        return deferred.promise();
+    }
+});
+</code></pre></figure>
 <p>目前webuploader内部有很多种command，在此列出比较重要的几个。</p>
 
 <table class="table table-bordered">
@@ -185,45 +185,45 @@ Demo中使用的是<code>WebUploader.create</code>方法来初始化的，实际
     </tr>
 </table>
 
-<h2 id="文件组织">文件组织</h2>
+<h2 id="part-2c8cade5ce5b9d6c">文件组织</h2>
 
 <p>webuploader由很多独立的小文件组成。每个文件都是以<a href="https://github.com/amdjs/amdjs-api/wiki/AMD">AMD</a>规范组织的，方便类似与<a href="http://requirejs.org/">RequireJS</a>之类的库直接使用。</p>
 
 <p>如<code>lib/file.js</code></p>
-<div class="highlight"><pre><code class="language-javascript" data-lang="javascript"><span class="cm">/**</span>
-<span class="cm"> * @fileOverview File</span>
-<span class="cm"> */</span>
-<span class="nx">define</span><span class="p">([</span>
-    <span class="s1">&#39;../base&#39;</span><span class="p">,</span>
-    <span class="s1">&#39;./blob&#39;</span>
-<span class="p">],</span> <span class="kd">function</span><span class="p">(</span> <span class="nx">Base</span><span class="p">,</span> <span class="nx">Blob</span> <span class="p">)</span> <span class="p">{</span>
+<figure class="highlight"><pre><code class="language-javascript" data-lang="javascript">/**
+ * @fileOverview File
+ */
+define([
+    &#39;../base&#39;,
+    &#39;./blob&#39;
+], function( Base, Blob ) {
 
-    <span class="kd">var</span> <span class="nx">uid</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span>
-        <span class="nx">rExt</span> <span class="o">=</span> <span class="sr">/\.([^.]+)$/</span><span class="p">;</span>
+    var uid = 0,
+        rExt = /\.([^.]+)$/;
 
-    <span class="kd">function</span> <span class="nx">File</span><span class="p">(</span> <span class="nx">ruid</span><span class="p">,</span> <span class="nx">file</span> <span class="p">)</span> <span class="p">{</span>
-        <span class="kd">var</span> <span class="nx">ext</span><span class="p">;</span>
+    function File( ruid, file ) {
+        var ext;
 
-        <span class="nx">Blob</span><span class="p">.</span><span class="nx">apply</span><span class="p">(</span> <span class="k">this</span><span class="p">,</span> <span class="nx">arguments</span> <span class="p">);</span>
-        <span class="k">this</span><span class="p">.</span><span class="nx">name</span> <span class="o">=</span> <span class="nx">file</span><span class="p">.</span><span class="nx">name</span> <span class="o">||</span> <span class="p">(</span><span class="s1">&#39;untitled&#39;</span> <span class="o">+</span> <span class="nx">uid</span><span class="o">++</span><span class="p">);</span>
+        Blob.apply( this, arguments );
+        this.name = file.name || (&#39;untitled&#39; + uid++);
 
-        <span class="k">if</span> <span class="p">(</span> <span class="o">!</span><span class="k">this</span><span class="p">.</span><span class="nx">type</span> <span class="p">)</span> <span class="p">{</span>
-            <span class="nx">ext</span> <span class="o">=</span> <span class="nx">rExt</span><span class="p">.</span><span class="nx">exec</span><span class="p">(</span> <span class="nx">file</span><span class="p">.</span><span class="nx">name</span> <span class="p">)</span> <span class="o">?</span> <span class="nb">RegExp</span><span class="p">.</span><span class="nx">$1</span><span class="p">.</span><span class="nx">toLowerCase</span><span class="p">()</span> <span class="o">:</span> <span class="s1">&#39;&#39;</span><span class="p">;</span>
-            <span class="k">if</span> <span class="p">(</span> <span class="o">~</span><span class="s1">&#39;jpg,jpeg,png,gif,bmp&#39;</span><span class="p">.</span><span class="nx">indexOf</span><span class="p">(</span> <span class="nx">ext</span> <span class="p">)</span> <span class="p">)</span> <span class="p">{</span>
-                <span class="k">this</span><span class="p">.</span><span class="nx">type</span> <span class="o">=</span> <span class="s1">&#39;image/&#39;</span> <span class="o">+</span> <span class="nx">ext</span><span class="p">;</span>
-            <span class="p">}</span>
-        <span class="p">}</span>
+        if ( !this.type ) {
+            ext = rExt.exec( file.name ) ? RegExp.$1.toLowerCase() : &#39;&#39;;
+            if ( ~&#39;jpg,jpeg,png,gif,bmp&#39;.indexOf( ext ) ) {
+                this.type = &#39;image/&#39; + ext;
+            }
+        }
 
-        <span class="k">this</span><span class="p">.</span><span class="nx">ext</span> <span class="o">=</span> <span class="nx">ext</span><span class="p">;</span>
-        <span class="k">this</span><span class="p">.</span><span class="nx">lastModifiedDate</span> <span class="o">=</span> <span class="nx">file</span><span class="p">.</span><span class="nx">lastModifiedDate</span> <span class="o">||</span>
-                <span class="p">(</span><span class="k">new</span> <span class="nb">Date</span><span class="p">()).</span><span class="nx">toLocaleString</span><span class="p">();</span>
-    <span class="p">}</span>
+        this.ext = ext;
+        this.lastModifiedDate = file.lastModifiedDate ||
+                (new Date()).toLocaleString();
+    }
 
-    <span class="k">return</span> <span class="nx">Base</span><span class="p">.</span><span class="nx">inherits</span><span class="p">(</span> <span class="nx">Blob</span><span class="p">,</span> <span class="nx">File</span> <span class="p">);</span>
-<span class="p">});</span>
-</code></pre></div>
+    return Base.inherits( Blob, File );
+});
+</code></pre></figure>
 <p>下面是目前的目录结构及说明。</p>
-<div class="highlight"><pre><code class="language-text" data-lang="text">├── base.js   实现一些常用的帮助类方法，如inherits, log等等。
+<figure class="highlight"><pre><code class="language-text" data-lang="text">├── base.js   实现一些常用的帮助类方法，如inherits, log等等。
 ├── file.js    文件类，Queue中存放的数据类。
 ├── jq-bridge.js    jQuery的替代品，只实现webuploader所需的，当然，如果已经有jQuery了，此文件不用打包。
 ├── lib
@@ -256,7 +256,7 @@ Demo中使用的是<code>WebUploader.create</code>方法来初始化的，实际
     ├── upload.js      负责具体上传逻辑
     ├── validator.js    各种验证器
     └── widget.js    实现command机制
-</code></pre></div>
+</code></pre></figure>
             </div>
 
             

@@ -39,7 +39,7 @@
                 <span class="fa fa-cloud-upload"></span>WebUploader</a>
         </div>
         <div class="collapse navbar-collapse">
-            <ul class="nav navbar-nav">      <li><a href="/webuploader/getting-started.html">Getting started</a></li>      <li><a href="/webuploader/document.html">Document</a></li>           <li><a href="/webuploader/doc/index.html">API</a></li>    <li><a href="/webuploader/demo.html">Demo</a></li>          <li class="active"><a href="/webuploader/download.html" class="active">Download</a></li>                                      
+            <ul class="nav navbar-nav">      <li><a href="/webuploader/getting-started.html">Getting started</a></li>      <li><a href="/webuploader/document.html">Document</a></li>           <li><a href="/webuploader/doc/">API</a></li>    <li><a href="/webuploader/demo.html">Demo</a></li>          <li class="active"><a href="/webuploader/download.html" class="active">Download</a></li>                                      
                 <li><a target="_blank" href="https://github.com/fex-team/webuploader/issues?labels=faq&amp;page=1&amp;state=open">FAQ</a></li>
             </ul>
 
@@ -62,22 +62,22 @@
         <div class="col-md-3">
             <div class="post-toc"><ul class="nav">
 <li>
-<a href="#包内容">包内容</a>
+<a href="#part-3786be577629b17">包内容</a>
 </li>
 <li>
-<a href="#下载">下载</a>
+<a href="#part-6542908fd8e">下载</a>
 </li>
 <li>
-<a href="#diy打包">DIY打包</a>
+<a href="#diy">DIY打包</a>
 <ul class="nav">
 <li>
-<a href="#环境依赖">环境依赖</a>
+<a href="#part-2d1b4ea97b891325">环境依赖</a>
 </li>
 <li>
-<a href="#编译代码">编译代码</a>
+<a href="#part-2e11800a9f72e750">编译代码</a>
 </li>
 <li>
-<a href="#配置">配置</a>
+<a href="#part-6543118fb72">配置</a>
 </li>
 </ul>
 </li>
@@ -89,10 +89,10 @@
             
 
             <div class="page-container">
-                <h2 id="包内容">包内容</h2>
+                <h2 id="part-3786be577629b17">包内容</h2>
 
 <p>下载包中包含以下文件</p>
-<div class="highlight"><pre><code class="language-text" data-lang="text">├── Uploader.swf                      // SWF文件，当使用Flash运行时需要引入。
+<figure class="highlight"><pre><code class="language-text" data-lang="text">├── Uploader.swf                      // SWF文件，当使用Flash运行时需要引入。
 
 ├── webuploader.js                    // 完全版本。
 ├── webuploader.min.js                // min版本
@@ -105,15 +105,15 @@
 
 ├── webuploader.withoutimage.js       // 去除图片处理的版本，包括HTML5和FLASH.
 └── webuploader.withoutimage.min.js   // min版本
-</code></pre></div>
-<h2 id="下载">下载</h2>
+</code></pre></figure>
+<h2 id="part-6542908fd8e">下载</h2>
 
 <p>直接下载本站默认打包版本，下载包中包含<code>源码版本</code>和<code>压缩版本</code>。</p>
 
 <p><a class="btn btn-success" href="https://github.com/fex-team/webuploader/releases">下载最新版本</a></p>
 
 <p>或者直接使用由<a href="http://www.staticfile.org/">staticfile</a>提供的cdn版本，或者下载<a href="https://github.com/fex-team/webuploader/zipball/master">Git项目包</a>。</p>
-<div class="highlight"><pre><code class="language-html" data-lang="html">// SWF文件，当使用Flash运行时需要引入。
+<figure class="highlight"><pre><code class="language-html" data-lang="html">// SWF文件，当使用Flash运行时需要引入。
 ├── http://cdn.staticfile.org/webuploader/0.1.0/Uploader.swf
 
 // 完全版本。
@@ -131,13 +131,13 @@
 // 去除图片处理的版本，包括HTML5和FLASH.
 ├── http://cdn.staticfile.org/webuploader/0.1.0/webuploader.withoutimage.js
 └── http://cdn.staticfile.org/webuploader/0.1.0/webuploader.withoutimage.min.js
-</code></pre></div>
-<h2 id="diy打包">DIY打包</h2>
+</code></pre></figure>
+<h2 id="diy">DIY打包</h2>
 
 <p>想更大力度的搭配JS，实现满足需求的最小组合，请按如下步骤进行操作。 文件打包借助了<a href="http://gruntjs.com/getting-started">Grunt</a>工具来实现。
 如果您还不知道什么是<a href="http://gruntjs.com/getting-started">Grunt</a>，赶紧去了解一下吧。</p>
 
-<h3 id="环境依赖">环境依赖</h3>
+<h3 id="part-2d1b4ea97b891325">环境依赖</h3>
 
 <ol>
 <li>git命令行工具</li>
@@ -145,7 +145,7 @@
 <li>grunt (<code>npm install grunt-cli -g</code>)</li>
 </ol>
 
-<h3 id="编译代码">编译代码</h3>
+<h3 id="part-2e11800a9f72e750">编译代码</h3>
 
 <ol>
 <li>克隆 <a href="https://github.com/fex-team/webuploader">webuploader git仓库</a>，<code>git clone https://github.com/fex-team/webuploader.git</code>。</li>
@@ -153,23 +153,23 @@
 <li>执行<code>grunt dist</code>，此动作会在dist目录下面创建合并版本的js, 包括通过<code>uglify</code>压缩的min版本。</li>
 </ol>
 
-<h3 id="配置">配置</h3>
+<h3 id="part-6543118fb72">配置</h3>
 
 <p>打开webuploader仓库根目录下面的<code>Gruntfile.js</code>文件, 代码合并有<code>build</code>task来完成。找到<code>build</code>配置项。</p>
 
 <p>Gruntfile.js已经配置了一个自定义合并的demo. 打包只支持HTML5的版本。</p>
-<div class="highlight"><pre><code class="language-javascript" data-lang="javascript"><span class="c1">// 自己配置的实例</span>
-<span class="c1">// glob语法。</span>
-<span class="nx">custom</span><span class="o">:</span> <span class="p">{</span>
-    <span class="nx">preset</span><span class="o">:</span> <span class="s2">&quot;custom&quot;</span><span class="p">,</span>
-    <span class="nx">cwd</span><span class="o">:</span> <span class="s2">&quot;src&quot;</span><span class="p">,</span>
-    <span class="nx">src</span><span class="o">:</span> <span class="p">[</span>
-        <span class="s1">&#39;widgets/**/*.js&#39;</span><span class="p">,</span>
-        <span class="s1">&#39;runtime/html5/**/*.js&#39;</span>
-    <span class="p">],</span>
-    <span class="nx">dest</span><span class="o">:</span> <span class="s2">&quot;dist/webuploader.custom.js&quot;</span>
-<span class="p">}</span>
-</code></pre></div>
+<figure class="highlight"><pre><code class="language-javascript" data-lang="javascript">// 自己配置的实例
+// glob语法。
+custom: {
+    preset: &quot;custom&quot;,
+    cwd: &quot;src&quot;,
+    src: [
+        &#39;widgets/**/*.js&#39;,
+        &#39;runtime/html5/**/*.js&#39;
+    ],
+    dest: &quot;dist/webuploader.custom.js&quot;
+}
+</code></pre></figure>
             </div>
 
             
