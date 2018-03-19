@@ -156,11 +156,11 @@ define([
                 } else if ( xhr.status >= 500 && xhr.status < 600 ) {
                     me._response = xhr.responseText;
                     me._headers = me._parseHeader(xhr.getAllResponseHeaders());
-                    return me.trigger( 'error', 'server-'+status );
+                    return me.trigger( 'error', 'server-'+xhr.status );
                 }
 
 
-                return me.trigger( 'error', me._status ? 'http-'+status : 'abort' );
+                return me.trigger( 'error', me._status ? 'http-'+xhr.status : 'abort' );
             };
 
             me._xhr = xhr;
