@@ -1849,7 +1849,7 @@
             pick: null,
     
             /**
-             * @property {Arroy} [accept=null]
+             * @property {Array} [accept=null]
              * @namespace options
              * @for Uploader
              * @description 指定接受哪些类型的文件。 由于目前还有ext转mimeType表，所以这里需要分开指定。
@@ -1890,13 +1890,13 @@
             },
     
             /**
-             * @method addBtn
+             * @method addButton
              * @for Uploader
-             * @grammar addBtn( pick ) => Promise
+             * @grammar addButton( pick ) => Promise
              * @description
              * 添加文件选择按钮，如果一个按钮不够，需要调用此方法来添加。参数跟[options.pick](#WebUploader:Uploader:options)一致。
              * @example
-             * uploader.addBtn({
+             * uploader.addButton({
              *     id: '#btnContainer',
              *     innerHTML: '选择文件'
              * });
@@ -2507,7 +2507,7 @@
             /**
              * @event beforeFileQueued
              * @param {File} file File对象
-             * @description 当文件被加入队列之前触发，此事件的handler返回值为`false`，则此文件不会被添加进入队列。
+             * @description 当文件被加入队列之前触发。如果此事件handler的返回值为`false`，则此文件不会被添加进入队列。
              * @for  Uploader
              */
     
@@ -2733,7 +2733,7 @@
          * @property {Object} [runtimeOrder=html5,flash]
          * @namespace options
          * @for Uploader
-         * @description 指定运行时启动顺序。默认会想尝试 html5 是否支持，如果支持则使用 html5, 否则则使用 flash.
+         * @description 指定运行时启动顺序。默认会先尝试 html5 是否支持，如果支持则使用 html5, 否则使用 flash.
          *
          * 可以将此值设置成 `flash`，来强制使用 flash 运行时。
          */
@@ -2932,7 +2932,7 @@
              * @namespace options
              * @for Uploader
              * @description 是否允许在文件传输时提前把下一个文件准备好。
-             * 对于一个文件的准备工作比较耗时，比如图片压缩，md5序列化。
+             * 某些文件的准备工作比较耗时，比如图片压缩，md5序列化。
              * 如果能提前在当前文件传输期处理，可以节省总体耗时。
              */
             prepareNextFile: false,
@@ -2991,6 +2991,13 @@
              * @namespace options
              * @for Uploader
              * @description 设置文件上传域的name。
+             */
+    
+             /**
+             * @property {Object} [method=POST]
+             * @namespace options
+             * @for Uploader
+             * @description 文件上传方式，`POST` 或者 `GET`。
              */
     
             /**

@@ -15,7 +15,7 @@ define([
      * @property {Object} [runtimeOrder=html5,flash]
      * @namespace options
      * @for Uploader
-     * @description 指定运行时启动顺序。默认会想尝试 html5 是否支持，如果支持则使用 html5, 否则则使用 flash.
+     * @description 指定运行时启动顺序。默认会先尝试 html5 是否支持，如果支持则使用 html5, 否则使用 flash.
      *
      * 可以将此值设置成 `flash`，来强制使用 flash 运行时。
      */

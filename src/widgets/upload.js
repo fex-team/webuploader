@@ -22,7 +22,7 @@ define([
          * @namespace options
          * @for Uploader
          * @description 是否允许在文件传输时提前把下一个文件准备好。
-         * 对于一个文件的准备工作比较耗时，比如图片压缩，md5序列化。
+         * 某些文件的准备工作比较耗时，比如图片压缩，md5序列化。
          * 如果能提前在当前文件传输期处理，可以节省总体耗时。
          */
         prepareNextFile: false,
@@ -81,6 +81,13 @@ define([
          * @namespace options
          * @for Uploader
          * @description 设置文件上传域的name。
+         */
+
+         /**
+         * @property {Object} [method=POST]
+         * @namespace options
+         * @for Uploader
+         * @description 文件上传方式，`POST` 或者 `GET`。
          */
 
         /**

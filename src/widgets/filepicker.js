@@ -25,7 +25,7 @@ define([
         pick: null,
 
         /**
-         * @property {Arroy} [accept=null]
+         * @property {Array} [accept=null]
          * @namespace options
          * @for Uploader
          * @description 指定接受哪些类型的文件。 由于目前还有ext转mimeType表，所以这里需要分开指定。
@@ -66,13 +66,13 @@ define([
         },
 
         /**
-         * @method addBtn
+         * @method addButton
          * @for Uploader
-         * @grammar addBtn( pick ) => Promise
+         * @grammar addButton( pick ) => Promise
          * @description
          * 添加文件选择按钮，如果一个按钮不够，需要调用此方法来添加。参数跟[options.pick](#WebUploader:Uploader:options)一致。
          * @example
-         * uploader.addBtn({
+         * uploader.addButton({
          *     id: '#btnContainer',
          *     innerHTML: '选择文件'
          * });
