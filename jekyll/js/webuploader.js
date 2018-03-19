@@ -3708,7 +3708,7 @@
             },
     
             /**
-             * 判断`Uplaode`r是否正在上传中。
+             * 判断`Uploader`是否正在上传中。
              * @grammar isInProgress() => Boolean
              * @method isInProgress
              * @for  Uploader
@@ -3722,7 +3722,7 @@
             },
     
             /**
-             * 掉过一个文件上传，直接标记指定文件为已上传状态。
+             * 跳过一个文件上传，直接标记指定文件为已上传状态。
              * @grammar skipFile( file ) => undefined
              * @method skipFile
              * @for  Uploader
@@ -4079,7 +4079,7 @@
                     block.retried = block.retried || 0;
     
                     // 自动重试
-                    if ( block.chunks > 1 && ~'http,abort'.indexOf( type ) &&
+                    if ( block.chunks > 1 && ~'http,abort,server'.indexOf( type.replace( /-.*/, '' ) ) &&
                             block.retried < opts.chunkRetry ) {
     
                         block.retried++;
@@ -6969,11 +6969,11 @@
                     } else if ( xhr.status >= 500 && xhr.status < 600 ) {
                         me._response = xhr.responseText;
                         me._headers = me._parseHeader(xhr.getAllResponseHeaders());
-                        return me.trigger( 'error', 'server-'+status );
+                        return me.trigger( 'error', 'server-'+xhr.status );
                     }
     
     
-                    return me.trigger( 'error', me._status ? 'http-'+status : 'abort' );
+                    return me.trigger( 'error', me._status ? 'http-'+xhr.status : 'abort' );
                 };
     
                 me._xhr = xhr;
