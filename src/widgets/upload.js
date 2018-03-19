@@ -461,7 +461,7 @@ define([
 
             // 没有要上传的了，且没有正在传输的了。
             } else if ( !me.remaning && !me._getStats().numOfQueue &&
-                !me._getStats().numofInterrupt ) {
+                !me._getStats().numOfInterrupt ) {
                 me.runing = false;
 
                 me._trigged || Base.nextTick(function() {
