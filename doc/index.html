@@ -118,7 +118,7 @@
                     
 
                     <li class="method">
-                        <a class="" href="#WebUploader_Uploader_addBtn">addBtn</a>
+                        <a class="" href="#WebUploader_Uploader_addButton">addButton</a>
                     </li>
                     
                     
@@ -599,7 +599,7 @@
         <li>
             <span class="meta">
                 <code>accept</code>
-                 {Arroy} 
+                 {Array} 
                  [可选] 
                  [默认值：null] 
             </span>
@@ -708,7 +708,7 @@
                  [可选] 
                  [默认值：html5,flash] 
             </span>
-            <p>指定运行时启动顺序。默认会想尝试 html5 是否支持，如果支持则使用 html5, 否则则使用 flash.</p>
+            <p>指定运行时启动顺序。默认会先尝试 html5 是否支持，如果支持则使用 html5, 否则使用 flash.</p>
 <p>可以将此值设置成 <code>flash</code>，来强制使用 flash 运行时。</p>
 
             
@@ -722,7 +722,7 @@
                  [默认值：false] 
             </span>
             <p>是否允许在文件传输时提前把下一个文件准备好。
-对于一个文件的准备工作比较耗时，比如图片压缩，md5序列化。
+某些文件的准备工作比较耗时，比如图片压缩，md5序列化。
 如果能提前在当前文件传输期处理，可以节省总体耗时。</p>
 
             
@@ -808,6 +808,18 @@
                  [默认值：&#39;file&#39;] 
             </span>
             <p>设置文件上传域的name。</p>
+
+            
+        </li>
+        
+        <li>
+            <span class="meta">
+                <code>method</code>
+                 {Object} 
+                 [可选] 
+                 [默认值：POST] 
+            </span>
+            <p>文件上传方式，<code>POST</code> 或者 <code>GET</code>。</p>
 
             
         </li>
@@ -917,7 +929,7 @@
 </li></ul>
                 
             </td>
-            <td><p>当文件被加入队列之前触发，此事件的handler返回值为<code>false</code>，则此文件不会被添加进入队列。</p>
+            <td><p>当文件被加入队列之前触发。如果此事件handler的返回值为<code>false</code>，则此文件不会被添加进入队列。</p>
 </td>
         </tr>
         
@@ -1216,7 +1228,7 @@ uploader.option( &#39;compress&#39;, {
 
 
 <article class="clearfix method">
-    <h3 id="WebUploader_Uploader_addBtn"  >addBtn
+    <h3 id="WebUploader_Uploader_addButton"  >addButton
         
     </h3>
     
@@ -1226,7 +1238,7 @@ uploader.option( &#39;compress&#39;, {
     
     <ul class="signature">
         
-        <li>addBtn( pick ) 
+        <li>addButton( pick ) 
             <span class="return">⇒  Promise</span>
             
         </li>
@@ -1239,7 +1251,7 @@ uploader.option( &#39;compress&#39;, {
 
     
         
-<figure class="highlight"><pre><code class="language-javascript" data-lang="javascript">uploader.addBtn({
+<figure class="highlight"><pre><code class="language-javascript" data-lang="javascript">uploader.addButton({
     id: &#39;#btnContainer&#39;,
     innerHTML: &#39;选择文件&#39;
 });</code></pre></figure>
