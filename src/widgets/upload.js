@@ -391,7 +391,7 @@ define([
         },
 
         /**
-         * 判断`Uplaode`r是否正在上传中。
+         * 判断`Uploader`是否正在上传中。
          * @grammar isInProgress() => Boolean
          * @method isInProgress
          * @for  Uploader
@@ -405,7 +405,7 @@ define([
         },
 
         /**
-         * 掉过一个文件上传，直接标记指定文件为已上传状态。
+         * 跳过一个文件上传，直接标记指定文件为已上传状态。
          * @grammar skipFile( file ) => undefined
          * @method skipFile
          * @for  Uploader
