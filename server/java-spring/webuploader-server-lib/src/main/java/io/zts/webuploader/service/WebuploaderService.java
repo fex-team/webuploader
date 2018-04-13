@@ -65,8 +65,8 @@ public class WebuploaderService {
      * @return
      */
     public MergeResult mergeChunks(final String fileName, final int chunk, final String fileMd5, MergeResponse bizResponse) {
-        Assert.hasLength(fileName);
-        Assert.hasLength(fileMd5);
+        Assert.hasLength(fileName, "文件名应为非空字符串!");
+        Assert.hasLength(fileMd5, "文件MD5应为非空字符串!");
 
         Path tempDir = getTempDir(fileMd5);
 

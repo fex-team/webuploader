@@ -16,10 +16,6 @@ public enum MergeResult {
      */
     CHUNKNUM_FAIL,
     /**
-     * 临时文件目录为空
-     */
-    EMPTY_TEMP_DIR,
-    /**
      * IO异常
      */
     IO_EXEPTION,
