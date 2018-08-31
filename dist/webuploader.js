@@ -1676,7 +1676,7 @@
             }
     
             this.ext = ext;
-            this.lastModifiedDate = file.lastModifiedDate ||
+            this.lastModifiedDate = new Date(file.lastModified).toLocaleString() ||
                     (new Date()).toLocaleString();
     
             Blob.apply( this, arguments );
