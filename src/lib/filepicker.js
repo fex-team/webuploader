@@ -98,8 +98,8 @@ define([
                 height = button.outerHeight ?
                         button.outerHeight() : button.height(),
                 */
-                width = button[0].offsetWidth || button.outerWidth() || button.width(),
-                height = button[0].offsetHeight || button.outerHeight() || button.height(),
+                width = button[0] && button[0].offsetWidth || button.outerWidth() || button.width(),
+                height = button[0] && button[0].offsetHeight || button.outerHeight() || button.height(),
                 pos = button.offset();
 
             width && height && shimContainer.css({
