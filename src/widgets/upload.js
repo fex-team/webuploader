@@ -478,6 +478,9 @@ define([
             idx = this.stack.indexOf(block.cuted);
 
             if (!~idx) {
+                // 如果不在里面，说明移除过，需要把计数还原回去。
+                this.remaning++;
+                block.file.remaning++;
                 this.stack.unshift(block.cuted);
             }
         },
@@ -638,7 +641,7 @@ define([
                 // 有可能文件已经上传出错了，所以不需要再传输了。
                 if ( file.getStatus() === Status.PROGRESS ) {
                     me._doSend( block );
-                } else {
+                } else if (block.file.getStatus() !== Status.INTERRUPT) {
                     me._popBlock( block );
                     Base.nextTick( me.__tick );
                 }
