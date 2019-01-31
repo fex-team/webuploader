@@ -161,19 +161,11 @@ define([
                 } else if ( xhr.status >= 500 && xhr.status < 600 ) {
                     me._response = xhr.responseText;
                     me._headers = me._parseHeader(xhr.getAllResponseHeaders());
-<<<<<<< HEAD
-                    return me.trigger( 'error', 'server-'+xhr.status );
-                }
-
-
-                return me.trigger( 'error', me._status ? 'http-'+xhr.status : 'abort' );
-=======
                     return me.trigger( 'error', 'server' + status );
                 }
 
 
                 return me.trigger( 'error', me._status ? 'http' + status : 'abort' );
->>>>>>> 修复了上传出错时代码提示的错误，并增加把HTTP状态码传递给用户
             };
 
             me._xhr = xhr;
