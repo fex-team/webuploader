@@ -759,6 +759,13 @@ define([
 
             // 尝试重试，然后广播文件上传出错。
             tr.on( 'error', function( type, flag ) {
+                // 在 runtime/html5/transport.js 上为 type 加上了状态码，形式：type|status|text（如：http-403-Forbidden）
+                // 这里把状态码解释出来，并还原后面代码所依赖的 type 变量
+                var typeArr = type.split( '|' ), status, statusText;  
+                type = typeArr[0];
+                status = parseFloat( typeArr[1] ),
+                statusText = typeArr[2];
+
                 block.retried = block.retried || 0;
 
                 // 自动重试
@@ -779,7 +786,7 @@ define([
                     }
 
                     file.setStatus( Status.ERROR, type );
-                    owner.trigger( 'uploadError', file, type );
+                    owner.trigger( 'uploadError', file, type, status, statusText );
                     owner.trigger( 'uploadComplete', file );
                 }
             });

@@ -149,6 +149,11 @@ define([
                 me._xhr = null;
                 me._status = xhr.status;
 
+                var separator = '|', // 分隔符
+                     // 拼接的状态，在 widgets/upload.js 会有代码用到这个分隔符
+                    status = separator + xhr.status +
+                             separator + xhr.statusText;
+
                 if ( xhr.status >= 200 && xhr.status < 300 ) {
                     me._response = xhr.responseText;
                     me._headers = me._parseHeader(xhr.getAllResponseHeaders());
@@ -156,11 +161,19 @@ define([
                 } else if ( xhr.status >= 500 && xhr.status < 600 ) {
                     me._response = xhr.responseText;
                     me._headers = me._parseHeader(xhr.getAllResponseHeaders());
+<<<<<<< HEAD
                     return me.trigger( 'error', 'server-'+xhr.status );
                 }
 
 
                 return me.trigger( 'error', me._status ? 'http-'+xhr.status : 'abort' );
+=======
+                    return me.trigger( 'error', 'server' + status );
+                }
+
+
+                return me.trigger( 'error', me._status ? 'http' + status : 'abort' );
+>>>>>>> 修复了上传出错时代码提示的错误，并增加把HTTP状态码传递给用户
             };
 
             me._xhr = xhr;
