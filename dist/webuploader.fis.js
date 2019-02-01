@@ -825,7 +825,7 @@ module.exports = (function( root, factory ) {
                     invalidNum: stats.numOfInvalid,
                     uploadFailNum: stats.numOfUploadFailed,
                     queueNum: stats.numOfQueue,
-                    interruptNum: stats.numofInterrupt
+                    interruptNum: stats.numOfInterrupt
                 } : {};
             },
     
@@ -888,6 +888,7 @@ module.exports = (function( root, factory ) {
     
         return Uploader;
     });
+    
     /**
      * @fileOverview Runtime管理器，负责Runtime的选择, 连接
      */
@@ -1651,7 +1652,8 @@ module.exports = (function( root, factory ) {
             }
     
             this.ext = ext;
-            this.lastModifiedDate = file.lastModifiedDate ||
+            this.lastModifiedDate = file.lastModifiedDate || 
+                    file.lastModified && new Date(file.lastModified).toLocaleString() ||
                     (new Date()).toLocaleString();
     
             Blob.apply( this, arguments );
@@ -1753,12 +1755,15 @@ module.exports = (function( root, factory ) {
             refresh: function() {
                 var shimContainer = this.getRuntime().getContainer(),
                     button = this.options.button,
+                    /*
                     width = button.outerWidth ?
                             button.outerWidth() : button.width(),
     
                     height = button.outerHeight ?
                             button.outerHeight() : button.height(),
-    
+                    */
+                    width = button[0] && button[0].offsetWidth || button.outerWidth() || button.width(),
+                    height = button[0] && button[0].offsetHeight || button.outerHeight() || button.height(),
                     pos = button.offset();
     
                 width && height && shimContainer.css({
@@ -2561,7 +2566,8 @@ module.exports = (function( root, factory ) {
              * * `numOfProgress` 正在上传中的文件数
              * * `numOfUploadFailed` 上传错误的文件数。
              * * `numOfInvalid` 无效的文件数。
-             * * `numofDeleted` 被移除的文件数。
+             * * `numOfDeleted` 被移除的文件数。
+             * * `numOfInterrupt` 被中断的文件数。
              * @property {Object} stats
              */
             this.stats = {
@@ -2571,8 +2577,8 @@ module.exports = (function( root, factory ) {
                 numOfProgress: 0,
                 numOfUploadFailed: 0,
                 numOfInvalid: 0,
-                numofDeleted: 0,
-                numofInterrupt: 0
+                numOfDeleted: 0,
+                numOfInterrupt: 0
             };
     
             // 上传队列，仅包括等待上传的文件
@@ -2698,7 +2704,7 @@ module.exports = (function( root, factory ) {
                     delete this._map[ file.id ];
                     this._delFile(file);
                     file.destroy();
-                    this.stats.numofDeleted++;
+                    this.stats.numOfDeleted++;
                     
                 }
             },
@@ -2746,7 +2752,7 @@ module.exports = (function( root, factory ) {
                         break;
     
                     case STATUS.INTERRUPT:
-                        stats.numofInterrupt--;
+                        stats.numOfInterrupt--;
                         break;
                 }
     
@@ -2777,7 +2783,7 @@ module.exports = (function( root, factory ) {
                         break;
     
                     case STATUS.INTERRUPT:
-                        stats.numofInterrupt++;
+                        stats.numOfInterrupt++;
                         break;
                 }
             }
@@ -3753,7 +3759,7 @@ module.exports = (function( root, factory ) {
     
                 // 没有要上传的了，且没有正在传输的了。
                 } else if ( !me.remaning && !me._getStats().numOfQueue &&
-                    !me._getStats().numofInterrupt ) {
+                    !me._getStats().numOfInterrupt ) {
                     me.runing = false;
     
                     me._trigged || Base.nextTick(function() {
@@ -3770,6 +3776,9 @@ module.exports = (function( root, factory ) {
                 idx = this.stack.indexOf(block.cuted);
     
                 if (!~idx) {
+                    // 如果不在里面，说明移除过，需要把计数还原回去。
+                    this.remaning++;
+                    block.file.remaning++;
                     this.stack.unshift(block.cuted);
                 }
             },
@@ -3930,7 +3939,7 @@ module.exports = (function( root, factory ) {
                     // 有可能文件已经上传出错了，所以不需要再传输了。
                     if ( file.getStatus() === Status.PROGRESS ) {
                         me._doSend( block );
-                    } else {
+                    } else if (block.file.getStatus() !== Status.INTERRUPT) {
                         me._popBlock( block );
                         Base.nextTick( me.__tick );
                     }
@@ -4051,6 +4060,13 @@ module.exports = (function( root, factory ) {
     
                 // 尝试重试，然后广播文件上传出错。
                 tr.on( 'error', function( type, flag ) {
+                    // 在 runtime/html5/transport.js 上为 type 加上了状态码，形式：type|status|text（如：http-403-Forbidden）
+                    // 这里把状态码解释出来，并还原后面代码所依赖的 type 变量
+                    var typeArr = type.split( '|' ), status, statusText;  
+                    type = typeArr[0];
+                    status = parseFloat( typeArr[1] ),
+                    statusText = typeArr[2];
+    
                     block.retried = block.retried || 0;
     
                     // 自动重试
@@ -4071,7 +4087,7 @@ module.exports = (function( root, factory ) {
                         }
     
                         file.setStatus( Status.ERROR, type );
-                        owner.trigger( 'uploadError', file, type );
+                        owner.trigger( 'uploadError', file, type, status, statusText );
                         owner.trigger( 'uploadComplete', file );
                     }
                 });
@@ -6937,6 +6953,11 @@ module.exports = (function( root, factory ) {
                     me._xhr = null;
                     me._status = xhr.status;
     
+                    var separator = '|', // 分隔符
+                         // 拼接的状态，在 widgets/upload.js 会有代码用到这个分隔符
+                        status = separator + xhr.status +
+                                 separator + xhr.statusText;
+    
                     if ( xhr.status >= 200 && xhr.status < 300 ) {
                         me._response = xhr.responseText;
                         me._headers = me._parseHeader(xhr.getAllResponseHeaders());
@@ -6944,11 +6965,11 @@ module.exports = (function( root, factory ) {
                     } else if ( xhr.status >= 500 && xhr.status < 600 ) {
                         me._response = xhr.responseText;
                         me._headers = me._parseHeader(xhr.getAllResponseHeaders());
-                        return me.trigger( 'error', 'server-'+xhr.status );
+                        return me.trigger( 'error', 'server' + status );
                     }
     
     
-                    return me.trigger( 'error', me._status ? 'http-'+xhr.status : 'abort' );
+                    return me.trigger( 'error', me._status ? 'http' + status : 'abort' );
                 };
     
                 me._xhr = xhr;
