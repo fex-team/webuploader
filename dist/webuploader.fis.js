@@ -3566,7 +3566,9 @@ module.exports = (function( root, factory ) {
                     if ( file.getStatus() === Status.INTERRUPT ) {
                         me._trigged = false;
                         files.push(file);
-                        v.transport && v.transport.send();
+                        
+                        // 文件 prepare 完后，如果暂停了，这个时候只会把文件插入 pool, 而不会创建 tranport，
+                        v.transport ? v.transport.send() : me._doSend(v);
                     }
                 });
     
@@ -3940,9 +3942,10 @@ module.exports = (function( root, factory ) {
                     if ( file.getStatus() === Status.PROGRESS ) {
                         me._doSend( block );
                     } else if (block.file.getStatus() !== Status.INTERRUPT) {
-                        me._popBlock( block );
-                        Base.nextTick( me.__tick );
+                        me._popBlock(block);
                     }
+    
+                    Base.nextTick(me.__tick);
                 });
     
                 // 如果为fail了，则跳过此分片。
