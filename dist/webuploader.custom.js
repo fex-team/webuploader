@@ -3692,6 +3692,10 @@
                     if ( file.getStatus() === Status.INTERRUPT ) {
                         me._trigged = false;
                         files.push(file);
+    
+                        if (v.waiting) {
+                            return;
+                        }
                         
                         // 文件 prepare 完后，如果暂停了，这个时候只会把文件插入 pool, 而不会创建 tranport，
                         v.transport ? v.transport.send() : me._doSend(v);
@@ -4062,7 +4066,8 @@
                         file.source.slice( block.start, block.end );
     
                 // hook, 每个分片发送之前可能要做些异步的事情。
-                promise = me.request( 'before-send', block, function() {
+                block.waiting = promise = me.request( 'before-send', block, function() {
+                    delete block.waiting;
     
                     // 有可能文件已经上传出错了，所以不需要再传输了。
                     if ( file.getStatus() === Status.PROGRESS ) {
@@ -4076,6 +4081,8 @@
     
                 // 如果为fail了，则跳过此分片。
                 promise.fail(function() {
+                    delete block.waiting;
+    
                     if ( file.remaning === 1 ) {
                         me._finishFile( file ).always(function() {
                             block.percentage = 1;
