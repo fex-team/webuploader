@@ -1,10 +1,11 @@
 {
-  "name": "webuploader",
+  "name": "WebUploader",
   "version": "1.0.0",
   "description": "WebUploader是一个简单的以Html5为主，Flash为辅的现代文件上传组件。在现代的浏览器里面能充分发挥html5的优势，同时又不摒弃主流IE浏览器，延用原来的Flash运行时。两套运行时，同样的调用方式，可供用户任意选用。WebUploader采用大文件分片并发上传，极大的提高了文件上传效率。",
   "repository": {
     "type": "git",
-    "url": "https://github.com/joeth/webuploader.git"
+    "url": "https://github.com/fex-team/webuploader.git"
+
   },
   "keywords": [
     "chunk",
@@ -26,9 +27,4 @@
     "grunt-jekyll": "0.4.1",
     "grunt-gh-pages": "0.9.0",
     "grunt-contrib-copy": "0.5.0",
-    "requirejs": "2.1.9",
-    "grunt-contrib-qunit": "0.4.0",
-    "grunt-contrib-connect": "0.7.1",
-    "load-grunt-tasks": "0.4.0"
-  }
-}
+    "requirejs": 
