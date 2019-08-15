@@ -26,4 +26,9 @@
     "grunt-jekyll": "0.4.1",
     "grunt-gh-pages": "0.9.0",
     "grunt-contrib-copy": "0.5.0",
-    "requirejs": 
+    "requirejs": "2.1.9",
+    "grunt-contrib-qunit": "0.4.0",
+    "grunt-contrib-connect": "0.7.1",
+    "load-grunt-tasks": "0.4.0"
+  }
+}
