@@ -126,7 +126,7 @@
 
                 })($wrap);
 
-            // 压根就没有安转。
+            // 压根就没有安装。
             } else {
                 $wrap.html('<a href="http://www.adobe.com/go/getflashplayer" target="_blank" border="0"><img alt="get flash player" src="http://www.adobe.com/macromedia/style_guide/images/160x41_Get_Flash_Player.jpg" /></a>');
             }
