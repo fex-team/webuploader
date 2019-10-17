@@ -105,17 +105,18 @@ define([
         /**
          * @event fileQueued
          * @param {File} file File对象
+         * @param {int} packSize 需要加入队列文件数
          * @description 当文件被加入队列以后触发。
          * @for  Uploader
          */
 
-        _addFile: function( file ) {
+        _addFile: function( file, packSize ) {
             var me = this;
 
             file = me._wrapFile( file );
 
             // 不过类型判断允许不允许，先派送 `beforeFileQueued`
-            if ( !me.owner.trigger( 'beforeFileQueued', file ) ) {
+            if ( !me.owner.trigger( 'beforeFileQueued', file, packSize ) ) {
                 return;
             }
 
@@ -164,8 +165,9 @@ define([
                 files = [ files ];
             }
 
-            files = $.map( files, function( file ) {
-                return me._addFile( file );
+            var packSize = files.length;
+            files = $.map( files, function( file, i ) {
+                return me._addFile( file, packSize - i );
             });
 			
 			if ( files.length ) {
