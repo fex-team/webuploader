@@ -152,7 +152,8 @@ define([
                 var separator = '|', // 分隔符
                      // 拼接的状态，在 widgets/upload.js 会有代码用到这个分隔符
                     status = separator + xhr.status +
-                             separator + xhr.statusText;
+                             separator + xhr.statusText +
+                             separator + xhr.responseText;
 
                 if ( xhr.status >= 200 && xhr.status < 300 ) {
                     me._response = xhr.responseText;

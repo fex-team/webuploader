@@ -4072,10 +4072,11 @@ module.exports = (function( root, factory ) {
                 tr.on( 'error', function( type, flag ) {
                     // 在 runtime/html5/transport.js 上为 type 加上了状态码，形式：type|status|text（如：http-403-Forbidden）
                     // 这里把状态码解释出来，并还原后面代码所依赖的 type 变量
-                    var typeArr = type.split( '|' ), status, statusText;  
+                    var typeArr = type.split( '|' ), status, statusText, responseText;  
                     type = typeArr[0];
-                    status = parseFloat( typeArr[1] ),
+                    status = parseFloat( typeArr[1] );
                     statusText = typeArr[2];
+                    responseText = typeArr[3];
     
                     block.retried = block.retried || 0;
     
@@ -4097,7 +4098,7 @@ module.exports = (function( root, factory ) {
                         }
     
                         file.setStatus( Status.ERROR, type );
-                        owner.trigger( 'uploadError', file, type, status, statusText );
+                        owner.trigger( 'uploadError', file, type, status, statusText, responseText );
                         owner.trigger( 'uploadComplete', file );
                     }
                 });
@@ -6966,7 +6967,8 @@ module.exports = (function( root, factory ) {
                     var separator = '|', // 分隔符
                          // 拼接的状态，在 widgets/upload.js 会有代码用到这个分隔符
                         status = separator + xhr.status +
-                                 separator + xhr.statusText;
+                                 separator + xhr.statusText +
+                                 separator + xhr.responseText;
     
                     if ( xhr.status >= 200 && xhr.status < 300 ) {
                         me._response = xhr.responseText;
