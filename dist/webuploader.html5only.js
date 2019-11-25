@@ -2908,7 +2908,7 @@
     
             // 判断文件是否可以被加入队列
             acceptFile: function( file ) {
-                var invalid = !file || !file.size || this.accept &&
+                var invalid = !file || this.accept &&
     
                         // 如果名字中有后缀，才做后缀白名单处理。
                         rExt.exec( file.name ) && !this.accept.test( file.name );
@@ -3427,7 +3427,7 @@
             var pending = [],
                 blob = file.source,
                 total = blob.size,
-                chunks = chunkSize ? Math.ceil( total / chunkSize ) : 1,
+                chunks = total && chunkSize ? Math.ceil( total / chunkSize ) : 1,
                 start = 0,
                 index = 0,
                 len, api;

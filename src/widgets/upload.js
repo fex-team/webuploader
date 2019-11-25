@@ -104,7 +104,7 @@ define([
         var pending = [],
             blob = file.source,
             total = blob.size,
-            chunks = chunkSize ? Math.ceil( total / chunkSize ) : 1,
+            chunks = total && chunkSize ? Math.ceil( total / chunkSize ) : 1,
             start = 0,
             index = 0,
             len, api;
