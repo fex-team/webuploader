@@ -5,17 +5,17 @@ define([
     '../base',
     '../mediator',
     '../runtime/client'
-], function( Base, Mediator, RuntimeClent ) {
+], function( Base, Mediator, RuntimeClient ) {
 
     var $ = Base.$;
 
     function FilePaste( opts ) {
         opts = this.options = $.extend({}, opts );
         opts.container = $( opts.container || document.body );
-        RuntimeClent.call( this, 'FilePaste' );
+        RuntimeClient.call( this, 'FilePaste', true );//与FilePicker一样为一种文件选择器，不能重用
     }
 
-    Base.inherits( RuntimeClent, {
+    Base.inherits( RuntimeClient, {
         constructor: FilePaste,
 
         init: function() {
