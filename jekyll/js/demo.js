@@ -81,8 +81,7 @@ jQuery(function() {
         disableGlobalDnd: true,
 
         chunked: true,
-        // server: 'http://webuploader.duapp.com/server/fileupload.php',
-        server: 'http://2betop.net/fileupload.php',
+        server: 'http://webuploader.duapp.com/server/fileupload.php',
         fileNumLimit: 300,
         fileSizeLimit: 5 * 1024 * 1024,    // 200 M
         fileSingleSizeLimit: 1 * 1024 * 1024    // 50 M
