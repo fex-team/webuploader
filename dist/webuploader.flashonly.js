@@ -2706,7 +2706,7 @@
     
             // 判断文件是否可以被加入队列
             acceptFile: function( file ) {
-                var invalid = !file || !file.size || this.accept &&
+                var invalid = !file || this.accept &&
     
                         // 如果名字中有后缀，才做后缀白名单处理。
                         rExt.exec( file.name ) && !this.accept.test( file.name );
@@ -3225,7 +3225,7 @@
             var pending = [],
                 blob = file.source,
                 total = blob.size,
-                chunks = chunkSize ? Math.ceil( total / chunkSize ) : 1,
+                chunks = total && chunkSize ? Math.ceil( total / chunkSize ) : 1,
                 start = 0,
                 index = 0,
                 len, api;
@@ -3895,10 +3895,11 @@
                 tr.on( 'error', function( type, flag ) {
                     // 在 runtime/html5/transport.js 上为 type 加上了状态码，形式：type|status|text（如：http-403-Forbidden）
                     // 这里把状态码解释出来，并还原后面代码所依赖的 type 变量
-                    var typeArr = type.split( '|' ), status, statusText;  
+                    var typeArr = type.split( '|' ), status, statusText, responseText;  
                     type = typeArr[0];
-                    status = parseFloat( typeArr[1] ),
+                    status = parseFloat( typeArr[1] );
                     statusText = typeArr[2];
+                    responseText = typeArr[3];
     
                     block.retried = block.retried || 0;
     
@@ -3920,7 +3921,7 @@
                         }
     
                         file.setStatus( Status.ERROR, type );
-                        owner.trigger( 'uploadError', file, type, status, statusText );
+                        owner.trigger( 'uploadError', file, type, status, statusText, responseText );
                         owner.trigger( 'uploadComplete', file );
                     }
                 });

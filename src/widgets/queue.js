@@ -86,7 +86,7 @@ define([
 
         // 判断文件是否可以被加入队列
         acceptFile: function( file ) {
-            var invalid = !file || !file.size || this.accept &&
+            var invalid = !file || this.accept &&
 
                     // 如果名字中有后缀，才做后缀白名单处理。
                     rExt.exec( file.name ) && !this.accept.test( file.name );
