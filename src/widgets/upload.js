@@ -332,15 +332,20 @@ define([
                 file.setStatus( Status.INTERRUPT );
 
 
-                $.each( me.pool, function( _, v ) {
+                // me._popBlock(v) 会删除me.pool数组里的元素，导致遍历不全
+                // 引入变量 e 进行校正
+                var e = 0;
+                $.each( me.pool, function( index ) {
+                    var v = me.pool[index - e];
 
                     // 只 abort 指定的文件，每一个分片。
-                    if (v.file === file) {
+                    if (v && v.file === file) {
                         v.transport && v.transport.abort();
 
                         if (interrupt) {
                             me._putback(v);
                             me._popBlock(v);
+                            e++;
                         }
                     }
                 });
