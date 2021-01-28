@@ -11,7 +11,7 @@
           </entries>
           <sdk name="AIRSDK" />
         </dependencies>
-        <compiler-options>
+        <compiler-options> 
           <map>
             <entry key="compiler.locale" value="en_US" />
           </map>
