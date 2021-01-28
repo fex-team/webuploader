@@ -1,4 +1,4 @@
-/*! WebUploader 0.1.8-alpha */
+﻿/*! WebUploader 0.1.8-alpha */
 
 
 /**
@@ -4283,7 +4283,7 @@
                 max = parseInt( opts.fileNumLimit, 10 ),
                 flag = true;
     
-            if ( !max ) {
+            if ( !max && max!==0) {
                 return;
             }
     
