@@ -5,7 +5,7 @@ define([
     '../base',
     '../mediator',
     '../runtime/client'
-], function( Base, Mediator, RuntimeClent ) {
+], function( Base, Mediator, RuntimeClient ) {
 
     var $ = Base.$;
 
@@ -18,7 +18,7 @@ define([
             return;
         }
 
-        RuntimeClent.call( this, 'DragAndDrop' );
+        RuntimeClient.call( this, 'DragAndDrop', true );//与FilePicker一样为一种文件选择器，不能重用
     }
 
     DragAndDrop.options = {
@@ -26,7 +26,7 @@ define([
         disableGlobalDnd: false
     };
 
-    Base.inherits( RuntimeClent, {
+    Base.inherits( RuntimeClient, {
         constructor: DragAndDrop,
 
         init: function() {
